@@ -1,7 +1,7 @@
 QSanguosha-For-Saimoe
 =====================
 
-QSanguosha-For-Saimoe based on QSanguosha-For-Hegemony by Rara, Fsu0413 and BeginnerSlob, etc., including the characters from Japanese Anime, manga, novels and games. (2ch Saimoe Mainly)
+QSanguosha-For-Saimoe based on QSanguosha-For-Hegemony by Rara, Big Fsu0413 GOD and BeginnerSlob, etc., including the characters from Japanese Anime, manga, novels and games. (2ch Saimoe Mainly)
 
 Now the project starts!~ Feel free to contact us if you are interested in the projectï¼
 
