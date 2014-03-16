@@ -1,4 +1,4 @@
-﻿-- this script to store the basic configuration for game program itself
+-- this script to store the basic configuration for game program itself
 -- and it is a little different from config.ini
 
 config = {
@@ -40,7 +40,6 @@ config = {
 		"MomentumEquip" ,
 
 		"Standard",
-		"Moesen",
 		"Formation",
 		"Momentum",
 		"Test"
