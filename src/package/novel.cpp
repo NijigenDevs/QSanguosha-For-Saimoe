@@ -27,7 +27,7 @@ void MoesenPackage::addNovelGenerals()
 
 	General *aria = new General(this, "aria", "qun", 3, false); // Novel 010
 
-	General *nuiko = new General(this, "nuiko", "qun", 3, false); // Novel 011
+	General *ruiko = new General(this, "ruiko", "qun", 3, false); // Novel 011
 
 	General *mikoto = new General(this, "mikoto", "qun", 3, false); // Novel 012
 
