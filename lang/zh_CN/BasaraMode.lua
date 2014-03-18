@@ -21,7 +21,7 @@ return
 	["#CompanionEffect"] = "%from 触发珠联璧合，可以选择回复1点体力或者摸两张牌",
 	["@define:halfmaxhp"] = "你的武将牌上有单独的阴阳鱼，你可以点击“确定”摸一张牌",
 	["#HalfMaxHpLeft"] = "%from 的武将牌上有单独的阴阳鱼，可以摸一张牌",
-	["GameRule_AskForArraySummon"] = "阵法召唤",
+	["GameRule_AskForArraySummon"] = "萌战召唤",
 	["SiegeSummon"] = "响应围攻",
 	["FormationSummon"] = "响应队列",
 	["TriggerOrder"] = "触发顺序",
@@ -31,5 +31,5 @@ return
 	["#BasaraGeneralChosenDual"] = "你选择的武将为 %arg 和 %arg2",
 	["Hegemony"] = "国战",
 	["Roles"] = "身份",
-	["~anjiang"] = "死不瞑目啊……"
+	["~anjiang"] = "为什么要NTR我？..."
 }
