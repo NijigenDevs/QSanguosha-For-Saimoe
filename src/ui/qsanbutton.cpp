@@ -1,3 +1,22 @@
+/********************************************************************
+	Copyright (c) 2013-2014 - QSanguosha-Hegemony Team
+
+  This file is part of QSanguosha-Hegemony.
+
+  This game is free software; you can redistribute it and/or
+  modify it under the terms of the GNU Lesser General Public
+  License as published by the Free Software Foundation; either
+  version 3.0 of the License, or (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  Lesser General Public License for more details.
+
+  See the LICENSE file for more details.
+
+  QSanguosha-Hegemony Team	
+*********************************************************************/
 #include "qsanbutton.h"
 #include "clientplayer.h"
 #include "SkinBank.h"
@@ -10,25 +29,18 @@
 #include "client.h"
 
 QSanButton::QSanButton(QGraphicsItem *parent)
-    : QGraphicsObject(parent), multi_state(false), first_state(true)
+    : QGraphicsObject(parent), multi_state(false), first_state(true), _m_state(S_STATE_UP), _m_style(S_STYLE_PUSH), 
+    _m_mouseEntered(false)
 {
-    _m_state = S_STATE_UP;
-    _m_style = S_STYLE_PUSH;
-    _m_mouseEntered = false;
     setSize(QSize(0, 0));
     setAcceptsHoverEvents(true);
     setAcceptedMouseButtons(Qt::LeftButton);
 }
 
 QSanButton::QSanButton(const QString &groupName, const QString &buttonName, QGraphicsItem *parent, const bool &multi_state)
-    : QGraphicsObject(parent), multi_state(multi_state), first_state(true)
+    : QGraphicsObject(parent), multi_state(multi_state), first_state(true), _m_state(S_STATE_UP), _m_style(S_STYLE_PUSH),
+    _m_groupName(groupName), _m_buttonName(buttonName), _m_mouseEntered(false)
 {
-    _m_state = S_STATE_UP;
-    _m_style = S_STYLE_PUSH;
-    _m_groupName = groupName;
-    _m_buttonName = buttonName;
-    _m_mouseEntered = false;
-
     const int state_count = multi_state ? (int)S_NUM_BUTTON_STATES * 2 : (int)S_NUM_BUTTON_STATES;
     for (int i = 0; i < state_count; i++) {
         const bool state1 = i < S_NUM_BUTTON_STATES;
@@ -250,7 +262,9 @@ void QSanSkillButton::setSkill(const Skill *skill) {
          _m_emitActivateSignal = false;
          _m_emitDeactivateSignal = false;
      } else return;
-     setToolTip(skill->getDescription());
+     QString desc = skill->getDescription();
+     desc.simplified();
+     setToolTip(desc);
 
      if (!Self->hasShownSkill(skill) && skill->canPreshow())
          setState(QSanButton::S_STATE_CANPRESHOW);
@@ -278,12 +292,7 @@ void QSanSkillButton::mousePressEvent(QGraphicsSceneMouseEvent *event) {
 
 void QSanSkillButton::setEnabled(bool enabled) {
     if (_m_state == S_STATE_CANPRESHOW) return;
-    //dirty hack for shuangxiong!!!
-    if (!enabled && _m_skill->canPreshow() && _m_viewAsSkill && _m_skill->objectName() != "shuangxiong") {
-        setState(S_STATE_DISABLED);
-        update();
-    } else
-        QSanButton::setEnabled(enabled);
+    QSanButton::setEnabled(enabled);
 }
 
 void QSanInvokeSkillButton::_repaint() {

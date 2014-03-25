@@ -4,7 +4,6 @@
 #include "ai.h"
 #include "settings.h"
 #include "recorder.h"
-#include "banpair.h"
 #include "lua-wrapper.h"
 #include "jsonutils.h"
 #include "skill.h"
@@ -266,34 +265,8 @@ QStringList ServerPlayer::getSelected() const{
 
 QString ServerPlayer::findReasonable(const QStringList &generals, bool no_unreasonable) {
     foreach (QString name, generals) {
-        if (Config.Enable2ndGeneral) {
-            if (getGeneral()) {
-                if (!BanPair::isBanned(getGeneralName()) && BanPair::isBanned(getGeneralName(), name)) continue;
-            } else {
-                if (BanPair::isBanned(name)) continue;
-            }
-
-            if (Config.EnableHegemony && getGeneral()
-                && getGeneral()->getKingdom() != Sanguosha->getGeneral(name)->getKingdom())
-                continue;
-        }
-        if (Config.EnableBasara) {
-            QStringList ban_list = Config.value("Banlist/Basara").toStringList();
-            if (ban_list.contains(name)) continue;
-        }
-        if (Config.GameMode == "zombie_mode") {
-            QStringList ban_list = Config.value("Banlist/Zombie").toStringList();
-            if(ban_list.contains(name))continue;
-        }
-        if (Config.GameMode.endsWith("p")
-            || Config.GameMode.endsWith("pd")
-            || Config.GameMode.endsWith("pz")
-            || Config.GameMode.contains("_mini_")
-            || Config.GameMode == "custom_scenario") {
-            QStringList ban_list = Config.value("Banlist/Roles").toStringList();
-            if (ban_list.contains(name)) continue;
-        }
-
+        if (getGeneral() && getGeneral()->getKingdom() != Sanguosha->getGeneral(name)->getKingdom())
+            continue;
         return name;
     }
 
@@ -847,9 +820,6 @@ int ServerPlayer::getGeneralMaxHp() const{
         max_hp = (first + second) / 2;
     }
 
-    if (room->hasWelfare(this))
-        max_hp++;
-
     return max_hp;
 }
 
@@ -1178,9 +1148,19 @@ void ServerPlayer::exchangeFreelyFromPrivatePile(const QString &skill_name, cons
 
 void ServerPlayer::gainAnExtraTurn() {
     ServerPlayer *current = room->getCurrent();
+    Player::Phase orig_phase = Player::NotActive;
+    if (current != NULL && current->isAlive())
+        orig_phase = current->getPhase();
+    
     try {
+        current->setPhase(Player::NotActive);
+        room->broadcastProperty(current, "phase");
+
         room->setCurrent(this);
         room->getThread()->trigger(TurnStart, room, this);
+
+        current->setPhase(orig_phase);
+        room->broadcastProperty(current, "phase");
         room->setCurrent(current);
     }
     catch (TriggerEvent triggerEvent) {
@@ -1193,10 +1173,12 @@ void ServerPlayer::gainAnExtraTurn() {
                     game_rule = qobject_cast<const GameRule *>(Sanguosha->getTriggerSkill("game_rule"));
                 if (game_rule){
                     QVariant _variant;
-                    game_rule->effect(EventPhaseEnd, room, this, _variant);
+                    game_rule->effect(EventPhaseEnd, room, this, _variant, this);
                 }
                 changePhase(getPhase(), Player::NotActive);
             }
+            current->setPhase(orig_phase);
+            room->broadcastProperty(current, "phase");
             room->setCurrent(current);
         }
         throw triggerEvent;
@@ -1262,7 +1244,7 @@ void ServerPlayer::showGeneral(bool head_general, bool trigger_event) {
             QString kingdom = getGeneral()->getKingdom();
             room->setPlayerProperty(this, "kingdom", kingdom);
 
-            QString role = BasaraMode::getMappedRole(kingdom);
+            QString role = HegemonyMode::getMappedRole(kingdom);
             int i = 1;
             bool has_lord = isAlive() && getGeneral()->isLord();
             if (!has_lord) {
@@ -1319,7 +1301,7 @@ void ServerPlayer::showGeneral(bool head_general, bool trigger_event) {
             QString kingdom = getGeneral2()->getKingdom();
             room->setPlayerProperty(this, "kingdom", kingdom);
 
-            QString role = BasaraMode::getMappedRole(kingdom);
+            QString role = HegemonyMode::getMappedRole(kingdom);
             int i = 1;
             bool has_lord = isAlive() && getGeneral()->isLord();
             if (!has_lord) {
@@ -1391,7 +1373,7 @@ void ServerPlayer::hideGeneral(bool head_general) {
 
         if (!hasShownGeneral2()) {
             room->setPlayerProperty(this, "kingdom", "god");
-            room->setPlayerProperty(this, "role", BasaraMode::getMappedRole("god"));
+            room->setPlayerProperty(this, "role", HegemonyMode::getMappedRole("god"));
         }
     } else {
         if (getGeneral2Name() == "anjiang") return;
@@ -1427,7 +1409,7 @@ void ServerPlayer::hideGeneral(bool head_general) {
 
         if (!hasShownGeneral1()) {
             room->setPlayerProperty(this, "kingdom", "god");
-            room->setPlayerProperty(this, "role", BasaraMode::getMappedRole("god"));
+            room->setPlayerProperty(this, "role", HegemonyMode::getMappedRole("god"));
         }
     }
 
@@ -1447,6 +1429,9 @@ void ServerPlayer::removeGeneral(bool head_general) {
     QString general_name, from_general;
 
     if (head_general) {
+        if (!hasShownGeneral1())
+            showGeneral();   //zoushi?
+
         from_general = getActualGeneral1Name();
         if (from_general.contains("sujiang")) return;
         General::Gender gender = getActualGeneral1()->getGender();
@@ -1475,7 +1460,7 @@ void ServerPlayer::removeGeneral(bool head_general) {
         if (!hasShownGeneral2()) {
             room->setPlayerProperty(this, "kingdom", kingdom);
 
-            QString role = BasaraMode::getMappedRole(kingdom);
+            QString role = HegemonyMode::getMappedRole(kingdom);
             int i = 1;
             bool has_lord = isAlive() && getGeneral()->isLord();
             if (!has_lord) {
@@ -1497,6 +1482,9 @@ void ServerPlayer::removeGeneral(bool head_general) {
             room->setPlayerProperty(this, "role", role);
         }
     } else {
+        if (!hasShownGeneral2())
+            showGeneral(false); //zoushi?
+
         from_general = getActualGeneral2Name();
         if (from_general.contains("sujiang")) return;
         General::Gender gender = getActualGeneral2()->getGender();
@@ -1525,7 +1513,7 @@ void ServerPlayer::removeGeneral(bool head_general) {
         if (!hasShownGeneral1()) {
             room->setPlayerProperty(this, "kingdom", kingdom);
 
-            QString role = BasaraMode::getMappedRole(kingdom);
+            QString role = HegemonyMode::getMappedRole(kingdom);
             int i = 1;
             bool has_lord = isAlive() && getGeneral()->isLord();
             if (!has_lord) {
@@ -1591,6 +1579,9 @@ void ServerPlayer::disconnectSkillsFromOthers(bool head_skill /* = true */) {
 }
 
 bool ServerPlayer::askForGeneralShow(bool one) {
+    if (hasShownAllGenerals())
+        return false;
+
     QStringList choices;
 
     if (!hasShownGeneral1())
@@ -1629,7 +1620,7 @@ void ServerPlayer::notifyPreshow() {
 }
 
 bool ServerPlayer::inSiegeRelation(const ServerPlayer *skill_owner, const ServerPlayer *victim) const {
-    if (isFriendWith(victim) || !isFriendWith(skill_owner)) return false;
+    if (isFriendWith(victim) || !isFriendWith(skill_owner) || !victim->hasShownOneGeneral()) return false;
     if (this == skill_owner)
         return (getNextAlive() == victim && getNextAlive(2)->isFriendWith(this))
             || (getLastAlive() == victim && getLastAlive(2)->isFriendWith(this));
@@ -1666,10 +1657,10 @@ QList<ServerPlayer *> ServerPlayer::getFormation() const {
 
 bool ServerPlayer::inFormationRalation(ServerPlayer *teammate) const {
     QList<ServerPlayer *> teammates = getFormation();
-    return teammates.contains(teammate);
+    return teammates.length() > 1 && teammates.contains(teammate);
 }
 
-using namespace BattleArrayType;
+using namespace HegemonyMode;
 
 void ServerPlayer::summonFriends(const ArrayType type) {
     if (aliveCount() < 4) return;

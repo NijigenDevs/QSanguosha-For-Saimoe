@@ -310,7 +310,7 @@ bool Client::processServerRequest(const QSanGeneralPacket &packet) {
         countdown.m_type = Countdown::S_COUNTDOWN_USE_DEFAULT;
         countdown.m_max = ServerInfo.getCommandTimeout(command, S_CLIENT_INSTANCE);
     }
-    if (!replayer) 
+    if (!replayer)
         setCountdown(countdown);
     CallBack callback = m_interactions[command];
     if (!callback) return false;
@@ -486,14 +486,6 @@ void Client::requestCheatGetOneCard(int card_id) {
     Json::Value cheatArg;
     cheatArg[0] = (int)S_CHEAT_GET_ONE_CARD;
     cheatArg[1] = card_id;
-    requestToServer(S_COMMAND_CHEAT, cheatArg);
-}
-
-void Client::requestCheatChangeGeneral(const QString &name, bool isSecondaryHero) {
-    Json::Value cheatArg;
-    cheatArg[0] = (int)S_CHEAT_CHANGE_GENERAL;
-    cheatArg[1] = toJsonString(name);
-    cheatArg[2] = isSecondaryHero;
     requestToServer(S_COMMAND_CHEAT, cheatArg);
 }
 

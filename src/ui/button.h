@@ -6,6 +6,7 @@
 #include <QGraphicsObject>
 #include <QFont>
 #include <QFontMetrics>
+#include <QGraphicsDropShadowEffect>
 
 class Button: public QGraphicsObject{
     Q_OBJECT
@@ -17,6 +18,8 @@ public:
     void setFont(const QFont &font);
 
     virtual QRectF boundingRect() const;
+
+    virtual ~Button();
 
 protected:
     virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
@@ -36,6 +39,9 @@ private:
     QGraphicsPixmapItem *title_item;
     int glow;
     int timer_id;
+
+    QGraphicsDropShadowEffect *de;
+    QGraphicsDropShadowEffect *effect;
 
     void init();
 

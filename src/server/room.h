@@ -88,7 +88,7 @@ public:
     void judge(JudgeStruct &judge_struct);
     void sendJudgeResult(const JudgeStar judge);
     QList<int> getNCards(int n, bool update_pile_number = true);
-    ServerPlayer *getLord(const QString &kingdom = QString()) const;
+    ServerPlayer *getLord(const QString &kingdom) const;
     void askForGuanxing(ServerPlayer *zhuge, const QList<int> &cards, GuanxingType guanxing_type = GuanxingBothSides);
     int doGongxin(ServerPlayer *shenlvmeng, ServerPlayer *target, QList<int> enabled_ids = QList<int>(), QString skill_name = "gongxin");
     int drawCard();
@@ -250,7 +250,6 @@ public:
     void swapSeat(ServerPlayer *a, ServerPlayer *b);
     lua_State *getLuaState() const;
     void setFixedDistance(Player *from, const Player *to, int distance);
-    bool hasWelfare(const ServerPlayer *player) const;
     ServerPlayer *getFront(ServerPlayer *a, ServerPlayer *b) const;
     void signup(ServerPlayer *player, const QString &screen_name, const QString &avatar, bool is_robot);
     ServerPlayer *getOwner() const;

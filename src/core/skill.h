@@ -9,6 +9,7 @@ class QDialog;
 #include "room.h"
 #include "namespace.h"
 
+#include <QMap>
 #include <QObject>
 
 class Skill: public QObject {
@@ -129,16 +130,19 @@ public:
     QList<TriggerEvent> getTriggerEvents() const;
 
     virtual int getPriority() const;
-    virtual QStringList triggerable(const ServerPlayer *target) const;
-
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer * &ask_who) const;
-    virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const;
-    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &) const;
+    virtual bool triggerable(const ServerPlayer *target) const;
+    
+    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const;
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &ask_who) const;
+    virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who = NULL) const;
+    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who = NULL) const;
 
     inline double getDynamicPriority() const{ return dynamic_priority; }
     inline void setDynamicPriority(double value) { dynamic_priority = value; }
 
     inline bool isGlobal() const{ return global; }
+
+    virtual ~TriggerSkill();
 
 protected:
     const ViewAsSkill *view_as_skill;
@@ -158,7 +162,7 @@ public:
     ScenarioRule(Scenario *scenario);
 
     virtual int getPriority() const;
-    virtual QStringList triggerable(const ServerPlayer *target) const;
+    virtual bool triggerable(const ServerPlayer *target) const;
 };
 
 class MasochismSkill: public TriggerSkill {
@@ -167,9 +171,8 @@ class MasochismSkill: public TriggerSkill {
 public:
     MasochismSkill(const QString &name);
 
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer * &ask_who) const;
-    virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const;
-    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const;
+    virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who = NULL) const;
+    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who = NULL) const;
     virtual void onDamaged(ServerPlayer *target, const DamageStruct &damage) const = 0;
 };
 
@@ -179,7 +182,7 @@ class PhaseChangeSkill: public TriggerSkill {
 public:
     PhaseChangeSkill(const QString &name);
 
-    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const;
+    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who = NULL) const;
     virtual bool onPhaseChange(ServerPlayer *target) const = 0;
 };
 
@@ -189,7 +192,7 @@ class DrawCardsSkill: public TriggerSkill {
 public:
     DrawCardsSkill(const QString &name);
 
-    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const;
+    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who = NULL) const;
     virtual int getDrawNum(ServerPlayer *player, int n) const = 0;
 };
 
@@ -199,7 +202,7 @@ class GameStartSkill: public TriggerSkill {
 public:
     GameStartSkill(const QString &name);
 
-    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const;
+    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who = NULL) const;
     virtual void onGameStart(ServerPlayer *player) const = 0;
 };
 
@@ -208,13 +211,13 @@ class BattleArraySkill: public TriggerSkill {
 
 public:
 
-    BattleArraySkill(const QString &name,const BattleArrayType::ArrayType type);
+    BattleArraySkill(const QString &name,const HegemonyMode::ArrayType type);
 
     virtual void summonFriends(ServerPlayer *player) const;
 
-    inline BattleArrayType::ArrayType getArrayType() const { return array_type; }
+    inline HegemonyMode::ArrayType getArrayType() const { return array_type; }
 private:
-    BattleArrayType::ArrayType array_type;
+    HegemonyMode::ArrayType array_type;
 };
 
 class ArraySummonSkill: public ZeroCardViewAsSkill {
@@ -290,6 +293,17 @@ protected:
     QString name;
 };
 
+class AttackRangeSkill: public Skill{
+    Q_OBJECT
+
+public:
+    AttackRangeSkill(const QString &name);
+
+    virtual int getExtra(const Player *target, bool include_weapon) const;
+    virtual int getFixed(const Player *target, bool include_weapon) const;
+};
+
+
 // a nasty way for 'fake moves', usually used in the process of multi-card chosen
 class FakeMoveSkill: public TriggerSkill {
     Q_OBJECT
@@ -299,7 +313,7 @@ public:
 
     virtual int getPriority() const;
     virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *target, QVariant &, ServerPlayer * &ask_who) const;
-    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const;
+    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who = NULL) const;
 
 private:
     QString name;
@@ -312,7 +326,7 @@ public:
     DetachEffectSkill(const QString &skillname, const QString &pilename = QString());
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer * &ask_who) const;
-    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const;
+    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who = NULL) const;
     virtual void onSkillDetached(Room *room, ServerPlayer *player) const;
 
 private:
@@ -325,7 +339,7 @@ class WeaponSkill: public TriggerSkill {
 public:
     WeaponSkill(const QString &name);
 
-    virtual QStringList triggerable(const ServerPlayer *target) const;
+    virtual bool triggerable(const ServerPlayer *target) const;
 };
 
 class ArmorSkill: public TriggerSkill {
@@ -334,7 +348,7 @@ class ArmorSkill: public TriggerSkill {
 public:
     ArmorSkill(const QString &name);
 
-    virtual QStringList triggerable(const ServerPlayer *target) const;
+    virtual bool triggerable(const ServerPlayer *target) const;
 };
 
 #endif

@@ -1,8 +1,30 @@
+/********************************************************************
+	Copyright (c) 2013-2014 - QSanguosha-Hegemony Team
+
+  This file is part of QSanguosha-Hegemony.
+
+  This game is free software; you can redistribute it and/or
+  modify it under the terms of the GNU Lesser General Public
+  License as published by the Free Software Foundation; either
+  version 3.0 of the License, or (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  Lesser General Public License for more details.
+
+  See the LICENSE file for more details.
+
+  QSanguosha-Hegemony Team	
+*********************************************************************/
 #include "choosegeneralbox.h"
 #include "engine.h"
 #include "roomscene.h"
 #include "SkinBank.h"
 #include "protocol.h"
+#include "choosegeneraldialog.h"
+
+#include <QApplication>
 
 GeneralCardItem::GeneralCardItem(const QString &general_name)
     : CardItem(general_name), has_companion(false)
@@ -14,7 +36,7 @@ void GeneralCardItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *,
     painter->setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
 
     QRect rect = G_COMMON_LAYOUT.m_cardMainArea;
-    if (!isEnabled()) {
+    if (frozen || !isEnabled()) {
         painter->fillRect(rect, QColor(0, 0, 0));
         painter->setOpacity(0.4 * opacity());
     }
@@ -43,6 +65,34 @@ void GeneralCardItem::hideCompanion() {
     if (!has_companion) return;
     has_companion = false;
     update();
+}
+
+void GeneralCardItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
+    if (Config.FreeChoose && Qt::RightButton == event->button()) {
+        FreeChooseDialog *general_changer = new FreeChooseDialog(QApplication::focusWidget());
+        connect(general_changer, SIGNAL(general_chosen(QString)), this, SLOT(changeGeneral(QString)));
+        general_changer->exec();
+        general_changer->deleteLater();
+        return;
+    }
+    if (frozen) return;
+
+    QPointF totalMove = mapToParent(event->pos()) - _m_lastMousePressScenePos;
+    if (totalMove.x() * totalMove.x() + totalMove.y() * totalMove.y() < _S_MOVE_JITTER_TOLERANCE)
+        emit clicked();
+    else
+        emit released();
+
+    if (auto_back) {
+        goBack(true, false);
+    }
+}
+
+void GeneralCardItem::setFrozen(bool is_frozen) {
+    if (frozen != is_frozen) {
+        frozen = is_frozen;
+        update();
+    }
 }
 
 ChooseGeneralBox::ChooseGeneralBox() 
@@ -87,9 +137,9 @@ void ChooseGeneralBox::paint(QPainter *painter, const QStyleOptionGraphicsItem *
     //
     //
     //==================================================
-    //||                                          |X| ||
-    //||==============================================||
     //||               岑失岑泳鉱心麼繍                ||
+    //||==============================================||
+    //||                                              ||
     //||             __________________               ||
     //||            |                  |              ||
     //||            |                  |              ||
@@ -102,6 +152,10 @@ void ChooseGeneralBox::paint(QPainter *painter, const QStyleOptionGraphicsItem *
     //||            |                  |              ||
     //||            |                  |              ||
     //||             ！！！！！！！！！！！！！！！！！！               ||
+    //||                                              ||
+    //||             ==================               ||
+    //||             ||   confirm    ||               ||
+    //||             ==================               ||
     //||                                              ||
     //==================================================
     painter->save();
@@ -175,7 +229,6 @@ void ChooseGeneralBox::chooseGeneral(QStringList generals) {
         if (general.endsWith("(lord)")) continue;
         GeneralCardItem *general_item = new GeneralCardItem(general);
         general_item->setFlag(QGraphicsItem::ItemIsFocusable);
-        general_item->setAcceptedMouseButtons(Qt::LeftButton);
 
         if (single_result)
             general_item->setFlag(QGraphicsItem::ItemIsMovable, false);
@@ -187,6 +240,7 @@ void ChooseGeneralBox::chooseGeneral(QStringList generals) {
         connect(general_item, SIGNAL(clicked()), this, SLOT(_onItemClicked()));
         connect(general_item, SIGNAL(enter_hover()), this, SLOT(_onCardItemHover()));
         connect(general_item, SIGNAL(leave_hover()), this, SLOT(_onCardItemLeaveHover()));
+        connect(general_item, SIGNAL(general_changed()), this, SLOT(adjustItems()));
 
         if (!single_result) {
             const General *hero = Sanguosha->getGeneral(general);
@@ -244,14 +298,14 @@ void ChooseGeneralBox::chooseGeneral(QStringList generals) {
 
     if (ServerInfo.OperationTimeout != 0) {
         if (!progress_bar) {
-            progress_bar = new QSanCommandProgressBar();
-            progress_bar->setMinimumWidth(200);
-            progress_bar->setMaximumHeight(12);
-            progress_bar->setTimerEnabled(true);
-            progress_bar_item = new QGraphicsProxyWidget(this);
-            progress_bar_item->setWidget(progress_bar);
-            progress_bar_item->setPos(boundingRect().center().x() - progress_bar_item->boundingRect().width() / 2, boundingRect().height() - 30);
-            connect(progress_bar, SIGNAL(timedOut()), this, SLOT(reply()));
+	        progress_bar = new QSanCommandProgressBar();
+	        progress_bar->setMinimumWidth(200);
+	        progress_bar->setMaximumHeight(12);
+	        progress_bar->setTimerEnabled(true);
+	        progress_bar_item = new QGraphicsProxyWidget(this);
+	        progress_bar_item->setWidget(progress_bar);
+	        progress_bar_item->setPos(boundingRect().center().x() - progress_bar_item->boundingRect().width() / 2, boundingRect().height() - 30);
+	        connect(progress_bar, SIGNAL(timedOut()), this, SLOT(reply()));
         }
         progress_bar->setCountdown(QSanProtocol::S_COMMAND_CHOOSE_GENERAL);
         progress_bar->show();
@@ -301,20 +355,21 @@ void ChooseGeneralBox::_adjust() {
 void ChooseGeneralBox::adjustItems() {
     if (selected.length() == 2){
         foreach(GeneralCardItem *card, items)
-            card->setEnabled(false);
-        confirm->setEnabled(true);
+            card->setFrozen(true);
+        confirm->setEnabled(Sanguosha->getGeneral(selected.first()->objectName())->getKingdom()
+                         == Sanguosha->getGeneral(selected.last()->objectName())->getKingdom());
     } else if (selected.length() == 1) {
         selected.first()->hideCompanion();
         foreach(GeneralCardItem *card, items) {
             const General *seleted_general = Sanguosha->getGeneral(selected.first()->objectName());
             const General *general = Sanguosha->getGeneral(card->objectName());
             if (general->getKingdom() != seleted_general->getKingdom() || general->isLord()) {
-                if (card->isEnabled())
-                    card->setEnabled(false);
+                if (!card->isFrozen())
+                    card->setFrozen(true);
                 card->hideCompanion();
             } else {
-                if (!card->isEnabled())
-                    card->setEnabled(true);
+                if (card->isFrozen())
+                    card->setFrozen(false);
                 if (general->isCompanionWith(selected.first()->objectName())) {
                     selected.first()->showCompanion();
                     card->showCompanion();
@@ -357,13 +412,13 @@ void ChooseGeneralBox::_initializeItems() {
         }
         GeneralCardItem *item = items.at(index);
         if ((party < 2 || (selected.isEmpty() && has_lord && party == 2))) {
-            if (item->isEnabled())
-                item->setEnabled(false);
-        } else if (!item->isEnabled())
-            item->setEnabled(true);
+            if (!item->isFrozen())
+                item->setFrozen(true);
+        } else if (item->isFrozen())
+            item->setFrozen(false);
 
-        if (Self->isDead() && !item->isEnabled())
-            item->setEnabled(true);
+        if (Self->isDead() && item->isFrozen())
+            item->setFrozen(false);
         ++ index;
     }
 }
@@ -438,15 +493,15 @@ void ChooseGeneralBox::_onItemClicked() {
 }
 
 void ChooseGeneralBox::_onCardItemHover() {
-    QGraphicsItem *card_item = qobject_cast<QGraphicsItem *>(sender());
-    if (!card_item) return;
+    GeneralCardItem *card_item = qobject_cast<GeneralCardItem *>(sender());
+    if (!card_item || card_item->isFrozen()) return;
 
     animations->emphasize(card_item);
 }
 
 void ChooseGeneralBox::_onCardItemLeaveHover() {
-    QGraphicsItem *card_item = qobject_cast<QGraphicsItem *>(sender());
-    if (!card_item) return;
+    GeneralCardItem *card_item = qobject_cast<GeneralCardItem *>(sender());
+    if (!card_item || card_item->isFrozen()) return;
 
     animations->effectOut(card_item);
 }

@@ -32,6 +32,8 @@ struct DamageStruct {
     bool transfer;
     bool by_user;
     QString reason;
+    QString transfer_reason;
+    bool prevented;
 
     QString getReason() const;
 };
@@ -464,11 +466,13 @@ enum TriggerEvent {
     BeforeCardsMove, // sometimes we need to record cards before the move
     CardsMoveOneTime,
 
-    PreCardUsed, // for AI to filter events only.
+    PreCardUsed,
     CardUsed,
+    TargetChoosing , //distinguish "choose target" and "confirm target"
     TargetConfirming,
+    TargetChosen ,
     TargetConfirmed,
-    CardEffect, // for AI to filter events only
+    CardEffect,
     CardEffected,
     PostCardEffected,
     CardFinished,

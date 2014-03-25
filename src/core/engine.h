@@ -1,3 +1,22 @@
+/********************************************************************
+	Copyright (c) 2013-2014 - QSanguosha-Hegemony Team
+
+  This file is part of QSanguosha-Hegemony.
+
+  This game is free software; you can redistribute it and/or
+  modify it under the terms of the GNU Lesser General Public
+  License as published by the Free Software Foundation; either
+  version 3.0 of the License, or (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  Lesser General Public License for more details.
+
+  See the LICENSE file for more details.
+
+  QSanguosha-Hegemony Team	
+*********************************************************************/
 #ifndef _ENGINE_H
 #define _ENGINE_H
 
@@ -45,6 +64,20 @@ public:
     Card *cloneCard(const Card *card) const;
     Card *cloneCard(const QString &name, Card::Suit suit = Card::SuitToBeDecided, int number = -1, const QStringList &flags = QStringList()) const;
     SkillCard *cloneSkillCard(const QString &name) const;
+    //************************************
+    // Method:    getVersionNumber
+    // FullName:  Engine::getVersionNumber
+    // Access:    public 
+    // Returns:   QT_NAMESPACE::QString
+    // Qualifier: const
+    // Description: Get current version number.
+    //
+    // Last Updated By Yanguam Siliagim
+    // To update version number
+    //
+    // QSanguosha-Hegemony Team
+    // March 17 2014
+    //************************************
     QString getVersionNumber() const;
     QString getVersion() const;
     QString getVersionName() const;
@@ -62,7 +95,6 @@ public:
     int getPlayerCount(const QString &mode) const;
     QString getRoles(const QString &mode) const;
     QStringList getRoleList(const QString &mode) const;
-    int getRoleIndex() const;
 
     const CardPattern *getPattern(const QString &name) const;
     bool matchExpPattern(const QString &pattern, const Player *player, const Card *card) const;
@@ -86,6 +118,7 @@ public:
     QList<const MaxCardsSkill *> getMaxCardsSkills() const;
     QList<const TargetModSkill *> getTargetModSkills() const;
     QList<const TriggerSkill *> getGlobalTriggerSkills() const;
+    QList<const AttackRangeSkill *> getAttackRangeSkills() const;
     void addSkills(const QList<const Skill *> &skills);
 
     int getCardCount() const;
@@ -94,13 +127,55 @@ public:
     Card *getCard(int cardId);
     WrappedCard *getWrappedCard(int cardId);
 
-    QStringList getLords(bool contain_banned = false) const;
-    QStringList getRandomLords() const;
-    void banRandomGods() const;
+    //************************************
+    // Method:    getRandomGenerals
+    // FullName:  Engine::getRandomGenerals
+    // Access:    public 
+    // Returns:   QT_NAMESPACE::QStringList
+    // Qualifier: const
+    // Parameter: int count
+    // Parameter: const QSet<QString> & ban_set
+    // Description: Get [count] available generals and no one is in [ban_set].
+    //
+    // Last Updated By Yanguam Siliagim
+    // To use a proper way to convert generals and cards
+    //
+    // QSanguosha-Hegemony Team
+    // March 17 2014
+    //************************************
     QStringList getRandomGenerals(int count, const QSet<QString> &ban_set = QSet<QString>()) const;
+    //************************************
+    // Method:    getRandomCards
+    // FullName:  Engine::getRandomCards
+    // Access:    public 
+    // Returns:   QList<int>
+    // Qualifier: const
+    // Description: Get IDs of all the available cards.
+    //
+    // Last Updated By Yanguam Siliagim
+    // To use a proper way to convert generals and cards
+    //
+    // QSanguosha-Hegemony Team
+    // March 17 2014
+    //************************************
     QList<int> getRandomCards() const;
     QString getRandomGeneralName() const;
+    //************************************
+    // Method:    getLimitedGeneralNames
+    // FullName:  Engine::getLimitedGeneralNames
+    // Access:    public 
+    // Returns:   QT_NAMESPACE::QStringList
+    // Qualifier: const
+    // Description: It was designed to get the list of all available generals.
+    //
+    // Last Updated By Yanguam Siliagim
+    // To use a proper way to convert generals and cards
+    //
+    // QSanguosha-Hegemony Team
+    // March 17 2014
+    //************************************
     QStringList getLimitedGeneralNames() const;
+    QStringList getGeneralNames() const;
 
     void playSystemAudioEffect(const QString &name) const;
     void playAudioEffect(const QString &filename) const;
@@ -110,6 +185,7 @@ public:
     int correctDistance(const Player *from, const Player *to) const;
     int correctMaxCards(const Player *target, bool fixed = false) const;
     int correctCardTarget(const TargetModSkill::ModType type, const Player *from, const Card *card) const;
+    int correctAttackRange(const Player *target, bool include_weapon = true, bool fixed = false) const;
 
     void registerRoom(QObject *room);
     void unregisterRoom();
@@ -142,6 +218,7 @@ private:
     QList<const DistanceSkill *> distance_skills;
     QList<const MaxCardsSkill *> maxcards_skills;
     QList<const TargetModSkill *> targetmod_skills;
+    QList<const AttackRangeSkill *> attackrange_skills;
     QList<const TriggerSkill *> global_trigger_skills;
 
     QList<Card *> cards;

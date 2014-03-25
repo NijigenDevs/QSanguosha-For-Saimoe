@@ -1,9 +1,27 @@
+/********************************************************************
+	Copyright (c) 2013-2014 - QSanguosha-Hegemony Team
+
+  This file is part of QSanguosha-Hegemony.
+
+  This game is free software; you can redistribute it and/or
+  modify it under the terms of the GNU Lesser General Public
+  License as published by the Free Software Foundation; either
+  version 3.0 of the License, or (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  Lesser General Public License for more details.
+
+  See the LICENSE file for more details.
+
+  QSanguosha-Hegemony Team	
+*********************************************************************/
 #include "server.h"
 #include "settings.h"
 #include "room.h"
 #include "engine.h"
 #include "nativesocket.h"
-#include "banpair.h"
 #include "scenario.h"
 #include "choosegeneraldialog.h"
 #include "customassigndialog.h"
@@ -39,6 +57,7 @@ ServerDialog::ServerDialog(QWidget *parent)
     tab_widget->addTab(createBasicTab(), tr("Basic"));
     tab_widget->addTab(createPackageTab(), tr("Game Pacakge Selection"));
     tab_widget->addTab(createAdvancedTab(), tr("Advanced"));
+    tab_widget->addTab(createConversionTab(), tr("Conversion Selection"));
     tab_widget->addTab(createMiscTab(), tr("Miscellaneous"));
 
     QVBoxLayout *layout = new QVBoxLayout;
@@ -101,12 +120,10 @@ QWidget *ServerDialog::createPackageTab() {
         if (package == NULL)
             continue;
 
-        bool forbid_package = Config.value("ForbidPackages").toStringList().contains(extension);
         QCheckBox *checkbox = new QCheckBox;
         checkbox->setObjectName(extension);
         checkbox->setText(Sanguosha->translate(extension));
-        checkbox->setChecked(!ban_packages.contains(extension) && !forbid_package);
-        checkbox->setEnabled(!forbid_package);
+        checkbox->setChecked(!ban_packages.contains(extension));
 
         extension_group->addButton(checkbox);
 
@@ -170,9 +187,6 @@ QWidget *ServerDialog::createAdvancedTab() {
     pile_swapping_spinbox->setRange(-1, 15);
     pile_swapping_spinbox->setValue(Config.value("PileSwappingLimitation", 5).toInt());
 
-    lord_convert_checkbox = new QCheckBox(tr("Enable Lord Rule"));
-    lord_convert_checkbox->setChecked(Config.value("EnableLordGeneralConvert", true).toBool());
-
     hegemony_maxchoice_label = new QLabel(tr("Upperlimit for hegemony"));
     hegemony_maxchoice_spinbox = new QSpinBox;
     hegemony_maxchoice_spinbox->setRange(5, 7); //wait for a new extension
@@ -196,7 +210,6 @@ QWidget *ServerDialog::createAdvancedTab() {
     layout->addWidget(enable_cheat_checkbox);
     layout->addWidget(free_choose_checkbox);
     layout->addLayout(HLay(pile_swapping_label, pile_swapping_spinbox));
-    layout->addWidget(lord_convert_checkbox);
     layout->addLayout(HLay(hegemony_maxchoice_label, hegemony_maxchoice_spinbox));
     layout->addLayout(HLay(new QLabel(tr("Address")), address_edit));
     layout->addWidget(detect_button);
@@ -206,6 +219,58 @@ QWidget *ServerDialog::createAdvancedTab() {
     QWidget *widget = new QWidget;
     widget->setLayout(layout);
 
+    return widget;
+}
+
+QWidget *ServerDialog::createConversionTab() {
+    conversions_group = new QButtonGroup;
+    conversions_group->setExclusive(false);
+
+    QGroupBox *formation_conversions = new QGroupBox(tr("Formation Conversions"));
+    QGroupBox *momentum_conversions = new QGroupBox(tr("Momentum Conversions"));
+
+    QVBoxLayout *formation_layout = new QVBoxLayout;
+    QVBoxLayout *momentum_layout = new QVBoxLayout;
+    formation_conversions->setLayout(formation_layout);
+    momentum_conversions->setLayout(momentum_layout);
+
+    const bool enable_lord_liubei = Config.value("GeneralConversions").toStringList().contains("liubei");
+    convert_liubei_to_lord = new QCheckBox(tr("Convert Liu Bei to Lord Liu Bei"));
+    convert_liubei_to_lord->setChecked(enable_lord_liubei);
+
+    convert_ds_to_dp = new QCheckBox(tr("Convert DoubleSword to DragonPhoenix"));
+    convert_ds_to_dp->setChecked(Config.value("CardConversions").toStringList().contains("DragonPhoenix"));
+    convert_ds_to_dp->setDisabled(enable_lord_liubei);
+
+    connect(convert_liubei_to_lord, SIGNAL(toggled(bool)), convert_ds_to_dp, SLOT(setChecked(bool)));
+    connect(convert_liubei_to_lord, SIGNAL(toggled(bool)), convert_ds_to_dp, SLOT(setDisabled(bool)));
+
+    conversions_group->addButton(convert_liubei_to_lord);
+    conversions_group->addButton(convert_ds_to_dp);
+    formation_layout->addWidget(convert_liubei_to_lord);
+    formation_layout->addWidget(convert_ds_to_dp);
+
+    const bool enable_lord_zhangjiao = Config.value("GeneralConversions").toStringList().contains("zhangjiao");
+    convert_zhangjiao_to_lord = new QCheckBox(tr("Convert Zhang Jiao to Lord Zhang Jiao"));
+    convert_zhangjiao_to_lord->setChecked(enable_lord_zhangjiao);
+/*
+    add_peace_spell = new QCheckBox(tr("Add Peace Spell"));
+    add_peace_spell->setChecked(Config.value("CardConversions").toStringList().contains("+109"));
+    add_peace_spell->setDisabled(enable_lord_zhangjiao);
+
+    connect(convert_zhangjiao_to_lord, SIGNAL(toggled(bool)), add_peace_spell, SLOT(setChecked(bool)));
+    connect(convert_zhangjiao_to_lord, SIGNAL(toggled(bool)), add_peace_spell, SLOT(setDisabled(bool)));
+*/
+    conversions_group->addButton(convert_zhangjiao_to_lord);
+    //conversions_group->addButton(add_peace_spell);
+    momentum_layout->addWidget(convert_zhangjiao_to_lord);
+    //momentum_layout->addWidget(add_peace_spell);
+
+    QWidget *widget = new QWidget;
+    QVBoxLayout *layout = new QVBoxLayout;
+    layout->addWidget(formation_conversions);
+    layout->addWidget(momentum_conversions);
+    widget->setLayout(layout);
     return widget;
 }
 
@@ -280,292 +345,6 @@ QWidget *ServerDialog::createMiscTab() {
 
 void ServerDialog::ensureEnableAI() {
     ai_enable_checkbox->setChecked(true);
-}
-
-void BanlistDialog::switchTo(int item) {
-    this->item = item;
-    list = lists.at(item);
-    if (add2nd) add2nd->setVisible((list->objectName()=="Pairs"));
-}
-
-BanlistDialog::BanlistDialog(QWidget *parent, bool view)
-    : QDialog(parent), add2nd(NULL)
-{
-    setWindowTitle(tr("Select generals that are excluded"));
-
-    if (ban_list.isEmpty())
-        ban_list << "Roles" << "Basara" << "Hegemony" << "Pairs";
-    QVBoxLayout *layout = new QVBoxLayout;
-
-    QTabWidget *tab = new QTabWidget;
-    layout->addWidget(tab);
-    connect(tab, SIGNAL(currentChanged(int)), this, SLOT(switchTo(int)));
-
-    foreach (QString item, ban_list) {
-        if (item == "Pairs") continue;
-        QWidget *apage = new QWidget;
-
-        list = new QListWidget;
-        list->setObjectName(item);
-
-        QStringList banlist = Config.value(QString("Banlist/%1").arg(item)).toStringList();
-        foreach (QString name, banlist)
-            addGeneral(name);
-
-        lists << list;
-
-        QVBoxLayout *vlay = new QVBoxLayout;
-        vlay->addWidget(list);
-        apage->setLayout(vlay);
-
-        tab->addTab(apage, Sanguosha->translate(item));
-    }
-
-    QWidget *apage = new QWidget;
-
-    list = new QListWidget;
-    list->setObjectName("Pairs");
-    this->list = list;
-    foreach (QString banned, BanPair::getAllBanSet().toList())
-        addGeneral(banned);
-    foreach (QString banned, BanPair::getSecondBanSet().toList())
-        add2ndGeneral(banned);
-    foreach (BanPair pair, BanPair::getBanPairSet().toList())
-        addPair(pair.first, pair.second);
-
-    QVBoxLayout *vlay = new QVBoxLayout;
-    vlay->addWidget(list);
-    apage->setLayout(vlay);
-    tab->addTab(apage, Sanguosha->translate("Pairs"));
-    lists << list;
-
-    QPushButton *add = new QPushButton(tr("Add ..."));
-    QPushButton *remove = new QPushButton(tr("Remove"));
-    if (!view) add2nd = new QPushButton(tr("Add 2nd general ..."));
-    QPushButton *ok = new QPushButton(tr("OK"));
-
-    connect(ok, SIGNAL(clicked()), this, SLOT(accept()));
-    connect(this, SIGNAL(accepted()), this, SLOT(saveAll()));
-    connect(remove, SIGNAL(clicked()), this, SLOT(doRemoveButton()));
-    connect(add, SIGNAL(clicked()), this, SLOT(doAddButton()));
-    if (!view) connect(add2nd, SIGNAL(clicked()), this, SLOT(doAdd2ndButton()));
-
-    QHBoxLayout *hlayout = new QHBoxLayout;
-    hlayout->addStretch();
-    if (!view) {
-        hlayout->addWidget(add2nd);
-        add2nd->hide();
-        hlayout->addWidget(add);
-        hlayout->addWidget(remove);
-        list = lists.first();
-    }
-
-    hlayout->addWidget(ok);
-    layout->addLayout(hlayout);
-
-    setLayout(layout);
-
-    foreach (QListWidget *alist, lists) {
-        if (alist->objectName() == "Pairs") continue;
-        alist->setViewMode(QListView::IconMode);
-        alist->setDragDropMode(QListView::NoDragDrop);
-    }
-}
-
-void BanlistDialog::addGeneral(const QString &name) {
-    if (list->objectName() == "Pairs") {
-        QString text = QString(tr("Banned for all: %1")).arg(Sanguosha->translate(name));
-        QListWidgetItem *item = new QListWidgetItem(text);
-        item->setData(Qt::UserRole, QVariant::fromValue(name));
-        list->addItem(item);
-    } else {
-        QIcon icon(G_ROOM_SKIN.getGeneralPixmap(name, QSanRoomSkin::S_GENERAL_ICON_SIZE_TINY));
-        QString text = Sanguosha->translate(name);
-        QListWidgetItem *item = new QListWidgetItem(icon, text, list);
-        item->setSizeHint(QSize(60, 60));
-        item->setData(Qt::UserRole, name);
-    }
-}
-
-void BanlistDialog::add2ndGeneral(const QString &name) {
-    QString text = QString(tr("Banned for second general: %1")).arg(Sanguosha->translate(name));
-    QListWidgetItem *item = new QListWidgetItem(text);
-    item->setData(Qt::UserRole, QVariant::fromValue(QString("+%1").arg(name)));
-    list->addItem(item);
-}
-
-void BanlistDialog::addPair(const QString &first, const QString &second) {
-    QString trfirst = Sanguosha->translate(first);
-    QString trsecond = Sanguosha->translate(second);
-    QListWidgetItem *item = new QListWidgetItem(QString("%1 + %2").arg(trfirst, trsecond));
-    item->setData(Qt::UserRole, QVariant::fromValue(QString("%1+%2").arg(first, second)));
-    list->addItem(item);
-}
-
-void BanlistDialog::doAddButton() {
-    FreeChooseDialog *chooser = new FreeChooseDialog(this, (list->objectName() == "Pairs"));
-    connect(chooser, SIGNAL(general_chosen(QString)), this, SLOT(addGeneral(QString)));
-    connect(chooser, SIGNAL(pair_chosen(QString, QString)), this, SLOT(addPair(QString, QString)));
-    chooser->exec();
-}
-
-void BanlistDialog::doAdd2ndButton() {
-    FreeChooseDialog *chooser = new FreeChooseDialog(this, false);
-    connect(chooser, SIGNAL(general_chosen(QString)), this, SLOT(add2ndGeneral(QString)));
-    chooser->exec();
-}
-
-void BanlistDialog::doRemoveButton() {
-    int row = list->currentRow();
-    if (row != -1)
-        delete list->takeItem(row);
-}
-
-void BanlistDialog::save() {
-    QSet<QString> banset;
-
-    for (int i = 0; i < list->count(); i++)
-        banset << list->item(i)->data(Qt::UserRole).toString();
-
-    QStringList banlist = banset.toList();
-    Config.setValue(QString("Banlist/%1").arg(ban_list.at(item)), QVariant::fromValue(banlist));
-}
-
-void BanlistDialog::saveAll() {
-    for (int i = 0; i < lists.length(); i++) {
-        switchTo(i);
-        save();
-    }
-    BanPair::loadBanPairs();
-}
-
-BanIPDialog::BanIPDialog(QWidget *parent, Server *theserver)
-    : QDialog(parent), server(theserver){
-    /*
-    if (Sanguosha->currentRoom() == NULL){
-        QMessageBox::warning(this,tr("Warining!"), tr("Game is not started!"));
-        return;
-    }
-    */
-    QVBoxLayout *left_layout = new QVBoxLayout;
-    QVBoxLayout *right_layout = new QVBoxLayout;
-
-    left = new QListWidget;
-    left->setSortingEnabled(false);
-    right = new QListWidget;
-
-    QPushButton *insert = new QPushButton(tr("Insert to banned IP list"));
-    QPushButton *kick = new QPushButton(tr("Kick from server"));
-
-    QPushButton *remove = new QPushButton(tr("Remove from banned IP list"));
-
-    left_layout->addWidget(left);
-
-    QHBoxLayout *left_button_layout = new QHBoxLayout;
-    left_button_layout->addWidget(insert);
-    left_button_layout->addWidget(kick);
-
-    left_layout->addLayout(left_button_layout);
-
-    right_layout->addWidget(right);
-    right_layout->addWidget(remove);
-
-    QPushButton *ok = new QPushButton(tr("OK"));
-    QPushButton *cancel = new QPushButton(tr("Cancel"));
-
-    QHBoxLayout *up_layout = new QHBoxLayout;
-    up_layout->addLayout(left_layout);
-    up_layout->addLayout(right_layout);
-
-    QHBoxLayout *down_layout = new QHBoxLayout;
-    down_layout->addWidget(ok);
-    down_layout->addWidget(cancel);
-
-    QVBoxLayout *total_layout = new QVBoxLayout;
-    total_layout->addLayout(up_layout);
-    total_layout->addLayout(down_layout);
-
-    setLayout(total_layout);
-    connect(ok, SIGNAL(clicked()), this, SLOT(accept()));
-    connect(this, SIGNAL(accepted()), this, SLOT(save()));
-    connect(cancel, SIGNAL(clicked()), this, SLOT(reject()));
-    connect(insert, SIGNAL(clicked()), this, SLOT(insertClicked()));
-    connect(remove, SIGNAL(clicked()), this, SLOT(removeClicked()));
-    connect(kick, SIGNAL(clicked()), this, SLOT(kickClicked()));
-
-    if (server)
-        loadIPList();
-    else 
-        QMessageBox::warning(this, tr("Warning!"), tr("There is no server running!"));
-
-    loadBannedList();
-}
-
-void BanIPDialog::loadIPList(){
-    foreach (Room *room, server->rooms){
-        foreach (ServerPlayer *p, room->getPlayers()){
-            if (p->getState() != "offline" && p->getState() != "robot") {
-                sp_list << p;
-            }
-        }
-    }
-
-    left->clear();
-
-    foreach (ServerPlayer *p, sp_list){
-        QString parsed_string = QString("%1::%2").arg(p->screenName(), p->getIp());
-        left->addItem(parsed_string);
-    }
-}
-
-void BanIPDialog::loadBannedList() {
-    QStringList banned = Config.value("BannedIP", QStringList()).toStringList();
-
-    right->clear();
-    right->addItems(banned);
-}
-
-void BanIPDialog::insertClicked() {
-    int row = left->currentRow();
-    if (row != -1){
-        QString ip = left->currentItem()->text().split("::").last();
-
-        if (ip.startsWith("127."))
-            QMessageBox::warning(this, tr("Warning!"), tr("This is your local Loopback Address and can't be banned!"));
-
-        if (right->findItems(ip, Qt::MatchFlags(Qt::MatchExactly)).isEmpty())
-            right->addItem(ip);
-    }
-}
-
-void BanIPDialog::removeClicked(){
-    int row = right->currentRow();
-    if (row != -1)
-        delete right->takeItem(row);
-}
-
-void BanIPDialog::kickClicked(){
-    int row = left->currentRow();
-    if (row != -1){
-        ServerPlayer *p = sp_list[row];
-        QStringList split_data = left->currentItem()->text().split("::");
-        QString ip = split_data.takeLast();
-        QString screenName = split_data.join("::");
-        if (p->screenName() == screenName && p->getIp() == ip){
-            //procedure kick
-            p->kick();
-        }
-    }
-}
-
-void BanIPDialog::save(){
-    QSet<QString> ip_set;
-
-    for (int i = 0; i < right->count(); i++)
-        ip_set << right->item(i)->text();
-
-    QStringList ips = ip_set.toList();
-    Config.setValue("BannedIP", ips);
 }
 
 QGroupBox *ServerDialog::createGameModeBox() {
@@ -674,7 +453,6 @@ bool ServerDialog::config() {
     Config.FreeChoose = Config.EnableCheat && free_choose_checkbox->isChecked();
     Config.ForbidSIMC = forbid_same_ip_checkbox->isChecked();
     Config.DisableChat = disable_chat_checkbox->isChecked();
-    Config.EnableLordGeneralConvert = lord_convert_checkbox->isChecked();
     Config.Address = address_edit->text();
     Config.CountDownSeconds = game_start_spinbox->value();
     Config.NullificationCountDown = nullification_spinbox->value();
@@ -701,7 +479,6 @@ bool ServerDialog::config() {
     Config.setValue("EnableCheat", Config.EnableCheat);
     Config.setValue("FreeChoose", Config.FreeChoose);
     Config.setValue("PileSwappingLimitation", pile_swapping_spinbox->value());
-    Config.setValue("EnableLordGeneralConvert", lord_convert_checkbox->isChecked());
     Config.setValue("ForbidSIMC", Config.ForbidSIMC);
     Config.setValue("DisableChat", Config.DisableChat);
     Config.setValue("HegemonyMaxChoice", hegemony_maxchoice_spinbox->value());
@@ -731,7 +508,146 @@ bool ServerDialog::config() {
     Config.BanPackages = ban_packages.toList();
     Config.setValue("BanPackages", Config.BanPackages);
 
+    QStringList general_conversions;
+    if (convert_liubei_to_lord->isChecked()) general_conversions << "liubei";
+    if (convert_zhangjiao_to_lord->isChecked()) general_conversions << "zhangjiao";
+    Config.setValue("GeneralConversions", general_conversions);
+
+    QStringList card_conversions;
+    if (convert_ds_to_dp->isChecked()) card_conversions << "DragonPhoenix";
+    //if (add_peace_spell->isChecked()) card_conversions << "+109";
+    Config.setValue("CardConversions", card_conversions);
+
     return true;
+}
+
+BanIPDialog::BanIPDialog(QWidget *parent, Server *theserver)
+    : QDialog(parent), server(theserver){
+/*
+    if (Sanguosha->currentRoom() == NULL){
+        QMessageBox::warning(this, tr("Warining!"), tr("Game is not started!"));
+        return;
+    }
+*/
+    QVBoxLayout *left_layout = new QVBoxLayout;
+    QVBoxLayout *right_layout = new QVBoxLayout;
+
+    left = new QListWidget;
+    left->setSortingEnabled(false);
+    right = new QListWidget;
+
+    QPushButton *insert = new QPushButton(tr("Insert to banned IP list"));
+    QPushButton *kick = new QPushButton(tr("Kick from server"));
+
+    QPushButton *remove = new QPushButton(tr("Remove from banned IP list"));
+
+    left_layout->addWidget(left);
+
+    QHBoxLayout *left_button_layout = new QHBoxLayout;
+    left_button_layout->addWidget(insert);
+    left_button_layout->addWidget(kick);
+
+    left_layout->addLayout(left_button_layout);
+
+    right_layout->addWidget(right);
+    right_layout->addWidget(remove);
+
+    QPushButton *ok = new QPushButton(tr("OK"));
+    QPushButton *cancel = new QPushButton(tr("Cancel"));
+
+    QHBoxLayout *up_layout = new QHBoxLayout;
+    up_layout->addLayout(left_layout);
+    up_layout->addLayout(right_layout);
+
+    QHBoxLayout *down_layout = new QHBoxLayout;
+    down_layout->addWidget(ok);
+    down_layout->addWidget(cancel);
+
+    QVBoxLayout *total_layout = new QVBoxLayout;
+    total_layout->addLayout(up_layout);
+    total_layout->addLayout(down_layout);
+
+    setLayout(total_layout);
+    connect(ok, SIGNAL(clicked()), this, SLOT(accept()));
+    connect(this, SIGNAL(accepted()), this, SLOT(save()));
+    connect(cancel, SIGNAL(clicked()), this, SLOT(reject()));
+    connect(insert, SIGNAL(clicked()), this, SLOT(insertClicked()));
+    connect(remove, SIGNAL(clicked()), this, SLOT(removeClicked()));
+    connect(kick, SIGNAL(clicked()), this, SLOT(kickClicked()));
+
+    if (server)
+        loadIPList();
+    else
+        QMessageBox::warning(this, tr("Warning!"), tr("There is no server running!"));
+
+    loadBannedList();
+}
+
+void BanIPDialog::loadIPList(){
+    foreach (Room *room, server->rooms){
+        foreach (ServerPlayer *p, room->getPlayers()){
+            if (p->getState() != "offline" && p->getState() != "robot") {
+                sp_list << p;
+            }
+        }
+    }
+
+    left->clear();
+
+    foreach (ServerPlayer *p, sp_list){
+        QString parsed_string = QString("%1::%2").arg(p->screenName(), p->getIp());
+        left->addItem(parsed_string);
+    }
+}
+
+void BanIPDialog::loadBannedList() {
+    QStringList banned = Config.value("BannedIP", QStringList()).toStringList();
+
+    right->clear();
+    right->addItems(banned);
+}
+
+void BanIPDialog::insertClicked() {
+    int row = left->currentRow();
+    if (row != -1){
+        QString ip = left->currentItem()->text().split("::").last();
+
+        if (ip.startsWith("127."))
+            QMessageBox::warning(this, tr("Warning!"), tr("This is your local Loopback Address and can't be banned!"));
+
+        if (right->findItems(ip, Qt::MatchFlags(Qt::MatchExactly)).isEmpty())
+            right->addItem(ip);
+    }
+}
+
+void BanIPDialog::removeClicked(){
+    int row = right->currentRow();
+    if (row != -1)
+        delete right->takeItem(row);
+}
+
+void BanIPDialog::kickClicked(){
+    int row = left->currentRow();
+    if (row != -1){
+        ServerPlayer *p = sp_list[row];
+        QStringList split_data = left->currentItem()->text().split("::");
+        QString ip = split_data.takeLast();
+        QString screenName = split_data.join("::");
+        if (p->screenName() == screenName && p->getIp() == ip){
+            //procedure kick
+            p->kick();
+        }
+    }
+}
+
+void BanIPDialog::save(){
+    QSet<QString> ip_set;
+
+    for (int i = 0; i < right->count(); i++)
+        ip_set << right->item(i)->text();
+
+    QStringList ips = ip_set.toList();
+    Config.setValue("BannedIP", ips);
 }
 
 Server::Server(QObject *parent)
@@ -783,7 +699,7 @@ void Server::processNewConnection(ClientSocket *socket) {
             socket->disconnectFromHost();
             emit server_message(tr("Forbid the connection of address %1").arg(addr));
             return;
-        } 
+        }
         else
             addresses.insert(addr);
     }

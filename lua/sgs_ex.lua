@@ -11,13 +11,19 @@ function sgs.CreateTriggerSkill(spec)
 	local skill
 
 	if spec.is_battle_array then
-		assert(type(spec.battle_array_type) == "number")
+		assert(spec.battle_array_type and type(spec.battle_array_type) == "number")
 		assert(spec.view_as_skill)
 		skill = sgs.LuaBattleArraySkill(spec.name, frequency, limit_mark, spec.battle_array_type)
 	else
 		skill = sgs.LuaTriggerSkill(spec.name, frequency, limit_mark)
 		if type(spec.can_preshow) == "boolean" then
 			skill:setCanPreshow(spec.can_preshow)
+		else
+			if spec.view_as_skill then
+				skill:setCanPreshow(false)
+			else
+				skill:setCanPreshow(true)
+			end
 		end
 	end
 
@@ -138,6 +144,22 @@ function sgs.CreateTargetModSkill(spec)
 		skill.extra_target_func = spec.extra_target_func
 	end
 
+	return skill
+end
+
+function sgs.CreateAttackRangeSkill(spec)
+	assert(type(spec.name) == "string")
+	assert(type(spec.extra_func) == "function" or type(spec.fixed.func) == "function")
+	
+	local skill = sgs.LuaAttackRangeSkill(spec.name)
+	
+	if spec.extra_func then
+		skill.extra_func = spec.extra_func or 0
+	end
+	if spec.fixed_func then
+		skill.fixed_func = spec.fixed_func or -1
+	end
+	
 	return skill
 end
 

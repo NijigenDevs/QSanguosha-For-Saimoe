@@ -14,14 +14,14 @@ Crossbow::Crossbow(Suit suit, int number)
 class DoubleSwordSkill: public WeaponSkill {
 public:
     DoubleSwordSkill(): WeaponSkill("DoubleSword") {
-        events << TargetConfirmed;
+        events << TargetChosen;
     }
 
-    virtual QStringList triggerable(const ServerPlayer *target) const{
+    virtual bool triggerable(const ServerPlayer *target) const{
         return WeaponSkill::triggerable(target);
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
         CardUseStruct use = data.value<CardUseStruct>();
         if (use.from != player)
             return false;
@@ -59,13 +59,13 @@ DoubleSword::DoubleSword(Suit suit, int number)
 class QinggangSwordSkill: public WeaponSkill {
 public:
     QinggangSwordSkill(): WeaponSkill("QinggangSword") {
-        events << TargetConfirmed;
+        events << TargetChosen;
         frequency = Compulsory;
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
         CardUseStruct use = data.value<CardUseStruct>();
-        if (!WeaponSkill::triggerable(use.from).isEmpty() && use.from == player && use.card->isKindOf("Slash")) {
+        if (WeaponSkill::triggerable(use.from) && use.from == player && use.card->isKindOf("Slash")) {
             bool do_anim = false;
             foreach (ServerPlayer *p, use.to.toSet()) {
                 if (p->getMark("Equips_of_Others_Nullified_to_You") == 0) {
@@ -150,7 +150,7 @@ public:
         view_as_skill = new AxeViewAsSkill;
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
         SlashEffectStruct effect = data.value<SlashEffectStruct>();
 
         if (!effect.to->isAlive() || effect.to->getMark("Equips_of_Others_Nullified_to_You") > 0)
@@ -180,7 +180,7 @@ public:
         events << DamageCaused;
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
         DamageStruct damage = data.value<DamageStruct>();
 
         QStringList horses;
@@ -225,14 +225,14 @@ public:
     }
 
     virtual QStringList triggerable(TriggerEvent , Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
-        if (ArmorSkill::triggerable(player).isEmpty()) return QStringList();
+        if (!ArmorSkill::triggerable(player)) return QStringList();
         QString asked = data.toStringList().first();
         if (asked == "jink") return QStringList(objectName());
 
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const{
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
         if (room->askForSkillInvoke(player, "EightDiagram")) {
             if (player->hasArmorEffect("bazhen"))
                 player->showGeneral(player->inHeadSkills("bazhen"));
@@ -241,7 +241,7 @@ public:
         return false;
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const{
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
         int armor_id = -1;
         if (player->getArmor()) {
             armor_id = player->getArmor()->getId();
@@ -287,7 +287,7 @@ public:
         events << DamageCaused;
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
         DamageStruct damage = data.value<DamageStruct>();
 
         if (damage.card && damage.card->isKindOf("Slash")
@@ -324,14 +324,14 @@ public:
     }
 
     virtual QStringList triggerable(TriggerEvent , Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
-        if (ArmorSkill::triggerable(player).isEmpty()) return QStringList();
+        if (!ArmorSkill::triggerable(player)) return QStringList();
         SlashEffectStruct effect = data.value<SlashEffectStruct>();
         if (effect.slash->isBlack()) return QStringList(objectName());
 
         return QStringList();
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
         SlashEffectStruct effect = data.value<SlashEffectStruct>();
         LogMessage log;
         log.type = "#ArmorNullify";
@@ -387,6 +387,21 @@ SixSwords::SixSwords(Suit suit, int number)
     setObjectName("SixSwords");
 }
 
+class SixSwordsSkill: public AttackRangeSkill{
+public:
+    SixSwordsSkill(): AttackRangeSkill("SixSwords"){
+    }
+
+    virtual int getExtra(const Player *target, bool) const{
+        foreach (const Player *p, target->getAliveSiblings()){
+            if (p->hasWeapon("SixSwords") && p->isFriendWith(target) && p->getMark("Equips_Nullified_to_Yourself") == 0)
+                return 1;
+        }
+
+        return 0;
+    }
+};
+
 Triblade::Triblade(Card::Suit suit, int number): Weapon(suit, number, 3){
     setObjectName("Triblade");
 }
@@ -424,7 +439,7 @@ public:
         view_as_skill = new TribladeSkillVS;
     }
 
-    virtual bool effect(TriggerEvent , Room *room, ServerPlayer *player, QVariant &data) const{
+    virtual bool effect(TriggerEvent , Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
         DamageStruct damage = data.value<DamageStruct>();
         if (damage.to && damage.to->isAlive() && damage.card && damage.card->isKindOf("Slash")
             && damage.by_user && !damage.chain && !damage.transfer){
@@ -455,7 +470,7 @@ public:
     }
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
-        if (ArmorSkill::triggerable(player).isEmpty()) return QStringList();
+        if (!ArmorSkill::triggerable(player)) return QStringList();
         if (triggerEvent == SlashEffected) {
             SlashEffectStruct effect = data.value<SlashEffectStruct>();
             if (effect.nature == DamageStruct::Normal)
@@ -472,7 +487,7 @@ public:
         return QStringList();
     }
 
-    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
         if (triggerEvent == SlashEffected) {
             SlashEffectStruct effect = data.value<SlashEffectStruct>();
 
@@ -531,7 +546,7 @@ public:
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
         if (triggerEvent == DamageInflicted) {
             DamageStruct damage = data.value<DamageStruct>();
-            if (!ArmorSkill::triggerable(player).isEmpty() && damage.damage > 1)
+            if (ArmorSkill::triggerable(player) && damage.damage > 1)
                 return QStringList(objectName());
         } else if (player->hasFlag("SilverLionRecover")) {
             CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
@@ -549,7 +564,7 @@ public:
         return QStringList();
     }
 
-    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
         if (triggerEvent == DamageInflicted) {
             DamageStruct damage = data.value<DamageStruct>();
             room->setEmotion(player, "armor/silver_lion");
@@ -639,7 +654,7 @@ QList<Card *> StandardCardPackage::equipCards(){
 
     QList<Card *> horses;
 
-    horses 
+    horses
         << new DefensiveHorse(Card::Spade, 5)
         << new DefensiveHorse(Card::Club, 5)
         << new DefensiveHorse(Card::Heart, 13)

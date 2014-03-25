@@ -235,8 +235,8 @@ public:
     }
 
     virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer * &) const {
-        if (TriggerSkill::triggerable(player).isEmpty())
-            return QStringList();
+        //if (TriggerSkill::triggerable(player).isEmpty())
+        //    return QStringList();
 
         DamageStruct damage = data.value<DamageStruct>();
         if (player != damage.from)

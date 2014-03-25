@@ -103,7 +103,18 @@ cunsi_skill.getTurnUseCard = function(self)
 end
 
 sgs.ai_skill_use_func.CunsiCard = function(card, use, self)
-	if self.player:aliveCount() > 2 and #self.friends_noself == 0 then return end
+	local Self = self.player
+	local room = Self:getRoom()
+	
+	local all_shown = true
+	
+	for _, p in sgs.qlist(room:getOtherPlayers(Self)) do
+		if not p:hasShownAllGenerals() then
+			all_shown = false
+			break
+		end
+	end
+
 	local to
 	for _, friend in ipairs(self.friends_noself) do
 		if self:evaluateKingdom(friend) == self.player:getKingdom() then
@@ -111,9 +122,16 @@ sgs.ai_skill_use_func.CunsiCard = function(card, use, self)
 			break
 		end
 	end
-	if not to then to = self.player end
-	use.card = card
-	if use.to then use.to:append(to) end
+	if to then
+		use.card = card
+		if use.to then use.to:append(to) end
+	end
+	if use.card then return end
+	
+	if all_shown and #self.friends_noself == 0 then
+		use.card = card
+		if use.to then use.to:append(Self) end
+	end
 end
 
 sgs.ai_skill_invoke.yongjue = true
@@ -157,11 +175,11 @@ end
 
 sgs.ai_skill_invoke.hunshang = true
 
-sgs.ai_skill_invoke.sunce_yingzi = sgs.ai_skill_invoke.yingzi
-sgs.ai_skill_choice.sunce_yinghun = sgs.ai_skill_choice.yinghun
-sgs.ai_skill_playerchosen.sunce_yinghun = sgs.ai_skill_playerchosen.yinghun
-sgs.ai_playerchosen_intention.sunce_yinghun = sgs.ai_playerchosen_intention.yinghun
-sgs.ai_choicemade_filter.skillChoice.sunce_yinghun = sgs.ai_choicemade_filter.skillChoice.yinghun
+sgs.ai_skill_invoke.yingzi_sunce = sgs.ai_skill_invoke.yingzi
+sgs.ai_skill_choice.yinghun_sunce = sgs.ai_skill_choice.yinghun
+sgs.ai_skill_playerchosen.yinghun_sunce = sgs.ai_skill_playerchosen.yinghun
+sgs.ai_playerchosen_intention.yinghun_sunce = sgs.ai_playerchosen_intention.yinghun
+sgs.ai_choicemade_filter.skillChoice.yinghun_sunce = sgs.ai_choicemade_filter.skillChoice.yinghun
 
 local duanxie_skill = {}
 duanxie_skill.name = "duanxie"
@@ -258,7 +276,7 @@ end
 
 sgs.ai_skill_invoke.chuanxin = function(self, data)
 	local damage = data:toDamage()
-	return self:isEnemy(damage.to) and not self:hasHeavySlashDamage(self.player, damage.card, damage.to)
+	return not self:isFriend(damage.to) and not self:hasHeavySlashDamage(self.player, damage.card, damage.to)
 end
 
 sgs.ai_skill_choice.chuanxin = "discard"

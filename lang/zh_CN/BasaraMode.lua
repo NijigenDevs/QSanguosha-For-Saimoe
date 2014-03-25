@@ -1,4 +1,4 @@
--- translations for Basara mode
+﻿-- translations for Basara mode
 
 return 
 {
@@ -6,12 +6,12 @@ return
 	["#BasaraReveal"] = "%from 明置了武将，主将为 %arg，副将为 %arg2",
 	["#BasaraConceal"] = "%from 暗置了武将，主将为 %arg，副将为 %arg2",
 	["#BasaraRemove"] = "%from 移除了 %arg %arg2",
-	["GameRule_AskForGeneralShow"] = "展示武将",
-	["TurnStartShowGeneral"] = "选择需要展示的武将",
-	["show_head_general"] = "展示主将",
-	["show_deputy_general"] = "展示副将",
-	["show_both_generals"] = "展示双将",
-	["Companions"] = "珠联璧合",
+	["GameRule_AskForGeneralShow"] = "明置武将",
+	["TurnStartShowGeneral"] = "选择需要明置的武将",
+	["show_head_general"] = "明置主将",
+	["show_deputy_general"] = "明置副将",
+	["show_both_generals"] = "明置双将",
+	["Companions"] = "好姬友",
 	["hidden_general"] = "暗将",
 	["head_general"] = "主将",
 	["deputy_general"] = "副将",
@@ -29,7 +29,7 @@ return
 	["anjiang"] = "暗将",
 	["#BasaraGeneralChosen"] = "你选择的武将为 %arg",
 	["#BasaraGeneralChosenDual"] = "你选择的武将为 %arg 和 %arg2",
-	["Hegemony"] = "国战",
+	["Hegemony"] = "萌战",
 	["Roles"] = "身份",
 	["~anjiang"] = "为什么要NTR我？..."
 }

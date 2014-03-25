@@ -2,13 +2,13 @@
 
 -- "middleclass" is the Lua OOP library written by kikito
 -- more information see: https://github.com/kikito/middleclass
-require "middleclass"
+
 
 -- initialize the random seed for later use
 math.randomseed(os.time())
 
 -- SmartAI is the base class for all other specialized AI classes
-SmartAI = class "SmartAI"
+SmartAI = (require "middleclass").class("SmartAI")
 
 version = "QSanguosha AI 20140213 (V0.23 Alpha)"
 
@@ -992,9 +992,9 @@ function SmartAI:getUseValue(card)
 			if self.player:hasFlag("TianyiSuccess") or self:hasHeavySlashDamage(self.player, card) then v = 8.7 end
 			if self.player:getPhase() == sgs.Player_Play and self:slashIsAvailable() and #self.enemies > 0 and self:getCardsNum("Slash") == 1 then v = v + 5 end
 			if self:hasCrossbowEffect() then v = v + 4 end
-			if card:getSkillName() == "Spear"   then v = v - 1 end
+			if card:getSkillName() == "Spear" then v = v - 1 end
 		elseif card:isKindOf("Jink") then
-			if self:getCardsNum("Jink") > 1 then v = v-6 end
+			if self:getCardsNum("Jink") > 1 then v = v - 6 end
 		elseif card:isKindOf("Peach") then
 			if self.player:isWounded() then v = v + 6 end
 		end
@@ -1059,6 +1059,13 @@ function SmartAI:adjustUsePriority(card, v)
 			if self.slashAvail == 1 then v = v + 0.1 else v = v - 0.1 end
 		end
 		if self.player:hasSkill("jiang") and card:isRed() then v = v + 0.21 end
+		
+		for _, p in ipairs(self.friends) do
+			if p:hasSkill("yongjue") then
+				v = 9.4
+				break
+			end
+		end
 	end
 
 	local suits_value = {}
@@ -2976,11 +2983,12 @@ function SmartAI:askForSinglePeach(dying)
 	return card_str or "."
 end
 
-
 function SmartAI:getOverflow(player, getMaxCards)
 	player = player or self.player
 	local MaxCards = player:getMaxCards()
-	if player:hasSkill("qiaobian") then MaxCards = math.max(self.player:getHandcardNum() - 1, MaxCards) end
+	if player:hasSkill("qiaobian") and not player:hasFlag("AI_ConsideringQiaobianSkipDiscard") then
+		MaxCards = math.max(self.player:getHandcardNum() - 1, MaxCards) 
+	end
 	if player:hasSkill("keji") and not player:hasFlag("KejiSlashInPlayPhase") then MaxCards = self.player:getHandcardNum() end
 	if getMaxCards then return MaxCards end
 	return player:getHandcardNum() - MaxCards
@@ -3238,14 +3246,6 @@ end
 
 local function getPlayerSkillList(player)
 	local skills = sgs.QList2Table(player:getVisibleSkillList())
-	if player:hasSkill("weidi") and not player:isLord() then
-		local lord = player:getRoom():getLord()
-		if lord then
-			for _, skill in sgs.qlist(lord:getVisibleSkillList()) do
-				if skill:isLordSkill() then table.insert(skills, skill) end
-			end
-		end
-	end
 	return skills
 end
 
@@ -4763,7 +4763,6 @@ function SmartAI:cantbeHurt(player, from, damageNum)
 	if player:hasSkill("duanchang") and not player:isLord() and #(self:getFriendsNoself(player)) > 0 and player:getHp() <= 1 then
 		if not (from:getMaxHp() == 3 and from:getArmor() and from:getDefensiveHorse()) then
 			if from:getMaxHp() <= 3 or (from:isLord() and self:isWeak(from)) then return true end
-			if from:getMaxHp() <= 3 or (self.room:getLord() and from:getRole() == "renegade") then return true end
 		end
 	end
 	if player:hasSkill("tianxiang") and getKnownCard(player, self.player, "diamond|club", false) < player:getHandcardNum() then
@@ -4881,10 +4880,16 @@ dofile "lua/ai/basara-ai.lua"
 local loaded = "standard|standard_cards|maneuvering"
 
 local files = table.concat(sgs.GetFileNames("lua/ai"), " ")
+local LUAExtensions = string.split(string.lower(sgs.GetConfig("LuaPackages", "")), "+")
+local LUAExtensionFiles = table.concat(sgs.GetFileNames("extensions/ai"), " ")
 
 for _, aextension in ipairs(sgs.Sanguosha:getExtensions()) do
-	if not loaded:match(aextension) and files:match(string.lower(aextension)) then
+	if table.contains(LUAExtensions, string.lower(aextension)) then
+		if LUAExtensionFiles:match(string.lower(aextension)) then
+			dofile("extensions/ai/" .. string.lower(aextension) .. "-ai.lua")
+		end
+	elseif not loaded:match(aextension) and files:match(string.lower(aextension)) then
 		dofile("lua/ai/" .. string.lower(aextension) .. "-ai.lua")
 	end
-end
 
+end

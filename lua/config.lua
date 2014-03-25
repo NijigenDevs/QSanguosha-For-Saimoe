@@ -1,4 +1,4 @@
-﻿-- this script to store the basic configuration for game program itself
+-- this script to store the basic configuration for game program itself
 -- and it is a little different from config.ini
 
 config = {
@@ -15,7 +15,7 @@ config = {
 		"82" ,
 	} ,
 
-	kingdoms = { "wei", "shu", "wu", "qun", "god" },
+	kingdoms = { "wei", "qun", "shu", "wu", "god" },
 	kingdom_colors = {
 		wei = "#547998",
 		shu = "#D0796C",
@@ -38,12 +38,13 @@ config = {
 		"StandardCard",
 		"FormationEquip",
 		"MomentumEquip" ,
-
-		"Standard",
+		
 		"Moesen",
+		"Standard",
 		"Formation",
 		"Momentum",
 		"Test"
+		
 	},
 
 	easy_text = {
@@ -80,20 +81,16 @@ config = {
 		"甄钰月儿",
 		"卍冰の羽卍",
 		"五毛羽君",
-		"McDon",
 		"陈家祺" ,
-		"你妹大神"
-	},
-
-	roles_ban = {
-	},
-
-	basara_ban = {
-	},
-
-	hegemony_ban = {
-	},
-
-	pairs_ban = {
+		"你妹大神无节操" ,
+		"萝卜大神爱啦啦" ,
+		"高调的富妮妮" ,
+		"叁陆李神" ,
+		"hmqgg" ,
+		"Nagisa_Willing" ,
+		"0o叮咚叮咚o0" ,
+		"医治永恒" ,
+		"甄姬真姬" ,
+		"tangjs520" ,
 	},
 }

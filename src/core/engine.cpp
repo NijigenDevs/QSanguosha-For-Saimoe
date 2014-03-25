@@ -1,3 +1,22 @@
+/********************************************************************
+	Copyright (c) 2013-2014 - QSanguosha-Hegemony Team
+
+  This file is part of QSanguosha-Hegemony.
+
+  This game is free software; you can redistribute it and/or
+  modify it under the terms of the GNU Lesser General Public
+  License as published by the Free Software Foundation; either
+  version 3.0 of the License, or (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  Lesser General Public License for more details.
+
+  See the LICENSE file for more details.
+
+  QSanguosha-Hegemony Team	
+*********************************************************************/
 #include "engine.h"
 #include "card.h"
 #include "client.h"
@@ -5,7 +24,6 @@
 #include "settings.h"
 #include "scenario.h"
 #include "lua.hpp"
-#include "banpair.h"
 #include "audio.h"
 #include "protocol.h"
 #include "jsonutils.h"
@@ -150,6 +168,8 @@ void Engine::addSkills(const QList<const Skill *> &all_skills) {
             maxcards_skills << qobject_cast<const MaxCardsSkill *>(skill);
         else if (skill->inherits("TargetModSkill"))
             targetmod_skills << qobject_cast<const TargetModSkill *>(skill);
+        else if (skill->inherits("AttackRangeSkill"))
+            attackrange_skills << qobject_cast<const AttackRangeSkill *>(skill);
         else if (skill->inherits("TriggerSkill")) {
             const TriggerSkill *trigger_skill = qobject_cast<const TriggerSkill *>(skill);
             if (trigger_skill && trigger_skill->isGlobal())
@@ -168,6 +188,10 @@ QList<const MaxCardsSkill *> Engine::getMaxCardsSkills() const{
 
 QList<const TargetModSkill *> Engine::getTargetModSkills() const{
     return targetmod_skills;
+}
+
+QList<const AttackRangeSkill *> Engine::getAttackRangeSkills() const{
+    return attackrange_skills;
 }
 
 QList<const TriggerSkill *> Engine::getGlobalTriggerSkills() const{
@@ -256,10 +280,6 @@ QString Engine::translate(const QString &to_translate) const{
     foreach (QString str, list)
         res.append(translations.value(str, str));
     return res;
-}
-
-int Engine::getRoleIndex() const{
-    return 5;
 }
 
 const CardPattern *Engine::getPattern(const QString &name) const{
@@ -505,7 +525,7 @@ SkillCard *Engine::cloneSkillCard(const QString &name) const{
 }
 
 QString Engine::getVersionNumber() const{
-    return "0.6.0";
+    return "0.7.0";
 }
 
 QString Engine::getVersion() const{
@@ -706,85 +726,7 @@ int Engine::getCardCount() const{
     return cards.length();
 }
 
-QStringList Engine::getLords(bool contain_banned) const{
-    QStringList lords;
-
-    // add intrinsic lord
-    foreach (QString lord, lord_list) {
-        const General *general = generals.value(lord);
-        if (getBanPackages().contains(general->getPackage()))
-            continue;
-        if (!contain_banned) {
-            if (ServerInfo.GameMode.endsWith("p")
-                || ServerInfo.GameMode.endsWith("pd")
-                || ServerInfo.GameMode.endsWith("pz")
-                || ServerInfo.GameMode.contains("_mini_")
-                || ServerInfo.GameMode == "custom_scenario")
-                if (Config.value("Banlist/Roles", "").toStringList().contains(lord))
-                    continue;
-            if (Config.Enable2ndGeneral && BanPair::isBanned(general->objectName()))
-                continue;
-        }
-        lords << lord;
-    }
-
-    return lords;
-}
-
-QStringList Engine::getRandomLords() const{
-    QStringList banlist_ban;
-    if (Config.EnableBasara)
-        banlist_ban = Config.value("Banlist/Basara").toStringList();
-
-    if (Config.GameMode == "zombie_mode")
-        banlist_ban.append(Config.value("Banlist/Zombie").toStringList());
-    else if (isNormalGameMode(Config.GameMode))
-        banlist_ban.append(Config.value("Banlist/Roles").toStringList());
-
-    QStringList lords;
-
-    foreach (QString alord, getLords()) {
-        if (banlist_ban.contains(alord)) continue;
-        lords << alord;
-    }
-
-    int lord_num = Config.value("LordMaxChoice", -1).toInt();
-    if (lord_num != -1 && lord_num < lords.length()) {
-        int to_remove = lords.length() - lord_num;
-        for (int i = 0; i < to_remove; i++) {
-            lords.removeAt(qrand() % lords.length());
-        }
-    }
-
-    QStringList nonlord_list;
-    foreach (QString nonlord, generals.keys()) {
-        if (isGeneralHidden(nonlord) || lord_list.contains(nonlord)) continue;
-        const General *general = generals.value(nonlord);
-        if (getBanPackages().contains(general->getPackage()))
-            continue;
-        if (Config.Enable2ndGeneral && BanPair::isBanned(general->objectName()))
-            continue;
-        if (banlist_ban.contains(general->objectName()))
-            continue;
-
-        nonlord_list << nonlord;
-    }
-
-    qShuffle(nonlord_list);
-
-    int i;
-    int extra = Config.value("NonLordMaxChoice", 2).toInt();
-    if (lord_num == 0 && extra == 0)
-        extra = 1;
-    for (i = 0; i < extra; i++) {
-        lords << nonlord_list.at(i);
-        if (i == nonlord_list.length() - 1) break;
-    }
-
-    return lords;
-}
-
-QStringList Engine::getLimitedGeneralNames() const{
+QStringList Engine::getGeneralNames() const{
     QStringList general_names;
     QHashIterator<QString, const General *> itor(generals);
 
@@ -794,63 +736,29 @@ QStringList Engine::getLimitedGeneralNames() const{
             general_names << itor.key();
     }
 
-
-    QStringList general_names_copy = general_names;
-    if (Config.EnableLordGeneralConvert){
-        foreach (QString name, general_names_copy){
-            if (name.startsWith("lord_")){
-                QString to_remove = name.right(name.length() - 5);
-                general_names.removeOne(to_remove);
-            }
-        }
-    }
-    else {
-        foreach (QString name, general_names_copy){
-            if (name.startsWith("lord_"))
-                general_names.removeOne(name);
-        }
-    }
-
-/*
-    if (!getBanPackages().contains("sp") && !getBanPackages().contains("assassins")) {
-        general_names.removeOne("liuxie");
-        general_names.removeOne("lingju");
-        general_names.removeOne("fuwan");
-    }
-*/
-
     return general_names;
 }
 
-void Engine::banRandomGods() const{
-    QStringList all_generals = getLimitedGeneralNames();
+QStringList Engine::getLimitedGeneralNames() const{
+    //for later use
+    QStringList general_names = getGeneralNames();
+    QStringList general_names_copy = general_names;
 
-    qShuffle(all_generals);
+    foreach (QString n, general_names_copy){
+        if (n.startsWith("lord_"))
+            general_names.removeOne(n);
+    }
 
-    int count = 0;
-    int max = Config.value("GodLimit", 5).toInt();
-
-    if (max == -1)
-        return;
-
-    QStringList gods;
-
-    foreach(const QString &general, all_generals) {
-        if (getGeneral(general)->getKingdom() == "god") {
-            gods << general;
-            count ++;
+    QStringList general_conversions = Config.value("GeneralConversions").toStringList();
+    foreach (QString str, general_conversions) {
+        QString lord = "lord_" + str;
+        if (general_names_copy.contains(lord) && general_names.contains(str)){
+            general_names.removeOne(str);
+            general_names << lord;
         }
-    };
-    int bancount = count - max;
-    if (bancount <= 0)
-        return;
-    QStringList ban_gods = gods.mid(0, bancount);
-    Q_ASSERT(ban_gods.count() == bancount);
+    }
 
-    QStringList ban_list = Config.value("Banlist/Roles").toStringList();
-
-    ban_list.append(ban_gods);
-    Config.setValue("Banlist/Roles", ban_list);
+    return general_names;
 }
 
 QStringList Engine::getRandomGenerals(int count, const QSet<QString> &ban_set) const{
@@ -859,20 +767,6 @@ QStringList Engine::getRandomGenerals(int count, const QSet<QString> &ban_set) c
 
     count = qMin(count, all_generals.count());
     Q_ASSERT(all_generals.count() >= count);
-
-    if (Config.EnableBasara)
-        general_set = general_set.subtract(Config.value("Banlist/Basara", "").toStringList().toSet());
-    if (Config.EnableHegemony)
-        general_set = general_set.subtract(Config.value("Banlist/Hegemony", "").toStringList().toSet());
-
-    if (isNormalGameMode(ServerInfo.GameMode)
-        || ServerInfo.GameMode.contains("_mini_")
-        || ServerInfo.GameMode == "custom_scenario")
-        general_set.subtract(Config.value("Banlist/Roles", "").toStringList().toSet());
-    else if (ServerInfo.GameMode == "04_1v3")
-        general_set.subtract(Config.value("Banlist/HulaoPass", "").toStringList().toSet());
-    else if (ServerInfo.GameMode == "06_XMode")
-        general_set.subtract(Config.value("Banlist/XMode", "").toStringList().toSet());
 
     all_generals = general_set.subtract(ban_set).toList();
 
@@ -893,8 +787,13 @@ QList<int> Engine::getRandomCards() const{
         if (!getBanPackages().contains(card->getPackage()))
             list << card->getId();
     }
-    if (Config.EnableLordGeneralConvert && !getBanPackages().contains("formation_equip"))
-        list.removeOne(55);
+    QStringList card_conversions = Config.value("CardConversions").toStringList();
+    foreach (QString str, card_conversions) {
+        if (str == "DragonPhoenix")
+            list.removeOne(55);
+        else
+            list.removeOne(108);
+    }
 
     qShuffle(list);
 
@@ -994,7 +893,8 @@ int Engine::correctMaxCards(const Player *target, bool fixed) const{
     foreach (const MaxCardsSkill *skill, maxcards_skills) {
         if (fixed) {
             int f = skill->getFixed(target);
-            if (f >= 0) return f;
+            if (f > extra)
+                extra = f;
         } else {
             extra += skill->getExtra(target);
         }
@@ -1036,3 +936,19 @@ int Engine::correctCardTarget(const TargetModSkill::ModType type, const Player *
     return x;
 }
 
+
+int Engine::correctAttackRange(const Player *target, bool include_weapon, bool fixed) const{
+    int extra = 0;
+
+    foreach (const AttackRangeSkill *skill, attackrange_skills) {
+        if (fixed) {
+            int f = skill->getFixed(target, include_weapon);
+            if (f > extra)
+                extra = f;
+        } else {
+            extra += skill->getExtra(target, include_weapon);
+        }
+    }
+
+    return extra;
+}

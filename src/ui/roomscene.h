@@ -1,3 +1,22 @@
+/********************************************************************
+	Copyright (c) 2013-2014 - QSanguosha-Hegemony Team
+
+  This file is part of QSanguosha-Hegemony.
+
+  This game is free software; you can redistribute it and/or
+  modify it under the terms of the GNU Lesser General Public
+  License as published by the Free Software Foundation; either
+  version 3.0 of the License, or (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  Lesser General Public License for more details.
+
+  See the LICENSE file for more details.
+
+  QSanguosha-Hegemony Team	
+*********************************************************************/
 #ifndef _ROOM_SCENE_H
 #define _ROOM_SCENE_H
 
@@ -77,17 +96,6 @@ private:
 
 private slots:
     void disableSource();
-};
-
-class KOFOrderBox: public QGraphicsPixmapItem {
-public:
-    KOFOrderBox(bool self, QGraphicsScene *scene);
-    void revealGeneral(const QString &name);
-    void killPlayer(const QString &general_name);
-
-private:
-    QSanSelectableItem *avatars[3];
-    int revealed;
 };
 
 class ReplayerControlBar: public QGraphicsObject{
@@ -208,14 +216,14 @@ private:
     double _m_last_front_ZValue;
     GenericCardContainer *_getGenericCardContainer(Player::Place place, Player *player);
     QMap<int, QList<QList<CardItem *> > > _m_cardsMoveStash;
-    Button *add_robot, *fill_robots;
+    Button *add_robot, *fill_robots, *return_to_start_scene;
     QList<Photo *> photos;
     QMap<QString, Photo *> name2photo;
     Dashboard *dashboard;
     TablePile *m_tablePile;
     QMainWindow *main_window;
     QSanButton *ok_button, *cancel_button, *discard_button;
-    QMenu *miscellaneous_menu, *change_general_menu;
+    QMenu *miscellaneous_menu;
     Window *prompt_box;
     Window *pindian_box;
     CardItem *pindian_from_card, *pindian_to_card;
@@ -263,11 +271,9 @@ private:
     // for 3v3 & 1v1 mode
     QSanSelectableItem *selector_box;
     QList<CardItem *> general_items, up_generals, down_generals;
-    CardItem *to_change;
     QList<QGraphicsRectItem *> arrange_rects;
     QList<CardItem *> arrange_items;
     Button *arrange_button;
-    KOFOrderBox *enemy_box, *self_box;
     QPointF m_tableCenterPos;
     ReplayerControlBar *m_replayControl;
 
@@ -300,9 +306,6 @@ private:
     void addRestartButton(QDialog *dialog);
     QGraphicsItem *createDashboardButtons();
     void createReplayControlBar();
-
-    void fillGenerals1v1(const QStringList &names);
-    void fillGenerals3v3(const QStringList &names);
 
     void showPindianBox(const QString &from_name, int from_id, const QString &to_name, int to_id, const QString &reason);
     void setChatBoxVisible(bool show);
@@ -382,10 +385,9 @@ private slots:
     void startArrange(const QString &);
     void toggleArrange();
     void finishArrange();
-    void changeGeneral(const QString &general);
-    void revealGeneral(bool self, const QString &general);
+    //void revealGeneral(bool self, const QString &general);
 
-    void skillStateChange(const QString &skill_name);
+    //void skillStateChange(const QString &skill_name);
     void trust();
 
 signals:

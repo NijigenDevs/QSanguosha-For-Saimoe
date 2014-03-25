@@ -1,6 +1,6 @@
-#if defined(WIN32) && defined(VS2010) && !defined(QT_NO_DEBUG)
+/*#if defined(WIN32) && defined(VS2010) && !defined(QT_NO_DEBUG)
 #include <vld.h>
-#endif
+#endif*/
 
 #include <QApplication>
 
@@ -9,10 +9,10 @@
 #include <QDir>
 #include <cstring>
 #include <QDateTime>
+#include <QProcess>
 
 #include "mainwindow.h"
 #include "settings.h"
-#include "banpair.h"
 #include "server.h"
 #include "audio.h"
 
@@ -25,10 +25,17 @@ static bool callback(const wchar_t *dump_path, const wchar_t *id,
                      void *context, EXCEPTION_POINTERS *exinfo,
                      MDRawAssertionInfo *assertion,
                      bool succeeded) {
-    if (succeeded)
-        qWarning("Dump file created in %s, dump guid is %ws\n", dump_path, id);
-    else
-        qWarning("Dump failed\n");
+    if (succeeded && QFile::exists("QSanSMTPClient.exe")){
+        char *ID = new char[65535];
+        memset(ID, 0, sizeof(ID));
+        WideCharToMultiByte(CP_ACP, 0, id, -1, ID, wcslen(id), NULL, NULL);
+        QProcess *process = new QProcess(qApp);
+        QStringList args;
+        args << QString(ID) + ".dmp";
+        process->start("QSanSMTPClient", args);
+        delete[] ID;
+        ID = NULL;
+    }
     return succeeded;
 }
 
@@ -71,7 +78,6 @@ int main(int argc, char *argv[]) {
     Sanguosha = new Engine;
     Config.init();
     qApp->setFont(Config.AppFont);
-    BanPair::loadBanPairs();
 
     if (qApp->arguments().contains("-server")) {
         Server *server = new Server(qApp);

@@ -19,9 +19,9 @@ public:
     virtual int getPriority() const;
     virtual bool canPreshow() const;
 
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer * &ask_who) const;
-    virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const;
-    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const;
+    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const;
+    virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who = NULL) const;
+    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who = NULL) const;
 
     LuaFunction can_trigger;
     LuaFunction on_cost;
@@ -35,15 +35,15 @@ class LuaBattleArraySkill: public BattleArraySkill {
     Q_OBJECT
 
 public:
-    LuaBattleArraySkill(const char *name, Frequency frequency, const char *limit_mark, BattleArrayType::ArrayType array_type);
+    LuaBattleArraySkill(const char *name, Frequency frequency, const char *limit_mark, HegemonyMode::ArrayType array_type);
     inline void addEvent(TriggerEvent triggerEvent) { events << triggerEvent; }
     inline void setViewAsSkill(ViewAsSkill *view_as_skill) { this->view_as_skill = view_as_skill; }
 
     virtual int getPriority() const;
 
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer * &ask_who) const;
-    virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const;
-    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const;
+    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const;
+    virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who = NULL) const;
+    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who = NULL) const;
 
     LuaFunction can_trigger;
     LuaFunction on_cost;
@@ -125,6 +125,19 @@ public:
     LuaFunction residue_func;
     LuaFunction distance_limit_func;
     LuaFunction extra_target_func;
+};
+
+class LuaAttackRangeSkill: public AttackRangeSkill{
+    Q_OBJECT
+
+public:
+    LuaAttackRangeSkill(const char *name);
+
+    virtual int getExtra(const Player *target, bool include_weapon) const;
+    virtual int getFixed(const Player *target, bool include_weapon) const;
+
+    LuaFunction extra_func;
+    LuaFunction fixed_func;
 };
 
 class LuaSkillCard: public SkillCard {

@@ -18,8 +18,9 @@
 
 // ----------------------------------------
 
-namespace BattleArrayType
-{
+namespace HegemonyMode {
+    QString getMappedRole(const QString &role);
+
     enum ArrayType {
         Siege,
         Formation
@@ -410,7 +411,7 @@ public:
     bool inSiegeRelation(const ServerPlayer *skill_owner, const ServerPlayer *victim) const;
     QList<ServerPlayer *> getFormation() const;
     bool inFormationRalation(ServerPlayer *teammate) const;
-    void summonFriends(const BattleArrayType::ArrayType type);
+    void summonFriends(const HegemonyMode::ArrayType type);
 };
 
 %extend ServerPlayer {
@@ -522,6 +523,8 @@ struct DamageStruct {
     bool transfer;
     bool by_user;
     QString reason;
+    QString transfer_reason;
+    bool prevented;
 
     QString getReason() const;
 };
@@ -750,11 +753,13 @@ enum TriggerEvent {
     BeforeCardsMove, // sometimes we need to record cards before the move
     CardsMoveOneTime,
 
-    PreCardUsed, // for AI to filter events only.
+    PreCardUsed,
     CardUsed,
+    TargetChoosing , //distinguish "choose target" and "confirm target"
     TargetConfirming,
+    TargetChosen ,
     TargetConfirmed,
-    CardEffect, // for AI to filter events only
+    CardEffect,
     CardEffected,
     PostCardEffected,
     CardFinished,
@@ -994,6 +999,7 @@ public:
     QList<const DistanceSkill *> getDistanceSkills() const;
     QList<const MaxCardsSkill *> getMaxCardsSkills() const;
     QList<const TargetModSkill *> getTargetModSkills() const;
+    QList<const AttackRangeSkill *> getAttackRangeSkills() const;
     QList<const TriggerSkill *> getGlobalTriggerSkills() const;
     void addSkills(const QList<const Skill *> &skills);
 
@@ -1003,13 +1009,11 @@ public:
     Card *getCard(int cardId);
     WrappedCard *getWrappedCard(int cardId);
 
-    QStringList getLords(bool contain_banned = false) const;
-    QStringList getRandomLords() const;
-    void banRandomGods() const;
     QStringList getRandomGenerals(int count) const;
     QList<int> getRandomCards() const;
     QString getRandomGeneralName() const;
     QStringList getLimitedGeneralNames() const;
+    QStringList getGeneralNames() const;
 
     void playSystemAudioEffect(const char *name) const;
     void playAudioEffect(const char *filename) const;
@@ -1019,6 +1023,7 @@ public:
     int correctDistance(const Player *from, const Player *to) const;
     int correctMaxCards(const Player *target, bool fixed = false) const;
     int correctCardTarget(const TargetModSkill::ModType type, const Player *from, const Card *card) const;
+    int correctAttackRange(const Player *target, bool include_weapon = true, bool fixed = false) const;
 
     Room *currentRoom();
 
@@ -1070,11 +1075,12 @@ public:
     QList<TriggerEvent> getTriggerEvents() const;
 
     virtual int getPriority() const;
-    virtual QStringList triggerable(const ServerPlayer *target) const;
+    virtual bool triggerable(const ServerPlayer *target) const;
 
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer * &ask_who) const;
-    virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const;
-    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const;
+    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const;
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &ask_who) const;
+    virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who = NULL) const;
+    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who = NULL) const;
 
     bool isGlobal() const;
 };
@@ -1084,8 +1090,8 @@ public:
         return qobject_cast<const BattleArraySkill *>($self);
     }
 
-    QStringList TriggerSkillTriggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer * &ask_who) const{
-        return $self->TriggerSkill::triggerable(triggerEvent, room, player, data, ask_who);
+    QMap<ServerPlayer *, QStringList> TriggerSkillTriggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+        return $self->TriggerSkill::triggerable(triggerEvent, room, player, data);
     }
 };
 
@@ -1174,7 +1180,7 @@ public:
     void judge(JudgeStruct &judge_struct);
     void sendJudgeResult(const JudgeStar judge);
     QList<int> getNCards(int n, bool update_pile_number = true);
-    ServerPlayer *getLord(const char *kingdom = NULL) const;
+    ServerPlayer *getLord(const char *kingdom) const;
     void askForGuanxing(ServerPlayer *zhuge, const QList<int> &cards, GuanxingType guanxing_type = GuanxingBothSides);
     int doGongxin(ServerPlayer *shenlvmeng, ServerPlayer *target, QList<int> enabled_ids = QList<int>(), const char *skill_name = "gongxin");
     int drawCard();
@@ -1227,11 +1233,8 @@ public:
     ServerPlayer *findPlayerBySkillName(const char *skill_name) const;
     void installEquip(ServerPlayer *player, const char *equip_name);
     void resetAI(ServerPlayer *player);
-    void changeHero(ServerPlayer *player, const char *new_general, bool full_state, bool invoke_start = true,
-                    bool isSecondaryHero = false, bool sendLog = true);
     void swapSeat(ServerPlayer *a, ServerPlayer *b);
     void setFixedDistance(Player *from, const Player *to, int distance);
-    bool hasWelfare(const ServerPlayer *player) const;
     ServerPlayer *getFront(ServerPlayer *a, ServerPlayer *b) const;
     void signup(ServerPlayer *player, const char *screen_name, const char *avatar, bool is_robot);
     ServerPlayer *getOwner() const;

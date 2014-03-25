@@ -2,10 +2,10 @@
 #include "util.h"
 
 LuaTriggerSkill::LuaTriggerSkill(const char *name, Frequency frequency, const char *limit_mark)
-    : TriggerSkill(name), on_cost(0), can_trigger(0), on_effect(0), priority(2)
+    : TriggerSkill(name), can_trigger(0), on_cost(0), on_effect(0), priority(2)
 {
     this->frequency = frequency;
-    this->limit_mark = QString(limit_mark);
+    this->limit_mark = limit_mark;
 }
 
 int LuaTriggerSkill::getPriority() const{
@@ -13,17 +13,14 @@ int LuaTriggerSkill::getPriority() const{
 }
 
 bool LuaTriggerSkill::canPreshow() const{
-    if (this->view_as_skill == NULL)
-        return can_preshow;
-    else
-        return false;
+    return can_preshow;
 }
 
-LuaBattleArraySkill::LuaBattleArraySkill(const char *name, Frequency frequency, const char *limit_mark, BattleArrayType::ArrayType array_type)
+LuaBattleArraySkill::LuaBattleArraySkill(const char *name, Frequency frequency, const char *limit_mark, HegemonyMode::ArrayType array_type)
     : BattleArraySkill(name, array_type)
 {
     this->frequency = frequency;
-    this->limit_mark = (QString)limit_mark;
+    this->limit_mark = limit_mark;
 }
 
 int LuaBattleArraySkill::getPriority() const{
@@ -56,6 +53,11 @@ LuaTargetModSkill::LuaTargetModSkill(const char *name, const char *pattern)
     : TargetModSkill(name), residue_func(0), distance_limit_func(0), extra_target_func(0)
 {
     this->pattern = pattern;
+}
+
+LuaAttackRangeSkill::LuaAttackRangeSkill(const char *name)
+    : AttackRangeSkill(name), extra_func(0), fixed_func(0)
+{
 }
 
 static QHash<QString, const LuaSkillCard *> LuaSkillCards;

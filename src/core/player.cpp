@@ -159,29 +159,29 @@ void Player::clearFlags() {
 }
 
 int Player::getAttackRange(bool include_weapon) const{
-    int original_range = 1;
-    if (hasFlag("InfinityAttackRange") || getMark("InfinityAttackRange") > 0) original_range = 10000; // Actually infinity
-    int weapon_range = 0;
-    if (include_weapon && weapon != NULL) {
+    if (hasFlag("InfinityAttackRange") || getMark("InfinityAttackRange") > 0)
+        return 1000;
+
+    include_weapon = include_weapon && weapon != NULL;
+
+    int fixeddis = Sanguosha->correctAttackRange(this, include_weapon, true);
+    if (fixeddis > 0)
+        return fixeddis;
+
+    int original_range = 1, weapon_range = 0;
+
+    if (include_weapon){
         const Weapon *card = qobject_cast<const Weapon *>(weapon->getRealCard());
         Q_ASSERT(card);
         weapon_range = card->getRange();
     }
 
-    bool six_swords_effect = false;
-    foreach(const Player *p, getAliveSiblings()) {
-        if (p->hasWeapon("SixSwords") && isFriendWith(p))
-            six_swords_effect = true;
-    }
+    int real_range = qMax(original_range, weapon_range) + Sanguosha->correctAttackRange(this, include_weapon, false);
 
-    bool liegong_lord_effect = false;
-    if (hasSkill("liegong")){
-        const Player *lord = getLord();
-        if (lord != NULL && lord->hasLordSkill("shouyue"))
-            liegong_lord_effect = true;
-    }
+    if (real_range < 0)
+        real_range = 0;
 
-    return qMax(original_range, weapon_range) + (six_swords_effect ? 1 : 0) + (liegong_lord_effect ? 1 : 0);
+    return real_range;
 }
 
 bool Player::inMyAttackRange(const Player *other) const{
@@ -996,7 +996,9 @@ bool Player::isCardLimited(const Card *card, Card::HandlingMethod method, bool i
 
 void Player::addQinggangTag(const Card *card) {
     QStringList qinggang = this->tag["Qinggang"].toStringList();
-    qinggang.append(card->toString());
+    QString card_string = card->toString();
+    if (!qinggang.contains(card_string))
+        qinggang << card_string;
     this->tag["Qinggang"] = QVariant::fromValue(qinggang);
 }
 
@@ -1030,7 +1032,7 @@ int Player::getPlayerNumWithSameKingdom(const QString &_to_calculate /* = QStrin
 
     int num = 0;
     foreach (const Player *p, players){
-        if (p->hasShownOneGeneral() && p->getKingdom() == to_calculate && p->getRole() != "careerist")
+        if (p->hasShownOneGeneral() && p->getKingdom() == to_calculate && (this == p || p->getRole() != "careerist"))
             num += 1;
     }
 
@@ -1092,6 +1094,17 @@ QList<const Player *> Player::getAliveSiblings() const{
 }
 
 bool Player::hasShownSkill(const Skill *skill) const{
+    if (skill->inherits("ArmorSkill") || skill->inherits("WeaponSkill"))
+        return true;
+
+    if (!skill->isVisible()){
+        const Skill *main_skill = Sanguosha->getMainSkill(skill->objectName());
+        if (main_skill != NULL)
+            return hasShownSkill(main_skill);
+        else
+            return false;
+    }
+
     if (general1_showed && head_skills.keys().contains(skill->objectName()))
         return true;
     else if (general2_showed && deputy_skills.keys().contains(skill->objectName()))
@@ -1210,7 +1223,7 @@ bool Player::hasPreshowedSkill(const QString &name) const {
 bool Player::isHidden(const bool &head_general) const {
     if (head_general ? general1_showed : general2_showed) return false;
     const QList<const Skill *> skills = head_general ? getHeadSkillList() : getDeputySkillList();
-    unsigned int count = 0;
+    int count = 0;
     foreach(const Skill *skill, skills) {
         if(skill->canPreshow() && hasPreshowedSkill(skill->objectName()))
             return false;

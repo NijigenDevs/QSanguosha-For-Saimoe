@@ -1,3 +1,22 @@
+/********************************************************************
+	Copyright (c) 2013-2014 - QSanguosha-Hegemony Team
+
+  This file is part of QSanguosha-Hegemony.
+
+  This game is free software; you can redistribute it and/or
+  modify it under the terms of the GNU Lesser General Public
+  License as published by the Free Software Foundation; either
+  version 3.0 of the License, or (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  Lesser General Public License for more details.
+
+  See the LICENSE file for more details.
+
+  QSanguosha-Hegemony Team	
+*********************************************************************/
 #include "settings.h"
 #include "photo.h"
 #include "card.h"
@@ -76,7 +95,6 @@ void Settings::init() {
     Enable2ndGeneral = true;
     EnableBasara = true;
     EnableHegemony = true;
-    EnableLordGeneralConvert = value("EnableLordGeneralConvert", true).toBool();
     Address = value("Address", QString()).toString();
     EnableAI = value("EnableAI", true).toBool();
     OriginAIDelay = value("OriginAIDelay", 1000).toInt();
@@ -118,61 +136,15 @@ void Settings::init() {
     BGMVolume = value("BGMVolume", 1.0f).toFloat();
     EffectVolume = value("EffectVolume", 1.0f).toFloat();
 
-    BackgroundImage = value("BackgroundImage", "backdrop/new-version.jpg").toString();
-    TableBgImage = value("TableBgImage", "backdrop/default.jpg").toString();
-    
+    BackgroundImage = value("BackgroundImage", "image/backdrop/new-version.jpg").toString();
+    TableBgImage = value("TableBgImage", "image/backdrop/default.jpg").toString();
+
     EnableAutoSaveRecord = value("EnableAutoSaveRecord", false).toBool();
     NetworkOnly = value("NetworkOnly", false).toBool();
 
     RecordSavePaths = value("RecordSavePaths", "records/").toBool();;
 
     lua_State *lua = Sanguosha->getLuaState();
-    QStringList roles_ban, kof_ban, hulao_ban, xmode_ban, basara_ban, hegemony_ban, pairs_ban;
-
-    roles_ban = GetConfigFromLuaState(lua, "roles_ban").toStringList();
-    kof_ban = GetConfigFromLuaState(lua, "kof_ban").toStringList();
-    hulao_ban = GetConfigFromLuaState(lua, "hulao_ban").toStringList();
-    xmode_ban = GetConfigFromLuaState(lua, "xmode_ban").toStringList();
-    basara_ban = GetConfigFromLuaState(lua, "basara_ban").toStringList();
-    hegemony_ban = GetConfigFromLuaState(lua, "hegemony_ban").toStringList();
-    hegemony_ban.append(basara_ban);
-    foreach (QString general, Sanguosha->getLimitedGeneralNames()) {
-        if (Sanguosha->getGeneral(general)->getKingdom() == "god" && !hegemony_ban.contains(general))
-            hegemony_ban << general;
-    }
-    pairs_ban = GetConfigFromLuaState(lua, "pairs_ban").toStringList();
-
-    QStringList banlist = value("Banlist/Roles").toStringList();
-    if (banlist.isEmpty()) {
-        foreach (QString ban_general, roles_ban)
-            banlist << ban_general;
-
-        setValue("Banlist/Roles", banlist);
-    }
-
-    banlist = value("Banlist/Basara").toStringList();
-    if (banlist.isEmpty()) {
-        foreach (QString ban_general, basara_ban)
-            banlist << ban_general;
-
-        setValue("Banlist/Basara", banlist);
-    }
-
-    banlist = value("Banlist/Hegemony").toStringList();
-    if (banlist.isEmpty()) {
-        foreach (QString ban_general, hegemony_ban)
-            banlist << ban_general;
-        setValue("Banlist/Hegemony", banlist);
-    }
-
-    banlist = value("Banlist/Pairs").toStringList();
-    if (banlist.isEmpty()) {
-        foreach (QString ban_general, pairs_ban)
-            banlist << ban_general;
-
-        setValue("Banlist/Pairs", banlist);
-    }
-
     Config.ExtraHiddenGenerals = GetConfigFromLuaState(lua, "extra_hidden_generals").toStringList();
     Config.RemovedHiddenGenerals = GetConfigFromLuaState(lua, "removed_hidden_generals").toStringList();
 }

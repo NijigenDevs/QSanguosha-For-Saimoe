@@ -76,17 +76,17 @@ sgs.ai_choicemade_filter.skillInvoke.ziliang = function(self, player, promptlist
 end
 
 local function huyuan_validate(self, equip_type, is_handcard)
-	local targets
+	local targets = {}
 	if is_handcard then targets = self.friends else targets = self.friends_noself end
 	if equip_type == "SilverLion" then
 		for _, enemy in ipairs(self.enemies) do
-			if enemy:hasSkill("bazhen") then table.insert(targets, enemy) end
+			if enemy:hasSkill("bazhen") and not enemy:getArmor() then table.insert(targets, enemy) end
 		end
 	end
 	for _, friend in ipairs(targets) do
 		local has_equip = false
 		for _, equip in sgs.qlist(friend:getEquips()) do
-			if equip:isKindOf(equip_type) then
+			if equip:isKindOf(equip_type == "SilverLion" and "Armor" or equip_type) then
 				has_equip = true
 				break
 			end
@@ -356,27 +356,16 @@ sgs.ai_skill_discard.yicheng = function(self, discard_num, min_num, optional, in
 end
 
 sgs.ai_skill_invoke.qianhuan = function(self, data)
-	local use = data:toCardUse()
-	if not use.card then
-		return true
+	if data:toString() == "gethuan" then return true end
+	local use = self.player:getTag("qianhuan_data"):toCardUse()
+	if (use.from and self:isFriend(use.from)) then return false end --闃熷弸缁欒嚜宸卞嚭妗冨瓙涓嶆棤鎳堬紙鏆傦級
+	local to = use.to:first()
+	if to:objectName() == self.player:objectName() then
+		return not (use.from and (use.from:objectName() == to:objectName()
+									or (use.card:isKindOf("Slash") and self:isPriorFriendOfSlash(self.player, use.card, use.from))))
 	else
-		if (use.from and self:isFriend(use.from)) then return false end --队友给自己出桃子不无懈（暂）
-		local to = use.to:first()
-		if to:objectName() == self.player:objectName() then
-			return not (use.from and (use.from:objectName() == to:objectName()
-										or (use.card:isKindOf("Slash") and self:isPriorFriendOfSlash(self.player, use.card, use.from))))
-		else
-			return not (use.from and use.from:objectName() == to:objectName())
-		end
+		return not (use.from and use.from:objectName() == to:objectName())
 	end
-end
-
-sgs.ai_skill_choice.qianhuan = function(self, choices, data)
-	local use = data:toCardUse()
-	if use.card:isKindOf("Peach") or use.card:isKindOf("Analeptic") or use.card:isKindOf("ExNihilo") then return "reject" end
-	if use.from and use.from:objectName() == self.player:objectName() then return "reject" end
-	if use.from and use.card:isKindOf("Slash") and self:isPriorFriendOfSlash(self.player, use.card, use.from) then return "reject" end
-	return "accept"
 end
 
 local function will_discard_zhendu(self)
@@ -426,7 +415,7 @@ sgs.weapon_range.DragonPhoenix = 2
 sgs.ai_use_priority.DragonPhoenix = 2.400
 function sgs.ai_weapon_value.DragonPhoenix(self, enemy, player)
 	local lordliubei = nil
-	for _, p in sgs.qlist(room:getAlivePlayers()) do
+	for _, p in sgs.qlist(self.room:getAlivePlayers()) do
 		if p:hasSkill("zhangwu") then
 			lordliubei = p
 			break
