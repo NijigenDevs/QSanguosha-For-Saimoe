@@ -783,6 +783,12 @@
     <ClCompile Include="Release\moc_moesen-package.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
+    <ClCompile Include="Debug\moc_animation.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="Release\moc_animation.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\..\src\server\ai.h">
@@ -1010,6 +1016,9 @@
     <CustomBuild Include="..\..\src\package\moesen-package.h">
       <Filter>package</Filter>
     </CustomBuild>
+    <CustomBuild Include="..\..\src\package\animation.h">
+      <Filter>package</Filter>
+    </CustomBuild>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\swig\sanguosha.i">
@@ -1108,9 +1117,6 @@
     </ClInclude>
     <ClInclude Include="..\..\src\core\namespace.h">
       <Filter>core</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\package\animation.h">
-      <Filter>package</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\package\comic.h">
       <Filter>package</Filter>
