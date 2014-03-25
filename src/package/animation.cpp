@@ -248,7 +248,7 @@ public:
 
     virtual bool cost(TriggerEvent , Room *room, ServerPlayer *player, QVariant &) const {
         if (player->askForSkillInvoke(objectName(), player->tag.value("CibeiCurrentTarget"))) {
-            room->broadcastSkillInvoke(objectName(), 1);
+            room->broadcastSkillInvoke(objectName());
             return true;
         }
         return false;
@@ -270,6 +270,71 @@ public:
     }
 };
 
+//è÷ß÷ È°Ãã-ÃîÂÉ
+class Quanmian: public TriggerSkill {
+public:
+    Quanmian(): TriggerSkill("quanmian") {
+        events << CardUsed;
+		frequency = Frequent;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer * &) const {
+        //if (TriggerSkill::triggerable(player).isEmpty())
+        //    return QStringList();
+
+        CardUseStruct use = data.value<CardUseStruct>();
+		if (use.card->isKindOf("EquipCard") && use.from->objectName() == player->objectName() && player->hasSkill(objectName())){
+			return QStringList(objectName());
+		}
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent , Room *room, ServerPlayer *player, QVariant &data) const {
+        if (player->askForSkillInvoke(objectName(), data)) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const {
+		ServerPlayer *target = room->askForPlayerChosen(player, room->getAlivePlayers(), objectName());
+		target->drawCards(1);
+		return false;
+    }
+};
+
+MiaolvCard::MiaolvCard() {
+}
+
+bool MiaolvCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+	return targets.isEmpty() && to_select->getEquips().length() > 0;
+}
+
+void MiaolvCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
+    ServerPlayer *yui = targets.first();
+	int cardid = room->askForCardChosen(source, yui, "e", objectName());
+	yui->obtainCard(Sanguosha->getCard(cardid));
+	if (yui->objectName() == source->objectName())
+		source->drawCards(1);
+}
+
+
+class Miaolv: public ZeroCardViewAsSkill {
+public:
+    Miaolv(): ZeroCardViewAsSkill("miaolv") {
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return !player->hasUsed("MiaolvCard");
+    }
+
+    virtual const Card *viewAs() const{
+        MiaolvCard *card = new MiaolvCard;
+        card->setShowSkill(objectName());
+        return card;
+    }
+};
 
 void MoesenPackage::addAnimationGenerals()
 {
@@ -296,6 +361,8 @@ void MoesenPackage::addAnimationGenerals()
     General *homura = new General(this, "homura", "wei", 3, false); // Animation 005
 
     General *n_azusa = new General(this, "n_azusa", "wei", 3, false); // Animation 006
+	n_azusa->addSkill(new Quanmian);
+	n_azusa->addSkill(new Miaolv);
 
     General *mio = new General(this, "mio", "wei", 3, false); // Animation 007
 
@@ -323,5 +390,6 @@ void MoesenPackage::addAnimationGenerals()
 
 
     addMetaObject<WuweiCard>();
+	addMetaObject<MiaolvCard>();
 
 }

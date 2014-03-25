@@ -13,4 +13,13 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
+class MiaolvCard: public SkillCard {
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE MiaolvCard();
+    bool MiaolvCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+    void MiaolvCard::use(Room *room, ServerPlayer *xunyu, QList<ServerPlayer *> &targets) const;
+};
+
 #endif
