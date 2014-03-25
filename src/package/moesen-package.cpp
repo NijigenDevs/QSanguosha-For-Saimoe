@@ -11,7 +11,7 @@
 MoesenPackage::MoesenPackage()
     : Package("moesen")
 {
-	addAnimationGenerals();
+    addAnimationGenerals();
     addComicGenerals();
     addGameGenerals();
     addNovelGenerals();
@@ -47,7 +47,7 @@ MoesenPackage::MoesenPackage()
 ADD_PACKAGE(Moesen)
 
 
-	/*
+    /*
 StandardCardPackage::StandardCardPackage()
     : Package("standard_cards", Package::CardPack)
 {
