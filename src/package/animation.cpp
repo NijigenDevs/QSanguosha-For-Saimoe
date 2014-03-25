@@ -6,9 +6,9 @@
 #include "client.h"
 
 //ӧǹ
-class Yingqiang: public ViewAsSkill {
+class YingqiangViewAsSkill: public ViewAsSkill {
 public:
-    Yingqiang(): ViewAsSkill("yingqiang") {
+    YingqiangViewAsSkill(): ViewAsSkill("yingqiang") {
     }
 
     virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const{
@@ -16,7 +16,7 @@ public:
             if (to_select->getSuit() == card->getSuit())
                 return false;
         }
-        return !to_select->isEquipped() && to_select->getSuit() != Card::NoSuit;
+        return !to_select->hasFlag("using") && !to_select->isEquipped() && to_select->getSuit() != Card::NoSuit;
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{
@@ -24,43 +24,29 @@ public:
     }
 
     virtual const Card *viewAs(const QList<const Card *> &cards) const{
-        if (cards.length() < 2 || cards.length() >4)
+        if (cards.length() < 2 || cards.length() > 4)
             return NULL;
 
-        Card *slash = new Slash(cards.first()->getSuit(), cards.first()->getNumber());
-        foreach (const Card *card, cards){
-            slash->addSubcard(card->getId());
-        }
+        Card *slash = new Slash(Card::SuitToBeDecided, -1);
+        slash->addSubcards(cards);
         slash->setSkillName(objectName());
         slash->setShowSkill(objectName());
         return slash;
     }
 };
 
-
-class YingqiangTargetMod: public TargetModSkill {
+class Yingqiang: public TriggerSkill {
 public:
-    YingqiangTargetMod(): TargetModSkill("#yingqiang-target") {
-    }
-    virtual int getDistanceLimit(const Player *from, const Card *card) const{
-        if (card->getSkillName() == "yingqiang")
-            return 1000;
-        else
-            return 0;
-    }
-};
-
-class YingqiangEffect: public TriggerSkill {//TODO
-public:
-    YingqiangEffect(): TriggerSkill("#yingqiang-effect") {
-        events << TargetConfirmed<<PreDamageDone << Damage<< CardFinished;
+    Yingqiang(): TriggerSkill("yingqiang") {
+        events << GameStart << TargetConfirmed << PreDamageDone << Damage;
+        view_as_skill = new YingqiangViewAsSkill;
     }
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer * &) const{
-       if (triggerEvent == TargetConfirmed){
-            if (player != NULL){
+        if (triggerEvent == TargetConfirmed) {
+            if (player != NULL) {
                 CardUseStruct use = data.value<CardUseStruct>();
-                if (use.card->getSkillName() != "yingqiang" || use.card==NULL)
+                if (use.card == NULL || use.card->getSkillName() != "yingqiang")
                     return QStringList();
                 QList<int> cardids = use.card->getSubcards();
                 foreach (int cardid, cardids){
@@ -69,38 +55,30 @@ public:
                     }
                 }
             }
-        }else if(triggerEvent == PreDamageDone){
-            if (player != NULL){
-            DamageStruct damage = data.value<DamageStruct>();
-            ServerPlayer *kyouko = damage.from;
-            if (kyouko)
-                kyouko->tag["InvokeKuanggu"] = (kyouko->distanceTo(damage.to) <= 1);
+        } else if(triggerEvent == PreDamageDone) {
+            if (player != NULL) {
+                DamageStruct damage = data.value<DamageStruct>();
+                ServerPlayer *kyouko = damage.from;
+                if (kyouko)
+                    kyouko->tag["InvokeKuanggu"] = (kyouko->distanceTo(damage.to) <= 1);
             }
             return QStringList();
-       }else if(triggerEvent == Damage){
-            if (player != NULL){
+       } else if(triggerEvent == Damage) {
+            if (player != NULL) {
                 DamageStruct damage = data.value<DamageStruct>();
                 if (damage.card->getSkillName() != "yingqiang")
                     return QStringList();
                 QList<int> cardids = damage.card->getSubcards();
-                foreach (int cardid, cardids){
-                    if (Sanguosha->getCard(cardid)->getSuit() == Card::Spade || Sanguosha->getCard(cardid)->getSuit() == Card::Heart){
+                foreach (int cardid, cardids) {
+                    if (Sanguosha->getCard(cardid)->getSuit() == Card::Spade || Sanguosha->getCard(cardid)->getSuit() == Card::Heart) {
                         return QStringList(objectName());
                     }
                 }
-            }else if (triggerEvent == CardFinished){
-                CardUseStruct use = data.value<CardUseStruct>();
-                ServerPlayer *kyouko = use.from;
-                if (kyouko){
-                    if (kyouko->hasFlag("yingqiangQinggang")){
-                        room->setPlayerMark(kyouko, "Armor_Nullified", 0) ;
-                    }
-                    kyouko->tag["InvokeKuanggu"] = false;
-                }
             }
-       }
+        }
         return QStringList();
     }
+
     virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &) const{
         if (triggerEvent == TargetConfirmed){
             room->broadcastSkillInvoke(objectName());
@@ -110,8 +88,8 @@ public:
     }
 
     virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-        if (triggerEvent == TargetConfirmed){
-            if (player != NULL){
+        if (triggerEvent == TargetConfirmed) {
+            if (player != NULL) {
                 CardUseStruct use = data.value<CardUseStruct>();
                 ServerPlayer *kyouko = use.from;
                 if (use.card->getSkillName() != "yingqiang")
@@ -132,7 +110,7 @@ public:
                     }
                 }
             }
-        }else if(triggerEvent == Damage){
+        } else if(triggerEvent == Damage) {
             if (player != NULL){
                 DamageStruct damage = data.value<DamageStruct>();
                 ServerPlayer *kyouko = damage.from;
@@ -160,6 +138,19 @@ public:
        }
 
         return false;
+    }
+};
+
+
+class YingqiangTargetMod: public TargetModSkill {
+public:
+    YingqiangTargetMod(): TargetModSkill("#yingqiang-target") {
+    }
+    virtual int getDistanceLimit(const Player *from, const Card *card) const{
+        if (card->getSkillName() == "yingqiang")
+            return 1000;
+        else
+            return 0;
     }
 };
 
