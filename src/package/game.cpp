@@ -7,7 +7,7 @@
 
 void MoesenPackage::addGameGenerals()
 {
-    General *nagisa = new General(this, "nagisa", "wu", 3, false); // Game 001
+    /*General *nagisa = new General(this, "nagisa", "wu", 3, false); // Game 001
 
     General *fuuko = new General(this, "fuuko", "wu", 3, false); // Game 002
 
@@ -42,10 +42,5 @@ void MoesenPackage::addGameGenerals()
     General *hayate = new General(this, "hayate", "wu", 3, false); // Game 017
 
     General *komari = new General(this, "komari", "wu", 3, false); // Game 018
-
-
-
-
-
-
+    */
 }

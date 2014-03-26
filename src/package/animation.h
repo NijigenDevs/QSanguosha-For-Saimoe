@@ -10,7 +10,7 @@ class WuweiCard: public SkillCard {
 public:
     Q_INVOKABLE WuweiCard();
     virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
-    virtual void onEffect(const CardEffectStruct &effect) const;
+    virtual const Card *validate(CardUseStruct &use) const;
 };
 
 class MiaolvCard: public SkillCard {

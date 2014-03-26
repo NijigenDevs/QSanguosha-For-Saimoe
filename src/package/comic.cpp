@@ -7,7 +7,7 @@
 
 void MoesenPackage::addComicGenerals()
 {
-    General *hinagiku = new General(this, "hinagiku", "shu", 3, false); // Comic 001
+    /*General *hinagiku = new General(this, "hinagiku", "shu", 3, false); // Comic 001
 
     General *izumi = new General(this, "izumi", "shu", 3, false); // Comic 002
 
@@ -42,10 +42,5 @@ void MoesenPackage::addComicGenerals()
     General *suigintou = new General(this, "suigintou", "shu", 3, false); // Comic 017
 
     General *ika = new General(this, "ika", "shu", 3, false); // Comic 018
-
-
-
-
-
-
+    */
 }

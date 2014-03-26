@@ -7,7 +7,7 @@
 
 void MoesenPackage::addNovelGenerals()
 {
-    General *shana = new General(this, "shana", "qun", 3, false); // Novel 001
+    /*General *shana = new General(this, "shana", "qun", 3, false); // Novel 001
 
     General *louise = new General(this, "louise", "qun", 3, false); // Novel 002
 
@@ -42,10 +42,5 @@ void MoesenPackage::addNovelGenerals()
     General *rikka = new General(this, "rikka", "qun", 3, false); // Novel 017
 
     General *holo = new General(this, "holo", "qun", 3, false); // Novel 018
-
-
-
-
-
-
+    */
 }

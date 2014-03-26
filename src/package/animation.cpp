@@ -6,9 +6,9 @@
 #include "client.h"
 
 //Ó§Ç¹
-class YingqiangViewAsSkill: public ViewAsSkill {
+class Yingqiang: public ViewAsSkill {
 public:
-    YingqiangViewAsSkill(): ViewAsSkill("yingqiang") {
+    Yingqiang(): ViewAsSkill("yingqiang") {
     }
 
     virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const{
@@ -35,112 +35,117 @@ public:
     }
 };
 
-class Yingqiang: public TriggerSkill {
+class YingqiangSpade: public TriggerSkill {
 public:
-    Yingqiang(): TriggerSkill("yingqiang") {
-        events << GameStart << TargetConfirmed << PreDamageDone << Damage;
-        view_as_skill = new YingqiangViewAsSkill;
+    YingqiangSpade(): TriggerSkill("yingqiang_spade") {
+        events << PreDamageDone << Damage;
+        global = true;
     }
 
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer * &) const{
-        if (triggerEvent == TargetConfirmed) {
-            if (player != NULL) {
-                CardUseStruct use = data.value<CardUseStruct>();
-                if (use.card == NULL || use.card->getSkillName() != "yingqiang")
-                    return QStringList();
-                QList<int> cardids = use.card->getSubcards();
-                foreach (int cardid, cardids){
-                    if (Sanguosha->getCard(cardid)->getSuit() == Card::Club || Sanguosha->getCard(cardid)->getSuit() == Card::Diamond){
-                        return QStringList(objectName());
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer * &) const {
+        if (triggerEvent == PreDamageDone) {
+            DamageStruct damage = data.value<DamageStruct>();
+            if (damage.card && damage.card->getSkillName() == "yingqiang" && damage.from)
+                damage.from->tag["InvokeYingqiangSpade"] = (damage.from->distanceTo(player) <= 1);
+        } else if(triggerEvent == Damage) {
+            DamageStruct damage = data.value<DamageStruct>();
+            if (damage.from->isAlive() && damage.card && damage.card->getSkillName() == "yingqiang")
+                foreach (int cardid, damage.card->getSubcards())
+                    if (Sanguosha->getCard(cardid)->getSuit() == Card::Spade && player->isWounded()) {
+                        QStringList skill_list;
+                        for (int i = 0; i < damage.damage; i++)
+                            skill_list << objectName();
+                        return skill_list;
                     }
-                }
-            }
-        } else if(triggerEvent == PreDamageDone) {
-            if (player != NULL) {
-                DamageStruct damage = data.value<DamageStruct>();
-                ServerPlayer *kyouko = damage.from;
-                if (kyouko)
-                    kyouko->tag["InvokeKuanggu"] = (kyouko->distanceTo(damage.to) <= 1);
-            }
-            return QStringList();
-       } else if(triggerEvent == Damage) {
-            if (player != NULL) {
-                DamageStruct damage = data.value<DamageStruct>();
-                if (damage.card->getSkillName() != "yingqiang")
-                    return QStringList();
-                QList<int> cardids = damage.card->getSubcards();
-                foreach (int cardid, cardids) {
-                    if (Sanguosha->getCard(cardid)->getSuit() == Card::Spade || Sanguosha->getCard(cardid)->getSuit() == Card::Heart) {
-                        return QStringList(objectName());
-                    }
-                }
-            }
         }
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &) const{
-        if (triggerEvent == TargetConfirmed){
-            room->broadcastSkillInvoke(objectName());
-        }
-        player->drawCards(1);//
-        return true;
-    }
-
-    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
-        if (triggerEvent == TargetConfirmed) {
-            if (player != NULL) {
-                CardUseStruct use = data.value<CardUseStruct>();
-                ServerPlayer *kyouko = use.from;
-                if (use.card->getSkillName() != "yingqiang")
-                    return false;
-                QList<int> cardids = use.card->getSubcards();
-                use.from->drawCards(1);//
-                foreach (int cardid, cardids){
-                    switch (Sanguosha->getCard(cardid)->getSuit()){
-                        case Card::Club:
-                            kyouko->setFlags("yingqiangQinggang");
-                            room->setPlayerMark(kyouko, "Armor_Nullified", 1) ;
-                            break;
-                        case Card::Diamond:
-                            use.from->drawCards(1);//
-                            kyouko->drawCards(1);
-                            break;
-                        default:;
-                    }
-                }
-            }
-        } else if(triggerEvent == Damage) {
-            if (player != NULL){
-                DamageStruct damage = data.value<DamageStruct>();
-                ServerPlayer *kyouko = damage.from;
-                if (damage.card->getSkillName() != "yingqiang")
-                    return false;
-                QList<int> cardids = damage.card->getSubcards();
-                foreach (int cardid, cardids){
-                    switch (Sanguosha->getCard(cardid)->getSuit()){
-                        case Card::Spade:
-                            if (kyouko->tag.value("InvokeKuanggu") == 1){
-                                RecoverStruct recover;
-                                recover.who = kyouko;
-                                recover.recover = damage.damage;
-                                room->recover(kyouko, recover);
-                            }
-                            break;
-                        case Card::Heart:
-                            damage.to->drawCards(damage.to->getHp() > 5? 5: damage.to->getHp());
-                            damage.to->turnOver();
-                            break;
-                        default:;
-                    }
-                }
-            }
-       }
+    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
+        room->notifySkillInvoked(player, "yingqiang");
+        RecoverStruct recover;
+        recover.who = player;
+        room->recover(player, recover);
 
         return false;
     }
 };
 
+class YingqiangHeart: public TriggerSkill {
+public:
+    YingqiangHeart(): TriggerSkill("yingqiang_heart") {
+        events << Damage;
+        global = true;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer * &) const {
+        DamageStruct damage = data.value<DamageStruct>();
+        if (damage.from->isAlive() && damage.card && damage.card->getSkillName() == "yingqiang" && damage.to->isAlive())
+            foreach (int cardid, damage.card->getSubcards())
+                if (Sanguosha->getCard(cardid)->getSuit() == Card::Heart)
+                    return QStringList(objectName());
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
+        room->notifySkillInvoked(player, "yingqiang");
+        DamageStruct damage = data.value<DamageStruct>();
+        int n = qMin(qMax(damage.to->getHp(), 0), 5);
+        if (n)
+            damage.to->drawCards(n);
+        damage.to->turnOver();
+        return false;
+    }
+};
+
+class YingqiangClub: public TriggerSkill {
+public:
+    YingqiangClub(): TriggerSkill("yingqiang_club") {
+        events << TargetChosen;
+        global = true;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer * &) const {
+        CardUseStruct use = data.value<CardUseStruct>();
+        if (use.from->isAlive() && use.card && use.card->getSkillName() == "yingqiang")
+            foreach (int cardid, use.card->getSubcards())
+                if (Sanguosha->getCard(cardid)->getSuit() == Card::Club)
+                    return QStringList(objectName());
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
+        room->notifySkillInvoked(player, "yingqiang");
+        CardUseStruct use = data.value<CardUseStruct>();
+        foreach (ServerPlayer *p, use.to.toSet()){
+            p->addQinggangTag(use.card);
+        }
+        return false;
+    }
+};
+
+class YingqiangDiamond: public TriggerSkill {
+public:
+    YingqiangDiamond(): TriggerSkill("yingqiang_diamond") {
+        events << TargetChosen;
+        global = true;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer * &) const {
+        CardUseStruct use = data.value<CardUseStruct>();
+        if (use.from && use.from == player && player->isAlive() && use.card && use.card->getSkillName() == "yingqiang")
+            foreach (int cardid, use.card->getSubcards())
+                if (Sanguosha->getCard(cardid)->getSuit() == Card::Diamond)
+                    return QStringList(objectName());
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
+        room->notifySkillInvoked(player, "yingqiang");
+        player->drawCards(1);
+        return false;
+    }
+};
 
 class YingqiangTargetMod: public TargetModSkill {
 public:
@@ -155,42 +160,41 @@ public:
 };
 
 //ÎÞÎ·
-WuweiCard::WuweiCard() {//todo
-    will_throw = true;
-    target_fixed = false;
+WuweiCard::WuweiCard() {
 }
 
 bool WuweiCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
-    return targets.isEmpty() && to_select != Self && !to_select->isCardLimited(Sanguosha->cloneCard("Slash"), MethodUse) && !to_select->isProhibited(Self, Sanguosha->cloneCard("Slash"), Self->getSiblings()) && Self->distanceTo(to_select) <= Self->getAttackRange();
-}
-
-void WuweiCard::onEffect(const CardEffectStruct &effect) const{
-    ServerPlayer *sayaka = effect.from;
-    sayaka->getRoom()->loseHp(sayaka);
-    sayaka->getRoom()->broadcastSkillInvoke(objectName());
-    int id = getSubcards().first();
-    Slash *slash = new Slash(Sanguosha->getCard(id)->getSuit(), Sanguosha->getCard(id)->getNumber());
+    Card *card = Sanguosha->getCard(getSubcards().first());
+    Slash *slash = new Slash(card->getSuit(), card->getNumber());
     slash->setSkillName("wuwei");
-    slash->addSubcard(id);
-    sayaka->getRoom()->useCard(CardUseStruct(slash, sayaka, effect.to), false);
+    slash->addSubcard(card);
+    slash->deleteLater();
+    return slash->targetFilter(targets, to_select, Self);
 }
 
+const Card *WuweiCard::validate(CardUseStruct &use) const{
+    ServerPlayer *sayaka = use.from;
+    Room *room = sayaka->getRoom();
+    room->loseHp(sayaka);
+    room->broadcastSkillInvoke(objectName());
+    Card *card = Sanguosha->getCard(getSubcards().first());
+    Slash *slash = new Slash(card->getSuit(), card->getNumber());
+    slash->setSkillName("wuwei");
+    slash->addSubcard(card);
+    return slash;
+}
 
-class Wuwei: public OneCardViewAsSkill {
+class WuweiViewAsSkill: public OneCardViewAsSkill {
 public:
-    Wuwei(): OneCardViewAsSkill("wuwei") {
-
+    WuweiViewAsSkill(): OneCardViewAsSkill("wuwei") {
+        filter_pattern = ".|.|.|hand";
     }
 
-    virtual bool viewFilter(const Card *to_select) const{
-        return !to_select->isEquipped();
-    }
-
-    virtual bool isEnabledAtPlay(const Player *player) const{
+    virtual bool isEnabledAtPlay(const Player *player) const {
         return !player->hasUsed("WuweiCard");
     }
 
-    virtual const Card *viewAs(const Card *originalCard) const{
+    virtual const Card *viewAs(const Card *originalCard) const {
         WuweiCard *wuwei = new WuweiCard();
         wuwei->addSubcard(originalCard);
         wuwei->setShowSkill(objectName());
@@ -198,26 +202,30 @@ public:
     }
 };
 
-class WuweiEffect: public TriggerSkill{
+class Wuwei: public TriggerSkill{
 public:
-    WuweiEffect(): TriggerSkill("#wuwei-effect"){
-        events <<DamageCaused;
+    Wuwei(): TriggerSkill("wuwei"){
+        events << DamageCaused;
+        view_as_skill = new WuweiViewAsSkill;
     }
 
     virtual QStringList triggerable(TriggerEvent , Room *, ServerPlayer *player, QVariant &data, ServerPlayer * &) const{
-        if (player != NULL){
-            DamageStruct damage = data.value<DamageStruct>();
-            ServerPlayer *sayaka = damage.from;
-            if (damage.card->getSkillName() == "wuwei" && sayaka){
-                damage.damage = damage.damage + 1;
-                data = QVariant::fromValue(damage);
-            }
+        DamageStruct damage = data.value<DamageStruct>();
+        if (damage.card->getSkillName() == "wuwei") {
+            return QStringList(objectName());
         }
-        
 
         return QStringList();
     }
+
+    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
+        DamageStruct damage = data.value<DamageStruct>();
+        damage.damage ++;
+        data = QVariant::fromValue(damage);
+        return false;
+    }
 };
+
 //´È±¯
 class Cibei: public TriggerSkill {
 public:
@@ -329,33 +337,30 @@ public:
 
 void MoesenPackage::addAnimationGenerals()
 {
-    General *mami = new General(this, "mami", "wei", 3, false); // Animation 001
+    //General *mami = new General(this, "mami", "wei", 3, false); // Animation 001
 
     General *s_kyouko = new General(this, "s_kyouko", "wei", 4, false); // Animation 002
-
     s_kyouko->addSkill(new Yingqiang);
     s_kyouko->addSkill(new YingqiangTargetMod);
-    s_kyouko->addSkill(new YingqiangEffect);
     related_skills.insertMulti("yingqiang", "#yingqiang-target");
-    related_skills.insertMulti("yingqiang", "#yingqiang-effect");
+    skills << new YingqiangSpade
+           << new YingqiangHeart
+           << new YingqiangClub
+           << new YingqiangDiamond;
 
     General *madoka = new General(this, "madoka", "wei", 3, false); // Animation 003
-
     madoka->addSkill(new Cibei);
 
     General *sayaka = new General(this, "sayaka", "wei", 4, false); // Animation 004
-
     sayaka->addSkill(new Wuwei);
-    sayaka->addSkill(new WuweiEffect);
-    related_skills.insertMulti("wuwei", "#wuwei-effect");
 
-    General *homura = new General(this, "homura", "wei", 3, false); // Animation 005
+    //General *homura = new General(this, "homura", "wei", 3, false); // Animation 005
 
     General *n_azusa = new General(this, "n_azusa", "wei", 3, false); // Animation 006
 	n_azusa->addSkill(new Quanmian);
 	n_azusa->addSkill(new Miaolv);
 
-    General *mio = new General(this, "mio", "wei", 3, false); // Animation 007
+    /*General *mio = new General(this, "mio", "wei", 3, false); // Animation 007
 
     General *yui = new General(this, "yui", "wei", 3, false); // Animation 008
 
@@ -378,9 +383,8 @@ void MoesenPackage::addAnimationGenerals()
     General *sawa = new General(this, "astarotte", "wei", 3, false); // Animation 017
 
     General *astarotte = new General(this, "miho", "wei", 3, false); // Animation 018
-
+    */
 
     addMetaObject<WuweiCard>();
 	addMetaObject<MiaolvCard>();
-
 }
