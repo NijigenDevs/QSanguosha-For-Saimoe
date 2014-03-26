@@ -437,7 +437,7 @@ public:
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const {
-		ServerPlayer *target = room->askForPlayerChosen(ask_who, room->getAlivePlayers(), objectName());
+		ServerPlayer *target = room->askForPlayerChosen(ask_who, room->getAlivePlayers(), objectName() ,"@quanmian_draw");
 		target->drawCards(1);
 		return false;
     }
@@ -454,7 +454,7 @@ void MiaolvCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &ta
     ServerPlayer *yui = targets.first();
 	int cardid = room->askForCardChosen(source, yui, "e", objectName());
 	yui->obtainCard(Sanguosha->getCard(cardid));
-	if (yui->objectName() == source->objectName())
+	if (yui->objectName() != source->objectName())
 		source->drawCards(1);
 }
 
@@ -475,6 +475,88 @@ public:
     }
 };
 
+// 秋山澪 音装 羞涩 -SE
+class Yinzhuang: public TriggerSkill {
+public:
+    Yinzhuang(): TriggerSkill("yinzhuang") {
+        events << CardsMoveOneTime;
+        frequency = Compulsory;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *mio, QVariant &data, ServerPlayer * &) const{
+        if (!TriggerSkill::triggerable(mio)) return QStringList();
+        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+		if (move.from == mio && move.from_places.contains(Player::PlaceEquip) && move.reason.m_reason != CardMoveReason::S_REASON_RESPONSE) {
+            return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *mio, QVariant &, ServerPlayer *) const{
+        bool invoke = mio->hasShownSkill(this) ? true : room->askForSkillInvoke(mio, objectName());
+        if (invoke){
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *mio, QVariant &data, ServerPlayer *) const{
+		if (!mio) return false;
+         CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+		 foreach(int cardid, move.card_ids){
+			 Card *card = Sanguosha->getCard(cardid);
+			 if (card->isKindOf("Weapon")){
+				 if (room->getDrawPile().length() == 0)
+					 room->swapPile();
+				 int cardid = room->getDrawPile().at(0);
+				 room->showCard(mio, cardid);//BUG not showing card
+				 room->obtainCard(room->askForPlayerChosen(mio, room->getAlivePlayers(), objectName(), "@yinzhuang_give"), cardid);
+			 }else if(card->isKindOf("Armor")){
+				 Slash *slash = new Slash(Card::NoSuit, 0);
+				 slash->setSkillName(objectName());
+				 room->useCard(CardUseStruct(slash, mio, room->askForPlayerChosen(mio, room->getOtherPlayers(mio), objectName(), "@yinzhuang_slash")));
+			 }else if(card->isKindOf("Horse")){
+				 mio->drawCards(1);
+			 }
+		 }
+        return false;
+    }
+};
+
+class Xiuse: public TriggerSkill {
+public:
+    Xiuse(): TriggerSkill("xiuse") {
+        events << CardsMoveOneTime;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *mio, QVariant &data, ServerPlayer * &) const{
+        if (!TriggerSkill::triggerable(mio)) return QStringList();
+        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+		if (move.to == mio && move.to_place == Player::PlaceHand && mio->hasSkill(objectName()) && !mio->hasFlag("xiuse_used")) {//“获得”的定义需要斟酌
+            return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *mio, QVariant &, ServerPlayer *) const{
+        if (room->askForSkillInvoke(mio, objectName())){
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *mio, QVariant &data, ServerPlayer *) const{
+		if (!mio) return false;
+		mio->setFlags("xiuse_used");
+		mio->drawCards(1);
+        return false;
+    }
+};
+
 void MoesenPackage::addAnimationGenerals()
 {
     General *mami = new General(this, "mami", "wei", 4, false); // Animation 001
@@ -482,6 +564,7 @@ void MoesenPackage::addAnimationGenerals()
 	mami->addSkill(new Molu);
 
     General *s_kyouko = new General(this, "s_kyouko", "wei", 4, false); // Animation 002
+	s_kyouko->addCompanion("sayaka");
     s_kyouko->addSkill(new Yingqiang);
     s_kyouko->addSkill(new YingqiangTargetMod);
     related_skills.insertMulti("yingqiang", "#yingqiang-target");
@@ -503,9 +586,11 @@ void MoesenPackage::addAnimationGenerals()
 	n_azusa->addSkill(new Quanmian);
 	n_azusa->addSkill(new Miaolv);
 
-    /*General *mio = new General(this, "mio", "wei", 3, false); // Animation 007
+    General *mio = new General(this, "mio", "wei", 3, false); // Animation 007
+	mio->addSkill(new Yinzhuang);
+	mio->addSkill(new Xiuse);
 
-    General *yui = new General(this, "yui", "wei", 3, false); // Animation 008
+    /*General *yui = new General(this, "yui", "wei", 3, false); // Animation 008
 
     General *kanade = new General(this, "kanade", "wei", 3, false); // Animation 009
 
