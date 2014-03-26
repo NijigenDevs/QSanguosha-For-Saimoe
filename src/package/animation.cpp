@@ -5,7 +5,98 @@
 #include "engine.h"
 #include "client.h"
 
-//缨枪
+//巴麻美 烈枪，殁颅 -SE
+class Lieqiang: public TriggerSkill {
+public:
+    Lieqiang(): TriggerSkill("lieqiang") {
+		frequency = Compulsory;
+        events << TargetChosen;
+    }
+
+    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent , Room *room, ServerPlayer *player, QVariant &data) const{
+        QMap<ServerPlayer *, QStringList> skill_list;
+        if (player == NULL) return skill_list;
+        CardUseStruct use = data.value<CardUseStruct>();
+		if (!use.card || !use.card->isKindOf("Slash") || !use.to.contains(player))
+            return skill_list;
+
+        QList<ServerPlayer *> mamis = room->findPlayersBySkillName(objectName());
+        foreach (ServerPlayer *mami, mamis)
+			if (mami->getKingdom() == use.from->getKingdom() && ((mami->isKongcheng() && mami->getEquips().length() == 0) ||
+				(mami->isKongcheng() && mami->getJudgingArea().length() == 0) ||(mami->getEquips().length() == 0 && mami->getEquips().length() == 0)))
+                skill_list.insert(mami, QStringList(objectName()));
+        return skill_list;
+    }
+
+	 virtual bool cost(TriggerEvent , Room *room, ServerPlayer *, QVariant &data, ServerPlayer *ask_who) const{
+        bool invoke = ask_who->hasShownSkill(this) ? true : room->askForSkillInvoke(ask_who, objectName(), data);
+        if (invoke){
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent , Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const{
+        CardUseStruct use = data.value<CardUseStruct>();
+        QVariantList jink_list = use.from->tag["Jink_" + use.card->toString()].toList();
+
+        doLieqiang(player, use, jink_list);
+
+        use.from->tag["Jink_" + use.card->toString()] = QVariant::fromValue(jink_list);
+        return false;
+    }
+
+private:
+    static void doLieqiang(ServerPlayer *target, CardUseStruct use, QVariantList &jink_list) {
+        int index = use.to.indexOf(target);
+        LogMessage log;
+        log.type = "#NoJink";
+        log.from = target;
+        target->getRoom()->sendLog(log);
+        jink_list.replace(index, QVariant(0));
+    }
+};
+
+class Molu: public TriggerSkill {
+public:
+    Molu(): TriggerSkill("molu") {
+        events << AskForPeaches;
+		frequency = Limited;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer * &ask_who) const {
+
+        DyingStruct dying = data.value<DyingStruct>();
+		if (player != dying.who || !player->hasSkill(objectName()) || player->getActualGeneral1Name().contains("sujiang"))
+            return QStringList();
+        return QStringList(objectName());
+    }
+
+    virtual bool cost(TriggerEvent , Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const {
+        if (ask_who->askForSkillInvoke(objectName(), data)) {
+            room->broadcastSkillInvoke(objectName());
+			room->doLightbox("$MoluAnimate", 3000);
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent , Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const {
+
+        RecoverStruct recover;
+		recover.recover = player->getLostHp();
+        recover.who = player;
+        room->recover(player, recover);
+		player->removeGeneral(true);
+        return false;
+    }
+};
+
+
+
+//缨枪-Slob
 class Yingqiang: public ViewAsSkill {
 public:
     Yingqiang(): ViewAsSkill("yingqiang") {
@@ -159,7 +250,98 @@ public:
     }
 };
 
-//无畏
+//大圆脸 慈悲，仁悯 -SE
+class Cibei: public TriggerSkill {
+public:
+    Cibei(): TriggerSkill("cibei") {
+        events << DamageCaused;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer * &) const {
+        //if (TriggerSkill::triggerable(player).isEmpty())
+        //    return QStringList();
+
+        DamageStruct damage = data.value<DamageStruct>();
+        if (player != damage.from || !player->hasSkill(objectName()))
+            return QStringList();
+
+        player->tag["CibeiCurrentTarget"] = QVariant::fromValue(damage.to);
+        return QStringList(objectName());
+    }
+
+    virtual bool cost(TriggerEvent , Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const {
+        if (ask_who->askForSkillInvoke(objectName(), ask_who->tag.value("CibeiCurrentTarget"))) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent , Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const {
+        DamageStruct damage = data.value<DamageStruct>();
+        ServerPlayer *target = damage.to;
+        if (!target->isKongcheng()){
+            int id = room->askForCardChosen(ask_who, target, "h", objectName());
+            room->throwCard(id, target, ask_who);
+        }
+        if (target->getEquips().length() > 0){
+            int id = room->askForCardChosen(ask_who, target, "e", objectName());
+            room->throwCard(id, target, ask_who);
+        }
+        ask_who->tag.remove("CibeiCurrentTarget");
+        return true;
+    }
+};
+
+class Renmin: public TriggerSkill {
+public:
+    Renmin(): TriggerSkill("renmin") {
+        events << CardsMoveOneTime;
+    }
+
+    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent , Room *room, ServerPlayer *player, QVariant &data) const{
+        QMap<ServerPlayer *, QStringList> skill_list;
+        if (player == NULL) return skill_list;
+        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+		if (move.from != player || move.card_ids.length() == 0 || move.from->isDead() ||move.to_place != Player::DiscardPile||
+			((move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) != CardMoveReason::S_REASON_DISCARD)|| move.reason.m_playerId != move.from->objectName())//最后一句为歧义：该角色弃置的牌 我这里写的意思是该角色自行弃置的牌。
+            return skill_list;
+
+        QList<ServerPlayer *> madokas = room->findPlayersBySkillName(objectName());
+        foreach (ServerPlayer *madoka, madokas)
+			if (madoka->getKingdom() == move.from->getKingdom() && move.from->getMark("@renmin_used") == 0)
+                skill_list.insert(madoka, QStringList(objectName()));
+        return skill_list;
+    }
+
+    virtual bool cost(TriggerEvent , Room *room, ServerPlayer *, QVariant &data, ServerPlayer *ask_who) const{
+        ServerPlayer *madoka = ask_who;
+
+        if (madoka != NULL){
+			if (madoka->askForSkillInvoke(objectName(), data)){
+				room->broadcastSkillInvoke(objectName());
+				return true;
+			}
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent , Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const{
+        ServerPlayer *madoka = ask_who;
+        if (madoka == NULL) return false;
+        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+		player->gainMark("@renmin_used");//
+		CardsMoveStruct newmove = CardsMoveStruct();
+		newmove.card_ids = move.card_ids;
+		newmove.to = move.from;
+		newmove.to_place = Player::PlaceHand;
+		newmove.reason = CardMoveReason(CardMoveReason::S_REASON_RECYCLE, madoka->objectName(),move.from->objectName(), objectName(), objectName());
+		room->moveCardsAtomic(newmove, true);
+        return false;
+    }
+};
+
+//无畏-Slob
 WuweiCard::WuweiCard() {
 }
 
@@ -226,50 +408,8 @@ public:
     }
 };
 
-//慈悲
-class Cibei: public TriggerSkill {
-public:
-    Cibei(): TriggerSkill("cibei") {
-        events << DamageCaused;
-    }
 
-    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer * &) const {
-        //if (TriggerSkill::triggerable(player).isEmpty())
-        //    return QStringList();
-
-        DamageStruct damage = data.value<DamageStruct>();
-        if (player != damage.from)
-            return QStringList();
-
-        player->tag["CibeiCurrentTarget"] = QVariant::fromValue(damage.to);
-        return QStringList(objectName());
-    }
-
-    virtual bool cost(TriggerEvent , Room *room, ServerPlayer *player, QVariant &) const {
-        if (player->askForSkillInvoke(objectName(), player->tag.value("CibeiCurrentTarget"))) {
-            room->broadcastSkillInvoke(objectName());
-            return true;
-        }
-        return false;
-    }
-
-    virtual bool effect(TriggerEvent TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const {
-        DamageStruct damage = data.value<DamageStruct>();
-        ServerPlayer *target = damage.to;
-        if (!target->isKongcheng()){
-            int id = room->askForCardChosen(player, target, "h", objectName());
-            room->throwCard(id, target, player);
-        }
-        if (target->getEquips().length() > 0){
-            int id = room->askForCardChosen(player, target, "e", objectName());
-            room->throwCard(id, target, player);
-        }
-        player->tag.remove("CibeiCurrentTarget");
-        return true;
-    }
-};
-
-//梓喵 劝勉-妙律
+//梓喵 劝勉，妙律 -SE
 class Quanmian: public TriggerSkill {
 public:
     Quanmian(): TriggerSkill("quanmian") {
@@ -288,16 +428,16 @@ public:
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent , Room *room, ServerPlayer *player, QVariant &data) const {
-        if (player->askForSkillInvoke(objectName(), data)) {
+    virtual bool cost(TriggerEvent , Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const  {
+        if (ask_who->askForSkillInvoke(objectName(), data)) {
             room->broadcastSkillInvoke(objectName());
             return true;
         }
         return false;
     }
 
-    virtual bool effect(TriggerEvent TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const {
-		ServerPlayer *target = room->askForPlayerChosen(player, room->getAlivePlayers(), objectName());
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const {
+		ServerPlayer *target = room->askForPlayerChosen(ask_who, room->getAlivePlayers(), objectName());
 		target->drawCards(1);
 		return false;
     }
@@ -337,7 +477,9 @@ public:
 
 void MoesenPackage::addAnimationGenerals()
 {
-    //General *mami = new General(this, "mami", "wei", 3, false); // Animation 001
+    General *mami = new General(this, "mami", "wei", 4, false); // Animation 001
+	mami->addSkill(new Lieqiang);
+	mami->addSkill(new Molu);
 
     General *s_kyouko = new General(this, "s_kyouko", "wei", 4, false); // Animation 002
     s_kyouko->addSkill(new Yingqiang);
@@ -348,8 +490,9 @@ void MoesenPackage::addAnimationGenerals()
            << new YingqiangClub
            << new YingqiangDiamond;
 
-    General *madoka = new General(this, "madoka", "wei", 3, false); // Animation 003
+    General *madoka = new General(this, "madoka", "wei", 4, false); // Animation 003
     madoka->addSkill(new Cibei);
+	madoka->addSkill(new Renmin);
 
     General *sayaka = new General(this, "sayaka", "wei", 4, false); // Animation 004
     sayaka->addSkill(new Wuwei);
