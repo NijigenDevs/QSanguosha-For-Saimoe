@@ -10,12 +10,12 @@ class AboutUsDialog: public QDialog {
     Q_OBJECT
 
 public:
-    
+
     //************************************
     // Method:    AboutUsDialog
     // FullName:  AboutUsDialog::AboutUsDialog
-    // Access:    public 
-    // Returns:   
+    // Access:    public
+    // Returns:
     // Qualifier:
     // Parameter: QWidget * parent
     // Description: Construct a dialog to provide information about developers.

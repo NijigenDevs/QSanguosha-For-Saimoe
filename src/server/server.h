@@ -15,7 +15,7 @@
 
   See the LICENSE file for more details.
 
-  QSanguosha-Hegemony Team    
+  QSanguosha-Hegemony Team
 *********************************************************************/
 #ifndef _SERVER_H
 #define _SERVER_H
@@ -51,8 +51,8 @@ public:
     //************************************
     // Method:    ServerDialog
     // FullName:  ServerDialog::ServerDialog
-    // Access:    public 
-    // Returns:   
+    // Access:    public
+    // Returns:
     // Qualifier:
     // Parameter: QWidget * parent
     // Description: Construct a dialog for user setting.
@@ -68,7 +68,7 @@ public:
     //************************************
     // Method:    config
     // FullName:  ServerDialog::config
-    // Access:    public 
+    // Access:    public
     // Returns:   bool
     // Qualifier:
     // Description: To save all selections by user.
@@ -87,7 +87,7 @@ private:
     //************************************
     // Method:    createAdvancedTab
     // FullName:  ServerDialog::createAdvancedTab
-    // Access:    private 
+    // Access:    private
     // Returns:   QWidget *
     // Qualifier:
     // Description: Create the Tab "advanced" for advanced setting.
@@ -102,7 +102,7 @@ private:
     //************************************
     // Method:    createConversionTab
     // FullName:  ServerDialog::createConversionTab
-    // Access:    private 
+    // Access:    private
     // Returns:   QWidget *
     // Qualifier:
     // Description: Create the Tab "conversions" to set conversions of cards and generals.

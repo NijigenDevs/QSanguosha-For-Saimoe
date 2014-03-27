@@ -15,7 +15,7 @@
 
   See the LICENSE file for more details.
 
-  QSanguosha-Hegemony Team    
+  QSanguosha-Hegemony Team
 *********************************************************************/
 #ifndef _CLIENT_PLAYER_H
 #define _CLIENT_PLAYER_H

@@ -15,7 +15,7 @@
 
   See the LICENSE file for more details.
 
-  QSanguosha-Hegemony Team    
+  QSanguosha-Hegemony Team
 *********************************************************************/
 #include "formation.h"
 #include "standard-basics.h"

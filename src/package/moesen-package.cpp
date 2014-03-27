@@ -15,7 +15,7 @@ MoesenPackage::MoesenPackage()
     addComicGenerals();
     addGameGenerals();
     addNovelGenerals();
-    
+
 
     patterns["."] = new ExpPattern(".|.|.|hand");
     patterns[".S"] = new ExpPattern(".|spade|.|hand");

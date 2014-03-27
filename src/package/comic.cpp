@@ -36,7 +36,7 @@ void MoesenPackage::addComicGenerals()
     General *nodoka = new General(this, "nodoka", "shu", 3, false); // Comic 014
 
     General *koromo = new General(this, "koromo", "shu", 3, false); // Comic 015
-    
+
     General *shizuno = new General(this, "shizuno", "shu", 3, false); // Comic 016
 
     General *suigintou = new General(this, "suigintou", "shu", 3, false); // Comic 017

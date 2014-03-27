@@ -615,7 +615,7 @@ void MoesenPackage::addAnimationGenerals()
     General *mayu = new General(this, "mayu", "wei", 3, false); // Animation 014
 
     General *lacus = new General(this, "lacus", "wei", 3, false); // Animation 015
-    
+
     General *ayu = new General(this, "sawa", "wei", 3, false); // Animation 016
 
     General *sawa = new General(this, "astarotte", "wei", 3, false); // Animation 017

@@ -15,7 +15,7 @@
 
   See the LICENSE file for more details.
 
-  QSanguosha-Hegemony Team    
+  QSanguosha-Hegemony Team
 *********************************************************************/
 #include "standard-qun-generals.h"
 #include "skill.h"

@@ -40,7 +40,7 @@ QString Skill::getDescription(bool inToolTip) const{
         desc.prepend(QString("<font color=gray>(%1)</font>").arg(tr("this skill cannot preshow")));
 
     QString skill_name = objectName();
-    
+
     if (objectName().contains("_")){
         skill_name = objectName().split("_").first();
     }

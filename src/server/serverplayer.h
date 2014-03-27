@@ -44,7 +44,7 @@ public:
     void unicast(const QString &message);
     void drawCard(const Card *card);
     Room *getRoom() const;
-	void ServerPlayer::changePromptBox() const;//SE ADDED
+    void ServerPlayer::changePromptBox() const;//SE ADDED
     void broadcastSkillInvoke(const Card *card) const;
     void broadcastSkillInvoke(const QString &card_name) const;
     int getRandomHandCardId() const;

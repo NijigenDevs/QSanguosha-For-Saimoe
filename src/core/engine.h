@@ -15,7 +15,7 @@
 
   See the LICENSE file for more details.
 
-  QSanguosha-Hegemony Team    
+  QSanguosha-Hegemony Team
 *********************************************************************/
 #ifndef _ENGINE_H
 #define _ENGINE_H
@@ -67,7 +67,7 @@ public:
     //************************************
     // Method:    getVersionNumber
     // FullName:  Engine::getVersionNumber
-    // Access:    public 
+    // Access:    public
     // Returns:   QT_NAMESPACE::QString
     // Qualifier: const
     // Description: Get current version number.
@@ -130,7 +130,7 @@ public:
     //************************************
     // Method:    getRandomGenerals
     // FullName:  Engine::getRandomGenerals
-    // Access:    public 
+    // Access:    public
     // Returns:   QT_NAMESPACE::QStringList
     // Qualifier: const
     // Parameter: int count
@@ -147,7 +147,7 @@ public:
     //************************************
     // Method:    getRandomCards
     // FullName:  Engine::getRandomCards
-    // Access:    public 
+    // Access:    public
     // Returns:   QList<int>
     // Qualifier: const
     // Description: Get IDs of all the available cards.
@@ -163,7 +163,7 @@ public:
     //************************************
     // Method:    getLimitedGeneralNames
     // FullName:  Engine::getLimitedGeneralNames
-    // Access:    public 
+    // Access:    public
     // Returns:   QT_NAMESPACE::QStringList
     // Qualifier: const
     // Description: It was designed to get the list of all available generals.

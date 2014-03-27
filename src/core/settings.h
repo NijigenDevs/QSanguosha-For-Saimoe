@@ -15,7 +15,7 @@
 
   See the LICENSE file for more details.
 
-  QSanguosha-Hegemony Team    
+  QSanguosha-Hegemony Team
 *********************************************************************/
 #ifndef _SETTINGS_H
 #define _SETTINGS_H
@@ -35,7 +35,7 @@ public:
     //************************************
     // Method:    init
     // FullName:  Settings::init
-    // Access:    public 
+    // Access:    public
     // Returns:   void
     // Qualifier:
     // Description: Initialize Config and create a user setting file to save user's settings.

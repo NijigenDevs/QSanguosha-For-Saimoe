@@ -1156,7 +1156,7 @@ void ServerPlayer::gainAnExtraTurn() {
     Player::Phase orig_phase = Player::NotActive;
     if (current != NULL && current->isAlive())
         orig_phase = current->getPhase();
-    
+
     try {
         current->setPhase(Player::NotActive);
         room->broadcastProperty(current, "phase");

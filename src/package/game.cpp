@@ -36,7 +36,7 @@ void MoesenPackage::addGameGenerals()
     General *setsuna = new General(this, "setsuna", "wu", 3, false); // Game 014
 
     General *kazusa = new General(this, "kazusa", "wu", 3, false); // Game 015
-    
+
     General *ayu = new General(this, "ayu", "wu", 3, false); // Game 016
 
     General *hayate = new General(this, "hayate", "wu", 3, false); // Game 017

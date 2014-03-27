@@ -36,7 +36,7 @@ void MoesenPackage::addNovelGenerals()
     General *asuna = new General(this, "asuna", "qun", 3, false); // Novel 014
 
     General *sena = new General(this, "sena", "qun", 3, false); // Novel 015
-    
+
     General *hitagi = new General(this, "hitagi", "qun", 3, false); // Novel 016
 
     General *rikka = new General(this, "rikka", "qun", 3, false); // Novel 017
