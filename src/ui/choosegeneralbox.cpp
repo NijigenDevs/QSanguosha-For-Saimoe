@@ -1,5 +1,5 @@
 /********************************************************************
-	Copyright (c) 2013-2014 - QSanguosha-Hegemony Team
+    Copyright (c) 2013-2014 - QSanguosha-Hegemony Team
 
   This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
   See the LICENSE file for more details.
 
-  QSanguosha-Hegemony Team	
+  QSanguosha-Hegemony Team    
 *********************************************************************/
 #include "choosegeneralbox.h"
 #include "engine.h"
@@ -298,14 +298,14 @@ void ChooseGeneralBox::chooseGeneral(QStringList generals) {
 
     if (ServerInfo.OperationTimeout != 0) {
         if (!progress_bar) {
-	        progress_bar = new QSanCommandProgressBar();
-	        progress_bar->setMinimumWidth(200);
-	        progress_bar->setMaximumHeight(12);
-	        progress_bar->setTimerEnabled(true);
-	        progress_bar_item = new QGraphicsProxyWidget(this);
-	        progress_bar_item->setWidget(progress_bar);
-	        progress_bar_item->setPos(boundingRect().center().x() - progress_bar_item->boundingRect().width() / 2, boundingRect().height() - 30);
-	        connect(progress_bar, SIGNAL(timedOut()), this, SLOT(reply()));
+            progress_bar = new QSanCommandProgressBar();
+            progress_bar->setMinimumWidth(200);
+            progress_bar->setMaximumHeight(12);
+            progress_bar->setTimerEnabled(true);
+            progress_bar_item = new QGraphicsProxyWidget(this);
+            progress_bar_item->setWidget(progress_bar);
+            progress_bar_item->setPos(boundingRect().center().x() - progress_bar_item->boundingRect().width() / 2, boundingRect().height() - 30);
+            connect(progress_bar, SIGNAL(timedOut()), this, SLOT(reply()));
         }
         progress_bar->setCountdown(QSanProtocol::S_COMMAND_CHOOSE_GENERAL);
         progress_bar->show();

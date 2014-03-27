@@ -10,7 +10,7 @@
 class Lieqiang: public TriggerSkill {
 public:
     Lieqiang(): TriggerSkill("lieqiang") {
-		frequency = Compulsory;
+        frequency = Compulsory;
         events << TargetChosen;
     }
 
@@ -18,18 +18,18 @@ public:
         QMap<ServerPlayer *, QStringList> skill_list;
         if (player == NULL) return skill_list;
         CardUseStruct use = data.value<CardUseStruct>();
-		if (!use.card || !use.card->isKindOf("Slash") || !use.to.contains(player))
+        if (!use.card || !use.card->isKindOf("Slash") || !use.to.contains(player))
             return skill_list;
 
         QList<ServerPlayer *> mamis = room->findPlayersBySkillName(objectName());
         foreach (ServerPlayer *mami, mamis)
-			if (mami->getKingdom() == use.from->getKingdom() && ((mami->isKongcheng() && mami->getEquips().length() == 0) ||
-				(mami->isKongcheng() && mami->getJudgingArea().length() == 0) ||(mami->getEquips().length() == 0 && mami->getEquips().length() == 0)))
+            if (mami->getKingdom() == use.from->getKingdom() && ((mami->isKongcheng() && mami->getEquips().length() == 0) ||
+                (mami->isKongcheng() && mami->getJudgingArea().length() == 0) ||(mami->getEquips().length() == 0 && mami->getEquips().length() == 0)))
                 skill_list.insert(mami, QStringList(objectName()));
         return skill_list;
     }
 
-	 virtual bool cost(TriggerEvent , Room *room, ServerPlayer *, QVariant &data, ServerPlayer *ask_who) const{
+     virtual bool cost(TriggerEvent , Room *room, ServerPlayer *, QVariant &data, ServerPlayer *ask_who) const{
         bool invoke = ask_who->hasShownSkill(this) ? true : room->askForSkillInvoke(ask_who, objectName(), data);
         if (invoke){
             room->broadcastSkillInvoke(objectName());
@@ -64,13 +64,13 @@ class Molu: public TriggerSkill {
 public:
     Molu(): TriggerSkill("molu") {
         events << AskForPeaches;
-		frequency = Limited;
+        frequency = Limited;
     }
 
     virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer * &ask_who) const {
 
         DyingStruct dying = data.value<DyingStruct>();
-		if (player != dying.who || !player->hasSkill(objectName()) || player->getActualGeneral1Name().contains("sujiang"))
+        if (player != dying.who || !player->hasSkill(objectName()) || player->getActualGeneral1Name().contains("sujiang"))
             return QStringList();
         return QStringList(objectName());
     }
@@ -78,7 +78,7 @@ public:
     virtual bool cost(TriggerEvent , Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const {
         if (ask_who->askForSkillInvoke(objectName(), data)) {
             room->broadcastSkillInvoke(objectName());
-			room->doLightbox("$MoluAnimate", 3000);
+            room->doLightbox("$MoluAnimate", 3000);
             return true;
         }
         return false;
@@ -87,10 +87,10 @@ public:
     virtual bool effect(TriggerEvent , Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const {
 
         RecoverStruct recover;
-		recover.recover = player->getLostHp();
+        recover.recover = player->getLostHp();
         recover.who = player;
         room->recover(player, recover);
-		player->removeGeneral(true);
+        player->removeGeneral(true);
         return false;
     }
 };
@@ -304,13 +304,13 @@ public:
         QMap<ServerPlayer *, QStringList> skill_list;
         if (player == NULL) return skill_list;
         CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-		if (move.from != player || move.card_ids.length() == 0 || move.from->isDead() ||move.to_place != Player::DiscardPile||
-			((move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) != CardMoveReason::S_REASON_DISCARD)|| move.reason.m_playerId != move.from->objectName())//最后一句为歧义：该角色弃置的牌 我这里写的意思是该角色自行弃置的牌。
+        if (move.from != player || move.card_ids.length() == 0 || move.from->isDead() ||move.to_place != Player::DiscardPile||
+            ((move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) != CardMoveReason::S_REASON_DISCARD)|| move.reason.m_playerId != move.from->objectName())//最后一句为歧义：该角色弃置的牌 我这里写的意思是该角色自行弃置的牌。
             return skill_list;
 
         QList<ServerPlayer *> madokas = room->findPlayersBySkillName(objectName());
         foreach (ServerPlayer *madoka, madokas)
-			if (madoka->getKingdom() == move.from->getKingdom() && move.from->getMark("@renmin_used") == 0)
+            if (madoka->getKingdom() == move.from->getKingdom() && move.from->getMark("@renmin_used") == 0)
                 skill_list.insert(madoka, QStringList(objectName()));
         return skill_list;
     }
@@ -319,10 +319,10 @@ public:
         ServerPlayer *madoka = ask_who;
 
         if (madoka != NULL){
-			if (madoka->askForSkillInvoke(objectName(), data)){
-				room->broadcastSkillInvoke(objectName());
-				return true;
-			}
+            if (madoka->askForSkillInvoke(objectName(), data)){
+                room->broadcastSkillInvoke(objectName());
+                return true;
+            }
         }
         return false;
     }
@@ -331,13 +331,13 @@ public:
         ServerPlayer *madoka = ask_who;
         if (madoka == NULL) return false;
         CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-		player->gainMark("@renmin_used");//
-		CardsMoveStruct newmove = CardsMoveStruct();
-		newmove.card_ids = move.card_ids;
-		newmove.to = move.from;
-		newmove.to_place = Player::PlaceHand;
-		newmove.reason = CardMoveReason(CardMoveReason::S_REASON_RECYCLE, madoka->objectName(),move.from->objectName(), objectName(), objectName());
-		room->moveCardsAtomic(newmove, true);
+        player->gainMark("@renmin_used");//
+        CardsMoveStruct newmove = CardsMoveStruct();
+        newmove.card_ids = move.card_ids;
+        newmove.to = move.from;
+        newmove.to_place = Player::PlaceHand;
+        newmove.reason = CardMoveReason(CardMoveReason::S_REASON_RECYCLE, madoka->objectName(),move.from->objectName(), objectName(), objectName());
+        room->moveCardsAtomic(newmove, true);
         return false;
     }
 };
@@ -415,7 +415,7 @@ class Quanmian: public TriggerSkill {
 public:
     Quanmian(): TriggerSkill("quanmian") {
         events << CardUsed;
-		frequency = Frequent;
+        frequency = Frequent;
     }
 
     virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer * &) const {
@@ -423,9 +423,9 @@ public:
         //    return QStringList();
 
         CardUseStruct use = data.value<CardUseStruct>();
-		if (use.card->isKindOf("EquipCard") && use.from->objectName() == player->objectName() && player->hasSkill(objectName())){
-			return QStringList(objectName());
-		}
+        if (use.card->isKindOf("EquipCard") && use.from->objectName() == player->objectName() && player->hasSkill(objectName())){
+            return QStringList(objectName());
+        }
         return QStringList();
     }
 
@@ -438,9 +438,9 @@ public:
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const {
-		ServerPlayer *target = room->askForPlayerChosen(ask_who, room->getAlivePlayers(), objectName() ,"@quanmian_draw");
-		target->drawCards(1);
-		return false;
+        ServerPlayer *target = room->askForPlayerChosen(ask_who, room->getAlivePlayers(), objectName() ,"@quanmian_draw");
+        target->drawCards(1);
+        return false;
     }
 };
 
@@ -448,15 +448,15 @@ MiaolvCard::MiaolvCard() {
 }
 
 bool MiaolvCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
-	return targets.isEmpty() && to_select->getEquips().length() > 0;
+    return targets.isEmpty() && to_select->getEquips().length() > 0;
 }
 
 void MiaolvCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
     ServerPlayer *yui = targets.first();
-	int cardid = room->askForCardChosen(source, yui, "e", objectName());
-	yui->obtainCard(Sanguosha->getCard(cardid));
-	if (yui->objectName() != source->objectName())
-		source->drawCards(1);
+    int cardid = room->askForCardChosen(source, yui, "e", objectName());
+    yui->obtainCard(Sanguosha->getCard(cardid));
+    if (yui->objectName() != source->objectName())
+        source->drawCards(1);
 }
 
 
@@ -487,7 +487,7 @@ public:
     virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *mio, QVariant &data, ServerPlayer * &) const{
         if (!TriggerSkill::triggerable(mio)) return QStringList();
         CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-		if (move.from == mio && move.from_places.contains(Player::PlaceEquip) && move.reason.m_reason != CardMoveReason::S_REASON_RESPONSE) {
+        if (move.from == mio && move.from_places.contains(Player::PlaceEquip) && move.reason.m_reason != CardMoveReason::S_REASON_RESPONSE) {
             return QStringList(objectName());
         }
         return QStringList();
@@ -504,24 +504,24 @@ public:
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *mio, QVariant &data, ServerPlayer *) const{
-		if (!mio) return false;
+        if (!mio) return false;
          CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-		 foreach(int cardid, move.card_ids){
-			 Card *card = Sanguosha->getCard(cardid);
-			 if (card->isKindOf("Weapon")){
-				 if (room->getDrawPile().length() == 0)
-					 room->swapPile();
-				 int cardid = room->getDrawPile().at(0);
-				 room->showCard(mio, cardid);//BUG not showing card
-				 room->obtainCard(room->askForPlayerChosen(mio, room->getAlivePlayers(), objectName(), "@yinzhuang_give"), cardid);
-			 }else if(card->isKindOf("Armor")){
-				 Slash *slash = new Slash(Card::NoSuit, 0);
-				 slash->setSkillName(objectName());
-				 room->useCard(CardUseStruct(slash, mio, room->askForPlayerChosen(mio, room->getOtherPlayers(mio), objectName(), "@yinzhuang_slash")));
-			 }else if(card->isKindOf("Horse")){
-				 mio->drawCards(1);
-			 }
-		 }
+         foreach(int cardid, move.card_ids){
+             Card *card = Sanguosha->getCard(cardid);
+             if (card->isKindOf("Weapon")){
+                 if (room->getDrawPile().length() == 0)
+                     room->swapPile();
+                 int cardid = room->getDrawPile().at(0);
+                 room->showCard(mio, cardid);//BUG not showing card
+                 room->obtainCard(room->askForPlayerChosen(mio, room->getAlivePlayers(), objectName(), "@yinzhuang_give"), cardid);
+             }else if(card->isKindOf("Armor")){
+                 Slash *slash = new Slash(Card::NoSuit, 0);
+                 slash->setSkillName(objectName());
+                 room->useCard(CardUseStruct(slash, mio, room->askForPlayerChosen(mio, room->getOtherPlayers(mio), objectName(), "@yinzhuang_slash")));
+             }else if(card->isKindOf("Horse")){
+                 mio->drawCards(1);
+             }
+         }
         return false;
     }
 };
@@ -535,7 +535,7 @@ public:
     virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *mio, QVariant &data, ServerPlayer * &) const{
         if (!TriggerSkill::triggerable(mio)) return QStringList();
         CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-		if (move.to == mio && move.to_place == Player::PlaceHand && mio->hasSkill(objectName()) && !mio->hasFlag("xiuse_used")) {//“获得”的定义需要斟酌
+        if (move.to == mio && move.to_place == Player::PlaceHand && mio->hasSkill(objectName()) && !mio->hasFlag("xiuse_used")) {//“获得”的定义需要斟酌
             return QStringList(objectName());
         }
         return QStringList();
@@ -551,9 +551,9 @@ public:
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *mio, QVariant &data, ServerPlayer *) const{
-		if (!mio) return false;
-		mio->setFlags("xiuse_used");
-		mio->drawCards(1);
+        if (!mio) return false;
+        mio->setFlags("xiuse_used");
+        mio->drawCards(1);
         return false;
     }
 };
@@ -561,11 +561,11 @@ public:
 void MoesenPackage::addAnimationGenerals()
 {
     General *mami = new General(this, "mami", "wei", 4, false); // Animation 001
-	mami->addSkill(new Lieqiang);
-	mami->addSkill(new Molu);
+    mami->addSkill(new Lieqiang);
+    mami->addSkill(new Molu);
 
     General *s_kyouko = new General(this, "s_kyouko", "wei", 4, false); // Animation 002
-	s_kyouko->addCompanion("sayaka");
+    s_kyouko->addCompanion("sayaka");
     s_kyouko->addSkill(new Yingqiang);
     s_kyouko->addSkill(new YingqiangTargetMod);
     related_skills.insertMulti("yingqiang", "#yingqiang-target");
@@ -576,7 +576,7 @@ void MoesenPackage::addAnimationGenerals()
 
     General *madoka = new General(this, "madoka", "wei", 4, false); // Animation 003
     madoka->addSkill(new Cibei);
-	madoka->addSkill(new Renmin);
+    madoka->addSkill(new Renmin);
 
     General *sayaka = new General(this, "sayaka", "wei", 4, false); // Animation 004
     sayaka->addSkill(new Wuwei);
@@ -584,12 +584,12 @@ void MoesenPackage::addAnimationGenerals()
     //General *homura = new General(this, "homura", "wei", 3, false); // Animation 005
 
     General *n_azusa = new General(this, "n_azusa", "wei", 3, false); // Animation 006
-	n_azusa->addSkill(new Quanmian);
-	n_azusa->addSkill(new Miaolv);
+    n_azusa->addSkill(new Quanmian);
+    n_azusa->addSkill(new Miaolv);
 
     General *mio = new General(this, "mio", "wei", 3, false); // Animation 007
-	mio->addSkill(new Yinzhuang);
-	mio->addSkill(new Xiuse);
+    mio->addSkill(new Yinzhuang);
+    mio->addSkill(new Xiuse);
 
     /*General *yui = new General(this, "yui", "wei", 3, false); // Animation 008
 
@@ -615,5 +615,5 @@ void MoesenPackage::addAnimationGenerals()
     */
 
     addMetaObject<WuweiCard>();
-	addMetaObject<MiaolvCard>();
+    addMetaObject<MiaolvCard>();
 }

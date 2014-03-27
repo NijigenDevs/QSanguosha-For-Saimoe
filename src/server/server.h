@@ -1,5 +1,5 @@
 /********************************************************************
-	Copyright (c) 2013-2014 - QSanguosha-Hegemony Team
+    Copyright (c) 2013-2014 - QSanguosha-Hegemony Team
 
   This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
   See the LICENSE file for more details.
 
-  QSanguosha-Hegemony Team	
+  QSanguosha-Hegemony Team    
 *********************************************************************/
 #ifndef _SERVER_H
 #define _SERVER_H
