@@ -32,6 +32,11 @@ Room *ServerPlayer::getRoom() const{
     return room;
 }
 
+//SE changed
+void ServerPlayer::changePromptBox() const{
+
+}
+
 void ServerPlayer::broadcastSkillInvoke(const QString &card_name) const{
     QString name = card_name;
     if (name.startsWith("heg_"))

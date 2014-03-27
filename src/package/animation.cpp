@@ -4,8 +4,9 @@
 #include "standard-tricks.h"
 #include "engine.h"
 #include "client.h"
+//this file is the general skills for animation.
 
-//°ÍÂéÃÀ ÁÒÇ¹£¬éâÂ­ -SE
+//mami    lieqiang, molu -SE
 class Lieqiang: public TriggerSkill {
 public:
     Lieqiang(): TriggerSkill("lieqiang") {
@@ -96,7 +97,7 @@ public:
 
 
 
-//Ó§Ç¹-Slob
+//yingqiang-Slob
 class Yingqiang: public ViewAsSkill {
 public:
     Yingqiang(): ViewAsSkill("yingqiang") {
@@ -250,7 +251,7 @@ public:
     }
 };
 
-//´óÔ²Á³ ´È±¯£¬ÈÊÃõ -SE
+//madoka    cibei, renmin -SE
 class Cibei: public TriggerSkill {
 public:
     Cibei(): TriggerSkill("cibei") {
@@ -341,7 +342,7 @@ public:
     }
 };
 
-//ÎŞÎ·-Slob
+//wuwei-Slob
 WuweiCard::WuweiCard() {
 }
 
@@ -409,7 +410,7 @@ public:
 };
 
 
-//è÷ß÷ È°Ãã£¬ÃîÂÉ -SE
+//quanmian, miaolv -SE
 class Quanmian: public TriggerSkill {
 public:
     Quanmian(): TriggerSkill("quanmian") {
@@ -475,7 +476,7 @@ public:
     }
 };
 
-// ÇïÉ½Î Òô×° ĞßÉ¬ -SE
+// yinzhuang, xiuse -SE
 class Yinzhuang: public TriggerSkill {
 public:
     Yinzhuang(): TriggerSkill("yinzhuang") {
