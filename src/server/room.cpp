@@ -273,6 +273,12 @@ void Room::revivePlayer(ServerPlayer *player) {
 
     doBroadcastNotify(S_COMMAND_REVIVE_PLAYER, toJsonString(player->objectName()));
     updateStateItem();
+
+    bool altered = getTag("aidelay_altered").toBool();
+    if (altered){
+        setTag("aidelay_altered", false);
+        Config.AIDelay = Config.OriginAIDelay;
+    }
 }
 
 static bool CompareByRole(ServerPlayer *player1, ServerPlayer *player2) {
@@ -357,18 +363,17 @@ void Room::killPlayer(ServerPlayer *victim, DamageStruct *reason) {
 
         if (expose_roles) {
             foreach (ServerPlayer *player, m_alivePlayers) {
-                if (Config.EnableHegemony) {
-                    QString role = player->getKingdom();
-                    if (role == "god")
-                        role = Sanguosha->getGeneral(getTag(player->objectName()).toStringList().at(0))->getKingdom();
-                    role = HegemonyMode::getMappedRole(role);
-                    broadcastProperty(player, "role", role);
-                } else
-                    broadcastProperty(player, "role");
+                QString role = player->getKingdom();
+                if (role == "god")
+                    role = Sanguosha->getGeneral(getTag(player->objectName()).toStringList().at(0))->getKingdom();
+                role = HegemonyMode::getMappedRole(role);
+                broadcastProperty(player, "role", role);
             }
 
-            if (Config.AlterAIDelayAD)
+            if (Config.AlterAIDelayAD){
                 Config.AIDelay = Config.AIDelayAD;
+                setTag("aidelay_altered", true);
+            }
             if (victim->isOnline() && Config.SurrenderAtDeath && askForSkillInvoke(victim, "surrender", "yes"))
                 makeSurrender(victim);
         }
@@ -3176,6 +3181,8 @@ void Room::startGame() {
 
     doBroadcastNotify(S_COMMAND_GAME_START, Json::Value::null);
     game_started = true;
+
+    setTag("aidelay_altered", false);
 
     Server *server = qobject_cast<Server *>(parent());
     foreach (ServerPlayer *player, m_players) {
