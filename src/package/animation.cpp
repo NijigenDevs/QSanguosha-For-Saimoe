@@ -691,6 +691,69 @@ public:
     }
 };
 
+//yingan -SE
+class Yingan: public TriggerSkill {
+public:
+    Yingan(): TriggerSkill("yingan") {
+        events << CardUsed;
+    }
+    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent , Room *room, ServerPlayer *player, QVariant &data) const{
+        QMap<ServerPlayer *, QStringList> skill_list;
+        if (player == NULL) return skill_list;
+        CardUseStruct use = data.value<CardUseStruct>();
+        if (!use.from || use.from->isDead() ||!use.card || !use.card->isKindOf("EquipCard"))
+            return skill_list;
+
+        QList<ServerPlayer *> yuis = room->findPlayersBySkillName(objectName());
+        foreach (ServerPlayer *yui, yuis) {
+            if (yui->isFriendWith(use.from) || (use.from->isHidden(true) && use.from->isHidden(false)))
+                skill_list.insert(yui, QStringList(objectName()));
+        }
+        return skill_list;
+    }
+
+    virtual bool cost(TriggerEvent , Room *room, ServerPlayer *, QVariant &data, ServerPlayer *ask_who) const{
+        bool invoke = ask_who->hasShownSkill(this) ? true : ask_who->askForSkillInvoke(objectName(), data);
+        if (invoke) {
+            if (ask_who->hasShownSkill(this)) {
+                room->notifySkillInvoked(ask_who, objectName());
+                LogMessage log;
+                log.type = "#TriggerSkill";
+                log.from = ask_who;
+                log.arg = objectName();
+                room->sendLog(log);
+            }
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent , Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const {
+        CardUseStruct use = data.value<CardUseStruct>();
+        ask_who->drawCards(1);
+        if (!player->isHidden(true) || !player->isHidden(true))
+            return false;
+        QString choice = room->askForChoice(player,objectName()+"show", "yingan_show+yingan_ignore");
+        if (choice == "yingan_show"){
+            QString choice2 = room->askForChoice(player,objectName()+"which", "yingan_head+yingan_deputy");
+            if (choice2 == "yingan_head")
+                player->showGeneral(true);
+            else
+                player->showGeneral(false);
+            if (!player->isFriendWith(ask_who))
+                room->askForDiscard(ask_who, objectName(), 2, player->getEquips().length() + player->getHandcardNum(), false, true, "@yingan_enemy");
+            else{//TODO: 若该角色与你势力相同且你的手牌数大于你的体力上限，你须弃置一张牌。 is this always judged or just judged under this situation? If not right, please change it~
+                if (ask_who->getHandcardNum() > ask_who->getMaxHp()){
+                    room->askForDiscard(ask_who, objectName(), 1, 1, false, true, "@yingan_friend");
+                }
+            }
+        }
+        return false;
+    }
+};
+
 void MoesenPackage::addAnimationGenerals()
 {
     General *mami = new General(this, "mami", "wei", 4, false); // Animation 001
@@ -730,9 +793,10 @@ void MoesenPackage::addAnimationGenerals()
     related_skills.insertMulti("yinzhuang", "#yinzhuang-horse");
     mio->addSkill(new Xiuse);
 
-    /*General *yui = new General(this, "yui", "wei", 3, false); // Animation 008
+    General *yui = new General(this, "yui", "wei", 4, false); // Animation 008
+    yui->addSkill(new Yingan);
 
-    General *kanade = new General(this, "kanade", "wei", 3, false); // Animation 009
+    /*General *kanade = new General(this, "kanade", "wei", 3, false); // Animation 009
 
     General *rei = new General(this, "rei", "wei", 3, false); // Animation 010
 
