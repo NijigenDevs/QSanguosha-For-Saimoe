@@ -3397,6 +3397,22 @@ void RoomScene::onGameStart() {
     dashboard->showSeat();
     foreach (Photo *photo, photos)
         photo->showSeat();
+
+    if (prompt_box != NULL){
+        delete prompt_box;
+        prompt_box = NULL;
+
+        if (!Self->getActualGeneral1Name().contains("sujiang"))
+            prompt_box = new Window(tr("QSanguosha"), QSize(480, 200), "image/system/tip2.png");
+        else
+            prompt_box = new Window(tr("QSanguosha"), QSize(480,200));
+        
+        prompt_box->setOpacity(0);
+        prompt_box->setFlag(QGraphicsItem::ItemIsMovable);
+        prompt_box->shift();
+        prompt_box->setZValue(10);
+        prompt_box->keepWhenDisappear();
+    }
 }
 
 void RoomScene::freeze() {
