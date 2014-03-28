@@ -397,14 +397,24 @@ public:
 class Wuwei: public TriggerSkill{
 public:
     Wuwei(): TriggerSkill("wuwei"){
-        events << DamageCaused;
+        events << DamageCaused << PreCardUsed;
         view_as_skill = new WuweiViewAsSkill;
     }
 
-    virtual QStringList triggerable(TriggerEvent , Room *, ServerPlayer *player, QVariant &data, ServerPlayer * &) const{
-        DamageStruct damage = data.value<DamageStruct>();
-        if (damage.card->getSkillName() == "wuwei") {
-            return QStringList(objectName());
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer * &) const{
+        if (triggerEvent == PreCardUsed){
+            CardUseStruct use = data.value<CardUseStruct>();
+            if (use.card != NULL && use.card->getSkillName() == "wuwei" && use.from != NULL){
+                room->addPlayerHistory(player, use.card->getClassName(), -1);
+                use.m_addHistory = false;
+                data = QVariant::fromValue(use);
+            }
+        }
+        else {
+            DamageStruct damage = data.value<DamageStruct>();
+            if (damage.card->getSkillName() == "wuwei") {
+                return QStringList(objectName());
+            }
         }
 
         return QStringList();
