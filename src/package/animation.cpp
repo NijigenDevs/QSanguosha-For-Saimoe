@@ -751,7 +751,7 @@ public:
         }
         else if (triggerEvent == Damage){
             DamageStruct damage = data.value<DamageStruct>();
-            if (damage.card && damage.card->getSkillName() == "yinren" && damage.from && !damage.from->isKongcheng() && damage.from->isAlive()){
+            if (damage.card && damage.card->getSkillName() == "yinren" && damage.from && damage.from->isAlive() && damage.to->canDiscard(damage.from, "h")){
                 ask_who = damage.to;
                 return QStringList(objectName());
             }
@@ -759,7 +759,7 @@ public:
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who /* = NULL */) const{
+    virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const{
         if (triggerEvent == EventPhaseStart){
             //broadcastskillinvoke
             return player->askForSkillInvoke(objectName());
@@ -772,7 +772,7 @@ public:
         return false;
     }
 
-    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who /* = NULL */) const{
+    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const{
         if (triggerEvent == EventPhaseStart){
             room->showAllCards(player);
             QList<Card::Suit> suit_list;
@@ -788,7 +788,7 @@ public:
             }
             if (!duplicate){
                 Slash *slash = new Slash(Card::NoSuit, 0);
-                slash->setSkillName("yinren");
+                slash->setSkillName("_yinren");
                 QList<ServerPlayer *> can_slashers;
                 foreach (ServerPlayer *p, room->getOtherPlayers(player)){
                     if (player->canSlash(p, slash, false)){
@@ -800,15 +800,15 @@ public:
                     //log
                     return false;
                 }
-                ServerPlayer *slasher = room->askForPlayerChosen(player, can_slashers, objectName(), "@yinren-slash", false, true);
+                ServerPlayer *slasher = room->askForPlayerChosen(player, can_slashers, objectName(), "@yinren-slash");
                 room->useCard(CardUseStruct(slash, player, slasher));
             }
         }
         else {
             if (ask_who){
                 DamageStruct damage = data.value<DamageStruct>();
-                int id = room->askForCardChosen(ask_who, damage.from, "h", objectName());
-                ask_who->obtainCard(Sanguosha->getCard(id), false);
+                int id = room->askForCardChosen(ask_who, damage.from, "h", objectName(), false, Card::MethodDiscard);
+                room->throwCard(id, damage.from, ask_who);
             }
         }
         return false;
