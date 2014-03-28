@@ -1,4 +1,4 @@
-return {
+﻿return {
 	["moesen"] = "萌战MOD",
 
 	["mami"] = "巴麻美", 
@@ -68,7 +68,7 @@ return {
 	["&yui"] = "平泽唯", 
 	["#yui"] = "呆唯", 
 	["#&yui"] = "轻音少女", 	
-	["~yui"] = "", 
+	["~yui"] = "これは汗だよ…うっううー", 
 	["designer:yui"] = "",
 	["cv:yui"] = "豊崎愛生",
 	["illustrator:yui"] = "",
