@@ -275,7 +275,7 @@ void Room::revivePlayer(ServerPlayer *player) {
     updateStateItem();
 
     bool altered = getTag("aidelay_altered").toBool();
-    if (altered){
+    if (altered && player->isOnline()){
         setTag("aidelay_altered", false);
         Config.AIDelay = Config.OriginAIDelay;
     }
