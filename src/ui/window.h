@@ -16,6 +16,8 @@ public:
     void keepWhenDisappear();
     void setTitle(const QString &title);
 
+    void Window::setAddress(const QSizeF &size,const QString &path);//added by SE
+
     virtual QRectF boundingRect() const;
 
 protected:
