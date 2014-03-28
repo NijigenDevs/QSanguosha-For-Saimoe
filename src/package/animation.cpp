@@ -691,12 +691,57 @@ public:
     }
 };
 
+//yingan -SE
+class Yingan: public TriggerSkill {
+public:
+    Yingan(): TriggerSkill("yingan") {
+        events << CardFinished;
+    }
+
+    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent , Room *room, ServerPlayer *player, QVariant &data) const{
+        QMap<ServerPlayer *, QStringList> skill_list;
+        if (player == NULL) return skill_list;
+        CardUseStruct use = data.value<CardUseStruct>();
+        if (!use.from || use.from->isDead() || !use.card || !use.card->isKindOf("EquipCard"))
+            return skill_list;
+
+        QList<ServerPlayer *> yuis = room->findPlayersBySkillName(objectName());
+        foreach (ServerPlayer *yui, yuis) {
+            if (yui->isFriendWith(use.from) || !use.from->hasShownOneGeneral())
+                skill_list.insert(yui, QStringList(objectName()));
+        }
+        return skill_list;
+    }
+
+    virtual bool cost(TriggerEvent , Room *room, ServerPlayer *, QVariant &data, ServerPlayer *ask_who) const{
+        if (ask_who->askForSkillInvoke(objectName(), data)) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent , Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const {
+        ask_who->drawCards(1);
+        player->askForGeneralShow(true);
+
+        if (player->hasShownOneGeneral() && ask_who->hasShownOneGeneral() && !player->isFriendWith(ask_who))
+            room->askForDiscard(ask_who, objectName(), 2, 2, false, true, "@yingan_enemy");
+        else if (player->isFriendWith(ask_who) && ask_who->getHandcardNum() > ask_who->getMaxHp()) {
+            room->askForDiscard(ask_who, objectName(), 1, 1, false, true, "@yingan_friend");
+        }
+        return false;
+    }
+};
+
 //yinren by Fsu0413
 class Yinren: public TriggerSkill{
 public:
     Yinren(): TriggerSkill("yinren"){
         events << EventPhaseStart << Damage;
     }
+
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer * &ask_who) const{
         if (triggerEvent == EventPhaseStart){
@@ -860,7 +905,8 @@ void MoesenPackage::addAnimationGenerals()
     related_skills.insertMulti("yinzhuang", "#yinzhuang-horse");
     mio->addSkill(new Xiuse);
 
-    //General *yui = new General(this, "yui", "wei", 3, false); // Animation 008
+    General *yui = new General(this, "yui", "wei", 4, false); // Animation 008
+    yui->addSkill(new Yingan);
 
     General *kanade = new General(this, "kanade", "wei", 3, false); // Animation 009
     kanade->addSkill(new Yinren);
