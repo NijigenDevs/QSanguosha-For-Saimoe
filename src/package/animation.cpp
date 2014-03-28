@@ -691,6 +691,136 @@ public:
     }
 };
 
+//yinren by Fsu0413
+class Yinren: public TriggerSkill{
+public:
+    Yinren(): TriggerSkill("yinren"){
+        events << EventPhaseStart << Damage;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer * &ask_who) const{
+        if (triggerEvent == EventPhaseStart){
+            if (TriggerSkill::triggerable(player) && (player->getPhase() == Player::Start || player->getPhase() == Player::Finish) && !player->isKongcheng()){
+                return QStringList(objectName());
+            }
+        }
+        else if (triggerEvent == Damage){
+            DamageStruct damage = data.value<DamageStruct>();
+            if (damage.card && damage.card->getSkillName() == "yinren" && damage.from && !damage.from->isKongcheng() && damage.from->isAlive()){
+                ask_who = damage.to;
+                return QStringList(objectName());
+            }
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who /* = NULL */) const{
+        if (triggerEvent == EventPhaseStart){
+            //broadcastskillinvoke
+            return player->askForSkillInvoke(objectName());
+        }
+        else {
+            if (ask_who){
+                return ask_who->askForSkillInvoke(objectName(), "gainacard");
+            }
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who /* = NULL */) const{
+        if (triggerEvent == EventPhaseStart){
+            room->showAllCards(player);
+            QList<Card::Suit> suit_list;
+            bool duplicate = false;
+            foreach (const Card *c, player->getHandcards()){
+                Card::Suit s = c->getSuit();
+                if (!suit_list.contains(s))
+                    suit_list << s;
+                else {
+                    duplicate = true;
+                    break;
+                }
+            }
+            if (!duplicate){
+                Slash *slash = new Slash(Card::NoSuit, 0);
+                slash->setSkillName("yinren");
+                QList<ServerPlayer *> can_slashers;
+                foreach (ServerPlayer *p, room->getOtherPlayers(player)){
+                    if (player->canSlash(p, slash, false)){
+                        can_slashers << p;
+                    }
+                }
+                if (can_slashers.isEmpty()){
+                    delete slash;
+                    //log
+                    return false;
+                }
+                ServerPlayer *slasher = room->askForPlayerChosen(player, can_slashers, objectName(), "@yinren-slash", false, true);
+                room->useCard(CardUseStruct(slash, player, slasher));
+            }
+        }
+        else {
+            if (ask_who){
+                DamageStruct damage = data.value<DamageStruct>();
+                int id = room->askForCardChosen(ask_who, damage.from, "h", objectName());
+                ask_who->obtainCard(Sanguosha->getCard(id), false);
+            }
+        }
+        return false;
+    }
+};
+
+class Tongxin: public TriggerSkill{
+public:
+    Tongxin(): TriggerSkill("tongxin"){
+        events << Death << GameStart;
+        frequency = Limited;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &ask_who) const{
+        if (triggerEvent == GameStart){
+            if (player->ownSkill(objectName())){
+                room->setPlayerProperty(player, "tongxin", 1);
+            }
+        }
+        else if ((triggerEvent == Death) && (player != NULL && player->isDead())){
+            foreach (ServerPlayer *p, room->getAllPlayers(true)){
+                if (p->isDead()){
+                    bool ok = false;
+                    int tongxin = p->property("tongxin").toInt(&ok);
+                    if (ok && tongxin > 0){
+                        DeathStruct death = data.value<DeathStruct>();
+                        if (death.who->isFriendWith(p) && death.who != p){
+                            ask_who = p;
+                            return QStringList(objectName());
+                        }
+                    }
+                }
+            }
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who /* = NULL */) const{
+        if (ask_who->askForSkillInvoke(objectName(), data)){
+            //animate && broadcastskillinvoke
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who /* = NULL */) const{
+        room->setPlayerProperty(ask_who, "hp", player->getHp() + 2); //don't use the normal recover method
+        room->revivePlayer(ask_who);
+        room->handleAcquireDetachSkills(ask_who, "-yinren");
+        ask_who->drawCards(2);
+
+        room->setPlayerProperty(ask_who, "tongxin", 0);
+
+        return false;
+    }
+};
+
 void MoesenPackage::addAnimationGenerals()
 {
     General *mami = new General(this, "mami", "wei", 4, false); // Animation 001
@@ -730,10 +860,13 @@ void MoesenPackage::addAnimationGenerals()
     related_skills.insertMulti("yinzhuang", "#yinzhuang-horse");
     mio->addSkill(new Xiuse);
 
-    /*General *yui = new General(this, "yui", "wei", 3, false); // Animation 008
+    //General *yui = new General(this, "yui", "wei", 3, false); // Animation 008
 
     General *kanade = new General(this, "kanade", "wei", 3, false); // Animation 009
+    kanade->addSkill(new Yinren);
+    kanade->addSkill(new Tongxin);
 
+    /*
     General *rei = new General(this, "rei", "wei", 3, false); // Animation 010
 
     General *asuka = new General(this, "asuka", "wei", 3, false); // Animation 011
