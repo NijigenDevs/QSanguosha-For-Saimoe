@@ -801,6 +801,7 @@ public:
                     return false;
                 }
                 ServerPlayer *slasher = room->askForPlayerChosen(player, can_slashers, objectName(), "@yinren-slash");
+                room->broadcastSkillInvoke(objectName());
                 room->useCard(CardUseStruct(slash, player, slasher));
             }
         }
@@ -848,7 +849,8 @@ public:
 
     virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who /* = NULL */) const{
         if (ask_who->askForSkillInvoke(objectName(), data)){
-            //animate && broadcastskillinvoke
+            room->broadcastSkillInvoke(objectName());
+            //animate
             return true;
         }
         return false;
@@ -908,7 +910,7 @@ void MoesenPackage::addAnimationGenerals()
     General *yui = new General(this, "yui", "wei", 4, false); // Animation 008
     yui->addSkill(new Yingan);
 
-    General *kanade = new General(this, "kanade", "wei", 3, false); // Animation 009
+    General *kanade = new General(this, "kanade", "wei", 4, false); // Animation 009
     kanade->addSkill(new Yinren);
     kanade->addSkill(new Tongxin);
 

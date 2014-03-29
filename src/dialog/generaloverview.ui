@@ -65,6 +65,11 @@
      </column>
      <column>
       <property name="text">
+       <string>Navigator</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
        <string>Gender</string>
       </property>
      </column>

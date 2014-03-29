@@ -334,7 +334,15 @@ void GeneralOverview::fillGenerals(const QList<const General *> &generals, bool 
         source_item->setData(Qt::UserRole, general_name);
         source_item->setTextAlignment(Qt::AlignCenter);
 
-
+        //add Navigator SE
+        QString navigator = Sanguosha->translate("#$"+general_name);
+        QTableWidgetItem *navigator_item;
+        if (!navigator.startsWith("#"))
+            navigator_item = new QTableWidgetItem(navigator);
+        else
+            navigator_item = new QTableWidgetItem(Sanguosha->translate("UnknownNavigator"));
+        navigator_item->setData(Qt::UserRole, general_name);
+        navigator_item->setTextAlignment(Qt::AlignCenter);
 
         if (Sanguosha->isGeneralHidden(general_name)) {
             nickname_item->setBackgroundColor(Qt::gray);
@@ -374,18 +382,20 @@ void GeneralOverview::fillGenerals(const QList<const General *> &generals, bool 
         ui->tableWidget->setItem(i, 1, name_item);
         ui->tableWidget->setItem(i, 2, kingdom_item);
         ui->tableWidget->setItem(i, 3, source_item);//source SE
-        ui->tableWidget->setItem(i, 4, gender_item);
-        ui->tableWidget->setItem(i, 5, max_hp_item);
-        ui->tableWidget->setItem(i, 6, package_item);
+        ui->tableWidget->setItem(i, 4, navigator_item);//
+        ui->tableWidget->setItem(i, 5, gender_item);
+        ui->tableWidget->setItem(i, 6, max_hp_item);
+        ui->tableWidget->setItem(i, 7, package_item);
     }
 
     ui->tableWidget->setColumnWidth(0, 80);
     ui->tableWidget->setColumnWidth(1, 95);
     ui->tableWidget->setColumnWidth(2, 40);
     ui->tableWidget->setColumnWidth(3, 95);//source SE
-    ui->tableWidget->setColumnWidth(4, 50);
-    ui->tableWidget->setColumnWidth(5, 60);
-    ui->tableWidget->setColumnWidth(6, 85);
+    ui->tableWidget->setColumnWidth(4, 95);//
+    ui->tableWidget->setColumnWidth(5, 50);
+    ui->tableWidget->setColumnWidth(6, 60);
+    ui->tableWidget->setColumnWidth(7, 85);
 
     ui->tableWidget->setCurrentItem(ui->tableWidget->item(0, 0));
 }
