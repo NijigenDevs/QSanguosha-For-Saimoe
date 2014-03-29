@@ -573,7 +573,9 @@ public:
         CardsMoveStruct move(cardid, NULL, Player::PlaceTable,
                              CardMoveReason(CardMoveReason::S_REASON_TURNOVER, mio->objectName(), "yinzhuang", QString()));
         room->moveCardsAtomic(move, true);
+        room->setTag("YinzhuangCard", cardid);
         ServerPlayer *target = room->askForPlayerChosen(mio, room->getAlivePlayers(), "yinzhuang", "@yinzhuang_give");
+        room->removeTag("YinzhuangCard");
         CardMoveReason reason(CardMoveReason::S_REASON_GOTBACK, mio->objectName(), target->objectName(), "yinzhuang", QString());
         room->obtainCard(target, Sanguosha->getCard(cardid), reason);
 
@@ -616,7 +618,9 @@ public:
             if (mio->canSlash(p, slash, false))
                 targets << p;
         if (!targets.isEmpty()) {
+            room->setTag("YinzhuangCard", -1);
             ServerPlayer *target = room->askForPlayerChosen(mio, targets, objectName(), "@yinzhuang_slash");
+            room->removeTag("YinzhuangCard");
             room->useCard(CardUseStruct(slash, mio, target), false);
         }
 
