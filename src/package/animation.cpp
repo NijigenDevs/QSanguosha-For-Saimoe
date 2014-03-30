@@ -872,6 +872,142 @@ public:
     }
 };
 
+//liufei by AK
+class Liufei: public TriggerSkill {
+public:
+    Liufei(): TriggerSkill("liufei") {
+        events << TargetConfirming;
+    }
+
+    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent , Room *room, ServerPlayer *player, QVariant &data) const{
+        QMap<ServerPlayer *, QStringList> skill_list;
+        if (player == NULL) return skill_list;
+        CardUseStruct use = data.value<CardUseStruct>();
+        if (!use.card || !use.card->isKindOf("Slash") || !use.to.contains(player))
+            return skill_list;
+
+        QList<ServerPlayer *> mayus = room->findPlayersBySkillName(objectName());
+        foreach (ServerPlayer *mayu, mayus) {
+            if (mayu->isFriendWith(player) && mayu != player && use.from->inMyAttackRange(mayu) && mayu->getHandcardNum() < mayu->getHp() )
+                skill_list.insert(mayu, QStringList(objectName()));
+        }
+        return skill_list;
+    }
+     virtual bool cost(TriggerEvent , Room *room, ServerPlayer *, QVariant &data, ServerPlayer *ask_who) const{
+        bool invoke = ask_who->hasShownSkill(this) ? true : ask_who->askForSkillInvoke(objectName(), data);
+        if (invoke) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const{
+        CardUseStruct use = data.value<CardUseStruct>();
+        room->notifySkillInvoked(ask_who, objectName());
+        LogMessage log;
+        if (use.from) {
+            log.type = "$CancelTarget";
+            log.from = use.from;
+        } else {
+            log.type = "$CancelTargetNoUser";
+        }
+        log.to << player;
+        log.arg = use.card->objectName();
+        room->sendLog(log);
+
+        use.to.removeOne(player);
+        data = QVariant::fromValue(use);
+        return false;
+    }
+};
+
+//pianxian by AK
+
+class PianxianViewAsSkill: public ViewAsSkill {
+public:
+    PianxianViewAsSkill(): ViewAsSkill("pianxian") {
+        response_pattern = "@@pianxian";
+    }
+
+    virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const{
+        return !Self->isJilei(to_select);
+    }
+
+    virtual const Card *viewAs(const QList<const Card *> &cards) const{
+        if (cards.length() < Self->getHp())
+            return NULL;
+        DummyCard *card = new DummyCard;
+        card->setShowSkill("pianxian");
+        card->setSkillName(objectName());
+        card->addSubcards(cards);
+        return card;
+    }
+};
+
+class Pianxian: public PhaseChangeSkill {
+public:
+    Pianxian(): PhaseChangeSkill("pianxian") {
+        view_as_skill = new PianxianViewAsSkill;
+    }
+
+    virtual bool canPreshow() const {
+        return false;
+    }
+
+    virtual QStringList triggerable(TriggerEvent , Room *, ServerPlayer *player, QVariant &, ServerPlayer * &) const{
+        if (!PhaseChangeSkill::triggerable(player))
+            return QStringList();
+        if (player->getPhase() != Player::Start || player->isNude())
+            return QStringList();
+        int x = 0 ;
+        foreach (const Card *card, player->getCards("he")){
+            if (player->isJilei(card))
+                x ++ ;
+        }
+        if (player->getCardCount(true) - x < player->getHp()) 
+            return QStringList();
+        return QStringList(objectName());
+    }
+
+    virtual bool cost(TriggerEvent , Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        if (player->askForSkillInvoke(objectName())){
+            room->broadcastSkillInvoke(objectName());
+            const Card * card = room->askForUseCard(player, "@@pianxian", "@pianxian", -1,  Card::MethodDiscard);
+            if (card) {
+                player->tag["pianxiannum"] = card->subcardsLength();
+                return true;
+            }
+        }
+        return false;
+    }
+
+    virtual bool onPhaseChange(ServerPlayer *player) const{
+        Room *room = player->getRoom();
+        RecoverStruct recover;
+        recover.who = player;
+        room->recover(player, recover);
+        int num = player->tag["pianxiannum"].toInt();
+        if (num >= 2) {
+            Duel *duel = new Duel(Card::NoSuit, 0);
+            duel->setSkillName("_pianxian");
+            QList<ServerPlayer *> can_duelers;
+            foreach (ServerPlayer *p, room->getOtherPlayers(player)){
+                if (duel->targetFilter(QList<const Player *>(),p,player) && !player->isProhibited(p,duel))
+                    can_duelers<<p;
+            }
+            if (can_duelers.isEmpty()){
+                delete duel;
+                //log
+                return false;
+            }
+            ServerPlayer *dest = room->askForPlayerChosen(player, can_duelers, objectName(), "@pianxian-duel");
+            room->broadcastSkillInvoke(objectName());
+            room->useCard(CardUseStruct(duel, player, dest));
+        }
+        return false;
+    }
+};
+
 void MoesenPackage::addAnimationGenerals()
 {
     General *mami = new General(this, "mami", "wei", 4, false); // Animation 001
@@ -918,6 +1054,9 @@ void MoesenPackage::addAnimationGenerals()
     kanade->addSkill(new Yinren);
     kanade->addSkill(new Tongxin);
 
+    General *mayu = new General(this, "mayu", "wei", 3, false); // Animation 014
+    mayu->addSkill(new Pianxian);
+    mayu->addSkill(new Liufei);
     /*
     General *rei = new General(this, "rei", "wei", 3, false); // Animation 010
 
@@ -927,7 +1066,6 @@ void MoesenPackage::addAnimationGenerals()
 
     General *nico = new General(this, "nico", "wei", 3, false); // Animation 013
 
-    General *mayu = new General(this, "mayu", "wei", 3, false); // Animation 014
 
     General *lacus = new General(this, "lacus", "wei", 3, false); // Animation 015
 
