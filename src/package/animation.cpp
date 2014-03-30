@@ -872,6 +872,102 @@ public:
     }
 };
 
+//mengyin & lvdong by SE
+MengyinCard::MengyinCard() {
+    target_fixed = true;
+}
+
+void MengyinCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const{
+    if (source->isAlive())
+        room->drawCards(source, 1);
+    Slash *slash = new Slash(Card::NoSuit, 0);
+        slash->setSkillName("mengyin");
+        QList<ServerPlayer *> targets;
+        foreach (ServerPlayer *p, room->getAllPlayers())
+            if (source->canSlash(p, slash, false))
+                targets << p;
+        if (!targets.isEmpty()) {
+            ServerPlayer *target = room->askForPlayerChosen(source, targets, "mengyin", "@mengyin_slash");
+            room->useCard(CardUseStruct(slash, source, target), false);
+        }
+}
+
+class Mengyin: public ViewAsSkill {
+public:
+    Mengyin(): ViewAsSkill("mengyin") {
+    }
+
+    virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const{
+        return !Self->isJilei(to_select) && selected.length() < 2 && !to_select->isEquipped();
+    }
+
+    virtual const Card *viewAs(const QList<const Card *> &cards) const{
+        if (cards.length() < 2)
+            return NULL;
+
+        MengyinCard *mengyin_card = new MengyinCard;
+        mengyin_card->addSubcards(cards);
+        mengyin_card->setSkillName(objectName());
+        mengyin_card->setShowSkill(objectName());
+        return mengyin_card;
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return player->canDiscard(player, "he") && !player->hasUsed("MengyinCard");
+    }
+};
+
+class Lvdong: public TriggerSkill {
+public:
+    Lvdong(): TriggerSkill("lvdong") {
+        events << CardsMoveOneTime << EventPhaseStart;
+        frequency = Frequent;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *nico, QVariant &data, ServerPlayer * &) const{
+        if (!TriggerSkill::triggerable(nico)) return QStringList();
+        if (triggerEvent == CardsMoveOneTime){
+            CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+            if (nico->getPhase() == Player::NotActive || move.to_place != Player::DiscardPile)
+                return QStringList();
+            foreach (int id, move.card_ids){
+                nico->gainMark("lvdong_cards");//for debug--BUG:when yingan used, the skill will be triggered 1 more time.
+                //nico->setMark("lvdong_cards", nico->getMark("lvdong_cards") + 1);
+                return QStringList();
+            }
+        }else{
+            if (nico->getPhase() == Player::Finish){
+                if (nico->getMark("lvdong_cards") < 5){
+                    nico->setMark("lvdong_cards", 0);
+                    return QStringList();
+                }else{
+                    return QStringList(objectName());
+                }
+            }
+            return QStringList();
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *nico, QVariant &, ServerPlayer *) const{
+        if (nico->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *nico, QVariant &data, ServerPlayer *) const{
+        nico->drawCards(1);
+        nico->setMark("lvdong_cards", 0);
+        return false;
+    }
+};
+
+
+
+
 //liufei by AK
 class Liufei: public TriggerSkill {
 public:
@@ -1054,19 +1150,21 @@ void MoesenPackage::addAnimationGenerals()
     kanade->addSkill(new Yinren);
     kanade->addSkill(new Tongxin);
 
-    General *mayu = new General(this, "mayu", "wei", 3, false); // Animation 014
-    mayu->addSkill(new Pianxian);
-    mayu->addSkill(new Liufei);
     /*
     General *rei = new General(this, "rei", "wei", 3, false); // Animation 010
 
     General *asuka = new General(this, "asuka", "wei", 3, false); // Animation 011
 
     General *inori = new General(this, "inori", "wei", 3, false); // Animation 012
-
+    */
     General *nico = new General(this, "nico", "wei", 3, false); // Animation 013
-
-
+    nico->addSkill(new Mengyin);
+    nico->addSkill(new Lvdong);
+    
+    General *mayu = new General(this, "mayu", "wei", 3, false); // Animation 014
+    mayu->addSkill(new Pianxian);
+    mayu->addSkill(new Liufei);
+    /*
     General *lacus = new General(this, "lacus", "wei", 3, false); // Animation 015
 
     General *ayu = new General(this, "sawa", "wei", 3, false); // Animation 016
@@ -1078,4 +1176,5 @@ void MoesenPackage::addAnimationGenerals()
 
     addMetaObject<WuweiCard>();
     addMetaObject<MiaolvCard>();
+    addMetaObject<MengyinCard>();
 }

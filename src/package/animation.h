@@ -22,4 +22,12 @@ public:
     void MiaolvCard::use(Room *room, ServerPlayer *xunyu, QList<ServerPlayer *> &targets) const;
 };
 
+class MengyinCard: public SkillCard {
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE MengyinCard();
+    void MengyinCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const;
+};
+
 #endif
