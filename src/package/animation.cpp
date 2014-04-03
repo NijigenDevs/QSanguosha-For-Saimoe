@@ -872,6 +872,51 @@ public:
     }
 };
 
+//lingchang by SE
+class Lingchang: public TriggerSkill {
+public:
+    Lingchang(): TriggerSkill("lingchang") {
+        events << EventPhaseStart;
+    }
+
+   virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent , Room *room, ServerPlayer *player, QVariant &data) const{
+        QMap<ServerPlayer *, QStringList> skill_list;
+        if (player == NULL) return skill_list;
+        if (player->getPhase() == Player::RoundStart) {
+            if (!player->isWounded() || player->isKongcheng())
+                return skill_list;
+            QList<ServerPlayer *> inoris = room->findPlayersBySkillName(objectName());
+            foreach (ServerPlayer *inori, inoris)
+                if (inori->isAlive() && inori->canDiscard(player, "h") && player->isFriendWith(inori))
+                    skill_list.insert(inori, QStringList(objectName()));
+            return skill_list;
+        }
+        return skill_list;
+    }
+
+    virtual bool cost(TriggerEvent , Room *room, ServerPlayer *, QVariant &data, ServerPlayer *ask_who) const {
+        if (ask_who->askForSkillInvoke(objectName(), data)){
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent , Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const{
+        int cardid = room->askForCardChosen(ask_who, player, "h", "lingchang");
+        room->showCard(ask_who, cardid);
+        room->getThread()->delay(1400);
+        room->throwCard(cardid, player, ask_who);
+        if (Sanguosha->getCard(cardid)->isRed()){
+            RecoverStruct recover;
+            recover.who = player;
+            room->recover(player, recover);
+        }
+
+        return false;
+    }
+};
+
 //mengyin & lvdong by SE
 MengyinCard::MengyinCard() {
     target_fixed = true;
@@ -1154,9 +1199,10 @@ void MoesenPackage::addAnimationGenerals()
     General *rei = new General(this, "rei", "wei", 3, false); // Animation 010
 
     General *asuka = new General(this, "asuka", "wei", 3, false); // Animation 011
-
-    General *inori = new General(this, "inori", "wei", 3, false); // Animation 012
     */
+    General *inori = new General(this, "inori", "wei", 3, false); // Animation 012
+    inori->addSkill(new Lingchang);
+
     General *nico = new General(this, "nico", "wei", 3, false); // Animation 013
     nico->addSkill(new Mengyin);
     nico->addSkill(new Lvdong);
