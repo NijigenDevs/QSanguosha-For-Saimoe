@@ -964,66 +964,52 @@ public:
     }
 };
 
-class BajianTrigger: public TriggerSkill{
+class Bajian: public TriggerSkill {
 public:
-    BajianTrigger(): TriggerSkill("#bajian-trigger"){
-        events << EventAcquireSkill << EventLoseSkill << GeneralShown << GeneralHidden;
-        frequency = Compulsory;
+    Bajian(): TriggerSkill("bajian") {
+        events << GeneralShown << GeneralHidden << GeneralRemoved << Death;
     }
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer * &ask_who) const{
-        if (player == NULL||!TriggerSkill::triggerable(player)) return QStringList();
-        if (triggerEvent == EventAcquireSkill || triggerEvent == GeneralShown){
-            QList<ServerPlayer *> inoris = room->findPlayersBySkillName(objectName());
-            if (inoris.length() == 0) return QStringList();
-            foreach (ServerPlayer *inori, inoris){
-                if (player->objectName() == inori->objectName()){
-                    foreach (ServerPlayer *p, room->getOtherPlayers(player)){
-                        if (p->isFriendWith(player) && !p->hasSkill("bajianVS")){
-                            p->acquireSkill("bajianVS");
-                        }
-                    }
-                }else{
-                    if (player->isFriendWith(inori) && !player->hasSkill("bajianVS")){
-                        player->acquireSkill("bajianVS");
-                    }
-                }
-            }
-        }else if (triggerEvent == EventLoseSkill || triggerEvent == GeneralHidden){
-            QList<ServerPlayer *> inoris = room->findPlayersBySkillName(objectName());
-            if (inoris.length() == 0) return QStringList();
-            foreach (ServerPlayer *inori, inoris){
-                if (player->objectName() == inori->objectName()){
-                    if (inoris.length() == 1){
-                        foreach (ServerPlayer *p, room->getOtherPlayers(player)){
-                            if (p->hasSkill("bajianVS")){
-                                room->detachSkillFromPlayer(p, "bajianVS");
-                            }
-                        }
-                    }
-                }else{
-                    if (!player->isFriendWith(inori) && player->hasSkill("bajianVS")){
-                        room->detachSkillFromPlayer(player, "bajianVS");
-                    }
-                }
-            }
-        }
-        return QStringList();
-    }
-};
 
-class Bajian: public TriggerSkill{
-public:
-    Bajian(): TriggerSkill("bajian"){
-        events << EventAcquireSkill << GeneralShown;
-        frequency = Compulsory;
+    virtual bool canPreshow() const{
+        return false;
     }
-    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer * &ask_who) const{
-        if (player == NULL||!TriggerSkill::triggerable(player)) return QStringList();
-        foreach (ServerPlayer *p, room->getAlivePlayers()){
-            if (!p->hasSkill("#bajian-trigger")){
-                p->acquireSkill("#bajian-trigger");
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (player == NULL) return QStringList();
+        if (triggerEvent == Death) {
+            DeathStruct death = data.value<DeathStruct>();
+            if (death.who->hasSkill(objectName())) {
+                foreach (ServerPlayer *p, room->getAllPlayers())
+                    if (p->getMark("bajian") > 0) {
+                        room->setPlayerMark(p, "bajian", 0);
+                        room->detachSkillFromPlayer(p, "bajianVS", true, true);
+                    }
+                return QStringList();
+            }
+            else {
+                if (death.who->getMark("bajian") > 0){
+                    room->setPlayerMark(death.who, "bajian", 0);
+                    room->detachSkillFromPlayer(death.who, "bajianVS", true, true);
+                }
             }
         }
+        foreach (ServerPlayer *p, room->getAllPlayers())
+            if (p->getMark("bajian") > 0) {
+                room->setPlayerMark(p, "bajian", 0);
+                room->detachSkillFromPlayer(p, "bajianVS", true, true);
+            }
+
+        if (room->alivePlayerCount() < 4) return QStringList();
+        QList<ServerPlayer *> inoris = room->findPlayersBySkillName(objectName());
+        foreach (ServerPlayer *inori, inoris)
+            if (inori->hasShownSkill(this)) {
+                foreach (ServerPlayer *p, room->getOtherPlayers(inori))
+                    if (inori->isFriendWith(p)) {
+                        room->setPlayerMark(p, "bajian", 1);
+                        room->attachSkillToPlayer(p, "bajianVS");
+                    }
+            }
+
         return QStringList();
     }
 };
@@ -1085,7 +1071,7 @@ public:
         if (!TriggerSkill::triggerable(nico)) return QStringList();
         if (triggerEvent == CardsMoveOneTime){
             CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-            if (!nico->hasSkill(objectName()) || nico->getPhase() == Player::NotActive || move.to_place != Player::DiscardPile)
+            if (nico->getPhase() == Player::NotActive || move.to_place != Player::DiscardPile)
                 return QStringList();
             foreach (int id, move.card_ids){
                 nico->gainMark("lvdong_cards");//for debug--BUG:when yingan used, the skill will be triggered 1 more time.
@@ -1315,7 +1301,7 @@ void MoesenPackage::addAnimationGenerals()
     General *inori = new General(this, "inori", "wei", 3, false); // Animation 012
     inori->addSkill(new Lingchang);
     inori->addSkill(new Bajian);
-    skills << new BajianTrigger << new BajianViewAsSkill;
+    skills << new BajianViewAsSkill;
 
     General *nico = new General(this, "nico", "wei", 3, false); // Animation 013
     nico->addSkill(new Mengyin);
