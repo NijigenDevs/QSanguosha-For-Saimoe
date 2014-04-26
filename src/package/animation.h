@@ -22,6 +22,15 @@ public:
     void MiaolvCard::use(Room *room, ServerPlayer *xunyu, QList<ServerPlayer *> &targets) const;
 };
 
+class BajianCard: public SkillCard {
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE BajianCard();
+	bool BajianCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+    void BajianCard::use(Room *room, ServerPlayer *xunyu, QList<ServerPlayer *> &targets) const;
+};
+
 class MengyinCard: public SkillCard {
     Q_OBJECT
 
