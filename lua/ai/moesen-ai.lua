@@ -125,3 +125,8 @@ sgs.ai_skill_playerchosen.yinren = function(self, targets)
 end
 
 sgs.ai_skill_invoke.tongxin = true
+--....
+sgs.ai_skill_invoke.powei = true
+
+sgs.ai_skill_invoke.lvdong = true
+
