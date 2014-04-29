@@ -39,8 +39,8 @@ return {
 	["&a_azusa"] = "小豆梓", 
 	["#a_azusa"] = "乱讲话", 
 	["#&a_azusa"] = "变态王子与不笑猫。", 
-	["~a_azusa"] = "", 
-	["designer:a_azusa"] = "",
+	["~a_azusa"] = "妹妹我是土豪！", 
+	["designer:a_azusa"] = "hmqgg",
 	["cv:a_azusa"] = "石原夏織",
 	["illustrator:a_azusa"] = "",
 	
@@ -160,4 +160,16 @@ return {
 	["designer:holo"] = "",
 	["cv:holo"] = "小清水亜美",
 	["illustrator:holo"] = "",
+	
+	--skills
+	["weihao"] = "伪壕",
+	[":weihao"] = "出牌阶段，你可以令你本回合手牌上限-1，然后摸一张牌。",
+	["$weihao"] = "",
+	
+	["zhuyi"] = "属意",
+	[":zhuyi"] = "出牌阶段，你可以将手牌中的一张装备牌置于一名其他角色的装备区里，然后你本回合手牌上限+1。",
+	["$zhuyi"] = "",
+	
+	["@weihao"] = "伪壕",
+	["@zhenhao"] = "真壕",
 }

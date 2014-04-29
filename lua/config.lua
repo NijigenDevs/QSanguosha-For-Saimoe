@@ -17,10 +17,10 @@ config = {
 
 	kingdoms = { "wei", "qun", "shu", "wu", "god" },
 	kingdom_colors = {
-		wei = "#547998",
-		shu = "#D0796C",
-		wu = "#4DB873",
-		qun = "#8A807A",
+		wei = "#fc1919",
+		shu = "#0a7eff",
+		wu = "#f7ff27",
+		qun = "#7f29ff",
 		god = "#96943D",
 	},
 
