@@ -172,7 +172,7 @@
 	["#miho"] = "开坦克的",
 	["#&miho"] = "少女与战车", 	
 	["~miho"] = "", 
-	["designer:miho"] = "",
+	["designer:miho"] = "hmqgg",
 	["cv:miho"] = "渕上舞",
 	["illustrator:miho"] = "",
 	
