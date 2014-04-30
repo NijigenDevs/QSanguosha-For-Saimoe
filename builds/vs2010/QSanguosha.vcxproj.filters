@@ -772,6 +772,12 @@
     <ClCompile Include="Release\moc_novel.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
+    <ClCompile Include="Debug\moc_game.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="Release\moc_game.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\..\src\server\ai.h">
@@ -999,6 +1005,12 @@
     <CustomBuild Include="..\..\src\package\novel.h">
       <Filter>package</Filter>
     </CustomBuild>
+    <CustomBuild Include="..\..\src\package\comic.h">
+      <Filter>package</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\src\package\game.h">
+      <Filter>package</Filter>
+    </CustomBuild>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\swig\sanguosha.i">
@@ -1097,12 +1109,6 @@
     </ClInclude>
     <ClInclude Include="..\..\src\core\util.h">
       <Filter>core</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\package\comic.h">
-      <Filter>package</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\package\game.h">
-      <Filter>package</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

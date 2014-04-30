@@ -5,6 +5,7 @@
 #include "engine.h"
 #include "client.h"
 
+//weihao & zhuyi by SE
 WeihaoCard::WeihaoCard() {
     target_fixed = true;
 }

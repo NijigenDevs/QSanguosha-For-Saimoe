@@ -1014,7 +1014,7 @@ public:
             CardUseStruct use = data.value<CardUseStruct>();
             Player *right = player->getNextAlive();
             Player *left = player->getLastAlive();
-            if (use.card->isKindOf("Slash") && TriggerSkill::triggerable(player) && use.to.contains(player) && !player->isFriendWith(right) && !player->isFriendWith(left))
+            if (use.card->isKindOf("Slash") && TriggerSkill::triggerable(player) && use.to.contains(player) && !player->isFriendWith(right) && !player->isFriendWith(left) && left->hasShownOneGeneral() && right->hasShownOneGeneral())
                 return QStringList(objectName());
         } else if (triggerEvent == SlashEffected){
             if (!TriggerSkill::triggerable(player)) return QStringList();
@@ -1542,6 +1542,161 @@ public:
     }
 };
 
+//mogai by SE
+class Mogai: public TriggerSkill {
+public:
+    Mogai(): TriggerSkill("mogai") {
+        events << TargetConfirming << CardUsed;
+    }
+
+    virtual bool canPreshow() const{
+        return true;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *miho, QVariant &data, ServerPlayer * &) const {
+        if (!TriggerSkill::triggerable(miho)) return QStringList();
+        CardUseStruct use = data.value<CardUseStruct>();
+
+        if (use.card->isKindOf("Slash")&& miho->canDiscard(miho, "e")) {
+            QList<const char*> list;
+            foreach (const Card *card, miho->getEquips()){
+                if (card->isKindOf("Weapon"))
+                    list.append("Weapon");
+                if (card->isKindOf("Armor"))
+                    list.append("Armor");
+                if (card->isKindOf("OffensiveHorse"))
+                    list.append("OffensiveHorse");
+                if (card->isKindOf("DefensiveHorse"))
+                    list.append("DefensiveHorse");
+            }
+            QList<int> cardids = room->getDiscardPile();
+            QList<int> useids;
+            foreach (int cardid, cardids){
+                foreach (const char* kind, list){
+                    if (Sanguosha->getCard(cardid)->isKindOf(kind)){
+                        useids.append(cardid);
+                    }
+                }
+            }
+            if (useids.isEmpty()){
+                return QStringList();
+            }
+
+            if (triggerEvent == TargetConfirming){
+                if (use.to.contains(miho))
+                    return QStringList(objectName());
+            }else if(triggerEvent == CardUsed){
+                if (use.from == miho){
+                    return QStringList(objectName());
+                }
+            } 
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *miho, QVariant &data, ServerPlayer *) const{
+       bool invoke = miho->askForSkillInvoke(objectName(), data);
+        if (invoke) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *miho, QVariant &data, ServerPlayer *) const{
+        QList<const char*> list;
+        foreach (const Card *card, miho->getEquips()){
+            if (card->isKindOf("Weapon"))
+                list.append("Weapon");
+            if (card->isKindOf("Armor"))
+                list.append("Armor");
+            if (card->isKindOf("OffensiveHorse"))
+                list.append("OffensiveHorse");
+            if (card->isKindOf("DefensiveHorse"))
+                list.append("DefensiveHorse");
+        }
+        QList<int> cardids = room->getDiscardPile();
+        QList<int> useids;
+        foreach (int cardid, cardids){
+            foreach (const char* kind, list){
+                if (Sanguosha->getCard(cardid)->isKindOf(kind)){
+                    useids.append(cardid);
+                }
+            }
+        }
+        if (useids.isEmpty()){
+            //arg
+            return false;
+        }
+        room->fillAG(useids, miho);
+        int cid = room->askForAG(miho, useids, true, objectName());
+        if (cid <= 0){
+            return false;
+        }
+        room->clearAG(miho);
+        if (Sanguosha->getCard(cid)->isKindOf("Weapon")){
+            room->throwCard(miho->getWeapon(), CardMoveReason(CardMoveReason::S_REASON_CHANGE_EQUIP, miho->objectName()), miho);
+        }else if (Sanguosha->getCard(cid)->isKindOf("Armor")){
+            room->throwCard(miho->getArmor(), CardMoveReason(CardMoveReason::S_REASON_CHANGE_EQUIP, miho->objectName()), miho);
+        }else if (Sanguosha->getCard(cid)->isKindOf("DefensiveHorse")){
+            room->throwCard(miho->getDefensiveHorse(), CardMoveReason(CardMoveReason::S_REASON_CHANGE_EQUIP, miho->objectName()), miho);
+        }else if (Sanguosha->getCard(cid)->isKindOf("OffensiveHorse")){
+            room->throwCard(miho->getOffensiveHorse(), CardMoveReason(CardMoveReason::S_REASON_CHANGE_EQUIP, miho->objectName()), miho);
+        }
+
+        room->moveCardTo(Sanguosha->getCard(cid), miho, Player::PlaceEquip, CardMoveReason(CardMoveReason::S_REASON_CHANGE_EQUIP, miho->objectName()));
+        return false;
+    }
+};
+
+//ruhun
+class Ruhun: public TriggerSkill {
+public:
+    Ruhun(): TriggerSkill("ruhun") {
+        events << TargetConfirmed;
+    }
+
+    virtual bool canPreshow() const{
+        return true;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *miho, QVariant &data, ServerPlayer * &) const {
+        if (!TriggerSkill::triggerable(miho)) return QStringList();
+        CardUseStruct use = data.value<CardUseStruct>();
+
+        if (use.card->isKindOf("Slash")&& !miho->isKongcheng()) {
+            if (use.from == miho && !use.to.isEmpty())
+                return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *miho, QVariant &data, ServerPlayer *) const{
+       bool invoke = miho->askForSkillInvoke(objectName(), data);
+        if (invoke) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *miho, QVariant &data, ServerPlayer *) const{
+        CardUseStruct use = data.value<CardUseStruct>();
+        QList<ServerPlayer *> left = use.to;
+        do{
+            ServerPlayer *to = room->askForPlayerChosen(miho, use.to, "ruhun_target");
+            const Card *card = room->askForCard(miho, ".", "@ruhun", QVariant(), objectName());
+            if (card && to){
+                room->throwCard(card, CardMoveReason(CardMoveReason::S_REASON_DISCARD, miho->objectName()), miho, miho);
+                QString pattern =  ".|"+ card->getSuitString() +"|.|.";
+                room->setPlayerCardLimitation(to, "use,response", pattern, true);
+                left.removeOne(to);
+            }
+        }while (left.length() > 0 && !miho->isKongcheng() && miho->askForSkillInvoke(objectName()));
+        return false;
+    }
+};
+
 void MoesenPackage::addAnimationGenerals()
 {
     General *mami = new General(this, "mami", "wei", 4, false); // Animation 001
@@ -1617,9 +1772,10 @@ void MoesenPackage::addAnimationGenerals()
     General *sawa = new General(this, "sawa", "wei", 3, false); // Animation 016
 
     General *astarotte = new General(this, "astarotte", "wei", 3, false); // Animation 017
-
-    General *miho = new General(this, "miho", "wei", 3, false); // Animation 018
     */
+    General *miho = new General(this, "miho", "wei", 3, false); // Animation 018
+    miho->addSkill(new Mogai);
+    miho->addSkill(new Ruhun);
 
     addMetaObject<WuweiCard>();
     addMetaObject<MiaolvCard>();

@@ -5,6 +5,8 @@
 #include "engine.h"
 #include "client.h"
 
+
+
 void MoesenPackage::addComicGenerals()
 {
     /*General *hinagiku = new General(this, "hinagiku", "shu", 3, false); // Comic 001

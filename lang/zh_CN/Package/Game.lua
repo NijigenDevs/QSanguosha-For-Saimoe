@@ -13,7 +13,7 @@ return {
 	["#fuuko"] = "某不科学的海星使", 
 	["#&fuuko"] = "CLANNAD", 
 	["~fuuko"] = "成为风子的恋人吧！", 
-	["designer:fuuko"] = "",
+	["designer:fuuko"] = "Sword Elucidator",
 	["cv:fuuko"] = "野中藍",
 	["illustrator:fuuko"] = "",
 	
@@ -160,4 +160,19 @@ return {
 	["designer:komari"] = "",
 	["cv:komari"] = "やなせなつみ",
 	["illustrator:komari"] = "",
+	
+	["haixing"] = "海星",
+	[":haixing"] = "摸牌阶段结束时，你可以将任意数量的手牌交给其他角色，然后你令这些角色交给你一张牌，若你给出的牌张数达到两张或更多时，你可以令一名角色回复1点体力。",
+	["$haixing"] = "",
+	
+	["@haixing-card"] = "请选择任意数量的卡牌交给一名角色。该技能可以于此阶段重复发动。",
+	["@haixing-back"] = "你需要还给风子一张牌。",
+	["haixing_recover"] = "请选择一名角色，令其回复一点体力。",
+	
+	["taozui"] = "陶醉",
+	[":taozui"] = "回合开始阶段，你可以跳过你的出牌阶段，然后选择一项：1.获得其他角色判定区内的【禁锢枷锁】。2.弃置你判定区内的【提不起劲】。",
+	["$taozui"] = "",
+	["taozui_from"] = "请选择【禁锢枷锁】的来源。",
+	["taozui_get"] = "获得一张场上的【禁锢枷锁】",
+	["taozui_discard"] = "弃置你判定区内的【提不起劲】",
 }
