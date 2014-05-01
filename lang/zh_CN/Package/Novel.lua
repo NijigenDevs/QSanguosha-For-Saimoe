@@ -42,7 +42,7 @@ return {
 	["~a_azusa"] = "妹妹我是土豪！", 
 	["designer:a_azusa"] = "hmqgg",
 	["cv:a_azusa"] = "石原夏織",
-	["illustrator:a_azusa"] = "",
+	["illustrator:a_azusa"] = "スカイ",
 	
 	["yuki"] = "长门有希", 
 	["&yuki"] = "长门有希", 

@@ -15,7 +15,7 @@ return {
 	["~fuuko"] = "成为风子的恋人吧！", 
 	["designer:fuuko"] = "Sword Elucidator",
 	["cv:fuuko"] = "野中藍",
-	["illustrator:fuuko"] = "",
+	["illustrator:fuuko"] = "戌亥あちゅあちゅむち",
 	
 	["tomoyo"] = "坂上智代", 
 	["&tomoyo"] = "坂上智代", 

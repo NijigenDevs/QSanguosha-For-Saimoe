@@ -96,7 +96,7 @@ public:
     }
 
     virtual QStringList triggerable(TriggerEvent , Room *room, ServerPlayer *player, QVariant &data, ServerPlayer * &) const {
-        if (player->getPhase() == Player::Discard){
+        if (player->getPhase() == Player::Finish){
             room->setPlayerMark(player, "@weihao", 0);
             room->setPlayerMark(player, "@zhenhao", 0);
         }

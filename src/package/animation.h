@@ -67,4 +67,12 @@ public:
     void GejiCard::use(Room *, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
+class Tengyue: public DrawCardsSkill {
+public:
+    Tengyue();
+
+    virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who = NULL) const;
+    virtual int getDrawNum(ServerPlayer *player, int n) const;
+};
+
 #endif

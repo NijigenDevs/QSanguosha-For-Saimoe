@@ -477,6 +477,7 @@ bool MiaolvCard::targetFilter(const QList<const Player *> &targets, const Player
 void MiaolvCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
     ServerPlayer *yui = targets.first();
     int cardid = room->askForCardChosen(source, yui, "e", objectName());
+    room->broadcastSkillInvoke("miaolv");
     yui->obtainCard(Sanguosha->getCard(cardid));
     if (yui != source)
         source->drawCards(1);
@@ -551,7 +552,7 @@ public:
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *mio, QVariant &, ServerPlayer *) const{
         bool invoke = mio->hasShownSkill(this) ? true : room->askForSkillInvoke(mio, objectName());
         if (invoke) {
-            room->broadcastSkillInvoke("yinzhuang");
+            room->broadcastSkillInvoke("yinzhuang", 2);
             if (mio->hasShownSkill(this)) {
                 room->notifySkillInvoked(mio, "yinzhuang");
 
@@ -593,10 +594,9 @@ public:
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *mio, QVariant &, ServerPlayer *) const{
         bool invoke = mio->hasShownSkill(this) ? true : room->askForSkillInvoke(mio, objectName());
         if (invoke) {
-            room->broadcastSkillInvoke("yinzhuang");
+            room->broadcastSkillInvoke("yinzhuang", 1);
             if (mio->hasShownSkill(this)) {
                 room->notifySkillInvoked(mio, "yinzhuang");
-
                 LogMessage log;
                 log.type = "#TriggerSkill";
                 log.from = mio;
@@ -638,7 +638,7 @@ public:
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *mio, QVariant &, ServerPlayer *) const{
         bool invoke = mio->hasShownSkill(this) ? true : room->askForSkillInvoke(mio, objectName());
         if (invoke) {
-            room->broadcastSkillInvoke("yinzhuang");
+            room->broadcastSkillInvoke("yinzhuang", 3);
             if (mio->hasShownSkill(this)) {
                 room->notifySkillInvoked(mio, "yinzhuang");
 
@@ -734,6 +734,7 @@ public:
             room->askForDiscard(ask_who, objectName(), 2, 2, false, true, "@yingan_enemy");
         else if (player->isFriendWith(ask_who) && ask_who->getHandcardNum() > ask_who->getMaxHp()) {
             room->askForDiscard(ask_who, objectName(), 1, 1, false, true, "@yingan_friend");
+            room->broadcastSkillInvoke(objectName(), 4);
         }
         return false;
     }
@@ -1542,6 +1543,92 @@ public:
     }
 };
 
+//qishu by SE
+class Qishu: public DistanceSkill {
+public:
+    Qishu(): DistanceSkill("qishu") {
+    }
+
+    virtual int getCorrect(const Player *from, const Player *to) const{
+        if (from->hasSkill(objectName()))
+            return -1;
+        else if (to->hasSkill(objectName()))
+            return 1;
+        else
+            return 0;
+    }
+};
+
+//tengyue by SE
+class TengyueTrigger: public TriggerSkill {
+public:
+    TengyueTrigger(): TriggerSkill("#tengyue-trigger") {
+        events << EventLoseSkill << EventPhaseEnd;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *target, QVariant &data, ServerPlayer * &) const{
+        if (triggerEvent == EventLoseSkill){
+            if (target && target->getMark("@TengyueExtraSlashes") > 0 && data.toString() == objectName()){
+                room->setPlayerMark(target, "@TengyueExtraSlashes", 0);
+            }
+        }else if(triggerEvent == EventPhaseEnd){
+            if (target && target->getMark("@TengyueExtraSlashes") > 0 && target->getPhase() == Player::Finish){
+                room->setPlayerMark(target, "@TengyueExtraSlashes", 0);
+            }
+        }
+        return QStringList();
+    }
+
+    virtual int getEffectIndex(const ServerPlayer *, const Card *) const{
+        return 2;
+    }
+};
+
+Tengyue::Tengyue(): DrawCardsSkill("tengyue") {
+    frequency = NotFrequent;
+}
+
+bool Tengyue::cost(TriggerEvent , Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+    if (player->askForSkillInvoke(objectName())){
+        room->broadcastSkillInvoke(objectName());
+        return true;
+    }
+    return false;
+}
+
+int Tengyue::getDrawNum(ServerPlayer *player, int n) const{
+    QString choices = "tengyue1";
+    for (int i = 1; i < n; i++){
+        choices += "+tengyue"+ QString::number(i+1);
+    }
+    QString choice = player->getRoom()->askForChoice(player, "tengyue", choices);
+    int num = choice.section('e',-1).toInt();
+    //
+    
+    player->getRoom()->setPlayerMark(player, "@TengyueExtraSlashes", num);
+    return n - num;
+}
+
+class TengyueTargetMod: public TargetModSkill {
+public:
+    TengyueTargetMod(): TargetModSkill("#tengyue-target") {
+    }
+
+    virtual int getResidueNum(const Player *from, const Card *) const{
+        if (from->getMark("@TengyueExtraSlashes") > 0)
+            return (from->getMark("@TengyueExtraSlashes"));
+        else
+            return 0;
+    }
+
+    virtual int getExtraTargetNum(const Player *from, const Card *) const{
+        if (from->getMark("@TengyueExtraSlashes") > 0)
+            return 1;
+        else
+            return 0;
+    }
+};
+
 //mogai by SE
 class Mogai: public TriggerSkill {
 public:
@@ -1649,7 +1736,7 @@ public:
     }
 };
 
-//ruhun
+//ruhun by SE
 class Ruhun: public TriggerSkill {
 public:
     Ruhun(): TriggerSkill("ruhun") {
@@ -1768,11 +1855,17 @@ void MoesenPackage::addAnimationGenerals()
     General *lacus = new General(this, "lacus", "wei", 3, false); // Animation 015
     lacus->addSkill(new Geji);
     lacus->addSkill(new Pinghe);
-    /*
-    General *sawa = new General(this, "sawa", "wei", 3, false); // Animation 016
 
-    General *astarotte = new General(this, "astarotte", "wei", 3, false); // Animation 017
-    */
+    General *sawa = new General(this, "sawa", "wei", 4, false); // Animation 016
+    sawa->addSkill(new Qishu);
+    sawa->addSkill(new Tengyue);
+    sawa->addSkill(new TengyueTrigger);
+    sawa->addSkill(new TengyueTargetMod);
+    related_skills.insertMulti("tengyue", "#tengyue-trigger");
+    related_skills.insertMulti("tengyue", "#tengyue-target");
+
+    //General *astarotte = new General(this, "astarotte", "wei", 3, false); // Animation 017
+
     General *miho = new General(this, "miho", "wei", 3, false); // Animation 018
     miho->addSkill(new Mogai);
     miho->addSkill(new Ruhun);
