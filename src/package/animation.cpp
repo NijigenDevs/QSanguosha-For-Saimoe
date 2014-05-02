@@ -212,7 +212,7 @@ public:
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer * &) const {
         CardUseStruct use = data.value<CardUseStruct>();
         if (use.from && use.from->isAlive() && use.from == player && use.card && use.card->getSkillName() == "yingqiang" ){
-            room->broadcastSkillInvoke("yingqiang");//the broadcart is written here
+            //room->broadcastSkillInvoke("yingqiang");//the broadcart is written here
             foreach (int cardid, use.card->getSubcards())
                 if (Sanguosha->getCard(cardid)->getSuit() == Card::Club)
                     return QStringList(objectName());
