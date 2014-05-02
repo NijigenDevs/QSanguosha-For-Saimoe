@@ -211,10 +211,12 @@ public:
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer * &) const {
         CardUseStruct use = data.value<CardUseStruct>();
-        if (use.from && use.from->isAlive() && use.from == player && use.card && use.card->getSkillName() == "yingqiang" )
+        if (use.from && use.from->isAlive() && use.from == player && use.card && use.card->getSkillName() == "yingqiang" ){
+            room->broadcastSkillInvoke("yingqiang");//the broadcart is written here
             foreach (int cardid, use.card->getSubcards())
                 if (Sanguosha->getCard(cardid)->getSuit() == Card::Club)
                     return QStringList(objectName());
+        }
         return QStringList();
     }
 
@@ -425,6 +427,7 @@ public:
         DamageStruct damage = data.value<DamageStruct>();
         damage.damage ++;
         data = QVariant::fromValue(damage);
+        room->broadcastSkillInvoke("wuwei");
         return false;
     }
 };
@@ -734,7 +737,6 @@ public:
             room->askForDiscard(ask_who, objectName(), 2, 2, false, true, "@yingan_enemy");
         else if (player->isFriendWith(ask_who) && ask_who->getHandcardNum() > ask_who->getMaxHp()) {
             room->askForDiscard(ask_who, objectName(), 1, 1, false, true, "@yingan_friend");
-            room->broadcastSkillInvoke(objectName(), 4);
         }
         return false;
     }
