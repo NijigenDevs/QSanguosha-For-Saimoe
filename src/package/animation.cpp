@@ -1200,6 +1200,7 @@ public:
                 if (death.who->getMark("bajian") > 0){
                     room->setPlayerMark(death.who, "bajian", 0);
                     room->detachSkillFromPlayer(death.who, "bajianVS", true, true);
+                    return QStringList();
                 }
             }
         }
@@ -1209,7 +1210,6 @@ public:
                 room->detachSkillFromPlayer(p, "bajianVS", true, true);
             }
 
-        if (room->alivePlayerCount() < 4) return QStringList();
         QList<ServerPlayer *> inoris = room->findPlayersBySkillName(objectName());
         foreach (ServerPlayer *inori, inoris)
             if (inori->hasShownSkill(this)) {
