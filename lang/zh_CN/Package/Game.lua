@@ -12,6 +12,7 @@ return {
 	["&fuuko"] = "伊吹风子", 
 	["#fuuko"] = "某不科学的海星使", 
 	["#&fuuko"] = "CLANNAD", 
+	["#$fuuko"] = "冈崎汐", 
 	["~fuuko"] = "成为风子的恋人吧！", 
 	["designer:fuuko"] = "Sword Elucidator",
 	["cv:fuuko"] = "野中藍",
