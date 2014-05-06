@@ -11,7 +11,7 @@
     <message>
         <location filename="../../src/dialog/AboutUs.cpp" line="33"/>
         <source>QSanguosha-Hegemony-V2</source>
-        <translation>太阳神三国杀V2国战</translation>
+        <translation>太阳神三国杀V2萌战MOD</translation>
     </message>
 </context>
 <context>
@@ -127,7 +127,7 @@
     <message>
         <location filename="../../src/ui/cardcontainer.cpp" line="52"/>
         <source>QSanguosha-Hegemony</source>
-        <translation>太阳神三国杀·国战</translation>
+        <translation>太阳神三国杀·萌战MOD</translation>
     </message>
 </context>
 <context>
@@ -1443,7 +1443,7 @@
     <message>
         <location filename="../../src/ui/roomscene.cpp" line="2874"/>
         <source>Death note</source>
-        <translation>死亡笔记</translation>
+        <translation>“请去死吧”</translation>
     </message>
     <message>
         <location filename="../../src/ui/roomscene.cpp" line="2882"/>
@@ -1453,7 +1453,7 @@
     <message>
         <location filename="../../src/ui/roomscene.cpp" line="2886"/>
         <source>Killer</source>
-        <translation>凶手</translation>
+        <translation>死灵法师</translation>
     </message>
     <message>
         <location filename="../../src/ui/roomscene.cpp" line="2887"/>
@@ -2106,7 +2106,7 @@
     <message>
         <location filename="../../src/dialog/mainwindow.ui" line="275"/>
         <source>Damage maker</source>
-        <translation>削人棍制造器</translation>
+        <translation>削人棍</translation>
     </message>
     <message>
         <location filename="../../src/dialog/mainwindow.ui" line="283"/>
@@ -2409,7 +2409,7 @@
     <message>
         <location filename="../../src/dialog/mainwindow.cpp" line="72"/>
         <source>QSanguosha-Hegemony</source>
-        <translation>太阳神三国杀·国战</translation>
+        <translation>太阳神三国杀·萌战MOD</translation>
     </message>
     <message>
         <location filename="../../src/dialog/mainwindow.cpp" line="684"/>
@@ -3079,7 +3079,7 @@
     <message>
         <location filename="../../src/ui/roomscene.cpp" line="233"/>
         <source>Please enter text to chat ... </source>
-        <translation>聊天请在此输入 ...</translation>
+        <translation>卖萌请在此输入 ...</translation>
     </message>
     <message>
         <location filename="../../src/ui/roomscene.cpp" line="2038"/>
@@ -3088,7 +3088,7 @@
         <location filename="../../src/ui/roomscene.cpp" line="2985"/>
         <location filename="../../src/ui/roomscene.cpp" line="2995"/>
         <location filename="../../src/ui/roomscene.cpp" line="3010"/>
-        <location filename="../../src/ui/roomscene.cpp" line="3700"/>
+        <location filename="../../src/ui/roomscene.cpp" line="3705"/>
         <source>Warning</source>
         <translation>警告</translation>
     </message>
@@ -3119,7 +3119,7 @@
     </message>
     <message>
         <location filename="../../src/ui/roomscene.cpp" line="344"/>
-        <location filename="../../src/ui/roomscene.cpp" line="3894"/>
+        <location filename="../../src/ui/roomscene.cpp" line="3899"/>
         <source>pindian</source>
         <translation>拼点</translation>
     </message>
@@ -3445,27 +3445,27 @@
         <translation>&lt;font color=&apos;%1&apos;&gt;---------- 游戏开始 ----------&lt;/font&gt;</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="3687"/>
+        <location filename="../../src/ui/roomscene.cpp" line="3692"/>
         <source>Server information</source>
         <translation>服务器信息</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="3700"/>
+        <location filename="../../src/ui/roomscene.cpp" line="3705"/>
         <source>You can only initiate a surrender poll at your play phase!</source>
         <translation>只有在你的出牌阶段才能请求投降!</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="3705"/>
+        <location filename="../../src/ui/roomscene.cpp" line="3710"/>
         <source>Surrender</source>
         <translation>投降</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="3705"/>
+        <location filename="../../src/ui/roomscene.cpp" line="3710"/>
         <source>Are you sure to surrender ?</source>
         <translation>您真的要投降吗 ?</translation>
     </message>
     <message>
-        <location filename="../../src/ui/roomscene.cpp" line="3815"/>
+        <location filename="../../src/ui/roomscene.cpp" line="3820"/>
         <source>Complete</source>
         <translation>完成</translation>
     </message>
