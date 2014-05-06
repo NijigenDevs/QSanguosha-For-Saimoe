@@ -159,15 +159,18 @@ void Window::setTitle(const QString &title) {
     titleItem->setPos(size.width() / 2 - titleItem->boundingRect().width() / 2, 10);
 }
 
-void Window::setAddress(const QSizeF &size,const QString &path) {
+void Window::setAddress(const QSizeF &size,const QString &path, const QString &path2) {
     if (outimg->height() != size.height() || outimg->width() != size.width())//Add by SE for changing prompt
         return;
 
      QPixmap *bg;
     if (!path.isEmpty())
         bg = new QPixmap(path);
-    else
-        bg = size.width() > size.height() ? new QPixmap("image/system/tip.png") : new QPixmap("image/system/about.png");
+    if (bg->isNull() && !path2.isEmpty())
+        bg = new QPixmap(path2);
+    if (bg->isNull())
+        bg = new QPixmap("image/system/prompt/newPrompt.png");
+
     QImage bgimg = bg->toImage();
 
     qreal pad = 10;

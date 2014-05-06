@@ -3398,11 +3398,16 @@ void RoomScene::onGameStart() {
     foreach (Photo *photo, photos)
         photo->showSeat();
 
-    //Thank you Fsu GOD, TODO later by SE
+    //Thank you Fsu GOD, TODOed by SE
     if (!Self->getActualGeneral1Name().contains("sujiang"))
-        prompt_box->setAddress( QSize(480,200), "image/system/prompt/newPrompt.png");
+        prompt_box->setAddress( QSize(480,200), "image/system/prompt/"+Self->getActualGeneral1Name()+".png");
     else if(!Self->getActualGeneral2Name().contains("sujiang"))
+        prompt_box->setAddress( QSize(480,200), "image/system/prompt/"+Self->getActualGeneral2Name()+".png");
+    else
         prompt_box->setAddress( QSize(480,200), "image/system/prompt/newPrompt.png");
+    if (Self->getActualGeneral1()->isCompanionWith(Self->getActualGeneral2Name())){
+        prompt_box->setAddress( QSize(480,200), "image/system/prompt/"+Self->getActualGeneral1Name()+"+"+Self->getActualGeneral2Name()+".png","image/system/prompt/"+Self->getActualGeneral2Name()+"+"+Self->getActualGeneral1Name()+".png");
+    }
 }
 
 void RoomScene::freeze() {

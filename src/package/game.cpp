@@ -455,7 +455,11 @@ YumengDraw::YumengDraw(): DrawCardsSkill("yumeng-draw") {
 }
 
 bool YumengDraw::cost(TriggerEvent , Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
-    return true;
+    foreach(ServerPlayer* p, player->getRoom()->getAlivePlayers())
+        if (p->getMark("yumeng_use") > 0 && p->isFriendWith(player))
+            if(p->getMark("yumeng_use") > 0)
+                return true;
+    return false;
 }
 
 int YumengDraw::getDrawNum(ServerPlayer *player, int n) const{
