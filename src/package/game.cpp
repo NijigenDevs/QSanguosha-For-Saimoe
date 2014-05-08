@@ -457,8 +457,7 @@ YumengDraw::YumengDraw(): DrawCardsSkill("yumeng-draw") {
 bool YumengDraw::cost(TriggerEvent , Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
     foreach(ServerPlayer* p, player->getRoom()->getAlivePlayers())
         if (p->getMark("yumeng_use") > 0 && p->isFriendWith(player))
-            if(p->getMark("yumeng_use") > 0)
-                return true;
+            return true;
     return false;
 }
 
@@ -495,7 +494,7 @@ public:
     }
 
      virtual bool cost(TriggerEvent , Room *room, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const{
-        bool invoke = ask_who->hasShownSkill(this) ? true : room->askForSkillInvoke(ask_who, objectName());
+         bool invoke = ask_who->hasShownSkill(this) ? true : room->askForSkillInvoke(ask_who, objectName());
         if (invoke){
             return true;
         }
