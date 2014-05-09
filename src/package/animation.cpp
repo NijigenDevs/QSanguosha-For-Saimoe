@@ -1241,7 +1241,7 @@ void MengyinCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &)
                 targets << p;
         if (!targets.isEmpty()) {
             ServerPlayer *target = room->askForPlayerChosen(source, targets, "mengyin", "@mengyin_slash");
-            room->useCard(CardUseStruct(slash, source, target), false);
+            room->useCard(CardUseStruct(slash, source, target), true);
         }
 }
 
@@ -1266,7 +1266,7 @@ public:
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{
-        return player->canDiscard(player, "he") && !player->hasUsed("MengyinCard");
+        return player->canDiscard(player, "he") && !player->hasUsed("MengyinCard") && Slash::IsAvailable(player);
     }
 };
 
@@ -1284,8 +1284,8 @@ public:
             if (nico->getPhase() == Player::NotActive || move.to_place != Player::DiscardPile)
                 return QStringList();
             foreach (int id, move.card_ids){
-                nico->gainMark("lvdong_cards");//for debug--BUG:when yingan used, the skill will be triggered 1 more time.
-                //nico->setMark("lvdong_cards", nico->getMark("lvdong_cards") + 1);
+                //nico->gainMark("lvdong_cards");//for debug--BUG:when yingan used, the skill will be triggered 1 more time.
+                nico->setMark("lvdong_cards", nico->getMark("lvdong_cards") + 1);
                 return QStringList();
             }
         }else{

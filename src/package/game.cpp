@@ -456,7 +456,7 @@ YumengDraw::YumengDraw(): DrawCardsSkill("yumeng-draw") {
 
 bool YumengDraw::cost(TriggerEvent , Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
     foreach(ServerPlayer* p, player->getRoom()->getAlivePlayers())
-        if (p->getMark("yumeng_use") > 0 && p->isFriendWith(player))
+        if (p->getMark("yumeng_use") > 0 && p->hasShownOneGeneral() && p->isFriendWith(player))
             return true;
     return false;
 }
@@ -464,7 +464,7 @@ bool YumengDraw::cost(TriggerEvent , Room *room, ServerPlayer *player, QVariant 
 int YumengDraw::getDrawNum(ServerPlayer *player, int n) const{
     int m = 0;
     foreach(ServerPlayer* p, player->getRoom()->getAlivePlayers())
-        if (p->getMark("yumeng_use") > 0 && p->isFriendWith(player))
+        if (p->getMark("yumeng_use") > 0 && p->hasShownOneGeneral() && p->isFriendWith(player))
             m+=p->getMark("yumeng_use");
     if (m > 0)
         player->getRoom()->broadcastSkillInvoke("yumeng");
