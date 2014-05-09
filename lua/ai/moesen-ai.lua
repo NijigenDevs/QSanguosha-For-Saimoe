@@ -1,12 +1,15 @@
-
+--molu
 sgs.ai_skill_invoke.molu = function(self, data)
 	local dying = data:toDying()
 	local peaches = 1 - dying.who:getHp()
 	return self:getCardsNum("Peach") + self:getCardsNum("Analeptic") < peaches
 end
 
+
+
 --yingqiang
 
+--cibei
 sgs.ai_skill_invoke.cibei = function(self, data)
 	local target = data:toPlayer()
 	local value = 0
@@ -48,26 +51,154 @@ sgs.ai_skill_cardchosen.cibei = function(self, who, flags) --TODO!!
 end
 
 --renmin
---wuwei
+sgs.ai_skill_invoke.renmin = function(self, data)
+	local value = 0
+	local move = data:toMoveOneTime()
+	if self:needKongcheng(move.from, true) then return false end
+	for _, id in ipairs(move.card_ids) do
+		--TODO
+	end
+	
+	if value > 0 then return true end
+	return false
+end
 
+
+--wuwei VS SKILL need DEBUG
+--[[
+local wuwei_skill = {}
+wuwei_skill.name = "wuwei"
+table.insert(sgs.ai_skills, wuwei_skill)
+wuwei_skill.getTurnUseCard = function(self)
+	if not self.player:hasUsed("WuweiCard") then
+		return sgs.Card_Parse("@WuweiCard=.&wuwei")
+	end
+end
+
+sgs.ai_skill_use_func.WuweiCard = function(card, use, self)
+	local weapon = self.player:getWeapon()
+	if self.player:isKongcheng() then return end
+	self:sort(self.enemies, "hp")
+	local cards = self.player:getHandcards()
+	cards = sgs.QList2Table(cards)
+	self:sortByKeepValue(cards)
+	for _, enemy in ipairs(self.enemies) do
+		if self:objectiveLevel(enemy) > 3 and not self:cantbeHurt(enemy) and self:damageIsEffective(enemy) and not enemy:hasSkills(sgs.masochism_skill) and self:slashIsEffective(sgs.Sanguosha:cloneCard("slash"), enemy) then
+			if self.player:distanceTo(enemy) <= self.player:getAttackRange() and self.player:getHp() > 1 then
+				use.card = sgs.Card_Parse("@WuweiCard=" .. cards[1] .. "&wuwei")
+				if use.to then
+					use.to:append(enemy)
+				end
+				return
+			end
+		end
+	end
+end
+
+sgs.ai_use_value.WuweiCard = 2.5
+sgs.ai_card_intention.WuweiCard = 80
+sgs.wuwei_keep_value = {
+	Peach = 6,
+	Jink = 5.1,
+	Weapon = 5
+}
+]]
+--quanmian
 sgs.ai_skill_playerchosen.quanmian = function(self, targets)
 	if #self.friends_noself == 0 then return self.player end
 	return self:findPlayerToDraw(true, 1)
 end
 
 --miaolv
+--need debug
+--[[
+local miaolv_skill = {}
+miaolv_skill.name = "miaolv"
+table.insert(sgs.ai_skills, miaolv_skill)
+miaolv_skill.getTurnUseCard = function(self)
+	if not self.player:hasUsed("MiaolvCard") then
+		return sgs.Card_Parse("@MiaolvCard=.&miaolv")
+	end
+end
+
+sgs.ai_skill_use_func.MiaolvCard = function(card, use, self)
+	for _,friend in ipairs(self.friends) do
+		if friend:hasSkills(sgs.lose_equip_skill) and friend:getEquips():length() > 0 then
+			use.card = sgs.Card_Parse("@MiaolvCard=.&miaolv")
+			if use.to then
+				use.to:append(friend)
+			end
+			return
+		end
+	end
+	self:sort(self.friends, "hp")
+	for _,friend in ipairs(self.friends) do
+		if friend:getArmor() and friend:getArmor():isKindOf("SilverLion") and friend:getHp() < friend:getMaxHp() and friend:getEquips():length() > 0 then
+			use.card = sgs.Card_Parse("@MiaolvCard=.&miaolv")
+			if use.to then
+				use.to:append(friend)
+			end
+			return
+		end
+	end
+	self:sort(self.enemies, "hp")
+	for _,enemy in ipairs(self.enemies) do
+		if friend:getEquips():length() > 0 and not enemy:hasSkills(sgs.lose_equip_skill) and enemy:getArmor() and not (enemy:getArmor():isKindOf("SilverLion") and enemy:getHp() < enemy:getMaxHp()) then
+			use.card = sgs.Card_Parse("@MiaolvCard=.&miaolv")
+			if use.to then
+				use.to:append(enemy)
+			end
+			return
+		end
+	end
+	if self.player:getEquips():length() > 0 then
+		use.card = sgs.Card_Parse("@MiaolvCard=.&miaolv")
+		if use.to then
+			use.to:append(self.player)
+		end
+	end
+	return
+end
+
+sgs.ai_skill_cardchosen.miaolv = function(self, who, flags)
+	local cards = sgs.QList2Table(who:getEquips())
+	if self:isFriend(who) then
+		for _,card in ipairs(cards) do
+			if card:isKindOf("SilverLion") and who:getHp() < who:getMaxHp() then
+				return card
+			end
+		end
+		for _,card in ipairs(cards) do
+			if not card:isKindOf("Armor") then
+				return card
+			end
+		end
+		return cards[1]
+	else
+		for _,card in ipairs(cards) do
+			if not (card:isKindOf("SilverLion") and who:getHp() < who:getMaxHp()) and card:isKindOf("Armor") then
+				return card
+			end
+		end
+	end
+	return cards[1]
+end
+
+sgs.ai_use_value.MiaolvCard = 4.2
+sgs.ai_card_intention.MiaolvCard = 0
+]]
 
 sgs.ai_skill_playerchosen.yinzhuang = function(self, targets)
 	local i = self.room:getTag("YinzhuangCard"):toInt()
 	if i == -1 then
 		for _,p in sgs.qlist(targets) do
-			if self:isEnemy(p) and not p:hasSkills(sgs.masochism_skill) and self:slashIsEffective(sgs.Sanguosha:cloneCard("slash"), p) then return p end
+			if not self:isFriend(p) and not p:hasSkills(sgs.masochism_skill) and self:slashIsEffective(sgs.Sanguosha:cloneCard("slash"), p) then return p end
 		end
 		for _,p in sgs.qlist(targets) do
-			if self:isEnemy(p) and self:slashIsEffective(sgs.Sanguosha:cloneCard("slash"), p) then return p end
+			if not self:isFriend(p) and self:slashIsEffective(sgs.Sanguosha:cloneCard("slash"), p) then return p end
 		end
 		for _,p in sgs.qlist(targets) do
-			if self:isEnemy(p) then return p end
+			if not self:isFriend(p) then return p end
 		end
 		return targets:first()
 	else

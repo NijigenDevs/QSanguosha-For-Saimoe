@@ -432,6 +432,119 @@ public:
     }
 };
 
+//shiting -SE
+class Shiting: public TriggerSkill {
+public:
+    Shiting(): TriggerSkill("shiting") {
+        events << CardUsed << DamageCaused << CardsMoveOneTime << Damaged;
+    }
+
+    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+        QMap<ServerPlayer *, QStringList> skill_list;
+        if (triggerEvent == CardUsed){
+            CardUseStruct use = data.value<CardUseStruct>();
+            if (!use.card || !use.card->isKindOf("BasicCard"))
+                return skill_list;
+
+            QList<ServerPlayer *> homuras = room->findPlayersBySkillName(objectName());
+            foreach (ServerPlayer *homura, homuras) {
+                skill_list.insert(homura, QStringList(objectName()));
+            }
+            return skill_list;
+        }else if(triggerEvent == DamageCaused){
+            DamageStruct damage = data.value<DamageStruct>();
+            if (!damage.to || !damage.card->isKindOf("TrickCard"))
+                return skill_list;
+            QList<ServerPlayer *> homuras = room->findPlayersBySkillName(objectName());
+            foreach (ServerPlayer *homura, homuras) {
+                skill_list.insert(homura, QStringList(objectName()));
+            }
+            return skill_list;
+        }else if(triggerEvent == CardsMoveOneTime){
+            QList<ServerPlayer *> homuras = room->findPlayersBySkillName(objectName());
+            CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+            if (move.to_place != Player::PlaceEquip || homuras.length() == 0) return skill_list;
+            foreach (ServerPlayer *homura, homuras){
+                if (homura->objectName() == move.to->objectName() && homura->getEquips().length() > 1){
+                    room->detachSkillFromPlayer(homura, "shiting");
+                }
+            }
+        }else if(triggerEvent == Damaged){
+             DamageStruct damage = data.value<DamageStruct>();
+             QList<ServerPlayer *> homuras = room->findPlayersBySkillName(objectName());
+             if (homuras.contains(damage.to)){
+                  foreach (ServerPlayer *homura, homuras){
+                      if (homura == damage.to){
+                          room->detachSkillFromPlayer(homura, "shiting");
+                      }
+                  }
+             }
+        }
+        return skill_list;
+    }
+     virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *ask_who) const{
+        bool invoke = ask_who->askForSkillInvoke(objectName(), data);
+        if (invoke) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *ask_who) const{
+        room->notifySkillInvoked(ask_who, objectName());
+        //log
+        ask_who->gainMark("@shiting_use");
+        if (ask_who->getMark("@shiting_use") >= 10){
+            ask_who->setMark("@shiting_use", 0);
+            room->detachSkillFromPlayer(ask_who, "shiting");
+        }
+        return true;
+    }
+};
+
+//shizhi -SE
+class Shizhi: public TriggerSkill {
+public:
+    Shizhi(): TriggerSkill("shizhi") {
+        events << EventPhaseStart;
+    }
+
+    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+        QMap<ServerPlayer *, QStringList> skill_list;
+        if (player != NULL && player->getPhase() == Player::Start) {
+            QList<ServerPlayer *> homuras = room->findPlayersBySkillName(objectName());
+            foreach (ServerPlayer *homura, homuras){
+                if (player == homura) 
+                    homura->loseAllMarks("@shizhi_used");
+                int need_num = 2;
+                if (!homura->hasSkill("shiting")) 
+                    need_num = 1;
+                if (homura->getMark("@shizhi_used") < need_num && homura->getHandcardNum() + homura->getEquips().length() >= need_num)
+                    skill_list.insert(homura, QStringList(objectName()));
+            }
+        }
+        return skill_list;
+    }
+     virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *ask_who) const{
+        bool invoke = ask_who->askForSkillInvoke(objectName(), data);
+        int need_num = 2;
+        if (!ask_who->hasSkill("shiting")) 
+            need_num = 1;
+        if (invoke && room->askForDiscard(ask_who, "shizhi", need_num, need_num, true, true, QString())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const{
+        room->notifySkillInvoked(ask_who, objectName());
+        //log
+        room->askForGuanxing(ask_who, room->getNCards(5));
+        if (player != ask_who)
+            ask_who->gainMark("@shizhi_used");
+        return false;
+    }
+};
 
 //quanmian, miaolv -SE
 class Quanmian: public TriggerSkill {
@@ -479,7 +592,7 @@ bool MiaolvCard::targetFilter(const QList<const Player *> &targets, const Player
 
 void MiaolvCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
     ServerPlayer *yui = targets.first();
-    int cardid = room->askForCardChosen(source, yui, "e", objectName());
+    int cardid = room->askForCardChosen(source, yui, "e", "miaolv");
     room->broadcastSkillInvoke("miaolv");
     yui->obtainCard(Sanguosha->getCard(cardid));
     if (yui != source)
@@ -503,7 +616,7 @@ public:
     }
 };
 
-// yinzhuang, xiuse -SE
+// yinzhuang, xiuse -SE, slob
 class Yinzhuang: public TriggerSkill {
 public:
     Yinzhuang(): TriggerSkill("yinzhuang") {
@@ -1809,7 +1922,9 @@ void MoesenPackage::addAnimationGenerals()
     General *sayaka = new General(this, "sayaka", "wei", 4, false); // Animation 004
     sayaka->addSkill(new Wuwei);
 
-    //General *homura = new General(this, "homura", "wei", 3, false); // Animation 005
+    General *homura = new General(this, "homura", "wei", 3, false); // Animation 005
+    homura->addSkill(new Shiting);
+    homura->addSkill(new Shizhi);
 
     General *n_azusa = new General(this, "n_azusa", "wei", 3, false); // Animation 006
     n_azusa->addSkill(new Quanmian);
