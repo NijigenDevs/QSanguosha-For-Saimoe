@@ -70,22 +70,21 @@ local wuwei_skill = {}
 wuwei_skill.name = "wuwei"
 table.insert(sgs.ai_skills, wuwei_skill)
 wuwei_skill.getTurnUseCard = function(self)
-	if not self.player:hasUsed("WuweiCard") then
+	if not self.player:hasUsed("WuweiCard") and not self.player:isKongcheng() then
 		return sgs.Card_Parse("@WuweiCard=.&wuwei")
 	end
 end
 
 sgs.ai_skill_use_func.WuweiCard = function(card, use, self)
-	local weapon = self.player:getWeapon()
 	if self.player:isKongcheng() then return end
 	self:sort(self.enemies, "hp")
 	local cards = self.player:getHandcards()
 	cards = sgs.QList2Table(cards)
 	self:sortByKeepValue(cards)
 	for _, enemy in ipairs(self.enemies) do
-		if self:objectiveLevel(enemy) > 3 and not self:cantbeHurt(enemy) and self:damageIsEffective(enemy) and not enemy:hasSkills(sgs.masochism_skill) and self:slashIsEffective(sgs.Sanguosha:cloneCard("slash"), enemy) then
+		if self:objectiveLevel(enemy) > 2 and not self:cantbeHurt(enemy) and self:damageIsEffective(enemy) and not enemy:hasSkills(sgs.masochism_skill) and not enemy:getArmor():isKindOf("SilverLion") and self:slashIsEffective(sgs.Sanguosha:cloneCard("slash"), enemy) then
 			if self.player:distanceTo(enemy) <= self.player:getAttackRange() and self.player:getHp() > 1 then
-				use.card = sgs.Card_Parse("@WuweiCard=" .. cards[1] .. "&wuwei")
+				use.card = sgs.Card_Parse("@WuweiCard=" .. cards[1]:getId() .. "&wuwei")
 				if use.to then
 					use.to:append(enemy)
 				end

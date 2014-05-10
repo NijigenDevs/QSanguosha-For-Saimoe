@@ -453,7 +453,7 @@ public:
             return skill_list;
         }else if(triggerEvent == DamageCaused){
             DamageStruct damage = data.value<DamageStruct>();
-            if (!damage.to || !damage.card->isKindOf("TrickCard"))
+            if (!damage.to || !damage.card || !damage.card->isKindOf("TrickCard"))
                 return skill_list;
             QList<ServerPlayer *> homuras = room->findPlayersBySkillName(objectName());
             foreach (ServerPlayer *homura, homuras) {
