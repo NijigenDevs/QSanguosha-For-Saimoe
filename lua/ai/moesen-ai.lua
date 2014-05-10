@@ -192,6 +192,7 @@ sgs.ai_skill_cardchosen.miaolv = function(self, who, flags)
 end
 
 sgs.ai_use_value.MiaolvCard = 4.2
+sgs.ai_use_priority.MiaolvCard = 6.5
 sgs.ai_card_intention.MiaolvCard = function(self, card, from, to)
 	sgs.updateIntention(from, to[1], from:isFriendWith(to[1]) and -30 or 30)
 end
