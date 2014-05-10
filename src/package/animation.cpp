@@ -735,7 +735,7 @@ public:
                 targets << p;
         if (!targets.isEmpty()) {
             room->setTag("YinzhuangCard", -1);
-            ServerPlayer *target = room->askForPlayerChosen(mio, targets, objectName(), "@yinzhuang_slash");
+            ServerPlayer *target = room->askForPlayerChosen(mio, targets, "yinzhuang", "@yinzhuang_slash");
             room->removeTag("YinzhuangCard");
             room->useCard(CardUseStruct(slash, mio, target), false);
         }
@@ -1217,8 +1217,8 @@ public:
         return skill_list;
     }
 
-    virtual bool cost(TriggerEvent , Room *room, ServerPlayer *, QVariant &data, ServerPlayer *ask_who) const {
-        if (ask_who->askForSkillInvoke(objectName(), data)){
+    virtual bool cost(TriggerEvent , Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const {
+        if (ask_who->askForSkillInvoke(objectName(), QVariant::fromValue(player))){
             room->broadcastSkillInvoke(objectName());
             return true;
         }

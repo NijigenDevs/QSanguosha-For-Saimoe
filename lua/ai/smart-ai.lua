@@ -105,6 +105,8 @@ function setInitialTables()
 	sgs.current_mode_players = { lord = 0, loyalist = 0, rebel = 0, renegade = 0 }
 	sgs.ai_type_name = 			{"Skill", "Basic", "Trick", "Equip"}
 	sgs.lose_equip_skill = "xiaoji|yinzhuang"
+	sgs.use_equip_skill = "quanmian|yingan"--SE
+	sgs.resist_equip_skill = "lieqiang|shiting"--SE
 	sgs.need_kongcheng = "lianying|kongcheng|lieqiang"
 	sgs.masochism_skill = 		"yiji|fankui|jieming|ganglie|fangzhu|hengjiang|qianhuan"
 	sgs.wizard_skill = 		"guicai|guidao|tiandu"
@@ -891,12 +893,14 @@ function SmartAI:getKeepValue(card, kept, Write)
 		else
 			local at_play = self.player:getPhase() == sgs.Player_Play
 			if card:isKindOf("SilverLion") and self.player:isWounded() then return -10
-			elseif self.player:hasSkills(sgs.lose_equip_skill) then
+			elseif self.player:hasSkills(sgs.lose_equip_skill) or self.player:hasSkills(sgs.use_equip_skill) then
 				if card:isKindOf("OffensiveHorse") then return -10
 				elseif card:isKindOf("Weapon") then return -9.9
 				elseif card:isKindOf("OffensiveHorse") then return -9.8
 				else return -9.7
 				end
+			elseif self.player:hasSkills(sgs.resist_equip_skill) then
+				if card:isKindOf("EquipCard") then return -8 end
 			elseif self.player:hasSkill("bazhen") and card:isKindOf("Armor") then return -8
 			elseif self:needKongcheng() then return 5.0
 			elseif card:isKindOf("Armor") then return self:isWeak() and 5.2 or 3.2
@@ -984,8 +988,9 @@ function SmartAI:getUseValue(card)
 		if self.player:hasSkills("qiangxi") and card:isKindOf("Weapon") then v = 2 end
 		if self.player:hasSkill("kurou") and card:isKindOf("Crossbow") then return 9 end
 		if self.player:hasSkill("bazhen") and card:isKindOf("Armor") then v = 2 end
-
+		if self.player:hasSkills(sgs.use_equip_skill) then return 10 end
 		if self.player:hasSkills(sgs.lose_equip_skill) then return 10 end
+		if self.player:hasSkills(sgs.resist_equip_skill) then return 0 end
 	elseif card:getTypeId() == sgs.Card_TypeBasic then
 		if card:isKindOf("Slash") then
 			v = sgs.ai_use_value[class_name] or 0
@@ -1018,6 +1023,7 @@ function SmartAI:getUsePriority(card)
 	local v = 0
 	if card:isKindOf("EquipCard") then
 		if self.player:hasSkills(sgs.lose_equip_skill) then return 15 end
+		if self.player:hasSkills(sgs.resist_equip_skill) then return 1 end
 		if card:isKindOf("Armor") and not self.player:getArmor() then v = (sgs.ai_use_priority[class_name] or 0) + 5.2
 		elseif card:isKindOf("Weapon") and not self.player:getWeapon() then v = (sgs.ai_use_priority[class_name] or 0) + 3
 		elseif card:isKindOf("DefensiveHorse") and not self.player:getDefensiveHorse() then v = 5.8
@@ -1107,6 +1113,8 @@ function SmartAI:getDynamicUsePriority(card)
 	local value = self:getUsePriority(card) or 0
 	if card:getTypeId() == sgs.Card_TypeEquip then
 		if self.player:hasSkills(sgs.lose_equip_skill) then value = value + 12 end
+		if self.player:hasSkills(sgs.use_equip_skill) then value = value + 12 end
+		if self.player:hasSkills(sgs.resist_equip_skill) then value = value - 12 end
 	end
 
 	if card:isKindOf("AmazingGrace") then
@@ -4187,6 +4195,10 @@ function SmartAI:useEquipCard(card, use)
 		use.card = card
 		return
 	end
+	if self.player:hasSkills(sgs.resist_equip_skill) then
+		use.card = card
+		return
+	end
 	if self.player:getHandcardNum() == 1 and self:needKongcheng() and self:evaluateArmor(card) > -5 then
 		use.card = card
 		return
@@ -4806,7 +4818,7 @@ function SmartAI:getGuixinValue(player)
 				elseif i == 0 then value = 0.7
 				elseif i == 3 then value = 0.5
 				end
-				if player:hasSkills(sgs.lose_equip_skill) or self:doNotDiscard(player, "e", true) then value = value - 0.2 end
+				if player:hasSkills(sgs.lose_equip_skill) or  player:hasSkills(sgs.resist_equip_skill) or self:doNotDiscard(player, "e", true) then value = value - 0.2 end
 				return value
 			end
 		end
@@ -4840,7 +4852,7 @@ function SmartAI:getGuixinValue(player)
 				elseif i == 0 then value = 0.25
 				elseif i == 3 then value = 0.25
 				end
-				if player:hasSkills(sgs.lose_equip_skill) then value = value + 0.1 end
+				if player:hasSkills(sgs.lose_equip_skill) or player:hasSkills(sgs.resist_equip_skill) then value = value + 0.1 end
 				if player:hasSkill("tuntian") then value = value + 0.1 end
 				return value
 			end

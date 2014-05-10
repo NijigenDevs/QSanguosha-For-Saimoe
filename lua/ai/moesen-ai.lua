@@ -7,7 +7,7 @@ end
 
 
 
---yingqiang
+--yingqiang(INCREDIBLE HARD)
 
 --cibei
 sgs.ai_skill_invoke.cibei = function(self, data)
@@ -55,7 +55,7 @@ sgs.ai_skill_invoke.renmin = function(self, data)
 	local value = 0
 	local move = data:toMoveOneTime()
 	if self:needKongcheng(move.from, true) then return false end
-	for _, id in ipairs(move.card_ids) do
+	for _,id in sgs.qlist(move.card_ids) do
 		--TODO
 	end
 	
@@ -65,7 +65,7 @@ end
 
 
 --wuwei VS SKILL need DEBUG
---[[
+
 local wuwei_skill = {}
 wuwei_skill.name = "wuwei"
 table.insert(sgs.ai_skills, wuwei_skill)
@@ -82,7 +82,9 @@ sgs.ai_skill_use_func.WuweiCard = function(card, use, self)
 	cards = sgs.QList2Table(cards)
 	self:sortByKeepValue(cards)
 	for _, enemy in ipairs(self.enemies) do
-		if self:objectiveLevel(enemy) > 2 and not self:cantbeHurt(enemy) and self:damageIsEffective(enemy) and not enemy:hasSkills(sgs.masochism_skill) and not enemy:getArmor():isKindOf("SilverLion") and self:slashIsEffective(sgs.Sanguosha:cloneCard("slash"), enemy) then
+		if self:objectiveLevel(enemy) > 2 and not self:cantbeHurt(enemy) 
+		and self:damageIsEffective(enemy) and not enemy:hasSkills(sgs.masochism_skill) and not (enemy:getArmor() 
+		and enemy:getArmor():isKindOf("SilverLion")) and self:slashIsEffective(sgs.Sanguosha:cloneCard("slash"), enemy) then
 			if self.player:distanceTo(enemy) <= self.player:getAttackRange() and self.player:getHp() > 1 then
 				use.card = sgs.Card_Parse("@WuweiCard=" .. cards[1]:getId() .. "&wuwei")
 				if use.to then
@@ -101,7 +103,7 @@ sgs.wuwei_keep_value = {
 	Jink = 5.1,
 	Weapon = 5
 }
-]]
+
 --quanmian
 sgs.ai_skill_playerchosen.quanmian = function(self, targets)
 	if #self.friends_noself == 0 then return self.player end
@@ -109,8 +111,7 @@ sgs.ai_skill_playerchosen.quanmian = function(self, targets)
 end
 
 --miaolv
---need debug
---[[
+
 local miaolv_skill = {}
 miaolv_skill.name = "miaolv"
 table.insert(sgs.ai_skills, miaolv_skill)
@@ -123,6 +124,13 @@ end
 sgs.ai_skill_use_func.MiaolvCard = function(card, use, self)
 	for _,friend in ipairs(self.friends) do
 		if friend:hasSkills(sgs.lose_equip_skill) and friend:getEquips():length() > 0 then
+			use.card = sgs.Card_Parse("@MiaolvCard=.&miaolv")
+			if use.to then
+				use.to:append(friend)
+			end
+			return
+		end
+		if friend:hasSkill("lieqiang") and friend:getEquips():length() == 1 then
 			use.card = sgs.Card_Parse("@MiaolvCard=.&miaolv")
 			if use.to then
 				use.to:append(friend)
@@ -142,7 +150,7 @@ sgs.ai_skill_use_func.MiaolvCard = function(card, use, self)
 	end
 	self:sort(self.enemies, "hp")
 	for _,enemy in ipairs(self.enemies) do
-		if friend:getEquips():length() > 0 and not enemy:hasSkills(sgs.lose_equip_skill) and enemy:getArmor() and not (enemy:getArmor():isKindOf("SilverLion") and enemy:getHp() < enemy:getMaxHp()) then
+		if enemy:getEquips():length() > 0 and not enemy:hasSkills(sgs.lose_equip_skill) and enemy:getArmor() and not (enemy:getArmor():isKindOf("SilverLion") and enemy:getHp() < enemy:getMaxHp()) then
 			use.card = sgs.Card_Parse("@MiaolvCard=.&miaolv")
 			if use.to then
 				use.to:append(enemy)
@@ -184,9 +192,11 @@ sgs.ai_skill_cardchosen.miaolv = function(self, who, flags)
 end
 
 sgs.ai_use_value.MiaolvCard = 4.2
-sgs.ai_card_intention.MiaolvCard = 0
-]]
+sgs.ai_card_intention.MiaolvCard = function(self, card, from, to)
+	sgs.updateIntention(from, to[1], from:isFriendWith(to[1]) and -30 or 30)
+end
 
+--yinzhuang
 sgs.ai_skill_playerchosen.yinzhuang = function(self, targets)
 	local i = self.room:getTag("YinzhuangCard"):toInt()
 	if i == -1 then
@@ -229,11 +239,17 @@ end
 sgs.ai_skill_invoke.yingan = true --TODO maybe some special situations?
 
 sgs.ai_skill_invoke.yinren = function(self, data)
+	if data:toString() == "gainacard" then
+		if (self:isFriend(self.room:getCurrent())) then
+			return false
+		end
+		return true
+	end
 	if #self.enemies == 0 then return false end
-	local suits = sgs.StringList()
-	for _,card in sgs.qlist(self:getHandcards()) do
-		if not suits.contains(card:getSuitString()) then
-			suits.append(card:getSuitString())
+	local suits = {}
+	for _,card in sgs.qlist(self.player:getHandcards()) do
+		if not table.contains(suits, card:getSuitString()) then
+			table.insert(suits, card:getSuitString())
 		else
 			return false
 		end
@@ -257,6 +273,78 @@ end
 sgs.ai_skill_invoke.tongxin = true
 --....
 sgs.ai_skill_invoke.powei = true
+--lingchang
+sgs.ai_skill_invoke.lingchang = function(self, data)--IMBA AI...
+	local p = data:toPlayer()
+	local cards = p:getHandcards()
+	local reds = 0
+	local blacks = 0
+	for _,card in sgs.qlist(cards) do
+		if card:isRed() then
+			reds = reds + 1
+		else
+			blacks = blacks + 1
+		end
+	end
+	if p:objectName() == self.player:objectName() then
+		if reds > 0 then return true end
+	end
+	if reds <= 1 then return false end
+	if reds > blacks then return true end
+	if p:getHandcardNum() < p:getHp() then return false end
+	if blacks < reds then return true end
+	return false
+end
+
+sgs.ai_skill_cardchosen.lingchang = function(self, who, flags)
+	if who:objectName() == self.player:objectName() then
+		local cards = who.getHandcards()
+		self:sortByKeepValue(cards)
+		for _,card in sgs.qlist(cards) do
+			if card:isRed() then return card end
+		end
+	end
+	return cards[1]
+end
+
+--mengyin
+
 
 sgs.ai_skill_invoke.lvdong = true
 
+sgs.ai_skill_invoke.liufei = true
+
+--tengyue
+sgs.ai_skill_invoke.tengyue = function(self, data)
+	local slashes = 0
+	local targets = 0
+	local cards = sgs.QList2Table(self.player:getHandcards())
+	for _,card in ipairs(cards) do
+		if card:isKindOf("Slash") then slashes = slashes + 1 end
+	end
+	for _,enemy in ipairs(self.enemies) do
+		if self:slashIsEffective(sgs.Sanguosha:cloneCard("slash"), enemy) and self.player:distanceTo(enemy) <= self.player:getAttackRange() then
+			targets = targets + 10
+		end
+	end
+	if targets == 0 or slashes == 0 then return false end
+	if targets == 1 and (self:isWeak(self.player) or slashes <= 1) then return false end
+	return true
+end
+
+sgs.ai_skill_choice.tengyue = function(self, choices)
+	local slashes = 0
+	local targets = 0
+	local cards = sgs.QList2Table(self.player:getHandcards())
+	for _,card in ipairs(cards) do
+		if card:isKindOf("Slash") then slashes = slashes + 1 end
+	end
+	for _,enemy in ipairs(self.enemies) do
+		if self:slashIsEffective(sgs.Sanguosha:cloneCard("slash"), enemy) and self.player:distanceTo(enemy) <= self.player:getAttackRange() then
+			targets = targets + 10
+		end
+	end
+	if targets > 1 and slashes > 1 then return "tengyue2" end
+	return "tengyue1"
+	
+end
