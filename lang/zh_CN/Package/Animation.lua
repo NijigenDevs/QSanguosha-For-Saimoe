@@ -158,12 +158,12 @@
 	["cv:sawa"] = "早見沙織",
 	["illustrator:sawa"] = "ひのほし☆＠お仕事募集中",
 	
-	["beika"] = "埃莉诺亚·贝卡", 
-	["&beika"] = "贝卡", 
+	["beika"] = "爱诺雅·贝克", 
+	["&beika"] = "贝克", 
 	["#beika"] = "妹抖赛高", 
 	["#&beika"] = "MADLAX", 
 	["~beika"] = "", 
-	["designer:astarotte"] = "",
+	["designer:beika"] = "",
 	["cv:beika"] = "内川藍維",
 	["illustrator:beika"] = "",
 	
