@@ -1981,7 +1981,7 @@ void MoesenPackage::addAnimationGenerals()
     related_skills.insertMulti("tengyue", "#tengyue-trigger");
     related_skills.insertMulti("tengyue", "#tengyue-target");
 
-    //General *astarotte = new General(this, "astarotte", "wei", 3, false); // Animation 017
+    //General *beika = new General(this, "beika", "wei", 3, false); // Animation 017
 
     General *miho = new General(this, "miho", "wei", 3, false); // Animation 018
     miho->addSkill(new Mogai);
