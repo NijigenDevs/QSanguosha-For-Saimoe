@@ -1899,6 +1899,67 @@ public:
     }
 };
 
+//huixin by AK
+class Huixin: public TriggerSkill {
+public:
+    Huixin(): TriggerSkill("huixin") {
+        events << EventPhaseStart << EventPhaseEnd;
+    }
+
+    virtual bool canPreshow() const{
+        return true;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer * &) const {
+        if (!TriggerSkill::triggerable(player)) return QStringList();
+		
+		if ( player->getPhase() == Player::Play && ((triggerEvent == EventPhaseStart && (player->getHandcardNum() > 0)) || (triggerEvent == EventPhaseEnd)) ) 
+			return QStringList(objectName());
+		}
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        if (triggerEvent == EventPhaseStart){
+			ServerPlayer *target = room->askForPlayerChosen(player, room->getOtherPlayers(player), objectName() ,"@huixin_choose", false, true);
+			if (target) { 
+				target->setFlags("huixin_tar")
+				return true;
+			}
+		} else if (triggerEvent == EventPhaseEnd)
+			return true;
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+		if (triggerEvent == EventPhaseStart) {
+			ServerPlayer *target ;
+			foreach (ServerPlayer *tar, room->getOtherPlayers(player)) {
+				if tar->hasFlag("huixin_tar")
+					target = tar ;
+			}
+			if (target) {
+				Card *card = room->askForCardChosen(target,player,"h",objectName());
+				target->obtainCard(card,false);
+				room->damage(DamageStruct(objectName(), player, target));
+			}
+		} else if (triggerEvent == EventPhaseEnd) {
+			player->drawCards(1);
+			ServerPlayer *target ;
+			foreach (ServerPlayer *tar, room->getAlivePlayers()) {
+				if tar->hasFlag("huixin_tar")
+					target = tar ;
+			}
+			if (target) {
+			    RecoverStruct recover;
+				recover.who = player;
+				room->recover(target , recover);
+			}
+		}
+};
+
+
+
 void MoesenPackage::addAnimationGenerals()
 {
     General *mami = new General(this, "mami", "wei", 4, false); // Animation 001
@@ -1981,7 +2042,7 @@ void MoesenPackage::addAnimationGenerals()
     related_skills.insertMulti("tengyue", "#tengyue-trigger");
     related_skills.insertMulti("tengyue", "#tengyue-target");
 
-    //General *beika = new General(this, "beika", "wei", 3, false); // Animation 017
+    //General *erinoa = new General(this, "erinoa", "wei", 3, false); // Animation 017
 
     General *miho = new General(this, "miho", "wei", 3, false); // Animation 018
     miho->addSkill(new Mogai);
