@@ -52,7 +52,7 @@ bool ZhuyiCard::targetFilter(const QList<const Player *> &targets, const Player 
 
 void ZhuyiCard::onEffect(const CardEffectStruct &effect) const{
      //broadcast
-    effect.from->getRoom()->useCard(CardUseStruct(this,effect.to,effect.to,false))
+    effect.from->getRoom()->useCard(CardUseStruct(this,effect.to,effect.to,false));
     if (effect.from->getMark("@weihao") == 0)
         effect.from->gainMark("@zhenhao", 1);
     else

@@ -1915,7 +1915,6 @@ public:
 		
 		if ( player->getPhase() == Player::Play && ((triggerEvent == EventPhaseStart && (player->getHandcardNum() > 0)) || (triggerEvent == EventPhaseEnd)) ) 
 			return QStringList(objectName());
-		}
         return QStringList();
     }
 
@@ -1923,7 +1922,7 @@ public:
         if (triggerEvent == EventPhaseStart){
 			ServerPlayer *target = room->askForPlayerChosen(player, room->getOtherPlayers(player), objectName() ,"@huixin_choose", false, true);
 			if (target) { 
-				target->setFlags("huixin_tar")
+				target->setFlags("huixin_tar");
 				return true;
 			}
 		} else if (triggerEvent == EventPhaseEnd)
@@ -1935,19 +1934,22 @@ public:
 		if (triggerEvent == EventPhaseStart) {
 			ServerPlayer *target ;
 			foreach (ServerPlayer *tar, room->getOtherPlayers(player)) {
-				if tar->hasFlag("huixin_tar")
+				if (tar->hasFlag("huixin_tar"))
 					target = tar ;
 			}
 			if (target) {
-				Card *card = room->askForCardChosen(target,player,"h",objectName());
-				target->obtainCard(card,false);
-				room->damage(DamageStruct(objectName(), player, target));
+				int card_id = room->askForCardChosen(target,player,"h",objectName());
+                const Card * card = Sanguosha->getEngineCard(card_id);
+                if (card) {
+				    target->obtainCard( card ,false);
+				    room->damage(DamageStruct(objectName(), player, target));
+                }
 			}
 		} else if (triggerEvent == EventPhaseEnd) {
 			player->drawCards(1);
 			ServerPlayer *target ;
 			foreach (ServerPlayer *tar, room->getAlivePlayers()) {
-				if tar->hasFlag("huixin_tar")
+				if (tar->hasFlag("huixin_tar"))
 					target = tar ;
 			}
 			if (target) {
@@ -1956,6 +1958,8 @@ public:
 				room->recover(target , recover);
 			}
 		}
+        return false;
+    }
 };
 
 
@@ -2042,7 +2046,8 @@ void MoesenPackage::addAnimationGenerals()
     related_skills.insertMulti("tengyue", "#tengyue-trigger");
     related_skills.insertMulti("tengyue", "#tengyue-target");
 
-    //General *erinoa = new General(this, "erinoa", "wei", 3, false); // Animation 017
+    General *erinoa = new General(this, "erinoa", "wei", 3, false); // Animation 017
+    erinoa->addSkill(new Huixin);
 
     General *miho = new General(this, "miho", "wei", 3, false); // Animation 018
     miho->addSkill(new Mogai);
