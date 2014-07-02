@@ -2046,7 +2046,7 @@ void MoesenPackage::addAnimationGenerals()
     related_skills.insertMulti("tengyue", "#tengyue-trigger");
     related_skills.insertMulti("tengyue", "#tengyue-target");
 
-    General *erinoa = new General(this, "erinoa", "wei", 3, false); // Animation 017
+    General *erinoa = new General(this, "erinoa", "wei", 4, false); // Animation 017
     erinoa->addSkill(new Huixin);
 
     General *miho = new General(this, "miho", "wei", 3, false); // Animation 018
