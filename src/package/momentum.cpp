@@ -937,7 +937,7 @@ public:
     }
 };
 
-class Wuxin: public PhaseChangeSkill {
+/* class Wuxin: public PhaseChangeSkill {
 public:
     Wuxin(): PhaseChangeSkill("wuxin") {
     }
@@ -979,7 +979,7 @@ public:
         return false;
     }
 };
-
+*/
 HongfaCard::HongfaCard() {
     target_fixed = true;
     m_skillName = "hongfa_slash";
@@ -1392,7 +1392,7 @@ MomentumPackage::MomentumPackage()
     addMetaObject<WendaoCard>();
 
     General *lord_zhangjiao = new General(this, "lord_zhangjiao$", "qun");
-    lord_zhangjiao->addSkill(new Wuxin);
+    //lord_zhangjiao->addSkill(new Wuxin);
     lord_zhangjiao->addSkill(new Hongfa);
     lord_zhangjiao->addSkill(new Wendao);
 }

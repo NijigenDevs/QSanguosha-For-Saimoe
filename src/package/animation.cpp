@@ -1933,27 +1933,29 @@ public:
 
     virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
 		if (triggerEvent == EventPhaseStart) {
-			ServerPlayer *target ;
+			ServerPlayer *target = NULL ;
 			foreach (ServerPlayer *tar, room->getOtherPlayers(player)) {
-				if (tar->hasFlag("huixin_tar"))
-					target = tar ;
-			}
-			if (target) {
-				int card_id = room->askForCardChosen(target,player,"h",objectName());
-                const Card * card = Sanguosha->getEngineCard(card_id);
-                if (card) {
-				    target->obtainCard( card ,false);
-				    room->damage(DamageStruct(objectName(), player, target));
+				if (tar->hasFlag("huixin_tar")){
+					target = tar;
+                    break;
                 }
 			}
+            int card_id = room->askForCardChosen(target,player,"h",objectName());
+            const Card * card = Sanguosha->getEngineCard(card_id);
+            if (card) {
+			    target->obtainCard( card ,false);
+				room->damage(DamageStruct(objectName(), player, target));
+            }
 		} else if (triggerEvent == EventPhaseEnd) {
 			player->drawCards(1);
-			ServerPlayer *target ;
+			ServerPlayer *target = NULL ;
 			foreach (ServerPlayer *tar, room->getAlivePlayers()) {
 				if (tar->hasFlag("huixin_tar"))
 					target = tar ;
 			}
 			if (target) {
+                target->setFlags("-huixin_tar");
+                player->setFlags("-huixin_use");
 			    RecoverStruct recover;
 				recover.who = player;
 				room->recover(target , recover);
@@ -1963,6 +1965,119 @@ public:
     }
 };
 
+
+// Chidun --ayanami 
+class Chidun: public TriggerSkill {
+public:
+    Chidun(): TriggerSkill("chidun") {
+        frequency = NotFrequent;
+        events << DamageInflicted << DamageComplete;
+    }
+
+    virtual bool canPreshow() const{
+        return true;
+    }
+
+    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+        QMap<ServerPlayer *, QStringList> skill_list;
+        if (player == NULL) return skill_list;
+        DamageStruct damage = data.value<DamageStruct>();
+        if (triggerEvent == DamageInflicted && player->isAlive() ){
+            if (damage.damage < 1 || damage.transfer )
+                return skill_list;
+
+            QList<ServerPlayer *> ayanamis = room->findPlayersBySkillName(objectName());
+
+            foreach (ServerPlayer *ayanami, ayanamis)
+                if (ayanami->isFriendWith(player) && ayanami != player)
+                    skill_list.insert(ayanami, QStringList(objectName()));
+        } else if (triggerEvent == DamageComplete && damage.transfer && damage.transfer_reason == objectName() && damage.to == player && player->isAlive()) 
+                skill_list.insert( player , QStringList(objectName()));
+        return skill_list;
+    }
+
+     virtual bool cost(TriggerEvent triggerEvent , Room *room, ServerPlayer *, QVariant &data, ServerPlayer *ask_who) const{
+        if ( triggerEvent == DamageInflicted && ask_who->askForSkillInvoke(objectName(), data)) {
+            if (ask_who->hasShownSkill(this)) {
+                room->notifySkillInvoked(ask_who, objectName());
+                LogMessage log;
+                log.type = "#TriggerSkill";
+                log.from = ask_who;
+                log.arg = objectName();
+                room->sendLog(log);
+            }
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        } else if (triggerEvent == DamageComplete){
+            ServerPlayer *slasher = NULL ;
+            DamageStruct damage = data.value<DamageStruct>();
+            foreach (ServerPlayer *tar , room->getAlivePlayers())
+                if (tar->hasFlag("chidun_tar"))
+                    slasher = tar;
+            if (slasher)
+                slasher->setFlags("-chidun_tar");
+                QString prompt = "@chidun:" + damage.from->objectName();
+                room->askForUseSlashTo(slasher,damage.from,prompt ,false,false,false);
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent , Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who ) const {
+
+        DamageStruct damage = data.value<DamageStruct>();
+        damage.to->setFlags("chidun_tar");
+        damage.transfer = true;
+        damage.to = ask_who;
+        damage.transfer_reason = objectName();
+
+        player->tag["TransferDamage"] = QVariant::fromValue(damage);
+
+        return true;
+    }
+};
+
+class Wuxin: public TriggerSkill {
+public:
+    Wuxin(): TriggerSkill("wuxin") {
+        frequency = Limited;
+        events << DamageInflicted << GameStart;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &ask_who) const{
+        if (triggerEvent == GameStart){
+            if (player->ownSkill(objectName())){
+                room->setPlayerMark(player,"@wuxin",1);
+            }
+        }
+        else if ((triggerEvent == DamageInflicted) && player->isAlive() && player->getMark("@wuxin") > 0 ){
+            DamageStruct damage = data.value<DamageStruct>();
+            if (damage.damage > 1) 
+                return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who /* = NULL */) const{
+        if (ask_who->askForSkillInvoke(objectName(), data)){
+            ask_who->loseAllMarks("@wuxin");
+            //Lightbox here!
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who /* = NULL */) const{
+        RecoverStruct recover;
+        recover.who = player;
+        recover.recover = player->getLostHp();
+        room->recover(player, recover);
+        ServerPlayer *target = room->askForPlayerChosen(player,room->getAlivePlayers(),objectName(),"@wuxin_text",false,true);
+        room->acquireSkill(target, "yongjue");
+        room->setPlayerMark(target, "@yongjue", 1);
+        return true;
+    }
+};
 
 
 void MoesenPackage::addAnimationGenerals()
@@ -2013,9 +2128,11 @@ void MoesenPackage::addAnimationGenerals()
     kanade->addSkill(new Yinren);
     kanade->addSkill(new Tongxin);
 
-    /*
+
     General *rei = new General(this, "rei", "wei", 3, false); // Animation 010
-    */
+    rei->addSkill(new Wuxin);
+    rei->addSkill(new Chidun);
+
     General *asuka = new General(this, "asuka", "wei", 3, false); // Animation 011
     asuka->addSkill(new XiehangTrigger);
     asuka->addSkill(new Xiehang);
