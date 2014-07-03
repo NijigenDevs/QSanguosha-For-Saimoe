@@ -1913,15 +1913,16 @@ public:
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer * &) const {
         if (!TriggerSkill::triggerable(player)) return QStringList();
 		
-		if ( player->getPhase() == Player::Play && ((triggerEvent == EventPhaseStart && (player->getHandcardNum() > 0)) || (triggerEvent == EventPhaseEnd)) ) 
+		if ( player->getPhase() == Player::Play && ((triggerEvent == EventPhaseStart && (player->getHandcardNum() > 0)) || (triggerEvent == EventPhaseEnd && (player->hasFlag("huixin_use")) )) ) 
 			return QStringList(objectName());
         return QStringList();
     }
 
     virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
         if (triggerEvent == EventPhaseStart){
-			ServerPlayer *target = room->askForPlayerChosen(player, room->getOtherPlayers(player), objectName() ,"@huixin_choose", false, true);
+			ServerPlayer *target = room->askForPlayerChosen(player, room->getOtherPlayers(player), objectName() ,"@huixin_choose", true, true);
 			if (target) { 
+                player->setFlags("huixin_use");
 				target->setFlags("huixin_tar");
 				return true;
 			}
