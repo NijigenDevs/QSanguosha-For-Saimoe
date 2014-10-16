@@ -300,8 +300,9 @@ end
 sgs.ai_skill_cardchosen.lingchang = function(self, who, flags)
 	if who:objectName() == self.player:objectName() then
 		local cards = who.getHandcards()
+		cards = sgs.QList2Table(cards)
 		self:sortByKeepValue(cards)
-		for _,card in sgs.qlist(cards) do
+		for _,card in ipairs(cards) do
 			if card:isRed() then return card end
 		end
 	end
@@ -349,3 +350,6 @@ sgs.ai_skill_choice.tengyue = function(self, choices)
 	return "tengyue1"
 	
 end
+
+--mogai
+
