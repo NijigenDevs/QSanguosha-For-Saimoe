@@ -1,10 +1,29 @@
+/********************************************************************
+    Copyright (c) 2013-2014 - QSanguosha-Rara
+
+    This file is part of QSanguosha-Hegemony.
+
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    See the LICENSE file for more details.
+
+    QSanguosha-Rara
+    *********************************************************************/
+
 #ifndef _CARD_H
 #define _CARD_H
 
 #include <QObject>
 #include <QMap>
 #include <QIcon>
-#include "json/json.h"
 
 class Room;
 class Player;
@@ -16,7 +35,7 @@ class CardItem;
 struct CardEffectStruct;
 struct CardUseStruct;
 
-class Card: public QObject {
+class Card : public QObject {
     Q_OBJECT
     Q_PROPERTY(QString suit READ getSuitString CONSTANT)
     Q_PROPERTY(bool red READ isRed STORED false CONSTANT)
@@ -29,6 +48,7 @@ class Card: public QObject {
     Q_PROPERTY(bool mute READ isMute CONSTANT)
     Q_PROPERTY(bool equipped READ isEquipped)
     Q_PROPERTY(Color color READ getColor)
+    Q_PROPERTY(bool transferable READ isTransferable WRITE setTransferable)
 
     Q_ENUMS(Suit)
     Q_ENUMS(CardType)
@@ -110,7 +130,7 @@ public:
     // @todo: the following two functions should be merged into one.
     virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
     virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self,
-                              int &maxVotes) const;
+        int &maxVotes) const;
     virtual bool isAvailable(const Player *player) const;
 
     inline virtual const Card *getRealCard() const{ return this; }
@@ -147,6 +167,9 @@ public:
 
     virtual QString getEffectName() const;
 
+    virtual bool isTransferable() const;
+    virtual void setTransferable(const bool transferbale);
+
 protected:
     QList<int> subcards;
     bool target_fixed;
@@ -154,6 +177,7 @@ protected:
     bool will_throw;
     bool has_preact;
     bool can_recast;
+    bool transferable;
     Suit m_suit;
     int m_number;
     int m_id;
@@ -165,7 +189,9 @@ protected:
     mutable QStringList flags;
 };
 
-class SkillCard: public Card {
+typedef QList<const Card *> CardList;
+
+class SkillCard : public Card {
     Q_OBJECT
 
 public:
@@ -178,20 +204,32 @@ public:
     virtual CardType getTypeId() const;
     virtual QString toString(bool hidden = false) const;
 
+    virtual void extraCost(Room *room, const CardUseStruct &card_use) const;
+
 protected:
     QString user_string;
 };
 
-class ArraySummonCard: public SkillCard {
+class ArraySummonCard : public SkillCard {
     Q_OBJECT
 
 public:
     Q_INVOKABLE ArraySummonCard(const QString &name);
 
-    void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+    const Card *validate(CardUseStruct &card_use) const;
 };
 
-class DummyCard: public SkillCard {
+class TransferCard : public SkillCard {
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE TransferCard();
+
+    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+    virtual void onEffect(const CardEffectStruct &effect) const;
+};
+
+class DummyCard : public SkillCard {
     Q_OBJECT
 
 public:

@@ -1,7 +1,27 @@
-#include "TimedProgressBar.h"
+/********************************************************************
+    Copyright (c) 2013-2014 - QSanguosha-Rara
+
+    This file is part of QSanguosha-Hegemony.
+
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    See the LICENSE file for more details.
+
+    QSanguosha-Rara
+    *********************************************************************/
+
+#include "timedprogressbar.h"
 #include "clientstruct.h"
 #include <QPainter>
-#include <SkinBank.h>
+#include "skinbank.h"
 
 void TimedProgressBar::show() {
     m_mutex.lock();
@@ -82,7 +102,7 @@ void QSanCommandProgressBar::paintEvent(QPaintEvent *) {
     }
     QPixmap progBg = G_ROOM_SKIN.getProgressBarPixmap(0);
     painter.drawPixmap(0, 0, width, height, progBg);
-    double percent = 1 - (double) val / max;
+    double percent = 1 - (double)val / max;
     QPixmap prog = G_ROOM_SKIN.getProgressBarPixmap((int)(percent * 100));
     int drawWidth = percent * prog.width();
     painter.drawPixmap(0, 0, percent * width, height, prog, 0, 0, drawWidth, prog.height());
@@ -90,9 +110,9 @@ void QSanCommandProgressBar::paintEvent(QPaintEvent *) {
 
 void QSanCommandProgressBar::setCountdown(Countdown countdown) {
     m_mutex.lock();
-    m_hasTimer = (countdown.m_type != Countdown::S_COUNTDOWN_NO_LIMIT);
-    m_max = countdown.m_max;
-    m_val = countdown.m_current;
+    m_hasTimer = (countdown.type != Countdown::S_COUNTDOWN_NO_LIMIT);
+    m_max = countdown.max;
+    m_val = countdown.current;
     m_mutex.unlock();
 }
 

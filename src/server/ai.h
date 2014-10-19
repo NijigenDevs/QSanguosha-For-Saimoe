@@ -1,3 +1,23 @@
+/********************************************************************
+    Copyright (c) 2013-2014 - QSanguosha-Rara
+
+    This file is part of QSanguosha-Hegemony.
+
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    See the LICENSE file for more details.
+
+    QSanguosha-Rara
+    *********************************************************************/
+
 #ifndef _AI_H
 #define _AI_H
 
@@ -16,7 +36,7 @@ typedef int LuaFunction;
 #include <QString>
 #include <QObject>
 
-class AI: public QObject {
+class AI : public QObject {
     Q_OBJECT
     Q_ENUMS(Relation)
 
@@ -24,9 +44,7 @@ public:
     AI(ServerPlayer *player);
 
     enum Relation { Friend, Enemy, Neutrality };
-    static Relation GetRelation3v3(const ServerPlayer *a, const ServerPlayer *b);
     static Relation GetRelationHegemony(const ServerPlayer *a, const ServerPlayer *b);
-    static Relation GetRelation(const ServerPlayer *a, const ServerPlayer *b);
     Relation relationTo(const ServerPlayer *other) const;
     bool isFriend(const ServerPlayer *other) const;
     bool isEnemy(const ServerPlayer *other) const;
@@ -58,11 +76,12 @@ protected:
     ServerPlayer *self;
 };
 
-class TrustAI: public AI {
+class TrustAI : public AI {
     Q_OBJECT
 
 public:
     TrustAI(ServerPlayer *player);
+    ~TrustAI();
 
     virtual void activate(CardUseStruct &card_use);
     virtual Card::Suit askForSuit(const QString &);
@@ -88,7 +107,7 @@ private:
     ResponseSkill *response_skill;
 };
 
-class LuaAI: public TrustAI {
+class LuaAI : public TrustAI {
     Q_OBJECT
 
 public:

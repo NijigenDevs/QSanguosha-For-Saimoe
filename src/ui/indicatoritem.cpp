@@ -1,3 +1,23 @@
+/********************************************************************
+    Copyright (c) 2013-2014 - QSanguosha-Rara
+
+    This file is part of QSanguosha-Hegemony.
+
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    See the LICENSE file for more details.
+
+    QSanguosha-Rara
+    *********************************************************************/
+
 #include "indicatoritem.h"
 #include "engine.h"
 
@@ -54,7 +74,7 @@ void IndicatorItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *, Q
     int baseY = qMin(start.y(), finish.y());
 
     QLinearGradient linearGrad(start - QPoint(baseX, baseY),
-                               finish - QPoint(baseX, baseY));
+        finish - QPoint(baseX, baseY));
     QColor start_color(255, 255, 255, 0);
     linearGrad.setColorAt(0, start_color);
     linearGrad.setColorAt(1, color.lighter());

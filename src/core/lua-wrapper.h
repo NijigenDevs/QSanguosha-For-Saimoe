@@ -1,12 +1,33 @@
+/********************************************************************
+    Copyright (c) 2013-2014 - QSanguosha-Rara
+
+    This file is part of QSanguosha-Hegemony.
+
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    See the LICENSE file for more details.
+
+    QSanguosha-Rara
+    *********************************************************************/
+
 #ifndef _LUA_WRAPPER_H
 #define _LUA_WRAPPER_H
 
 #include "skill.h"
 #include "standard.h"
 
+struct lua_State;
 typedef int LuaFunction;
 
-class LuaTriggerSkill: public TriggerSkill {
+class LuaTriggerSkill : public TriggerSkill {
     Q_OBJECT
 
 public:
@@ -14,7 +35,7 @@ public:
     inline void addEvent(TriggerEvent triggerEvent) { events << triggerEvent; }
     inline void setViewAsSkill(ViewAsSkill *view_as_skill) { this->view_as_skill = view_as_skill; }
     inline void setGlobal(bool global) { this->global = global; }
-    inline void setCanPreshow(bool preshow) {this->can_preshow = preshow; }
+    inline void setCanPreshow(bool preshow) { this->can_preshow = preshow; }
 
     virtual int getPriority() const;
     virtual bool canPreshow() const;
@@ -31,7 +52,7 @@ public:
     bool can_preshow;
 };
 
-class LuaBattleArraySkill: public BattleArraySkill {
+class LuaBattleArraySkill : public BattleArraySkill {
     Q_OBJECT
 
 public:
@@ -52,11 +73,11 @@ public:
     int priority;
 };
 
-class LuaViewAsSkill: public ViewAsSkill {
+class LuaViewAsSkill : public ViewAsSkill {
     Q_OBJECT
 
 public:
-    LuaViewAsSkill(const char *name, const char *response_pattern = "");
+    LuaViewAsSkill(const char *name, const char *response_pattern, bool response_or_use, const char *expand_pile);
 
     virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const;
     virtual const Card *viewAs(const QList<const Card *> &cards) const;
@@ -75,7 +96,7 @@ public:
     virtual bool isEnabledAtNullification(const ServerPlayer *player) const;
 };
 
-class LuaFilterSkill: public FilterSkill {
+class LuaFilterSkill : public FilterSkill {
     Q_OBJECT
 
 public:
@@ -88,7 +109,7 @@ public:
     LuaFunction view_as;
 };
 
-class LuaDistanceSkill: public DistanceSkill {
+class LuaDistanceSkill : public DistanceSkill {
     Q_OBJECT
 
 public:
@@ -99,20 +120,20 @@ public:
     LuaFunction correct_func;
 };
 
-class LuaMaxCardsSkill: public MaxCardsSkill {
+class LuaMaxCardsSkill : public MaxCardsSkill {
     Q_OBJECT
 
 public:
     LuaMaxCardsSkill(const char *name);
 
-    virtual int getExtra(const Player *target) const;
-    virtual int getFixed(const Player *target) const;
+    virtual int getExtra(const ServerPlayer *target, MaxCardsType::MaxCardsCount type = MaxCardsType::Max) const;
+    virtual int getFixed(const ServerPlayer *target, MaxCardsType::MaxCardsCount type = MaxCardsType::Max) const;
 
     LuaFunction extra_func;
     LuaFunction fixed_func;
 };
 
-class LuaTargetModSkill: public TargetModSkill {
+class LuaTargetModSkill : public TargetModSkill {
     Q_OBJECT
 
 public:
@@ -127,7 +148,7 @@ public:
     LuaFunction extra_target_func;
 };
 
-class LuaAttackRangeSkill: public AttackRangeSkill{
+class LuaAttackRangeSkill : public AttackRangeSkill{
     Q_OBJECT
 
 public:
@@ -140,7 +161,7 @@ public:
     LuaFunction fixed_func;
 };
 
-class LuaSkillCard: public SkillCard {
+class LuaSkillCard : public SkillCard {
     Q_OBJECT
 
 public:
@@ -165,6 +186,7 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
     virtual const Card *validate(CardUseStruct &cardUse) const;
     virtual const Card *validateInResponse(ServerPlayer *user) const;
+    virtual void extraCost(Room *room, const CardUseStruct &card_use) const;
 
     // the lua callbacks
     LuaFunction filter;
@@ -174,9 +196,10 @@ public:
     LuaFunction on_effect;
     LuaFunction on_validate;
     LuaFunction on_validate_in_response;
+    LuaFunction extra_cost;
 };
 
-class LuaBasicCard: public BasicCard {
+class LuaBasicCard : public BasicCard {
     Q_OBJECT
 
 public:
@@ -217,7 +240,7 @@ private:
     QString class_name, subtype;
 };
 
-class LuaTrickCard: public TrickCard {
+class LuaTrickCard : public TrickCard {
     Q_OBJECT
 
 public:
@@ -258,8 +281,8 @@ public:
             case TypeGlobalEffect: return strcmp(cardType, "GlobalEffect") == 0; break;
             case TypeNormal:
             default:
-                    return false;
-                    break;
+                return false;
+                break;
             }
         }
     }
@@ -279,7 +302,7 @@ private:
     QString class_name, subtype;
 };
 
-class LuaWeapon: public Weapon {
+class LuaWeapon : public Weapon {
     Q_OBJECT
 
 public:
@@ -308,12 +331,42 @@ private:
     QString class_name;
 };
 
-class LuaArmor: public Armor {
+class LuaArmor : public Armor {
     Q_OBJECT
 
 public:
     Q_INVOKABLE LuaArmor(Card::Suit suit, int number, const char *obj_name, const char *class_name);
     LuaArmor *clone(Card::Suit suit = Card::SuitToBeDecided, int number = -1) const;
+
+    // member functions that do not expose to Lua interpreter
+    void pushSelf(lua_State *L) const;
+
+    virtual void onInstall(ServerPlayer *player) const;
+    virtual void onUninstall(ServerPlayer *player) const;
+
+    inline virtual QString getClassName() const{ return class_name; }
+    inline virtual bool isKindOf(const char *cardType) const{
+        if (strcmp(cardType, "LuaCard") == 0 || QString(cardType) == class_name)
+            return true;
+        else
+            return Card::isKindOf(cardType);
+    }
+
+    // the lua callbacks
+    LuaFunction on_install;
+    LuaFunction on_uninstall;
+
+private:
+    QString class_name;
+};
+
+
+class LuaTreasure : public Treasure {
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE LuaTreasure(Card::Suit suit, int number, const char *obj_name, const char *class_name);
+    LuaTreasure *clone(Card::Suit suit = Card::SuitToBeDecided, int number = -1) const;
 
     // member functions that do not expose to Lua interpreter
     void pushSelf(lua_State *L) const;

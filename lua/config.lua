@@ -1,26 +1,33 @@
+--[[********************************************************************
+	Copyright (c) 2013-2014 - QSanguosha-Rara
+
+  This file is part of QSanguosha-Hegemony.
+
+  This game is free software; you can redistribute it and/or
+  modify it under the terms of the GNU General Public License as
+  published by the Free Software Foundation; either version 3.0
+  of the License, or (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  General Public License for more details.
+
+  See the LICENSE file for more details.
+
+  QSanguosha-Rara
+*********************************************************************]]
+
 -- this script to store the basic configuration for game program itself
 -- and it is a little different from config.ini
 
 config = {
-	developers = {
-		"Yanguam" ,
-		"BeginnerSlob" ,
-		"Fsu0413" ,
-		"hmqgg" ,
-		"lrl026" ,
-		"Jia" ,
-		"36Li" ,
-		"Fu Nima" ,
-		"Z ZH" ,
-		"82" ,
-	} ,
-
 	kingdoms = { "wei", "qun", "shu", "wu", "god" },
 	kingdom_colors = {
-		wei = "#fc1919",
-		shu = "#0a7eff",
-		wu = "#f7ff27",
-		qun = "#7f29ff",
+		wei = "#547998",
+		shu = "#D0796C",
+		wu = "#4DB873",
+		qun = "#8A807A",
 		god = "#96943D",
 	},
 
@@ -34,17 +41,25 @@ config = {
 		lord = "#FFA500",
 	},
 
+	-- Sci-fi style background
+	--dialog_background_color = "#49C9F0";
+	--dialog_background_alpha = 75;
+	dialog_background_color = "#D6E7DB";
+	dialog_background_alpha = 255;
+
 	package_names = {
 		"StandardCard",
 		"FormationEquip",
 		"MomentumEquip" ,
-		
-		"Moesen",
+		"StrategicAdvantage",
+
 		"Standard",
 		"Formation",
 		"Momentum",
-		"Test"
-		
+		"Test",
+		"JiangeDefense",
+
+		"Moesen"
 	},
 
 	easy_text = {
@@ -61,49 +76,54 @@ config = {
 	},
 
 	robot_names = {
-		"ACG-Killer",
-		"脑残PM厨",
-		"昂翼天使",
-		"起个名字好烦QAQ",
-		"御坂2623",
-		"Sword Elucidator",
-		"千年的樱落虹",
-		"萝莉姬",
-		"肥羊",
-		"釘釘钉钉叮！XD",
-		"樱姬",
-		"神隐の红白",
-		"前原圭一",
-		"啦啦SLG",
-		"Fsu0413",
-		"小猪翼爱啦啦",
+		"啦啦失恋过", --啦啦SLG
+		"Fsu0213", --Fsu0413
+		"凌电信", --凌天翼
 		"元嘉体",
-		"豚紙愛啦啦",
-		"女王受·虫",
-		"doublebit",
-		"爱上穹妹的某",
-		"开不了车",
-		"独孤安河",
-		"百年东风",
-		"Paracel_007",
-		"haveatry823" ,
-		"lrl026",
-		"墨宣砚韵",
-		"忧郁の月兔君",
-		"来一口-水饺",
-		"甄钰月儿",
-		"卍冰の羽卍",
-		"五毛羽君",
-		"陈家祺" ,
-		"你妹大神无节操" ,
-		"萝卜大神爱啦啦" ,
-		"高调的富妮妮" ,
-		"叁陆李神" ,
-		"hmqgg" ,
-		"Nagisa_Willing" ,
-		"0o叮咚叮咚o0" ,
-		"医治永恒" ,
-		"甄姬真姬" ,
-		"tangjs520" ,
+		"萌豚紙",  --豚紙
+		"女王神·Slob", --女王受·虫
+		"Double_Bit！", --Double_Bit？
+		"爱上穹妹的Jia", --爱上穹妹的某
+		"没驾照开不了车", --开不了车
+		"写书的独孤安河", --独孤安河
+		"百年东南西北风", --百年东风
+		"Paracel_00发", --Paracel_007
+		"haveago823" , --haveatry823
+		"离人泪026", --lrl026
+		"墨宣砚韵", --a late developer
+		"忧郁のlzxqqqq", --忧郁的月兔（lzxqqqq）
+		--"来一口-水饺",
+		--"甄钰月儿",
+		"卍brianのvong卍", --卍冰の羽卍
+		"五毛羽", --arrow羽
+		"大同人陈家祺" , --陈家祺大同中心
+		"fsu0415" , --你妹大神
+		"麦当劳" , --果然萝卜斩
+		"高调的富妮妮" , --低调的付尼玛
+		"☆№Ｌ36×李Ｊ№★" , --☆№Ｌ糾×結Ｊ№★
+		"ACG杀手", --hmqgg
+		"Nagisa乐意", --Nagisa_Willing
+		"0o叮咚咚叮o0", --0o叮咚Backup
+		"医治曙光", --医治永恒（曙光）
+		"甄姬真姬", --甄姬真妓（日月小辰）
+		"tangjs我爱你", --tangjs520
+		"帷幕之下问心云",
+		"普肉", --Procellarum
+		"大内总管KK", --KenKic
+		"叶落孤舟",
+		"晓月的微信", --晓月的泪痕
+		"Xasy-Po-Love", --Easy-To-Love（XPL）
+		"小修司V", --小休斯
+		"清风不屈一对10", --清风弄错流年
+		"非凡借刀教做人", --非凡神力
+		"高城和二", --takashiro
+		"tan∠ANY", --任意角的正切
+		"刘恒飞翔", --恒星飞翔
+		"寂镜Jnrio",
+		"人啊环境", --rahj
+		"良家大少", --祝家大少
+		"禽受张", --老张
+		"孝弯", --孝直
+		"鱼纸酱" --鱼
 	},
 }

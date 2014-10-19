@@ -1,3 +1,31 @@
+--[[********************************************************************
+	Copyright (c) 2013-2014 - QSanguosha-Rara
+
+  This file is part of QSanguosha-Hegemony.
+
+  This game is free software; you can redistribute it and/or
+  modify it under the terms of the GNU General Public License as
+  published by the Free Software Foundation; either version 3.0
+  of the License, or (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  General Public License for more details.
+
+  See the LICENSE file for more details.
+
+  QSanguosha-Rara
+*********************************************************************]]
+
+function sgs.insertRelatedSkills(Package, main_skill, ...)
+	local t = {...}
+	local skill_name = (type(main_skill) == "string") and main_skill or main_skill:objectName()
+	for _, s in ipairs(t) do
+		Package:insertRelatedSkills(skill_name, (type(s) == "string") and s or s:objectName())
+	end
+end
+
 -- utilities, i.e: convert QList<const Card> to Lua's native table
 function sgs.QList2Table(qlist)
 	local t = {}
@@ -144,8 +172,6 @@ sgs.CommandType = {
 	"S_COMMAND_CHOOSE_GENERAL",
 	"S_COMMAND_CHOOSE_KINGDOM",
 	"S_COMMAND_CHOOSE_SUIT",
-	"S_COMMAND_CHOOSE_ROLE",
-	"S_COMMAND_CHOOSE_ROLE_3V3",
 	"S_COMMAND_CHOOSE_DIRECTION",
 	"S_COMMAND_CHOOSE_PLAYER",
 	"S_COMMAND_CHOOSE_ORDER",
@@ -185,14 +211,13 @@ sgs.CommandType = {
 	"S_COMMAND_REVIVE_PLAYER",
 	"S_COMMAND_ATTACH_SKILL",
 	"S_COMMAND_NULLIFICATION_ASKED",
-	"S_COMMAND_EXCHANGE_KNOWN_CARDS", -- For Dimeng only
+	"S_COMMAND_EXCHANGE_KNOWN_CARDS",
 	"S_COMMAND_SET_KNOWN_CARDS",
 	"S_COMMAND_UPDATE_PILE",
 	"S_COMMAND_RESET_PILE",
-	"S_COMMAND_UPDATE_HANDCARD_NUM" ,
+	"S_COMMAND_UPDATE_HANDCARD_NUM",
 	"S_COMMAND_UPDATE_STATE_ITEM",
 	"S_COMMAND_SPEAK",
-	"S_COMMAND_ASK_GENERAL", -- the following 6 for 1v1 and 3v3
 	"S_COMMAND_ARRANGE_GENERAL",
 	"S_COMMAND_FILL_GENERAL",
 	"S_COMMAND_TAKE_GENERAL",
@@ -202,7 +227,26 @@ sgs.CommandType = {
 	"S_COMMAND_ANIMATE",
 	"S_COMMAND_LUCK_CARD",
 	"S_COMMAND_VIEW_GENERALS",
-	"S_COMMAND_SET_DASHBOARD_SHADOW"
+	"S_COMMAND_SET_DASHBOARD_SHADOW",
+	"S_COMMAND_PRESHOW",
+	"S_COMMAND_TOGGLE_READY",
+	"S_COMMAND_ADD_ROBOT",
+	"S_COMMAND_FILL_ROBOTS",
+	"S_COMMAND_TRUST",
+	"S_COMMAND_PAUSE",
+	"S_COMMAND_NETWORK_DELAY_TEST",
+	"S_COMMAND_CHECK_VERSION",
+	"S_COMMAND_SETUP",
+	"S_COMMAND_ADD_PLAYER",
+	"S_COMMAND_REMOVE_PLAYER",
+	"S_COMMAND_START_IN_X_SECONDS",
+	"S_COMMAND_ARRANGE_SEATS",
+	"S_COMMAND_WARN",
+	"S_COMMAND_SIGNUP",
+	"S_COMMAND_DISABLE_SHOW",
+	"S_COMMAND_TRIGGER_ORDER",
+	"S_COMMAND_MIRROR_GUANXING_STEP",
+	"S_COMMAND_CHANGE_SKIN"
 }
 
 local i = 0
@@ -210,3 +254,5 @@ for _, command in ipairs(sgs.CommandType) do
 	sgs.CommandType[command] = i
 	i = i + 1
 end
+
+json = require("json")

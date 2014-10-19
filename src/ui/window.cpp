@@ -1,3 +1,23 @@
+/********************************************************************
+    Copyright (c) 2013-2014 - QSanguosha-Rara
+
+    This file is part of QSanguosha-Hegemony.
+
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    See the LICENSE file for more details.
+
+    QSanguosha-Rara
+    *********************************************************************/
+
 #include "window.h"
 #include "settings.h"
 #include "button.h"
@@ -13,7 +33,6 @@ Window::Window(const QString &title, const QSizeF &size, const QString &path)
 {
     setFlags(ItemIsMovable);
 
-    QPixmap *bg;
     if (!path.isEmpty())
         bg = new QPixmap(path);
     else
@@ -62,6 +81,11 @@ Window::Window(const QString &title, const QSizeF &size, const QString &path)
     setTitle(title);
 }
 
+Window::~Window(){
+    delete bg;
+    delete outimg;
+}
+
 void Window::addContent(const QString &content) {
     QGraphicsTextItem *content_item = new QGraphicsTextItem(this);
     content_item->moveBy(15, 40);
@@ -76,10 +100,10 @@ void Window::addContent(const QString &content) {
 }
 
 Button *Window::addCloseButton(const QString &label) {
-    Button *ok_button = new Button(label, 0.6);
+    Button *ok_button = new Button(label, 0.6, true);
     QFont font = Config.TinyFont;
     font.setBold(true);
-    ok_button->setFont(font);
+    ok_button->setFontSize(font.pixelSize());
     ok_button->setParentItem(this);
 
     qreal x = size.width() - ok_button->boundingRect().width() - 25;
@@ -90,9 +114,12 @@ Button *Window::addCloseButton(const QString &label) {
     return ok_button;
 }
 
-void Window::shift(int pos_x, int pos_y) {
-    resetTransform();
-    setTransform(QTransform::fromTranslate((pos_x - size.width()) / 2, (pos_y - size.height()) / 2), true);
+void Window::shift(qreal pos_x, qreal pos_y) {
+    setTransform(QTransform::fromTranslate(pos_x - size.width() / 2, pos_y - size.height() / 2));
+}
+
+void Window::shift(const QPointF &pos) {
+    setTransform(QTransform::fromTranslate(pos.x() - size.width() / 2, pos.y() - size.height() / 2));
 }
 
 void Window::keepWhenDisappear() {
@@ -106,7 +133,7 @@ QRectF Window::boundingRect() const{
 void Window::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) {
     QRectF window_rect = boundingRect();
 
-    painter->setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing |QPainter::SmoothPixmapTransform);
+    painter->setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing | QPainter::SmoothPixmapTransform);
     painter->drawImage(window_rect, *outimg);
 }
 
@@ -157,48 +184,4 @@ void Window::setTitle(const QString &title) {
 
     titleItem->setHtml(content);
     titleItem->setPos(size.width() / 2 - titleItem->boundingRect().width() / 2, 10);
-}
-
-void Window::setAddress(const QSizeF &size,const QString &path, const QString &path2) {
-    if (outimg->height() != size.height() || outimg->width() != size.width())//Add by SE for changing prompt
-        return;
-
-     QPixmap *bg;
-    if (!path.isEmpty())
-        bg = new QPixmap(path);
-    if (bg->isNull() && !path2.isEmpty())
-        bg = new QPixmap(path2);
-    if (bg->isNull())
-        bg = new QPixmap("image/system/prompt/newPrompt.png");
-
-    QImage bgimg = bg->toImage();
-
-    qreal pad = 10;
-
-    int w = bgimg.width(), h = bgimg.height();
-    int tw = outimg->width(), th = outimg->height();
-
-    qreal xc = (w - 2 * pad) / (tw - 2 * pad), yc = (h - 2 * pad) / (th - 2 * pad);
-
-    for (int i = 0; i < tw; i++){
-        for (int j = 0; j < th; j++) {
-            int x = i, y = j;
-
-            if (x >= pad && x <= (tw - pad))
-                x = pad + (x - pad) * xc;
-            else if (x >= (tw - pad))
-                x = w - (tw - x);
-
-            if (y >= pad && y <= (th - pad))
-                y = pad + (y - pad) * yc;
-            else if (y >= (th - pad))
-                y = h - (th - y);
-
-            QRgb rgb = bgimg.pixel(x, y);
-            outimg->setPixel(i, j, rgb);
-        }
-    }
-
-    this->setOpacity(0.0);
-
 }

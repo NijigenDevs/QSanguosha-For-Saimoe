@@ -1,3 +1,23 @@
+/********************************************************************
+    Copyright (c) 2013-2014 - QSanguosha-Rara
+
+    This file is part of QSanguosha-Hegemony.
+
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    See the LICENSE file for more details.
+
+    QSanguosha-Rara
+    *********************************************************************/
+
 #include "distanceviewdialog.h"
 
 #include "client.h"
@@ -15,23 +35,26 @@ public:
         from = new QComboBox;
         to = new QComboBox;
 
-        from_seat = new QLineEdit;
-        to_seat = new QLineEdit;
-
-        from_seat->setReadOnly(true);
-        to_seat->setReadOnly(true);
-
         left = new QLineEdit;
         right = new QLineEdit;
 
         min = new QLineEdit;
         in_attack = new QLineEdit;
 
+        left->setReadOnly(true);
+        right->setReadOnly(true);
+        min->setReadOnly(true);
+        in_attack->setReadOnly(true);
+
         QList<const DistanceSkill *> skills = Sanguosha->getDistanceSkills();
-        foreach (const DistanceSkill *skill, skills) {
+        QLineEdit *horse_edit = new QLineEdit;
+        horse_edit->setObjectName("HorseCorrect");
+        horse_edit->setReadOnly(true);
+        distance_edits << horse_edit;
+        foreach(const DistanceSkill *skill, skills) {
             bool show_skill = false;
-            foreach (const ClientPlayer *p, ClientInstance->getPlayers()) {
-                if (p->hasSkill(skill->objectName())) {
+            foreach(const ClientPlayer *p, ClientInstance->getPlayers()) {
+                if (p->hasShownSkill(skill)) {
                     show_skill = true;
                     break;
                 }
@@ -50,7 +73,6 @@ public:
     }
 
     QComboBox *from, *to;
-    QLineEdit *from_seat, *to_seat;
     QLineEdit *left, *right;
     QLineEdit *min;
     QList<QLineEdit *> distance_edits;
@@ -75,8 +97,6 @@ DistanceViewDialog::DistanceViewDialog(QWidget *parent)
 
     layout->addRow(tr("From"), ui->from);
     layout->addRow(tr("To"), ui->to);
-    layout->addRow(tr("From seat"), ui->from_seat);
-    layout->addRow(tr("To seat"), ui->to_seat);
     layout->addRow(tr("Left"), ui->left);
     layout->addRow(tr("Right"), ui->right);
     layout->addRow(tr("Minimum"), ui->min);
@@ -85,7 +105,7 @@ DistanceViewDialog::DistanceViewDialog(QWidget *parent)
     layout->addRow(tr("Distance correct"), box);
 
     QFormLayout *box_layout = new QFormLayout;
-    foreach (QLineEdit *edit, ui->distance_edits)
+    foreach(QLineEdit *edit, ui->distance_edits)
         box_layout->addRow(Sanguosha->translate(edit->objectName()), edit);
 
     box->setLayout(box_layout);
@@ -108,33 +128,29 @@ void DistanceViewDialog::showDistance() {
     const ClientPlayer *from = ClientInstance->getPlayer(from_name);
     const ClientPlayer *to = ClientInstance->getPlayer(to_name);
 
-    ui->from_seat->setText(QString::number(from->getSeat()));
-    ui->to_seat->setText(QString::number(to->getSeat()));
+    if (from->isRemoved() || to->isRemoved()) {
+        ui->right->setText(tr("Not exist"));
+        ui->left->setText(tr("Not exist"));
+        ui->min->setText(tr("Not exist"));
+    } else {
+        int right_distance = from->originalRightDistanceTo(to);
+        ui->right->setText(QString::number(right_distance));
 
-    int left_distance = qAbs(from->getSeat()
-                             + ((from->getSeat() < to->getSeat()) ? from->aliveCount() : -from->aliveCount())
-                             - to->getSeat());
-    ui->left->setText(QString("|%1%2%3-%4|=%5")
-                              .arg(from->getSeat())
-                              .arg((from->getSeat()<to->getSeat()) ? "+" : "-")
-                              .arg(from->aliveCount())
-                              .arg(to->getSeat())
-                              .arg(left_distance));
+        int left_distance = from->aliveCount(false) - right_distance;
+        ui->left->setText(QString::number(left_distance));
 
-    int right_distance = qAbs(from->getSeat() - to->getSeat());
-    ui->right->setText(QString("|%1-%2|=%3")
-                               .arg(from->getSeat())
-                               .arg(to->getSeat())
-                               .arg(right_distance));
+        int min = qMin(left_distance, right_distance);
+        ui->min->setText(QString("min(%1, %2)=%3")
+            .arg(left_distance)
+            .arg(right_distance)
+            .arg(min));
+    }
 
-    int min = qMin(left_distance, right_distance);
-    ui->min->setText(QString("min(%1, %2)=%3")
-                             .arg(left_distance)
-                             .arg(right_distance)
-                             .arg(min));
-
-    foreach (QLineEdit *edit, ui->distance_edits) {
-        const Skill *skill = Sanguosha->getSkill(edit->objectName());
+    foreach(QLineEdit *edit, ui->distance_edits) {
+        QString skill_name = edit->objectName();
+        if (skill_name == "HorseCorrect")
+            skill_name = "Horse";
+        const Skill *skill = Sanguosha->getSkill(skill_name);
         const DistanceSkill *distance_skill = qobject_cast<const DistanceSkill *>(skill);
         int correct = distance_skill->getCorrect(from, to);
 
@@ -148,6 +164,9 @@ void DistanceViewDialog::showDistance() {
 
     ui->in_attack->setText(from->inMyAttackRange(to) ? tr("Yes") : tr("No"));
 
-    ui->final->setText(QString::number(from->distanceTo(to)));
+    if (from->isRemoved() || to->isRemoved())
+        ui->final->setText(tr("Not exist"));
+    else
+        ui->final->setText(QString::number(from->distanceTo(to)));
 }
 

@@ -1,22 +1,39 @@
-#ifndef _GENERAL_OVERVIEW_H
-#define _GENERAL_OVERVIEW_H
+/********************************************************************
+    Copyright (c) 2013-2014 - QSanguosha-Rara
 
+    This file is part of QSanguosha-Hegemony.
+
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    See the LICENSE file for more details.
+
+    QSanguosha-Rara
+    *********************************************************************/
+
+#ifndef GENERALOVERVIEW_H
+#define GENERALOVERVIEW_H
+
+#include "flatdialog.h"
+#include <QModelIndex>
+
+class QCheckBox;
+class QLineEdit;
+class QButtonGroup;
+class QSpinBox;
 class General;
-class Skill;
 class QCommandLinkButton;
-
-#include <QDialog>
-#include <QTableWidgetItem>
-#include <QButtonGroup>
-#include <QVBoxLayout>
-#include <QLabel>
-#include <QCheckBox>
-#include <QSpinBox>
-#include <QGroupBox>
-
+class Skill;
 class GeneralOverview;
 
-class GeneralSearch: public QDialog {
+class GeneralSearch : public FlatDialog {
     Q_OBJECT
 
 public:
@@ -38,7 +55,7 @@ private:
 
 signals:
     void search(bool include_hidden, const QString &nickname, const QString &name, const QStringList &genders,
-                const QStringList &kingdoms, int lower, int upper, const QStringList &packages);
+        const QStringList &kingdoms, int lower, int upper, const QStringList &packages);
 
 protected:
     virtual void accept();
@@ -57,7 +74,7 @@ namespace Ui {
     class GeneralOverview;
 }
 
-class GeneralOverview: public QDialog {
+class GeneralOverview : public FlatDialog {
     Q_OBJECT
 
 public:
@@ -73,25 +90,30 @@ private:
     GeneralSearch *general_search;
 
     QString origin_window_title;
-    QList<const General *> all_generals;
+
+    QMap<const General *, int> *all_generals;
 
     void resetButtons();
-    void addLines(const Skill *skill);
+    void addLines(const General *general, const Skill *skill);
+    void addDeathLine(const General *general);
+    void addWinLineOfCaoCao();
     void addCopyAction(QCommandLinkButton *button);
-    bool hasSkin(const QString &general_name);
-    QString getIllustratorInfo(const QString &general_name);
+    bool hasSkin(const General *general) const;
+    QString getCvInfo(const QString &generalName);
+    QString getIllustratorInfo(const QString &generalName);
 
 public slots:
     void startSearch(bool include_hidden, const QString &nickname, const QString &name, const QStringList &genders,
-                     const QStringList &kingdoms, int lower, int upper, const QStringList &packages);
+        const QStringList &kingdoms, int lower, int upper, const QStringList &packages);
 
 private slots:
     void playAudioEffect();
     void copyLines();
-    void askChangeSkin();
+    void showNextSkin();
     void fillAllGenerals();
-    void on_tableWidget_itemSelectionChanged();
+    void on_tableView_clicked(const QModelIndex &index);
+    void playDeathAudio();
 };
 
-#endif
+#endif // GENERALOVERVIEW_H
 

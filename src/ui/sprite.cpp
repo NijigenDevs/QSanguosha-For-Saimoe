@@ -1,10 +1,29 @@
+/********************************************************************
+    Copyright (c) 2013-2014 - QSanguosha-Rara
+
+    This file is part of QSanguosha-Hegemony.
+
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    See the LICENSE file for more details.
+
+    QSanguosha-Rara
+    *********************************************************************/
+
 #include "sprite.h"
 
 #include <QAnimationGroup>
 #include <QPropertyAnimation>
 #include <QParallelAnimationGroup>
 #include <QSequentialAnimationGroup>
-#include <QtCore/qmath.h>
 #include <QPainter>
 
 EffectAnimation::EffectAnimation()
@@ -20,12 +39,12 @@ void EffectAnimation::fade(QGraphicsItem *map) {
         effectOut(map);
         effect = registered.value(map);
         if (effect) effect->deleteLater();
-        registered.insert(map, new FadeEffect(true));
+        registered.insert(map, new FadeEffect(true, this));
         return;
     }
 
     map->show();
-    FadeEffect *fade = new FadeEffect(true);
+    FadeEffect *fade = new FadeEffect(true, this);
     map->setGraphicsEffect(fade);
     effects.insert(map, fade);
 }
@@ -36,11 +55,11 @@ void EffectAnimation::emphasize(QGraphicsItem *map, bool stay) {
         effectOut(map);
         effect = registered.value(map);
         if (effect) effect->deleteLater();
-        registered.insert(map, new EmphasizeEffect(stay));
+        registered.insert(map, new EmphasizeEffect(stay, this));
         return;
     }
 
-    EmphasizeEffect *emphasize = new EmphasizeEffect(stay);
+    EmphasizeEffect *emphasize = new EmphasizeEffect(stay, this);
     map->setGraphicsEffect(emphasize);
     effects.insert(map, emphasize);
 }
@@ -51,11 +70,11 @@ void EffectAnimation::sendBack(QGraphicsItem *map) {
         effectOut(map);
         effect = registered.value(map);
         if (effect) effect->deleteLater();
-        registered.insert(map, new SentbackEffect(true));
+        registered.insert(map, new SentbackEffect(true, this));
         return;
     }
 
-    SentbackEffect *sendBack = new SentbackEffect(true);
+    SentbackEffect *sendBack = new SentbackEffect(true, this);
     map->setGraphicsEffect(sendBack);
     effects.insert(map, sendBack);
 }
@@ -90,14 +109,15 @@ void EffectAnimation::deleteEffect(QAnimatedEffect *effect) {
     }
 }
 
-EmphasizeEffect::EmphasizeEffect(bool stay, QObject *) {
+EmphasizeEffect::EmphasizeEffect(bool stay, QObject *parent) {
     this->setObjectName("emphasizer");
+    this->setParent(parent);
     index = 0;
     this->stay = stay;
     QPropertyAnimation *anim = new QPropertyAnimation(this, "index");
     connect(anim, SIGNAL(valueChanged(QVariant)), this, SLOT(update()));
     anim->setEndValue(40);
-    anim->setDuration((40 - index)* 5);
+    anim->setDuration((40 - index) * 5);
     anim->start(QAbstractAnimation::DeleteWhenStopped);
 }
 
@@ -109,9 +129,9 @@ void EmphasizeEffect::draw(QPainter *painter) {
     QPoint offset;
     QPixmap pixmap = sourcePixmap(Qt::LogicalCoordinates, &offset);
     const QRectF target = boundingRect().adjusted(s.width() * scale - 1,
-                                                  s.height() * scale,
-                                                  -s.width() * scale,
-                                                  -s.height() * scale);
+        s.height() * scale,
+        -s.width() * scale,
+        -s.height() * scale);
     const QRectF source(s.width() * 0.1, s.height() * 0.1, s.width(), s.height());
 
     painter->setRenderHint(QPainter::SmoothPixmapTransform);
@@ -122,9 +142,9 @@ QRectF EmphasizeEffect::boundingRectFor(const QRectF &sourceRect) const{
     qreal scale = 0.1;
     QRectF rect(sourceRect);
     rect.adjust(-sourceRect.width() * scale,
-                -sourceRect.height() * scale,
-                sourceRect.width() * scale,
-                sourceRect.height() * scale);
+        -sourceRect.height() * scale,
+        sourceRect.width() * scale,
+        sourceRect.height() * scale);
     return rect;
 }
 
@@ -141,9 +161,10 @@ void QAnimatedEffect::setStay(bool stay) {
     }
 }
 
-SentbackEffect::SentbackEffect(bool stay, QObject *) {
-    grayed = 0;
+SentbackEffect::SentbackEffect(bool stay, QObject *parent) {
+    grayed = NULL;
     this->setObjectName("backsender");
+    this->setParent(parent);
     index = 0;
     this->stay = stay;
 
@@ -158,9 +179,9 @@ QRectF SentbackEffect::boundingRectFor(const QRectF &sourceRect) const{
     qreal scale = 0.05;
     QRectF rect(sourceRect);
     rect.adjust(-sourceRect.width() * scale,
-                -sourceRect.height() * scale,
-                sourceRect.width() * scale,
-                sourceRect.height() * scale);
+        -sourceRect.height() * scale,
+        sourceRect.width() * scale,
+        sourceRect.height() * scale);
     return rect;
 }
 
@@ -189,24 +210,28 @@ void SentbackEffect::draw(QPainter *painter) {
 
     painter->drawPixmap(offset, pixmap);
     painter->setOpacity((40 - qAbs(index - 40)) / 80.0);
-    painter->drawImage(offset,*grayed);
+    painter->drawImage(offset, *grayed);
 
     return;
 }
 
 SentbackEffect::~SentbackEffect() {
-    delete grayed;
+    if (grayed){
+        delete grayed;
+        grayed = NULL;
+    }
 }
 
-FadeEffect::FadeEffect(bool stay, QObject *) {
+FadeEffect::FadeEffect(bool stay, QObject *parent) {
     this->setObjectName("fader");
+    this->setParent(parent);
     index = 0;
     this->stay = stay;
 
     QPropertyAnimation *anim = new QPropertyAnimation(this, "index");
     connect(anim, SIGNAL(valueChanged(QVariant)), this, SLOT(update()));
     anim->setEndValue(40);
-    anim->setDuration((40 - index)* 5);
+    anim->setDuration((40 - index) * 5);
     anim->start(QAbstractAnimation::DeleteWhenStopped);
 }
 

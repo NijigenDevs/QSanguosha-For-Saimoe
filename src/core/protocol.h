@@ -1,15 +1,30 @@
+/********************************************************************
+    Copyright (c) 2013-2014 - QSanguosha-Rara
+
+    This file is part of QSanguosha-Hegemony.
+
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    See the LICENSE file for more details.
+
+    QSanguosha-Rara
+    *********************************************************************/
+
 #ifndef _PROTOCOL_H
 #define _PROTOCOL_H
 
-#include <string>
-#include <list>
-#include <json/json.h>
+#include <QByteArray>
+#include <QVariant>
 
 namespace QSanProtocol {
-    namespace Utils {
-        bool isStringArray(const Json::Value &jsonObject, unsigned int startIndex, unsigned int endIndex);
-        bool isIntArray(const Json::Value &jsonObject, unsigned int startIndex, unsigned int endIndex);
-    }
 
     enum PacketDescription {
         S_DESC_UNKNOWN,
@@ -109,10 +124,9 @@ namespace QSanProtocol {
         S_COMMAND_SET_KNOWN_CARDS,
         S_COMMAND_UPDATE_PILE,
         S_COMMAND_RESET_PILE,
-        S_COMMAND_UPDATE_HANDCARD_NUM ,
+        S_COMMAND_UPDATE_HANDCARD_NUM,
         S_COMMAND_UPDATE_STATE_ITEM,
         S_COMMAND_SPEAK,
-        // the following 5 for 1v1 and 3v3, remove them later
         S_COMMAND_ARRANGE_GENERAL,
         S_COMMAND_FILL_GENERAL,
         S_COMMAND_TAKE_GENERAL,
@@ -123,8 +137,25 @@ namespace QSanProtocol {
         S_COMMAND_LUCK_CARD,
         S_COMMAND_VIEW_GENERALS,
         S_COMMAND_SET_DASHBOARD_SHADOW,
-
-        S_COMMAND_PRESHOW
+        S_COMMAND_PRESHOW,
+        S_COMMAND_TOGGLE_READY,
+        S_COMMAND_ADD_ROBOT,
+        S_COMMAND_FILL_ROBOTS,
+        S_COMMAND_TRUST,
+        S_COMMAND_PAUSE,
+        S_COMMAND_NETWORK_DELAY_TEST,
+        S_COMMAND_CHECK_VERSION,
+        S_COMMAND_SETUP,
+        S_COMMAND_ADD_PLAYER,
+        S_COMMAND_REMOVE_PLAYER,
+        S_COMMAND_START_IN_X_SECONDS,
+        S_COMMAND_ARRANGE_SEATS,
+        S_COMMAND_WARN,
+        S_COMMAND_SIGNUP,
+        S_COMMAND_DISABLE_SHOW,
+        S_COMMAND_TRIGGER_ORDER,
+        S_COMMAND_MIRROR_GUANXING_STEP,
+        S_COMMAND_CHANGE_SKIN
     };
 
     enum GameEventType {
@@ -166,8 +197,16 @@ namespace QSanProtocol {
         S_CAMP_COOL
     };
 
+    enum GuanxingStep {
+        S_GUANXING_START,
+        S_GUANXING_MOVE,
+        S_GUANXING_FINISH
+    };
+
     //static consts
     extern const char *S_PLAYER_SELF_REFERENCE_ID;
+
+    extern const int S_ALL_ALIVE_PLAYERS;
 
     class Countdown {
     public:
@@ -175,40 +214,27 @@ namespace QSanProtocol {
             S_COUNTDOWN_NO_LIMIT,
             S_COUNTDOWN_USE_SPECIFIED,
             S_COUNTDOWN_USE_DEFAULT
-        } m_type;
-        static const std::string S_COUNTDOWN_MAGIC;
-        time_t m_current;
-        time_t m_max;
+        } type;
+
+        time_t current;
+        time_t max;
         inline Countdown(CountdownType type = S_COUNTDOWN_NO_LIMIT, time_t current = 0, time_t max = 0)
-            : m_type(type), m_current(current), m_max(max) {}
-        bool tryParse(Json::Value val);
-        inline Json::Value toJsonValue() {
-            if (m_type == S_COUNTDOWN_NO_LIMIT
-                || m_type == S_COUNTDOWN_USE_DEFAULT) {
-                Json::Value val(Json::arrayValue);
-                val[0] = S_COUNTDOWN_MAGIC;
-                val[1] = (int)m_type;
-                return val;
-            } else {
-                Json::Value val(Json::arrayValue);
-                val[0] = S_COUNTDOWN_MAGIC;
-                val[1] = (int)m_current;
-                val[2] = (int)m_max;
-                return val;
-            }
-        }
+            : type(type), current(current), max(max) {}
+        bool tryParse(const QVariant &var);
+        QVariant toVariant() const;
         inline bool hasTimedOut() {
-            if (m_type == S_COUNTDOWN_NO_LIMIT)
+            if (type == S_COUNTDOWN_NO_LIMIT)
                 return false;
             else
-                return m_current >= m_max;
+                return current >= max;
         }
     };
 
-    class QSanPacket {
+    class AbstractPacket {
     public:
-        virtual bool parse(const std::string &) = 0;
-        virtual std::string toString() const = 0;
+        virtual bool parse(const QByteArray &) = 0;
+        virtual QByteArray toJson() const = 0;
+        virtual QString toString() const = 0;
         virtual PacketDescription getPacketDestination() const = 0;
         virtual PacketDescription getPacketSource() const = 0;
         virtual PacketDescription getPacketType() const = 0;
@@ -216,48 +242,39 @@ namespace QSanProtocol {
         virtual CommandType getCommandType() const = 0;
     };
 
-    class QSanGeneralPacket: public QSanPacket {
+    class Packet : public AbstractPacket {
     public:
         //format: [global_serial, local_serial, packet_type, command_name, command_body]
-        unsigned int m_globalSerial;
-        unsigned int m_localSerial;
-        inline QSanGeneralPacket(int packetDescription = S_DESC_UNKNOWN, CommandType command = S_COMMAND_UNKNOWN) {
-            _m_globalSerial++;
-            m_globalSerial = _m_globalSerial;
-            m_localSerial = 0;
-            m_packetDescription = static_cast<PacketDescription>(packetDescription);
-            m_command = command;
-            m_msgBody = Json::nullValue;
-        }
-        inline void setMessageBody(const Json::Value &value) { m_msgBody = value; }
-        inline Json::Value &getMessageBody() { return m_msgBody; }
-        inline const Json::Value &getMessageBody() const{ return m_msgBody; }
-        virtual bool parse(const std::string &);
-        virtual std::string toString() const;
+        unsigned int globalSerial;
+        unsigned int localSerial;
+
+        Packet(int packetDescription = S_DESC_UNKNOWN, CommandType command = S_COMMAND_UNKNOWN);
+        unsigned int createGlobalSerial();
+        inline void setMessageBody(const QVariant &value) { messageBody = value; }
+        inline const QVariant &getMessageBody() const{ return messageBody; }
+        virtual bool parse(const QByteArray &raw);
+        virtual QByteArray toJson() const;
+        virtual QString toString() const;
         virtual PacketDescription getPacketDestination() const{
-            return static_cast<PacketDescription>(m_packetDescription & S_DEST_MASK);
+            return static_cast<PacketDescription>(packetDescription & S_DEST_MASK);
         }
         virtual PacketDescription getPacketSource() const{
-            return static_cast<PacketDescription>(m_packetDescription & S_SRC_MASK);
+            return static_cast<PacketDescription>(packetDescription & S_SRC_MASK);
         }
         virtual PacketDescription getPacketType() const{
-            return static_cast<PacketDescription>(m_packetDescription & S_TYPE_MASK);
+            return static_cast<PacketDescription>(packetDescription & S_TYPE_MASK);
         }
-        virtual PacketDescription getPacketDescription() const{ return m_packetDescription; }
-        virtual CommandType getCommandType() const{ return m_command; }
+        virtual PacketDescription getPacketDescription() const{ return packetDescription; }
+        virtual CommandType getCommandType() const{ return command; }
+
     protected:
-        static unsigned int _m_globalSerial;
-        CommandType m_command;
-        PacketDescription m_packetDescription;
-        Json::Value m_msgBody;
-        inline virtual bool parseBody(const Json::Value &value) { m_msgBody = value; return true; }
-        virtual const Json::Value &constructBody() const{ return m_msgBody; }
+        static unsigned int globalSerialSequence;
+        CommandType command;
+        PacketDescription packetDescription;
+        QVariant messageBody;
 
         //helper functions
-        static bool tryParse(const std::string &result, int &val);
-        static const unsigned int S_MAX_PACKET_SIZE;
-
-        Json::Reader m_jsonReader;
+        static const int S_MAX_PACKET_SIZE;
     };
 }
 

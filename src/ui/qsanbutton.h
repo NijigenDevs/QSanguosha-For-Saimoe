@@ -1,22 +1,42 @@
+/********************************************************************
+    Copyright (c) 2013-2014 - QSanguosha-Rara
+
+    This file is part of QSanguosha-Hegemony.
+
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    See the LICENSE file for more details.
+
+    QSanguosha-Rara
+    *********************************************************************/
+
 #ifndef _QSAN_BUTTON_H
 #define _QSAN_BUTTON_H
 
 #include <QGraphicsObject>
 #include <QPixmap>
 #include <QRegion>
-#include <qrect.h>
-#include <qlist.h>
+#include <QRect>
+
 #include "skill.h"
 
-class QSanButton: public QGraphicsObject{
+class QSanButton : public QGraphicsObject{
     Q_OBJECT
 
 public:
     //************************************
     // Method:    QSanButton
     // FullName:  QSanButton::QSanButton
-    // Access:    public 
-    // Returns:   
+    // Access:    public
+    // Returns:
     // Qualifier:
     // Parameter: QGraphicsItem * parent
     // Description: Construct a powerful button with parent.
@@ -24,15 +44,15 @@ public:
     // Last Updated By Yanguam Siliagim
     // To optimize performance
     //
-    // QSanguosha-Hegemony Team
+    // QSanguosha-Rara
     // March 14 2014
     //************************************
     QSanButton(QGraphicsItem *parent);
     //************************************
     // Method:    QSanButton
     // FullName:  QSanButton::QSanButton
-    // Access:    public 
-    // Returns:   
+    // Access:    public
+    // Returns:
     // Qualifier:
     // Parameter: const QString & groupName
     // Parameter: const QString & buttonName
@@ -44,12 +64,14 @@ public:
     // Last Updated By Yanguam Siliagim
     // To optimize performance
     //
-    // QSanguosha-Hegemony Team
+    // QSanguosha-Rara
     // March 14 2014
     //************************************
     QSanButton(const QString &groupName, const QString &buttonName, QGraphicsItem *parent, const bool &multi_state = false);
-    enum ButtonState { S_STATE_UP, S_STATE_HOVER, S_STATE_DOWN, S_STATE_CANPRESHOW,
-                       S_STATE_DISABLED, S_NUM_BUTTON_STATES };
+    enum ButtonState {
+        S_STATE_UP, S_STATE_HOVER, S_STATE_DOWN, S_STATE_CANPRESHOW,
+        S_STATE_DISABLED, S_NUM_BUTTON_STATES
+    };
     enum ButtonStyle { S_STYLE_PUSH, S_STYLE_TOGGLE };
     void setSize(QSize size);
     void setStyle(ButtonStyle style);
@@ -61,25 +83,9 @@ public:
     void setRect(QRect rect);
     virtual QRectF boundingRect() const;
     bool insideButton(QPointF pos) const;
+    bool isMouseInside() const;
     virtual void setEnabled(bool enabled);
     bool isDown();
-
-    //************************************
-    // Method:    initializeMousePosition
-    // FullName:  QSanButton::initializeMousePosition
-    // Access:    public 
-    // Returns:   void
-    // Qualifier:
-    // Description: Reset _m_mouseEntered for sometimes the button disappears suddenly.
-    //              We call the method before showing a button hidden by us.
-    //
-    // Last Updated By Yanguam Siliagim
-    // To fix no-response when click "confirm" in pile box
-    //
-    // QSanguosha-Hegemony Team
-    // March 14 2014
-    //************************************
-    inline void initializeMousePosition() { _m_mouseEntered = false; };
 
 public slots:
     void click();
@@ -108,15 +114,18 @@ protected:
 
 signals:
     void clicked();
+    void clicked_outside();
     void enable_changed();
 };
 
-class QSanSkillButton: public QSanButton {
+class QSanSkillButton : public QSanButton {
     Q_OBJECT
 
 public:
-    enum SkillType { S_SKILL_PROACTIVE, S_SKILL_COMPULSORY,
-                     S_SKILL_ONEOFF_SPELL, S_SKILL_ARRAY, S_NUM_SKILL_TYPES };
+    enum SkillType {
+        S_SKILL_PROACTIVE, S_SKILL_COMPULSORY,
+        S_SKILL_ONEOFF_SPELL, S_SKILL_ARRAY, S_NUM_SKILL_TYPES
+    };
 
     inline static QString getSkillTypeString(SkillType type) {
         QString arg1;
@@ -156,15 +165,15 @@ signals:
     void skill_deactivated();
 };
 
-class QSanInvokeSkillButton: public QSanSkillButton {
+class QSanInvokeSkillButton : public QSanSkillButton {
     Q_OBJECT
 
 public:
-    inline QSanInvokeSkillButton(QGraphicsItem *parent = NULL): QSanSkillButton(parent)
+    inline QSanInvokeSkillButton(QGraphicsItem *parent = NULL) : QSanSkillButton(parent)
     {
         _m_enumWidth = S_WIDTH_NARROW;
     }
-    enum SkillButtonWidth { S_WIDTH_WIDE, S_WIDTH_MED, S_WIDTH_NARROW, S_NUM_BUTTON_WIDTHS};
+    enum SkillButtonWidth { S_WIDTH_WIDE, S_WIDTH_MED, S_WIDTH_NARROW, S_NUM_BUTTON_WIDTHS };
     inline void setButtonWidth(SkillButtonWidth width) { _m_enumWidth = width; _repaint(); }
     inline SkillButtonWidth getButtonWidth() { return _m_enumWidth; }
 
@@ -176,15 +185,15 @@ protected:
     SkillButtonWidth _m_enumWidth;
 };
 
-class QSanInvokeSkillDock: public QGraphicsObject {
+class QSanInvokeSkillDock : public QGraphicsObject {
     Q_OBJECT
 
 public:
-    QSanInvokeSkillDock(QGraphicsItem *parent): QGraphicsObject(parent) {}
+    QSanInvokeSkillDock(QGraphicsItem *parent) : QGraphicsObject(parent) {}
     int width() const;
     int height() const;
     void setWidth(int width);
-    inline void addSkillButton(QSanInvokeSkillButton *button) { _m_buttons.push_back(button);  }
+    inline void addSkillButton(QSanInvokeSkillButton *button) { _m_buttons.push_back(button); }
     inline void removeSkillButton(QSanInvokeSkillButton *button) {
         if (button == NULL) return;
         disconnect(button);
@@ -205,11 +214,7 @@ public:
     inline QList<QSanInvokeSkillButton *> getAllSkillButtons() { return _m_buttons; }
 
 protected:
-    virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) {
-        Q_UNUSED(painter);
-        Q_UNUSED(option);
-        Q_UNUSED(widget);
-    }
+    virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
     QList<QSanInvokeSkillButton *> _m_buttons;
     int _m_width;
 

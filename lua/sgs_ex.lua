@@ -1,3 +1,23 @@
+--[[********************************************************************
+	Copyright (c) 2013-2014 - QSanguosha-Rara
+
+  This file is part of QSanguosha-Hegemony.
+
+  This game is free software; you can redistribute it and/or
+  modify it under the terms of the GNU General Public License as
+  published by the Free Software Foundation; either version 3.0
+  of the License, or (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  General Public License for more details.
+
+  See the LICENSE file for more details.
+
+  QSanguosha-Rara
+*********************************************************************]]
+
 -- this script file defines all functions written by Lua
 
 -- trigger skills
@@ -60,17 +80,7 @@ function sgs.CreateTriggerSkill(spec)
 
 	return skill
 end
---[[
-function sgs.CreateProhibitSkill(spec)
-	assert(type(spec.name) == "string")
-	assert(type(spec.is_prohibited) == "function")
 
-	local skill = sgs.LuaProhibitSkill(spec.name)
-	skill.is_prohibited = spec.is_prohibited
-
-	return skill
-end
-]]
 function sgs.CreateFilterSkill(spec)
 	assert(type(spec.name) == "string")
 	assert(type(spec.view_filter) == "function")
@@ -150,16 +160,16 @@ end
 function sgs.CreateAttackRangeSkill(spec)
 	assert(type(spec.name) == "string")
 	assert(type(spec.extra_func) == "function" or type(spec.fixed.func) == "function")
-	
+
 	local skill = sgs.LuaAttackRangeSkill(spec.name)
-	
+
 	if spec.extra_func then
 		skill.extra_func = spec.extra_func or 0
 	end
 	if spec.fixed_func then
 		skill.fixed_func = spec.fixed_func or -1
 	end
-	
+
 	return skill
 end
 
@@ -251,6 +261,9 @@ function sgs.CreateSkillCard(spec)
 	card.on_validate = spec.on_validate
 	card.on_validate_in_response = spec.on_validate_in_response
 
+	if spec.extra_cost then assert(type(spec.extra_cost) == "function") end
+	card.extra_cost = spec.extra_cost or 0
+
 	return card
 end
 
@@ -261,9 +274,14 @@ function sgs.CreateArraySummonCard(spec)
 
 	card:setTargetFixed(true)
 	card:setHandlingMethod(sgs.Card_MethodNone)
-	card.on_use = function(self, room, source)
+	card.on_validate = function(self, cardUse)
 		local skill = sgs.Sanguosha:getTriggerSkill(self:objectName()):toBattleArraySkill()
-		if skill then skill:summonFriends(source) end
+		if skill then
+			cardUse.from:showGeneral(cardUse.from:inHeadSkills(skill))
+			skill:summonFriends(cardUse.from)
+		end
+
+		return nil
 	end
 
 	return card
@@ -300,7 +318,7 @@ function isAvailable_AOE(self, player)
 	local canUse = false;
 	local players = player:getSiblings()
 	for _, p in sgs.qlist(players) do
-		if p:isDead() or player:isProhibited(p, self) then continue end
+		if p:isDead() --[[or player:isProhibited(p, self)]] then continue end
 		canUse = true
 		break
 	end
@@ -310,19 +328,25 @@ end
 function onUse_AOE(self, room, card_use)
 	local source = card_use.from
 	local targets = sgs.SPlayerList()
-	local other_players = room:getOtherPlayers(source)
-	for _, player in sgs.qlist(other_players) do
-		local skill = room:isProhibited(source, player, self)
-		if skill ~= nil then
-			local log_message = sgs.LogMessage()
-			log_message.type = "#SkillAvoid"
-			log_message.from = player
-			log_message.arg = skill:objectName()
-			log_message.arg2 = self:objectName()
-			room:broadcastSkillInvoke(skill:objectName())
-		else
-			targets:append(player)
+	if card_use.to:isEmpty() then
+		local other_players = room:getOtherPlayers(source)
+		for _, player in sgs.qlist(other_players) do
+		--[[
+			local skill = room:isProhibited(source, player, self)
+			if skill ~= nil then
+				local log_message = sgs.LogMessage()
+				log_message.type = "#SkillAvoid"
+				log_message.from = player
+				log_message.arg = skill:objectName()
+				log_message.arg2 = self:objectName()
+				room:broadcastSkillInvoke(skill:objectName())
+			else
+			]]
+				targets:append(player)
+			--end
 		end
+	else
+		targets = card_use.to
 	end
 
 	local use = card_use
@@ -335,7 +359,7 @@ function isAvailable_GlobalEffect(self, player)
 	local players = player:getSiblings()
 	players:append(player)
 	for _, p in sgs.qlist(players) do
-		if p:isDead() or player:isProhibited(p, self) then continue end
+		if p:isDead() --[[or player:isProhibited(p, self)]] then continue end
 		canUse = true
 		break
 	end
@@ -345,19 +369,25 @@ end
 function onUse_GlobalEffect(self, room, card_use)
 	local source = card_use.from
 	local targets = sgs.SPlayerList()
-	local all_players = room:getAllPlayers()
-	for _, player in sgs.qlist(all_players) do
-		local skill = room:isProhibited(source, player, self)
-		if skill ~= nil then
-			local log_message = sgs.LogMessage()
-			log_message.type = "#SkillAvoid"
-			log_message.from = player
-			log_message.arg = skill:objectName()
-			log_message.arg2 = self:objectName()
-			room:broadcastSkillInvoke(skill:objectName())
-		else
-			targets:append(player)
+	if card_use.to:isEmpty() then
+		local all_players = room:getAllPlayers()
+		for _, player in sgs.qlist(all_players) do
+			--[[
+			local skill = room:isProhibited(source, player, self)
+			if skill ~= nil then
+				local log_message = sgs.LogMessage()
+				log_message.type = "#SkillAvoid"
+				log_message.from = player
+				log_message.arg = skill:objectName()
+				log_message.arg2 = self:objectName()
+				room:broadcastSkillInvoke(skill:objectName())
+			else
+			]]
+				targets:append(player)
+			--end
 		end
+	else
+		targets = card_use.to
 	end
 
 	local use = card_use
@@ -384,6 +414,11 @@ function onUse_DelayedTrick(self, room, card_use)
 
 	local reason = sgs.CardMoveReason(sgs.CardMoveReason_S_REASON_USE, use.from:objectName(), use.to:first():objectName(), self:getSkillName(), "")
 	room:moveCardTo(self, use.from, use.to:first(), sgs.Player_PlaceDelayedTrick, reason, true)
+
+	local skill_name = wrapped:showSkill()
+	if skill_name ~= "" and use.from:ownSkill(skill_name) and (not use.from:hasShownSkill(skill_name)) then
+		use.from:showGeneral(use.from:inHeadSkills(skill_name))
+	end
 
 	thread:trigger(sgs.CardUsed, room, use.from, data)
 	thread:trigger(sgs.CardFinished, room, use.from, data)
@@ -457,8 +492,11 @@ function sgs.CreateViewAsSkill(spec)
 	assert(type(spec.name) == "string")
 	if spec.response_pattern then assert(type(spec.response_pattern) == "string") end
 	local response_pattern = spec.response_pattern or ""
+	local response_or_use = spec.response_or_use or false
+	if spec.expand_pile then assert(type(spec.expand_pile) == "string") end
+	local expand_pile = spec.expand_pile or ""
 
-	local skill = sgs.LuaViewAsSkill(spec.name, response_pattern)
+	local skill = sgs.LuaViewAsSkill(spec.name, response_pattern, response_or_use, expand_pile)
 
 	if spec.relate_to_place then
 		skill:setRelateToPlace(spec.relate_to_place)
@@ -483,9 +521,12 @@ function sgs.CreateOneCardViewAsSkill(spec)
 	assert(type(spec.name) == "string")
 	if spec.response_pattern then assert(type(spec.response_pattern) == "string") end
 	local response_pattern = spec.response_pattern or ""
+	local response_or_use = spec.response_or_use or false
 	if spec.filter_pattern then assert(type(spec.filter_pattern) == "string") end
+	if spec.expand_pile then assert(type(spec.expand_pile) == "string") end
+	local expand_pile = spec.expand_pile or ""
 
-	local skill = sgs.LuaViewAsSkill(spec.name, response_pattern)
+	local skill = sgs.LuaViewAsSkill(spec.name, response_pattern, response_or_use, expand_pile)
 
 	if spec.relate_to_place then
 		skill:setRelateToPlace(spec.relate_to_place)
@@ -520,8 +561,9 @@ function sgs.CreateZeroCardViewAsSkill(spec)
 	assert(type(spec.name) == "string")
 	if spec.response_pattern then assert(type(spec.response_pattern) == "string") end
 	local response_pattern = spec.response_pattern or ""
+	local response_or_use = spec.response_or_use or false
 
-	local skill = sgs.LuaViewAsSkill(spec.name, response_pattern)
+	local skill = sgs.LuaViewAsSkill(spec.name, response_pattern, response_or_use, "")
 
 	if spec.relate_to_place then
 		skill:setRelateToPlace(spec.relate_to_place)
@@ -547,7 +589,7 @@ function sgs.CreateArraySummonSkill(spec)
 	assert(type(spec.name) == "string")
 	assert(spec.array_summon_card)
 
-	local skill = sgs.LuaViewAsSkill(spec.name, "")
+	local skill = sgs.LuaViewAsSkill(spec.name, "", false, "")
 
 	if spec.relate_to_place then
 		skill:setRelateToPlace(spec.relate_to_place)
@@ -613,14 +655,24 @@ function sgs.CreateArraySummonSkill(spec)
 	return skill
 end
 
-function sgs.CreateWeapon(spec)
+function sgs.CreateEquipCard(spec)
+	assert(type(spec.location) == "number" and spec.location ~= sgs.EquipCard_DefensiveHorseLocation and spec.location ~= sgs.EquipCard_OffensiveHorseLocation)
 	assert(type(spec.name) == "string" or type(spec.class_name) == "string")
 	if not spec.name then spec.name = spec.class_name
 	elseif not spec.class_name then spec.class_name = spec.name end
 	if spec.suit then assert(type(spec.suit) == "number") end
 	if spec.number then assert(type(spec.number) == "number") end
-	assert(type(spec.range) == "number")
-	local card = sgs.LuaWeapon(spec.suit or sgs.Card_NoSuit, spec.number or 0, spec.range, spec.name, spec.class_name)
+	if spec.location == sgs.EquipCard_WeaponLocation then assert(type(spec.range) == "number") end
+
+	local card = nil
+	if spec.location == sgs.EquipCard_WeaponLocation then
+		card = sgs.LuaWeapon(spec.suit or sgs.Card_NoSuit, spec.number or 0, spec.range, spec.name, spec.class_name)
+	elseif spec.location == sgs.EquipCard_ArmorLocation then
+		card = sgs.LuaArmor(spec.suit or sgs.Card_NoSuit, spec.number or 0, spec.name, spec.class_name)
+	elseif spec.location == sgs.EquipCard_TreasureLocation then
+		card = sgs.LuaTreasure(spec.suit or sgs.Card_NoSuit, spec.number or 0, spec.name, spec.class_name)
+	end
+	assert(card ~= nil)
 
 	card.on_install = spec.on_install
 	card.on_uninstall = spec.on_uninstall
@@ -628,22 +680,38 @@ function sgs.CreateWeapon(spec)
 	return card
 end
 
+function sgs.CreateWeapon(spec)
+	spec.location = sgs.EquipCard_WeaponLocation
+	return sgs.CreateEquipCard(spec)
+end
+
 function sgs.CreateArmor(spec)
-	assert(type(spec.name) == "string" or type(spec.class_name) == "string")
-	if not spec.name then spec.name = spec.class_name
-	elseif not spec.class_name then spec.class_name = spec.name end
-	if spec.suit then assert(type(spec.suit) == "number") end
-	if spec.number then assert(type(spec.number) == "number") end
-	local card = sgs.LuaArmor(spec.suit or sgs.Card_NoSuit, spec.number or 0, spec.name, spec.class_name)
+	spec.location = sgs.EquipCard_ArmorLocation
+	return sgs.CreateEquipCard(spec)
+end
 
-	card.on_install = spec.on_install
-	card.on_uninstall = spec.on_uninstall
-
-	return card
+function sgs.CreateTreasure(spec)
+	spec.location = sgs.EquipCard_TreasureLocation
+	return sgs.CreateEquipCard(spec)
 end
 
 function sgs.LoadTranslationTable(t)
 	for key, value in pairs(t) do
 		sgs.AddTranslationEntry(key, value)
+	end
+end
+
+function sgs.LoadSkinTransltionTable(t)
+	local id = sgs.Sanguosha:property("CurrentSkinId"):toInt()
+	local prefixes = {"#", "$", "~", "cv:", "illustrator:"}
+	local function f(s)
+		for _, v in ipairs(prefixes) do
+			if s:startsWith(v) then
+				return v .. id .. string.sub(s, string.len(v) + 1)
+			end
+		end
+	end
+	for key, value in pairs(t) do
+		sgs.AddTranslationEntry(f(key), value)
 	end
 end

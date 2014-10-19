@@ -1,17 +1,37 @@
-#include "GenericCardContainerUI.h"
-#include <QParallelAnimationGroup>
-#include <qpropertyanimation.h>
-#include <QGraphicsSceneMouseEvent>
-#include <QGraphicsProxyWidget>
-#include <QGraphicsColorizeEffect>
-#include <qpushbutton.h>
-#include <qtextdocument.h>
-#include <qmenu.h>
-#include <qlabel.h>
+/********************************************************************
+    Copyright (c) 2013-2014 - QSanguosha-Rara
+
+    This file is part of QSanguosha-Hegemony.
+
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    See the LICENSE file for more details.
+
+    QSanguosha-Rara
+    *********************************************************************/
+
+#include "genericcardcontainerui.h"
 #include "engine.h"
 #include "standard.h"
 #include "clientplayer.h"
 #include "roomscene.h"
+#include "graphicspixmaphoveritem.h"
+
+#include <QPropertyAnimation>
+#include <QGraphicsSceneMouseEvent>
+#include <QGraphicsProxyWidget>
+#include <QGraphicsColorizeEffect>
+#include <QPushButton>
+#include <QTextDocument>
+#include <QMenu>
 
 using namespace QSanProtocol;
 
@@ -21,7 +41,7 @@ QList<CardItem *> GenericCardContainer::cloneCardItems(QList<int> card_ids) {
 
 QList<CardItem *> GenericCardContainer::_createCards(QList<int> card_ids) {
     QList<CardItem *> result;
-    foreach (int card_id, card_ids) {
+    foreach(int card_id, card_ids) {
         CardItem *item = _createCard(card_id);
         result.append(item);
     }
@@ -37,9 +57,11 @@ CardItem *GenericCardContainer::_createCard(int card_id) {
 }
 
 void GenericCardContainer::_destroyCard() {
-    CardItem *card = (CardItem *)sender();
-    card->setVisible(false);
-    card->deleteLater();
+    CardItem *card = qobject_cast<CardItem *>(sender());
+    if (card != NULL) {
+        card->setVisible(false);
+        card->deleteLater();
+    }
 }
 
 bool GenericCardContainer::_horizontalPosLessThan(const CardItem *card1, const CardItem *card2) {
@@ -47,7 +69,7 @@ bool GenericCardContainer::_horizontalPosLessThan(const CardItem *card1, const C
 }
 
 void GenericCardContainer::_disperseCards(QList<CardItem *> &cards, QRectF fillRegion,
-                                          Qt::Alignment align, bool useHomePos, bool keepOrder) {
+    Qt::Alignment align, bool useHomePos, bool keepOrder) {
     int numCards = cards.size();
     if (numCards == 0) return;
     if (!keepOrder) qSort(cards.begin(), cards.end(), GenericCardContainer::_horizontalPosLessThan);
@@ -63,7 +85,7 @@ void GenericCardContainer::_disperseCards(QList<CardItem *> &cards, QRectF fillR
         else if (align == Qt::AlignLeft)
             newX = fillRegion.left() + step * i + card->boundingRect().width() / 2.0;
         else if (align == Qt::AlignRight)
-            newX = fillRegion.right() + step * (i - numCards)  + card->boundingRect().width() / 2.0;
+            newX = fillRegion.right() + step * (i - numCards) + card->boundingRect().width() / 2.0;
         else
             continue;
         QPointF newPos = QPointF(newX, fillRegion.center().y());
@@ -83,8 +105,8 @@ void GenericCardContainer::_doUpdate() {
 }
 
 void GenericCardContainer::_playMoveCardsAnimation(QList<CardItem *> &cards, bool destroyCards) {
-    QParallelAnimationGroup *animation = new QParallelAnimationGroup;
-    foreach (CardItem *card_item, cards) {
+    QParallelAnimationGroup *animation = new QParallelAnimationGroup(this);
+    foreach(CardItem *card_item, cards) {
         if (destroyCards)
             connect(card_item, SIGNAL(movement_animation_finished()), this, SLOT(_destroyCard()));
         animation->addAnimation(card_item->getGoBackAnimation(true));
@@ -96,7 +118,7 @@ void GenericCardContainer::_playMoveCardsAnimation(QList<CardItem *> &cards, boo
 }
 
 void GenericCardContainer::addCardItems(QList<CardItem *> &card_items, const CardsMoveStruct &moveInfo) {
-    foreach (CardItem *card_item, card_items) {
+    foreach(CardItem *card_item, card_items) {
         card_item->setPos(mapFromScene(card_item->scenePos()));
         card_item->setParentItem(this);
     }
@@ -109,7 +131,7 @@ void PlayerCardContainer::_paintPixmap(QGraphicsPixmapItem *&item, const QRect &
 }
 
 void PlayerCardContainer::_paintPixmap(QGraphicsPixmapItem *&item, const QRect &rect,
-                                       const QString &key, QGraphicsItem *parent) {
+    const QString &key, QGraphicsItem *parent) {
     _paintPixmap(item, rect, _getPixmap(key), parent);
 }
 
@@ -127,7 +149,8 @@ QPixmap PlayerCardContainer::_getPixmap(const QString &key, const QString &sArg)
 
         rKey = key.arg(getResourceKeyName());
         return G_ROOM_SKIN.getPixmap(rKey, sArg); // then try "%1key = ..."
-    } else {
+    }
+    else {
         return G_ROOM_SKIN.getPixmap(key, sArg); // finally, try "key = ..."
     }
 }
@@ -140,7 +163,7 @@ QPixmap PlayerCardContainer::_getPixmap(const QString &key) {
 }
 
 void PlayerCardContainer::_paintPixmap(QGraphicsPixmapItem *&item, const QRect &rect,
-                                       const QPixmap &pixmap, QGraphicsItem *parent) {
+    const QPixmap &pixmap, QGraphicsItem *parent) {
     if (item == NULL) {
         item = new QGraphicsPixmapItem(parent);
         item->setTransformationMode(Qt::SmoothTransformation);
@@ -169,61 +192,74 @@ void PlayerCardContainer::showProgressBar(Countdown countdown) {
     _m_progressBar->show();
 }
 
-QPixmap PlayerCardContainer::_getAvatarIcon(QString heroName) {
-    int avatarSize = m_player->getGeneral2() ? _m_layout->m_primaryAvatarSize : _m_layout->m_avatarSize;
-    return G_ROOM_SKIN.getGeneralPixmap(heroName, (QSanRoomSkin::GeneralIconSize)avatarSize);
+QPixmap PlayerCardContainer::getHeadAvatarIcon(const QString &generalName) {
+    const int avatarSize = m_player->getGeneral2() ? _m_layout->m_primaryAvatarSize : _m_layout->m_avatarSize;
+    return G_ROOM_SKIN.getGeneralPixmap(generalName,
+                                        (QSanRoomSkin::GeneralIconSize)avatarSize,
+                                        m_player->getHeadSkinId());
+}
+
+QPixmap PlayerCardContainer::getDeputyAvatarIcon(const QString &generalName)
+{
+    const int avatarSize = _m_layout->m_smallAvatarSize;
+    return G_ROOM_SKIN.getGeneralPixmap(generalName,
+                                        (QSanRoomSkin::GeneralIconSize)avatarSize,
+                                        m_player->getDeputySkinId());
 }
 
 void PlayerCardContainer::updateAvatar() {
+    if (_m_avatarIcon == NULL) {
+        _m_avatarIcon = new GraphicsPixmapHoverItem(this, _getAvatarParent());
+        _m_avatarIcon->setTransformationMode(Qt::SmoothTransformation);
+    }
+
     const General *general = NULL;
     if (m_player) {
         general = m_player->getAvatarGeneral();
-        //@@todo:design the style of screen name for dashboard
-        if (!inherits("Dashboard"))
-            _m_layout->m_screenNameFont.paintText(_m_screenNameItem,
-                                                  _m_layout->m_screenNameArea,
-                                                  Qt::AlignCenter,
-                                                  m_player->screenName());
-    } else if (!inherits("Dashboard"))
-            _m_layout->m_screenNameFont.paintText(_m_screenNameItem,
-                                                  _m_layout->m_screenNameArea,
-                                                  Qt::AlignCenter,
-                                                  "");
+        IQSanComponentSkin::QSanShadowTextFont font = _m_layout->m_screenNameFont;
+        if (m_player->screenName() == tr("Moxuanyanyun"))
+            font.m_color = Qt::red;
 
+        font.paintText(_m_screenNameItem, _m_layout->m_screenNameArea,
+                       Qt::AlignCenter, m_player->screenName());
+    } else {
+        _m_layout->m_screenNameFont.paintText(_m_screenNameItem, _m_layout->m_screenNameArea,
+                                              Qt::AlignCenter, QString());
+    }
+
+    QGraphicsPixmapItem *avatarIconTmp = _m_avatarIcon;
     if (general != NULL) {
         _m_avatarArea->setToolTip(m_player->getHeadSkillDescription());
         QString name = general->objectName();
-        QPixmap avatarIcon = _getAvatarIcon(name);
+        QPixmap avatarIcon = getHeadAvatarIcon(name);
         QRect area = _m_layout->m_avatarArea;
-        if (inherits("Dashboard"))
-            area = QRect(area.left() + 2, area.top() + 1, area.width() - 2, area.height() - 5);
-        _paintPixmap(_m_avatarIcon, area, avatarIcon, _getAvatarParent());
+        _paintPixmap(avatarIconTmp, area, avatarIcon, _getAvatarParent());
         // this is just avatar general, perhaps game has not started yet.
         if (m_player->getGeneral() != NULL) {
             QString kingdom = m_player->getKingdom();
             _paintPixmap(_m_kingdomColorMaskIcon, _m_layout->m_kingdomMaskArea,
-                         G_ROOM_SKIN.getPixmap(QSanRoomSkin::S_SKIN_KEY_KINGDOM_COLOR_MASK, kingdom), this->_getAvatarParent());
+                G_ROOM_SKIN.getPixmap(QSanRoomSkin::S_SKIN_KEY_KINGDOM_COLOR_MASK, kingdom), this->_getAvatarParent());
             _paintPixmap(_m_handCardBg, _m_layout->m_handCardArea,
-                         _getPixmap(QSanRoomSkin::S_SKIN_KEY_HANDCARDNUM, kingdom), this->_getAvatarParent());
+                _getPixmap(QSanRoomSkin::S_SKIN_KEY_HANDCARDNUM, kingdom), this->_getAvatarParent());
             QString name = Sanguosha->translate("&" + general->objectName());
             if (name.startsWith("&"))
                 name = Sanguosha->translate(general->objectName());
             _m_layout->m_avatarNameFont.paintText(_m_avatarNameItem,
-                                                  _m_layout->m_avatarNameArea,
-                                                  Qt::AlignLeft | Qt::AlignJustify, name);
+                _m_layout->m_avatarNameArea,
+                Qt::AlignLeft | Qt::AlignJustify, name);
         } else {
             _paintPixmap(_m_handCardBg, _m_layout->m_handCardArea,
-                         _getPixmap(QSanRoomSkin::S_SKIN_KEY_HANDCARDNUM, QSanRoomSkin::S_SKIN_KEY_DEFAULT_SECOND),
-                         _getAvatarParent());
+                _getPixmap(QSanRoomSkin::S_SKIN_KEY_HANDCARDNUM, QSanRoomSkin::S_SKIN_KEY_DEFAULT_SECOND),
+                _getAvatarParent());
         }
     } else {
-        _paintPixmap(_m_avatarIcon, _m_layout->m_avatarArea,
-                     QSanRoomSkin::S_SKIN_KEY_BLANK_GENERAL, _getAvatarParent());
+        _paintPixmap(avatarIconTmp, _m_layout->m_avatarArea,
+            QSanRoomSkin::S_SKIN_KEY_BLANK_GENERAL, _getAvatarParent());
         _clearPixmap(_m_kingdomColorMaskIcon);
         _clearPixmap(_m_kingdomIcon);
         _paintPixmap(_m_handCardBg, _m_layout->m_handCardArea,
-                     _getPixmap(QSanRoomSkin::S_SKIN_KEY_HANDCARDNUM, QSanRoomSkin::S_SKIN_KEY_DEFAULT_SECOND),
-                     _getAvatarParent());
+            _getPixmap(QSanRoomSkin::S_SKIN_KEY_HANDCARDNUM, QSanRoomSkin::S_SKIN_KEY_DEFAULT_SECOND),
+            _getAvatarParent());
         _m_avatarArea->setToolTip(QString());
     }
     _m_avatarIcon->show();
@@ -239,33 +275,45 @@ QPixmap PlayerCardContainer::paintByMask(QPixmap &source) {
     return tmp;
 }
 
+bool PlayerCardContainer::canBeSelected()
+{
+    QGraphicsItem *item1 = getMouseClickReceiver();
+    QGraphicsItem *item2 = getMouseClickReceiver2();
+    return (item1 != NULL || item2 != NULL) && isEnabled() && (flags() & QGraphicsItem::ItemIsSelectable);
+}
+
 const ClientPlayer *PlayerCardContainer::getPlayer() const {
     if (m_player) return m_player;
     return NULL;
 }
 
 void PlayerCardContainer::updateSmallAvatar() {
+    if (_m_smallAvatarIcon == NULL) {
+        _m_smallAvatarIcon = new GraphicsPixmapHoverItem(this, _getAvatarParent());
+        _m_smallAvatarIcon->setTransformationMode(Qt::SmoothTransformation);
+    }
+
     const General *general = NULL;
     if (m_player) general = m_player->getGeneral2();
+
+    QGraphicsPixmapItem *smallAvatarIconTmp = _m_smallAvatarIcon;
     if (general != NULL) {
         _m_secondaryAvatarArea->setToolTip(m_player->getDeputySkillDescription());
         QString name = general->objectName();
-        QPixmap avatarIcon = _getAvatarIcon(name);
+        QPixmap avatarIcon = getHeadAvatarIcon(name);
         QRect area = _m_layout->m_secondaryAvatarArea;
-        if (inherits("Dashboard"))
-            area = QRect(area.left() + 2, area.top() + 1, area.width() - 2, area.height() - 5);
-        _paintPixmap(_m_smallAvatarIcon, area, avatarIcon, _getAvatarParent());
+        _paintPixmap(smallAvatarIconTmp, area, avatarIcon, _getAvatarParent());
         QString kingdom = m_player->getKingdom();
         _paintPixmap(_m_kingdomColorMaskIcon2, _m_layout->m_kingdomMaskArea2,
-                     G_ROOM_SKIN.getPixmap(QSanRoomSkin::S_SKIN_KEY_KINGDOM_COLOR_MASK, kingdom), this->_getAvatarParent());
+            G_ROOM_SKIN.getPixmap(QSanRoomSkin::S_SKIN_KEY_KINGDOM_COLOR_MASK, kingdom), this->_getAvatarParent());
         QString show_name = Sanguosha->translate("&" + name);
         if (show_name.startsWith("&"))
             show_name = Sanguosha->translate(name);
         _m_layout->m_smallAvatarNameFont.paintText(_m_secondaryAvatarNameItem,
-                                                       _m_layout->m_secondaryAvatarNameArea,
-                                                       Qt::AlignLeft | Qt::AlignJustify, show_name);
+            _m_layout->m_secondaryAvatarNameArea,
+            Qt::AlignLeft | Qt::AlignJustify, show_name);
     } else {
-        _paintPixmap(_m_smallAvatarIcon, _m_layout->m_secondaryAvatarArea,
+        _paintPixmap(smallAvatarIconTmp, _m_layout->m_secondaryAvatarArea,
                      QSanRoomSkin::S_SKIN_KEY_BLANK_GENERAL, _getAvatarParent());
         _clearPixmap(_m_kingdomColorMaskIcon2);
         _clearPixmap(_m_kingdomIcon);
@@ -284,10 +332,11 @@ void PlayerCardContainer::updatePhase() {
         int index = static_cast<int>(m_player->getPhase());
         QRect phaseArea = _m_layout->m_phaseArea.getTranslatedRect(_getPhaseParent()->boundingRect().toRect());
         _paintPixmap(_m_phaseIcon, phaseArea,
-                     _getPixmap(QSanRoomSkin::S_SKIN_KEY_PHASE, QString::number(index)),
-                     _getPhaseParent());
+            _getPixmap(QSanRoomSkin::S_SKIN_KEY_PHASE, QString::number(index)),
+            _getPhaseParent());
         _m_phaseIcon->show();
-    } else {
+    }
+    else {
         if (_m_progressBar) _m_progressBar->hide();
         if (_m_phaseIcon) _m_phaseIcon->hide();
     }
@@ -302,16 +351,19 @@ void PlayerCardContainer::updateHp() {
         _m_saveMeIcon->setVisible(false);
 }
 
-static bool CompareByNumber(const Card *card1, const Card *card2) {
-    return card1->getNumber() < card2->getNumber();
-}
-
 void PlayerCardContainer::updatePile(const QString &pile_name) {
-    ClientPlayer *player = (ClientPlayer *)sender();
+    ClientPlayer *player = qobject_cast<ClientPlayer *>(sender());
+    if (!player)
+        player = m_player;
+    if (!player) return;
+    QString treasure_name;
+    if (player->getTreasure()) treasure_name = player->getTreasure()->objectName();
+
     const QList<int> &pile = player->getPile(pile_name);
     if (pile.size() == 0) {
         if (_m_privatePiles.contains(pile_name)) {
             delete _m_privatePiles[pile_name];
+            _m_privatePiles[pile_name] = NULL;
             _m_privatePiles.remove(pile_name);
         }
     } else {
@@ -320,15 +372,23 @@ void PlayerCardContainer::updatePile(const QString &pile_name) {
         if (!_m_privatePiles.contains(pile_name)) {
             button = new QPushButton;
             button->setObjectName(pile_name);
-            button->setProperty("private_pile", "true");
+            if (treasure_name == pile_name)
+                button->setProperty("treasure", "true");
+            else
+                button->setProperty("private_pile", "true");
             QGraphicsProxyWidget *button_widget = new QGraphicsProxyWidget(_getPileParent());
+            button_widget->setObjectName(pile_name);
             button_widget->setWidget(button);
             _m_privatePiles[pile_name] = button_widget;
         } else {
-            button = (QPushButton *)(_m_privatePiles[pile_name]->widget());
+            button = qobject_cast<QPushButton *>((_m_privatePiles[pile_name]->widget()));
+            if (button == NULL)
+                qWarning("PlayerCardContainer::updatePile: button == NULL");
         }
-
-        button->setText(QString("%1(%2)").arg(Sanguosha->translate(pile_name)).arg(pile.length()));
+        QString text = Sanguosha->translate(pile_name);
+        if (pile.length() > 0)
+             text.append(QString("(%1)").arg(pile.length()));
+        button->setText(text);
         disconnect(button, SIGNAL(clicked()), this, SLOT(showPile()));
         connect(button, SIGNAL(clicked()), this, SLOT(showPile()));
     }
@@ -336,7 +396,14 @@ void PlayerCardContainer::updatePile(const QString &pile_name) {
     QPoint start = _m_layout->m_privatePileStartPos;
     QPoint step = _m_layout->m_privatePileStep;
     QSize size = _m_layout->m_privatePileButtonSize;
-    QList<QGraphicsProxyWidget *> widgets = _m_privatePiles.values();
+    QList<QGraphicsProxyWidget *> widgets_t, widgets_p, widgets = _m_privatePiles.values();
+    foreach (QGraphicsProxyWidget *widget, widgets) {
+        if (widget->objectName() == treasure_name)
+            widgets_t << widget;
+        else
+            widgets_p << widget;
+    }
+    widgets = widgets_t + widgets_p;
     for (int i = 0; i < widgets.length(); i++) {
         QGraphicsProxyWidget *widget = widgets[i];
         widget->setPos(start + i * step);
@@ -350,7 +417,7 @@ void PlayerCardContainer::showPile() {
         const ClientPlayer *player = getPlayer();
         if (!player) return;
         QList<int> card_ids = player->getPile(button->objectName());
-        if (card_ids.isEmpty()) return;
+        if (card_ids.isEmpty() || card_ids.contains(-1)) return;
         RoomSceneInstance->doGongxin(card_ids, false, QList<int>());
     }
 }
@@ -360,7 +427,8 @@ void PlayerCardContainer::updateDrankState() {
     if (m_player->getMark("drank") > 0) {
         _m_avatarArea->setBrush(G_PHOTO_LAYOUT.m_drankMaskColor);
         _m_secondaryAvatarArea->setBrush(G_PHOTO_LAYOUT.m_drankMaskColor);
-    } else {
+    }
+    else {
         _m_avatarArea->setBrush(Qt::NoBrush);
         _m_secondaryAvatarArea->setBrush(Qt::NoBrush);
     }
@@ -371,7 +439,7 @@ void PlayerCardContainer::updateHandcardNum() {
     if (m_player && m_player->getGeneral()) num = m_player->getHandcardNum();
     Q_ASSERT(num >= 0);
     _m_layout->m_handCardFont.paintText(_m_handCardNumText, _m_layout->m_handCardArea,
-                                        Qt::AlignCenter, QString::number(num));
+        Qt::AlignCenter, QString::number(num));
     _m_handCardNumText->setVisible(true);
 }
 
@@ -387,7 +455,7 @@ void PlayerCardContainer::updateMarks() {
 }
 
 void PlayerCardContainer::_updateEquips() {
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < S_EQUIP_AREA_LENGTH; i++) {
         CardItem *equip = _m_equipCards[i];
         if (equip == NULL) continue;
         const EquipCard *equip_card = qobject_cast<const EquipCard *>(equip->getCard()->getRealCard());
@@ -399,6 +467,7 @@ void PlayerCardContainer::_updateEquips() {
 
 void PlayerCardContainer::refresh() {
     if (!m_player || !m_player->getGeneral() || !m_player->isAlive()) {
+
         _m_faceTurnedIcon->setVisible(false);
         if (_m_faceTurnedIcon2)
             _m_faceTurnedIcon2->setVisible(false);
@@ -410,14 +479,27 @@ void PlayerCardContainer::refresh() {
             _m_duanchangMask2->setVisible(false);
         _m_actionIcon->setVisible(false);
         _m_saveMeIcon->setVisible(false);
+        leftDisableShowLock->setVisible(false);
+        rightDisableShowLock->setVisible(false);
     } else if (m_player) {
-        if (_m_faceTurnedIcon) _m_faceTurnedIcon->setVisible(!m_player->faceUp());
-        if (_m_faceTurnedIcon2) _m_faceTurnedIcon2->setVisible(!m_player->faceUp());
-        if (_m_chainIcon) _m_chainIcon->setVisible(m_player->isChained());
-        if (_m_duanchangMask) _m_duanchangMask->setVisible(m_player->isDuanchang(true));
-        if (_m_duanchangMask2) _m_duanchangMask2->setVisible(m_player->isDuanchang(false));
-        if (_m_actionIcon) _m_actionIcon->setVisible(m_player->hasFlag("actioned"));
-        if (_m_deathIcon) _m_deathIcon->setVisible(m_player->isDead());
+        if (_m_faceTurnedIcon)
+            _m_faceTurnedIcon->setVisible(!m_player->faceUp());
+        if (_m_faceTurnedIcon2)
+            _m_faceTurnedIcon2->setVisible(!m_player->faceUp());
+        if (_m_chainIcon)
+            _m_chainIcon->setVisible(m_player->isChained());
+        if (_m_duanchangMask)
+            _m_duanchangMask->setVisible(m_player->isDuanchang(true));
+        if (_m_duanchangMask2)
+            _m_duanchangMask2->setVisible(m_player->isDuanchang(false));
+        if (_m_actionIcon)
+            _m_actionIcon->setVisible(m_player->hasFlag("actioned"));
+        if (_m_deathIcon)
+            _m_deathIcon->setVisible(m_player->isDead());
+        if (leftDisableShowLock)
+            leftDisableShowLock->setVisible(!m_player->hasShownGeneral1() && !m_player->disableShow(true).isEmpty());
+        if (rightDisableShowLock)
+            rightDisableShowLock->setVisible(m_player->getGeneral2() && !m_player->hasShownGeneral2() && !m_player->disableShow(false).isEmpty());
     }
     updateHandcardNum();
     _adjustComponentZValues();
@@ -426,6 +508,8 @@ void PlayerCardContainer::refresh() {
 void PlayerCardContainer::repaintAll() {
     _m_avatarArea->setRect(_m_layout->m_avatarArea);
     _m_secondaryAvatarArea->setRect(_m_layout->m_secondaryAvatarArea);
+
+    stopHeroSkinChangingAnimation();
 
     updateAvatar();
     updateSmallAvatar();
@@ -437,30 +521,41 @@ void PlayerCardContainer::repaintAll() {
     updateDelayedTricks();
     //we have two avatar areas now...
     _paintPixmap(_m_faceTurnedIcon, _m_layout->m_avatarArea, QSanRoomSkin::S_SKIN_KEY_FACETURNEDMASK,
-                 _getAvatarParent());
+        _getAvatarParent());
     //paint faceTurnedIcon in secondaryAvatarArea only if inheriting Dashboard
     _paintPixmap(_m_chainIcon, _m_layout->m_chainedIconRegion, QSanRoomSkin::S_SKIN_KEY_CHAIN,
-                 _getAvatarParent());
+        _getAvatarParent());
     _paintPixmap(_m_duanchangMask, _m_layout->m_duanchangMaskRegion, QSanRoomSkin::S_SKIN_KEY_DUANCHANG,
-                 _getAvatarParent());
+        _getAvatarParent());
     _paintPixmap(_m_duanchangMask2, _m_layout->m_duanchangMaskRegion2, QSanRoomSkin::S_SKIN_KEY_DUANCHANG,
-                 _getAvatarParent());
+        _getAvatarParent());
     _paintPixmap(_m_saveMeIcon, _m_layout->m_saveMeIconRegion, QSanRoomSkin::S_SKIN_KEY_SAVE_ME_ICON,
-                 _getAvatarParent());
+        _getAvatarParent());
     _paintPixmap(_m_actionIcon, _m_layout->m_actionedIconRegion, QSanRoomSkin::S_SKIN_KEY_ACTIONED_ICON,
-                 _getAvatarParent());
+        _getAvatarParent());
+    if (_m_seatItem != NULL)
+        _paintPixmap(_m_seatItem, _m_layout->m_seatIconRegion,
+            _getPixmap(QSanRoomSkin::S_SKIN_KEY_SEAT_NUMBER, QString::number(m_player->property("UI_Seat").toInt())),
+            _getAvatarParent());
     if (_m_roleComboBox != NULL)
         _m_roleComboBox->setPos(_m_layout->m_roleComboBoxPos);
 
     _m_hpBox->setIconSize(_m_layout->m_magatamaSize);
-    _m_hpBox->setOrientation(_m_layout->m_magatamasHorizontal ?  Qt::Horizontal : Qt::Vertical);
+    _m_hpBox->setOrientation(_m_layout->m_magatamasHorizontal ? Qt::Horizontal : Qt::Vertical);
     _m_hpBox->setBackgroundVisible(_m_layout->m_magatamasBgVisible);
     _m_hpBox->setAnchorEnable(true);
     _m_hpBox->setAnchor(_m_layout->m_magatamasAnchor, _m_layout->m_magatamasAlign);
     _m_hpBox->setImageArea(_m_layout->m_magatamaImageArea);
     _m_hpBox->update();
 
+    QPixmap lock = _getPixmap(QSanRoomSkin::S_SKIN_KEY_DISABLE_SHOW_LOCK);
+    _paintPixmap(leftDisableShowLock, _m_layout->leftDisableShowLockArea,
+                 lock, _getAvatarParent());
+    _paintPixmap(rightDisableShowLock, _m_layout->rightDisableShowLockArea,
+                 lock, _getAvatarParent());
+
     _adjustComponentZValues();
+    _initializeRemovedEffect();
     refresh();
 }
 
@@ -482,19 +577,25 @@ void PlayerCardContainer::setPlayer(ClientPlayer *player) {
         connect(player, SIGNAL(pile_changed(QString)), this, SLOT(updatePile(QString)));
         connect(player, SIGNAL(kingdom_changed(QString)), _m_roleComboBox, SLOT(fix(QString)));
         connect(player, SIGNAL(hp_changed()), this, SLOT(updateHp()));
+        connect(player, SIGNAL(disable_show_changed()), this, SLOT(refresh()));
+        connect(player, SIGNAL(removedChanged()), this, SLOT(onRemovedChanged()));
 
         QTextDocument *textDoc = m_player->getMarkDoc();
         Q_ASSERT(_m_markItem);
         _m_markItem->setDocument(textDoc);
         connect(textDoc, SIGNAL(contentsChanged()), this, SLOT(updateMarks()));
+        connect(player, SIGNAL(headSkinIdChanged(QString)),
+                _m_avatarIcon, SLOT(startChangeHeroSkinAnimation(const QString &)));
+        connect(player, SIGNAL(deputySkinIdChanged(QString)),
+                _m_smallAvatarIcon, SLOT(startChangeHeroSkinAnimation(const QString &)));
     }
     updateAvatar();
     refresh();
 }
 
- QList<CardItem *> PlayerCardContainer::removeDelayedTricks(const QList<int> &cardIds) {
+QList<CardItem *> PlayerCardContainer::removeDelayedTricks(const QList<int> &cardIds) {
     QList<CardItem *> result;
-    foreach (int card_id, cardIds) {
+    foreach(int card_id, cardIds) {
         CardItem *item = CardItem::FindItem(_m_judgeCards, card_id);
         Q_ASSERT(item != NULL);
         int index = _m_judgeCards.indexOf(item);
@@ -509,10 +610,10 @@ void PlayerCardContainer::setPlayer(ClientPlayer *player) {
     }
     updateDelayedTricks();
     return result;
- }
+}
 
 void PlayerCardContainer::updateDelayedTricks() {
-     for (int i = 0; i < _m_judgeIcons.size(); i++) {
+    for (int i = 0; i < _m_judgeIcons.size(); i++) {
         QGraphicsPixmapItem *item = _m_judgeIcons[i];
         QRect start = _m_layout->m_delayedTrickFirstRegion;
         QPoint step = _m_layout->m_delayedTrickStep;
@@ -522,7 +623,7 @@ void PlayerCardContainer::updateDelayedTricks() {
 }
 
 void PlayerCardContainer::addDelayedTricks(QList<CardItem *> &tricks) {
-    foreach (CardItem *trick, tricks) {
+    foreach(CardItem *trick, tricks) {
         QGraphicsPixmapItem *item = new QGraphicsPixmapItem(_getDelayedTrickParent());
         QRect start = _m_layout->m_delayedTrickFirstRegion;
         QPoint step = _m_layout->m_delayedTrickStep;
@@ -530,11 +631,14 @@ void PlayerCardContainer::addDelayedTricks(QList<CardItem *> &tricks) {
         _paintPixmap(item, start, G_ROOM_SKIN.getCardJudgeIconPixmap(trick->getCard()->objectName()));
         trick->setHomeOpacity(0.0);
         trick->setHomePos(start.center());
-        const Card *card = Sanguosha->getEngineCard(trick->getCard()->getEffectiveId());
-        QString toolTip = QString("<font color=%1><b>%2 [</b><img src='image/system/log/%3.png' height = 12/><b>%4]</b></font>").arg(Config.SkillDescriptionInToolTipColor.name())
-                                  .arg(Sanguosha->translate(card->objectName()))
-                                  .arg(card->getSuitString())
-                                  .arg(card->getNumberString());
+        const Card *card = trick->getCard();
+        const Card *realCard = Sanguosha->getEngineCard(card->getEffectiveId());
+        QString toolTip = QString("<font color=%1><b>%2 [</b><img src='image/system/log/%3.png' height=12/><b>%4]</b></font><br />%5")
+            .arg(Config.SkillDescriptionInToolTipColor.name())
+            .arg(Sanguosha->translate(realCard->objectName()))
+            .arg(realCard->getSuitString())
+            .arg(realCard->getNumberString())
+            .arg(card->getDescription());
         item->setToolTip(toolTip);
         _m_judgeCards.append(trick);
         _m_judgeIcons.append(item);
@@ -547,42 +651,23 @@ QPixmap PlayerCardContainer::_getEquipPixmap(const EquipCard *equip) {
     equipIcon.fill(Qt::transparent);
     QPainter painter(&equipIcon);
     // icon / background
-    painter.drawPixmap(_m_layout->m_equipImageArea, _getPixmap(QSanRoomSkin::S_SKIN_KEY_EQUIP_ICON, equip->objectName()));
-    // equip name
-    _m_layout->m_equipFont.paintText(&painter,
-                                     _m_layout->m_equipTextArea,
-                                     Qt::AlignLeft | Qt::AlignCenter,
-                                     Sanguosha->translate(equip->objectName()));
+    QRect imageArea = _m_layout->m_equipImageArea;
+    if (equip->isKindOf("Horse"))
+        imageArea = _m_layout->m_horseImageArea;
+    painter.drawPixmap(imageArea, _getPixmap(QSanRoomSkin::S_SKIN_KEY_EQUIP_ICON, equip->objectName()));
     // equip suit
-    painter.drawPixmap(_m_layout->m_equipSuitArea, G_ROOM_SKIN.getCardSuitPixmap(realCard->getSuit()));
+    QRect suitArea = _m_layout->m_equipSuitArea;
+    if (equip->isKindOf("Horse"))
+        suitArea = _m_layout->m_horseSuitArea;
+    painter.drawPixmap(suitArea, G_ROOM_SKIN.getCardSuitPixmap(realCard->getSuit()));
     // equip point
+    QRect pointArea = _m_layout->m_equipPointArea;
+    if (equip->isKindOf("Horse"))
+        pointArea = _m_layout->m_horsePointArea;
     _m_layout->m_equipPointFont.paintText(&painter,
-                                          _m_layout->m_equipPointArea,
+                                          pointArea,
                                           Qt::AlignLeft | Qt::AlignVCenter,
                                           realCard->getNumberString());
-    // distance
-    int index = (int)(equip->location());
-    QString distance;
-    if (index == 0) {
-        const Weapon *weapon = qobject_cast<const Weapon *>(equip);
-        Q_ASSERT(weapon);
-        if (weapon)
-            distance = Sanguosha->translate(QString("CAPITAL(%1)").arg(QString::number(weapon->getRange())));
-    } else if (index == 2) {
-        const DefensiveHorse *horse = qobject_cast<const DefensiveHorse *>(equip);
-        Q_ASSERT(horse);
-        if (horse) distance = QString("+%1").arg(QString::number(horse->getCorrect()));
-    } else if (index == 3) {
-        const OffensiveHorse *horse = qobject_cast<const OffensiveHorse *>(equip);
-        Q_ASSERT(horse);
-        if (horse) distance = QString::number(horse->getCorrect());
-    }
-    if (index != 1) {
-        _m_layout->m_equipFont.paintText(&painter,
-                                         _m_layout->m_equipDistanceArea,
-                                         Qt::AlignLeft | Qt::AlignVCenter,
-                                         distance);
-    }
     return equipIcon;
 }
 
@@ -598,7 +683,7 @@ void PlayerCardContainer::setFloatingArea(QRect rect) {
 }
 
 void PlayerCardContainer::addEquips(QList<CardItem *> &equips) {
-    foreach (CardItem *equip, equips) {
+    foreach(CardItem *equip, equips) {
         const EquipCard *equip_card = qobject_cast<const EquipCard *>(equip->getCard()->getRealCard());
         int index = (int)(equip_card->location());
         Q_ASSERT(_m_equipCards[index] == NULL);
@@ -612,31 +697,26 @@ void PlayerCardContainer::addEquips(QList<CardItem *> &equips) {
 
         _mutexEquipAnim.lock();
         _m_equipRegions[index]->setPos(_m_layout->m_equipAreas[index].topLeft()
-                                       + QPoint(_m_layout->m_equipAreas[index].width() / 2, 0));
+            + QPoint(_m_layout->m_equipAreas[index].width() / 2, 0));
         _m_equipRegions[index]->setOpacity(0);
-        _m_equipRegions[index]->show();
         _m_equipAnim[index]->stop();
         _m_equipAnim[index]->clear();
-        QPropertyAnimation *anim = new QPropertyAnimation(_m_equipRegions[index], "pos");
+        QPropertyAnimation *anim = new QPropertyAnimation(_m_equipRegions[index], "pos", this);
         anim->setEndValue(_m_layout->m_equipAreas[index].topLeft());
         anim->setDuration(200);
         _m_equipAnim[index]->addAnimation(anim);
-        anim = new QPropertyAnimation(_m_equipRegions[index], "opacity");
+        anim = new QPropertyAnimation(_m_equipRegions[index], "opacity", this);
         anim->setEndValue(255);
         anim->setDuration(200);
         _m_equipAnim[index]->addAnimation(anim);
         _m_equipAnim[index]->start();
         _mutexEquipAnim.unlock();
-
-        const Skill *skill = Sanguosha->getSkill(equip_card->objectName());
-        if (skill == NULL) continue;
-        emit add_equip_skill(skill, true);
     }
 }
 
 QList<CardItem *> PlayerCardContainer::removeEquips(const QList<int> &cardIds) {
     QList<CardItem *> result;
-    foreach (int card_id, cardIds) {
+    foreach(int card_id, cardIds) {
         const EquipCard *equip_card = qobject_cast<const EquipCard *>(Sanguosha->getEngineCard(card_id));
         int index = (int)(equip_card->location());
         Q_ASSERT(_m_equipCards[index] != NULL);
@@ -648,23 +728,20 @@ QList<CardItem *> PlayerCardContainer::removeEquips(const QList<int> &cardIds) {
         _mutexEquipAnim.lock();
         _m_equipAnim[index]->stop();
         _m_equipAnim[index]->clear();
-        QPropertyAnimation *anim = new QPropertyAnimation(_m_equipRegions[index], "pos");
+        QPropertyAnimation *anim = new QPropertyAnimation(_m_equipRegions[index], "pos", this);
         anim->setEndValue(_m_layout->m_equipAreas[index].topLeft()
-                          + QPoint(_m_layout->m_equipAreas[index].width() / 2, 0));
+            + QPoint(_m_layout->m_equipAreas[index].width() / 2, 0));
         anim->setDuration(200);
         _m_equipAnim[index]->addAnimation(anim);
-        anim = new QPropertyAnimation(_m_equipRegions[index], "opacity");
+        anim = new QPropertyAnimation(_m_equipRegions[index], "opacity", this);
         anim->setEndValue(0);
         anim->setDuration(200);
         _m_equipAnim[index]->addAnimation(anim);
         _m_equipAnim[index]->start();
         _mutexEquipAnim.unlock();
-
-        const Skill *skill = Sanguosha->getSkill(equip_card->objectName());
-        if (skill != NULL) emit remove_equip_skill(skill->objectName());
     }
     return result;
- }
+}
 
 void PlayerCardContainer::updateAvatarTooltip() {
     if (m_player) {
@@ -677,7 +754,8 @@ PlayerCardContainer::PlayerCardContainer() {
     _m_layout = NULL;
     _m_avatarArea = _m_secondaryAvatarArea = NULL;
     _m_avatarNameItem = _m_secondaryAvatarNameItem = NULL;
-    _m_avatarIcon = _m_smallAvatarIcon = _m_circleItem = NULL;
+    _m_avatarIcon = _m_smallAvatarIcon = NULL;
+    _m_circleItem = NULL;
     _m_screenNameItem = NULL;
     _m_chainIcon = NULL;
     _m_duanchangMask = _m_duanchangMask2 = NULL;
@@ -693,7 +771,9 @@ PlayerCardContainer::PlayerCardContainer() {
     m_player = NULL;
     _m_selectedFrame = _m_selectedFrame2 = NULL;
 
-    for (int i = 0; i < 4; i++) {
+    leftDisableShowLock = rightDisableShowLock = NULL;
+
+    for (int i = 0; i < S_EQUIP_AREA_LENGTH; i++) {
         _m_equipCards[i] = NULL;
         _m_equipRegions[i] = NULL;
         _m_equipAnim[i] = NULL;
@@ -724,7 +804,7 @@ void PlayerCardContainer::hideAvatars() {
 
 void PlayerCardContainer::_layUnder(QGraphicsItem *item) {
     _lastZ--;
-    Q_ASSERT((unsigned long)item != 0xcdcdcdcd);
+    //Q_ASSERT((unsigned long)item != 0xcdcdcdcd);
     if (item)
         item->setZValue(_lastZ--);
     else
@@ -755,28 +835,30 @@ void PlayerCardContainer::_adjustComponentZValues() {
     _layUnder(_m_floatingArea);
     _layUnder(_m_distanceItem);
     _layUnder(_m_votesItem);
-    foreach (QGraphicsItem *pile, _m_privatePiles.values())
+    foreach (QGraphicsItem *pile, _m_privatePiles)
         _layUnder(pile);
-    foreach (QGraphicsItem *judge, _m_judgeIcons)
+    foreach(QGraphicsItem *judge, _m_judgeIcons)
         _layUnder(judge);
     _layUnder(_m_markItem);
     _layUnder(_m_progressBarItem);
     _layUnder(_m_roleComboBox);
+    _layUnder(_m_saveMeIcon);
+    _layUnder(_m_secondaryAvatarNameItem);
+    _layUnder(_m_avatarNameItem);
+    _layUnder(_m_kingdomColorMaskIcon);
+    _layUnder(_m_kingdomColorMaskIcon2);
+    _layUnder(leftDisableShowLock);
+    _layUnder(rightDisableShowLock);
     //it's meaningless to judge which icon should be on top
     _layUnder(_m_chainIcon);
     _layUnder(_m_hpBox);
     _layUnder(_m_handCardNumText);
     _layUnder(_m_handCardBg);
     _layUnder(_m_actionIcon);
-    _layUnder(_m_saveMeIcon);
     _layUnder(_m_phaseIcon);
-    _layUnder(_m_secondaryAvatarNameItem);
-    _layUnder(_m_avatarNameItem);
     _layUnder(_m_kingdomIcon);
-    _layUnder(_m_kingdomColorMaskIcon);
-    _layUnder(_m_kingdomColorMaskIcon2);
     _layUnder(_m_screenNameItem);
-    for (int i = 0; i < 4; i++)
+    for (int i = 0; i < S_EQUIP_AREA_LENGTH; i++)
         _layUnder(_m_equipRegions[i]);
     _layUnder(_m_selectedFrame2);
     _layUnder(_m_selectedFrame);
@@ -828,7 +910,7 @@ void PlayerCardContainer::_createControls() {
 
     _m_hpBox = new MagatamasBoxItem(_getAvatarParent());
 
-     // Now set up progress bar
+    // Now set up progress bar
     _m_progressBar = new QSanCommandProgressBar;
     _m_progressBar->setAutoHide(true);
     _m_progressBar->hide();
@@ -836,7 +918,7 @@ void PlayerCardContainer::_createControls() {
     _m_progressBarItem->setWidget(_m_progressBar);
     _updateProgressBar();
 
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < S_EQUIP_AREA_LENGTH; i++) {
         _m_equipLabel[i] = new QLabel;
         _m_equipLabel[i]->setStyleSheet("QLabel { background-color: transparent; }");
         _m_equipLabel[i]->setPixmap(QPixmap(_m_layout->m_equipAreas[i].size()));
@@ -844,8 +926,8 @@ void PlayerCardContainer::_createControls() {
         _m_equipRegions[i]->setWidget(_m_equipLabel[i]);
         _m_equipRegions[i]->setPos(_m_layout->m_equipAreas[i].topLeft());
         _m_equipRegions[i]->setParentItem(_getEquipParent());
-        _m_equipRegions[i]->hide();
-        _m_equipAnim[i] = new QParallelAnimationGroup;
+        _m_equipRegions[i]->setOpacity(0.0);
+        _m_equipAnim[i] = new QParallelAnimationGroup(this);
     }
 
     _m_markItem = new QGraphicsTextItem(_getMarkParent());
@@ -859,7 +941,7 @@ void PlayerCardContainer::_updateDeathIcon() {
     if (!m_player || !m_player->isDead()) return;
     QRect deathArea = _m_layout->m_deathIconRegion.getTranslatedRect(_getDeathIconParent()->boundingRect().toRect());
     _paintPixmap(_m_deathIcon, deathArea,
-                 QPixmap(m_player->getDeathPixmapPath()), _getDeathIconParent());
+        QPixmap(m_player->getDeathPixmapPath()), _getDeathIconParent());
     _m_deathIcon->setZValue(30000.0);
 }
 
@@ -894,8 +976,8 @@ void PlayerCardContainer::updateVotes(bool need_select, bool display_1) {
         _clearPixmap(_m_votesItem);
     else {
         _paintPixmap(_m_votesItem, _m_layout->m_votesIconRegion,
-                     _getPixmap(QSanRoomSkin::S_SKIN_KEY_VOTES_NUMBER, QString::number(_m_votesGot)),
-                     _getAvatarParent());
+            _getPixmap(QSanRoomSkin::S_SKIN_KEY_VOTES_NUMBER, QString::number(_m_votesGot)),
+            _getAvatarParent());
         _m_votesItem->setZValue(1);
         _m_votesItem->show();
     }
@@ -907,29 +989,48 @@ void PlayerCardContainer::updateReformState() {
 }
 
 void PlayerCardContainer::showDistance() {
-    bool isNull = (_m_distanceItem == NULL);
-    _paintPixmap(_m_distanceItem, _m_layout->m_votesIconRegion,
-                 _getPixmap(QSanRoomSkin::S_SKIN_KEY_VOTES_NUMBER, QString::number(Self->distanceTo(m_player))),
-                 _getAvatarParent());
-    _m_distanceItem->setZValue(1.1);
-    if (!Self->inMyAttackRange(m_player)) {
-        QGraphicsColorizeEffect *effect = new QGraphicsColorizeEffect();
-        effect->setColor(_m_layout->m_deathEffectColor);
-        effect->setStrength(1.0);
-        _m_distanceItem->setGraphicsEffect(effect);
+    int dis = Self->distanceTo(m_player);
+    if (dis > 0) {
+        _paintPixmap(_m_distanceItem, _m_layout->m_votesIconRegion,
+            _getPixmap(QSanRoomSkin::S_SKIN_KEY_VOTES_NUMBER, QString::number(dis)),
+            _getAvatarParent());
+        _m_distanceItem->setZValue(1.1);
+        if (!Self->inMyAttackRange(m_player)) {
+            QGraphicsColorizeEffect *effect = new QGraphicsColorizeEffect();
+            effect->setColor(_m_layout->m_deathEffectColor);
+            effect->setStrength(1.0);
+            _m_distanceItem->setGraphicsEffect(effect);
+        } else {
+            _m_distanceItem->setGraphicsEffect(NULL);
+        }
     } else {
-        _m_distanceItem->setGraphicsEffect(NULL);
+        delete _m_distanceItem;
+        _m_distanceItem = NULL;
     }
-    if (_m_distanceItem->isVisible() && !isNull)
-        _m_distanceItem->hide();
-    else
+    if (!_m_distanceItem)
+        return;
+    if (!_m_distanceItem->isVisible())
         _m_distanceItem->show();
+}
+
+void PlayerCardContainer::hideDistance() {
+    if (_m_distanceItem && _m_distanceItem->isVisible())
+        _m_distanceItem->hide();
+}
+
+void PlayerCardContainer::onRemovedChanged()
+{
+    QAbstractAnimation::Direction direction = m_player->isRemoved() ? QAbstractAnimation::Forward
+                                                                    : QAbstractAnimation::Backward;
+
+    _getPlayerRemovedEffect()->setDirection(direction);
+    _getPlayerRemovedEffect()->start();
 }
 
 void PlayerCardContainer::showSeat() {
     _paintPixmap(_m_seatItem, _m_layout->m_seatIconRegion,
-                 _getPixmap(QSanRoomSkin::S_SKIN_KEY_SEAT_NUMBER, QString::number(m_player->getSeat())),
-                 _getAvatarParent());
+        _getPixmap(QSanRoomSkin::S_SKIN_KEY_SEAT_NUMBER, QString::number(m_player->getSeat())),
+        _getAvatarParent());
     //save the seat number for later use
     m_player->setProperty("UI_Seat", m_player->getSeat());
     _m_seatItem->setZValue(1.1);
@@ -937,7 +1038,7 @@ void PlayerCardContainer::showSeat() {
 
 bool PlayerCardContainer::_isSelected(QGraphicsItem *item) const {
     return item != NULL && item->isUnderMouse() && isEnabled() &&
-           (flags() & QGraphicsItem::ItemIsSelectable);
+        (flags() & QGraphicsItem::ItemIsSelectable);
 }
 
 void PlayerCardContainer::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
@@ -971,16 +1072,16 @@ QVariant PlayerCardContainer::itemChange(GraphicsItemChange change, const QVaria
                 _m_selectedFrame2->hide();
             }
         } else {
-             _paintPixmap(_m_selectedFrame, _m_layout->m_focusFrameArea,
-                          _getPixmap(QSanRoomSkin::S_SKIN_KEY_SELECTED_FRAME),
-                          _getFocusFrameParent());
-             _m_selectedFrame->show();
-             if (getMouseClickReceiver2()) {
-                 _paintPixmap(_m_selectedFrame2, _m_layout->m_focusFrameArea2,
-                          _getPixmap(QSanRoomSkin::S_SKIN_KEY_SELECTED_FRAME),
-                          _getFocusFrameParent());
+            _paintPixmap(_m_selectedFrame, _m_layout->m_focusFrameArea,
+                _getPixmap(QSanRoomSkin::S_SKIN_KEY_SELECTED_FRAME),
+                _getFocusFrameParent());
+            _m_selectedFrame->show();
+            if (getMouseClickReceiver2()) {
+                _paintPixmap(_m_selectedFrame2, _m_layout->m_focusFrameArea2,
+                    _getPixmap(QSanRoomSkin::S_SKIN_KEY_SELECTED_FRAME),
+                    _getFocusFrameParent());
                 _m_selectedFrame2->show();
-             }
+            }
         }
         updateVotes();
         emit selected_changed();
@@ -993,5 +1094,15 @@ QVariant PlayerCardContainer::itemChange(GraphicsItemChange change, const QVaria
 }
 
 void PlayerCardContainer::_onEquipSelectChanged() {
+}
+
+void PlayerCardContainer::stopHeroSkinChangingAnimation()
+{
+    if ((NULL != _m_avatarIcon) && !_m_avatarIcon->isSkinChangingFinished()) {
+        _m_avatarIcon->stopChangeHeroSkinAnimation();
+    }
+    if ((NULL != _m_smallAvatarIcon) && !_m_smallAvatarIcon->isSkinChangingFinished()) {
+        _m_smallAvatarIcon->stopChangeHeroSkinAnimation();
+    }
 }
 

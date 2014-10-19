@@ -1,24 +1,41 @@
+/********************************************************************
+    Copyright (c) 2013-2014 - QSanguosha-Rara
+
+    This file is part of QSanguosha-Hegemony.
+
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    See the LICENSE file for more details.
+
+    QSanguosha-Rara
+    *********************************************************************/
+
 #ifndef CARDEDITOR_H
 #define CARDEDITOR_H
 
-#include <QDialog>
-#include <QGraphicsView>
-#include <QGroupBox>
-#include <QLineEdit>
-#include <QComboBox>
-#include <QCheckBox>
-#include <QSpinBox>
-#include <QTabWidget>
-#include <QGraphicsPixmapItem>
-#include <QFontDatabase>
-#include <QTextEdit>
-#include <QHBoxLayout>
+#include <QGraphicsObject>
 #include <QMainWindow>
-#include <QFontDialog>
+#include <QGraphicsScene>
 
 class QSanSelectableItem;
+class SkillTitle;
+class CompanionBox;
+class QCheckBox;
+class QComboBox;
+class QSpinBox;
+class QFontDialog;
+class QGroupBox;
+class QPushButton;
 
-class BlackEdgeTextItem: public QGraphicsObject{
+class BlackEdgeTextItem : public QGraphicsObject{
     Q_OBJECT
 
 public:
@@ -45,7 +62,7 @@ private:
     int outline;
 };
 
-class AATextItem: public QGraphicsTextItem{
+class AATextItem : public QGraphicsTextItem{
 public:
     AATextItem(const QString &text, QGraphicsItem *parent);
 
@@ -53,15 +70,13 @@ protected:
     virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
 };
 
-class SkillTitle;
-
-class SkillBox: public QGraphicsObject{
+class SkillBox : public QGraphicsObject{
     Q_OBJECT
 
 public:
     SkillBox();
     void setKingdom(const QString &kingdom);
-    void setMiddleHeight(int height);
+
     void setTextEditable(bool editable);
     void addSkill(const QString &text);
     SkillTitle *getFocusTitle() const;
@@ -80,20 +95,15 @@ public slots:
 
 protected:
     virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
-    virtual void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
-    virtual void mousePressEvent(QGraphicsSceneMouseEvent *event);
-    virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
 
 private:
-    int middle_height;
-    QPixmap up, middle, down;
     QString kingdom;
     QList<SkillTitle *> skill_titles;
-    QGraphicsTextItem *skill_description;
-    QGraphicsTextItem *copyright_text;
+    AATextItem *skill_description;
+    AATextItem *copyright_text;
 };
 
-class AvatarRectItem: public QGraphicsRectItem{
+class AvatarRectItem : public QGraphicsRectItem {
 public:
     AvatarRectItem(qreal width, qreal height, const QRectF &box_rect, int font_size);
     void toCenter(QGraphicsScene *scene);
@@ -105,17 +115,18 @@ private:
     BlackEdgeTextItem *name;
 };
 
-class CardScene: public QGraphicsScene{
+class CardScene : public QGraphicsScene {
     Q_OBJECT
 
 public:
     explicit CardScene();
 
-    void setFrame(const QString &kingdom);
+    void setFrame(const QString &kingdom, bool is_lord);
     void setGeneralPhoto(const QString &filename);
     BlackEdgeTextItem *getNameItem() const;
     BlackEdgeTextItem *getTitleItem() const;
-    SkillBox *getSkillBox() const;
+    inline SkillBox *getSkillBox() const { return skill_box; }
+    inline CompanionBox *getCompanionBox() const { return companion_box; }
     void saveConfig();
     void loadConfig();
     void setMenu(QMenu *menu);
@@ -123,6 +134,7 @@ public:
 public slots:
     void setRatio(int ratio);
     void setMaxHp(int max_hp);
+    void setTransMaxHp(int trans_max_hp);
     void makeBigAvatar();
     void makeSmallAvatar();
     void makeTinyAvatar();
@@ -130,6 +142,9 @@ public slots:
     void hideAvatarRects();
     void setAvatarNameBox(const QString &text);
     void resetPhoto();
+    void setCompanion(const QString &text);
+    void setCompanionFont(const QFont &font);
+    void setCompanionVisible(bool visible);
 
 protected:
     virtual void contextMenuEvent(QGraphicsSceneContextMenuEvent *event);
@@ -148,7 +163,12 @@ private:
     AvatarRectItem *big_avatar_rect, *small_avatar_rect, *tiny_avatar_rect;
     QMenu *menu, *done_menu;
 
+    CompanionBox *companion_box;
+
+    int max_hp, trans_max_hp;
+
     void makeAvatar(AvatarRectItem *item);
+    void _redrawTransMaxHp();
 
 signals:
     void avatar_snapped(const QRectF &rect);
@@ -163,17 +183,19 @@ public:
 
 private:
     CardScene *card_scene;
+    QCheckBox *lord_checkbox;
     QComboBox *kingdom_ComboBox;
     QSpinBox *ratio_spinbox;
     QMap<QFontDialog *, QPushButton *> dialog2button;
 
     QWidget *createLeft();
+    QWidget *createMiddle();
     QGroupBox *createTextItemBox(const QString &text,
-                                 const QFont &font,
-                                 int skip,
-                                 BlackEdgeTextItem *item
-                                 );
-    QLayout *createGeneralLayout();
+        const QFont &font,
+        int skip,
+        BlackEdgeTextItem *item
+        );
+    QWidget *createPropertiesBox();
     QWidget *createSkillBox();
 
 protected:

@@ -1,3 +1,23 @@
+/********************************************************************
+    Copyright (c) 2013-2014 - QSanguosha-Rara
+
+    This file is part of QSanguosha-Hegemony.
+
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    See the LICENSE file for more details.
+
+    QSanguosha-Rara
+    *********************************************************************/
+
 #ifndef _RECORD_ANALYSIS_H
 #define _RECORD_ANALYSIS_H
 
@@ -9,11 +29,12 @@
 
 struct PlayerRecordStruct;
 
-class RecAnalysis: public QObject {
+class RecAnalysis : public QObject {
     Q_OBJECT
 
 public:
-    explicit RecAnalysis(QString dir = QString());
+    explicit RecAnalysis(const QString &dir = QString());
+    ~RecAnalysis();
 
     static const unsigned int M_ALL_PLAYER = 0xFFFF;
     enum DesignationType {
@@ -32,7 +53,7 @@ public:
         ZeroDamaged = 0x800
     };
 
-    void initialize(QString dir = QString());
+    void initialize(const QString &dir = QString());
     PlayerRecordStruct *getPlayerRecord(const Player *player) const;
     QMap<QString, PlayerRecordStruct *> getRecordMap() const;
     QStringList getRecordPackages() const;
@@ -43,25 +64,25 @@ public:
 
     void setDesignation();
     void addDesignation(const QString &designation,
-                        unsigned long designation_union,
-                        unsigned int data_requirement = M_ALL_PLAYER,
-                        bool custom_condition = true,
-                        const QString &addition_option_role = QString(),
-                        bool need_alive = false,
-                        bool need_dead = false,
-                        bool need_win = false, bool need_lose = false);
+        unsigned long designation_union,
+        unsigned int data_requirement = M_ALL_PLAYER,
+        bool custom_condition = true,
+        const QString &addition_option_role = QString(),
+        bool need_alive = false,
+        bool need_dead = false,
+        bool need_win = false, bool need_lose = false);
     void initialDesignation();
 
 private:
     PlayerRecordStruct *getPlayer(QString object_name, const QString &addition_name = QString());
-    const unsigned int findPlayerOfDamage(int n) const;
-    const unsigned int findPlayerOfDamaged(int n) const;
-    const unsigned int findPlayerOfKills(int n) const;
-    const unsigned int findPlayerOfRecover(int n) const;
-    const unsigned int findPlayerOfDamage(int upper, int lower) const;
-    const unsigned int findPlayerOfDamaged(int upper, int lower) const;
-    const unsigned int findPlayerOfKills(int upper, int lower) const;
-    const unsigned int findPlayerOfRecover(int upper, int lower) const;
+    unsigned int findPlayerOfDamage(int n) const;
+    unsigned int findPlayerOfDamaged(int n) const;
+    unsigned int findPlayerOfKills(int n) const;
+    unsigned int findPlayerOfRecover(int n) const;
+    unsigned int findPlayerOfDamage(int upper, int lower) const;
+    unsigned int findPlayerOfDamaged(int upper, int lower) const;
+    unsigned int findPlayerOfKills(int upper, int lower) const;
+    unsigned int findPlayerOfRecover(int upper, int lower) const;
 
     QMap<QString, PlayerRecordStruct *> m_recordMap;
     QStringList m_recordPackages, m_recordWinners;

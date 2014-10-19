@@ -1,27 +1,29 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Hegemony Team
+    Copyright (c) 2013-2014 - QSanguosha-Rara
 
-  This file is part of QSanguosha-Hegemony.
+    This file is part of QSanguosha-Hegemony.
 
-  This game is free software; you can redistribute it and/or
-  modify it under the terms of the GNU Lesser General Public
-  License as published by the Free Software Foundation; either
-  version 3.0 of the License, or (at your option) any later version.
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
 
-  This program is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-  Lesser General Public License for more details.
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
 
-  See the LICENSE file for more details.
+    See the LICENSE file for more details.
 
-  QSanguosha-Hegemony Team
-*********************************************************************/
+    QSanguosha-Rara
+    *********************************************************************/
+
 #include "clientplayer.h"
 #include "skill.h"
 #include "client.h"
 #include "engine.h"
 #include "standard.h"
+#include "settings.h"
 
 #include <QTextDocument>
 #include <QTextOption>
@@ -34,8 +36,16 @@ ClientPlayer::ClientPlayer(Client *client)
     mark_doc = new QTextDocument(this);
 }
 
-int ClientPlayer::aliveCount() const{
-    return ClientInstance->alivePlayerCount();
+int ClientPlayer::aliveCount(bool includeRemoved) const{
+    int n = ClientInstance->alivePlayerCount();
+    if (!includeRemoved) {
+        if (isRemoved())
+            n--;
+        foreach (const Player *p, getAliveSiblings())
+            if (p->isRemoved())
+                n--;
+    }
+    return n;
 }
 
 int ClientPlayer::getHandcardNum() const{
@@ -45,21 +55,21 @@ int ClientPlayer::getHandcardNum() const{
 void ClientPlayer::addCard(const Card *card, Place place) {
     switch (place) {
     case PlaceHand: {
-            if (card) known_cards << card;
-            handcard_num++;
-            break;
-        }
+        if (card) known_cards << card;
+        handcard_num++;
+        break;
+    }
     case PlaceEquip: {
-            WrappedCard *equip = Sanguosha->getWrappedCard(card->getEffectiveId());
-            setEquip(equip);
-            break;
-        }
+        WrappedCard *equip = Sanguosha->getWrappedCard(card->getEffectiveId());
+        setEquip(equip);
+        break;
+    }
     case PlaceDelayedTrick: {
-            addDelayedTrick(card);
-            break;
-        }
+        addDelayedTrick(card);
+        break;
+    }
     default:
-            break;
+        break;
     }
 }
 
@@ -73,15 +83,17 @@ bool ClientPlayer::isLastHandCard(const Card *card, bool contain) const{
         if (known_cards.length() != 1)
             return false;
         return known_cards.first()->getId() == card->getEffectiveId();
-    } else if (card->getSubcards().length() > 0) {
+    }
+    else if (card->getSubcards().length() > 0) {
         if (!contain) {
-            foreach (int card_id, card->getSubcards()) {
+            foreach(int card_id, card->getSubcards()) {
                 if (!known_cards.contains(Sanguosha->getCard(card_id)))
                     return false;
             }
             return known_cards.length() == card->getSubcards().length();
-        } else {
-            foreach (const Card *ncard, known_cards) {
+        }
+        else {
+            foreach(const Card *ncard, known_cards) {
                 if (!card->getSubcards().contains(ncard->getEffectiveId()))
                     return false;
             }
@@ -94,22 +106,22 @@ bool ClientPlayer::isLastHandCard(const Card *card, bool contain) const{
 void ClientPlayer::removeCard(const Card *card, Place place) {
     switch (place) {
     case PlaceHand: {
-            handcard_num--;
-            if (card)
-                known_cards.removeOne(card);
-            break;
-        }
+        handcard_num--;
+        if (card)
+            known_cards.removeOne(card);
+        break;
+    }
     case PlaceEquip:{
-            WrappedCard *equip = Sanguosha->getWrappedCard(card->getEffectiveId());
-            removeEquip(equip);
-            break;
-        }
+        WrappedCard *equip = Sanguosha->getWrappedCard(card->getEffectiveId());
+        removeEquip(equip);
+        break;
+    }
     case PlaceDelayedTrick:{
-            removeDelayedTrick(card);
-            break;
-        }
+        removeDelayedTrick(card);
+        break;
+    }
     default:
-            break;
+        break;
     }
 }
 
@@ -119,7 +131,7 @@ QList<const Card *> ClientPlayer::getHandcards() const{
 
 void ClientPlayer::setCards(const QList<int> &card_ids) {
     known_cards.clear();
-    foreach (int cardId, card_ids)
+    foreach(int cardId, card_ids)
         known_cards.append(Sanguosha->getCard(cardId));
 }
 
@@ -127,11 +139,22 @@ QTextDocument *ClientPlayer::getMarkDoc() const{
     return mark_doc;
 }
 
+static bool compareByNumber(int c1, int c2){
+    const Card *card1 = Sanguosha->getCard(c1);
+    const Card *card2 = Sanguosha->getCard(c2);
+
+    return card1->getNumber() < card2->getNumber();
+}
+
 void ClientPlayer::changePile(const QString &name, bool add, QList<int> card_ids) {
-    if (add)
+    if (add){
         piles[name].append(card_ids);
-    else
-        foreach (int card_id, card_ids) {
+        if (name == "buqu"){
+            qSort(piles["buqu"].begin(), piles["buqu"].end(), compareByNumber);
+        }
+    }
+    else {
+        foreach(int card_id, card_ids) {
             if (piles[name].isEmpty()) break;
             if (piles[name].contains(Card::S_UNKNOWN_CARD_ID) && !piles[name].contains(card_id))
                 piles[name].removeOne(Card::S_UNKNOWN_CARD_ID);
@@ -140,7 +163,7 @@ void ClientPlayer::changePile(const QString &name, bool add, QList<int> card_ids
             else
                 piles[name].takeLast();
         }
-
+    }
     if (!name.startsWith("#"))
         emit pile_changed(name);
 }
@@ -192,12 +215,13 @@ void ClientPlayer::setMark(const QString &mark, int value) {
         itor.next();
 
         if (itor.key().startsWith("@") && itor.value() > 0) {
-#define _EXCLUDE_MARK(markname) {\
-                                    if (itor.key() == QString("@%1").arg(#markname)) {\
-                                        markname##_mark = itor.value();\
-                                        continue;\
-                                    }\
-                                }
+#define _EXCLUDE_MARK(markname) \
+                { \
+            if (itor.key() == QString("@%1").arg(#markname)) { \
+                markname##_mark = itor.value(); \
+                continue; \
+                        } \
+                }
 
             _EXCLUDE_MARK(yongsi_test)
             _EXCLUDE_MARK(jushou_test)
@@ -215,20 +239,22 @@ void ClientPlayer::setMark(const QString &mark, int value) {
     }
 
     // keep these marks at a certain place
-#define _SET_MARK(markname) {\
-                                if (markname##_mark > 0) {\
-                                    QString mark_text = QString("<img src='image/mark/test/@%1.png' />").arg(#markname);\
-                                    if (markname##_mark != 1) {\
-                                        mark_text.append(QString("%1").arg(markname##_mark));\
-                                    }\
-                                    if (this != Self) {\
-                                        mark_text.append("<br>");\
-                                        text.prepend(mark_text);\
-                                    } else {\
-                                       text.append(mark_text);\
-                                    }\
-                                }\
-                            }
+#define _SET_MARK(markname) \
+                {\
+        if (markname##_mark > 0) { \
+            QString mark_text = QString("<img src='image/mark/test/@%1.png' />").arg(#markname); \
+            if (markname##_mark != 1) { \
+                    mark_text.append(QString("%1").arg(markname##_mark)); \
+                                                } \
+            if (this != Self) { \
+                mark_text.append("<br>"); \
+                text.prepend(mark_text); \
+                                                } \
+                        else { \
+                    text.append(mark_text); \
+                        }\
+                                } \
+                }
 
     _SET_MARK(yongsi_test)
     _SET_MARK(jushou_test)
@@ -242,3 +268,99 @@ void ClientPlayer::setMark(const QString &mark, int value) {
         emit duanchang_invoked();
 }
 
+QHash<QString, QStringList> ClientPlayer::getBigAndSmallKingdoms(const QString &, MaxCardsType::MaxCardsCount type) const
+{
+    QMap<QString, int> kingdom_map;
+    kingdom_map.insert("wei", 0);
+    kingdom_map.insert("shu", 0);
+    kingdom_map.insert("wu", 0);
+    kingdom_map.insert("qun", 0);
+    kingdom_map.insert("careerist", 0);
+    QList<const Player *> players = getAliveSiblings();
+    players.prepend(this);
+    foreach (const Player *p, players) {
+        if (!p->hasShownOneGeneral()) {
+            kingdom_map.insert("anjiang", 1);
+            continue;
+        }
+        QString key = p->getRole() == "careerist" ? "careerist" : p->getKingdom();
+        ++kingdom_map[key];
+    }
+    if (type == MaxCardsType::Max && hasLordSkill("hongfa") && !getPile("heavenly_army").isEmpty())
+        kingdom_map["qun"] += getPile("heavenly_army").length();
+    QHash<QString, QStringList> big_n_small;
+    big_n_small.insert("big", QStringList());
+    big_n_small.insert("small", QStringList());
+    if (kingdom_map["careerist"] > 0)
+        big_n_small["small"] << "careerist";
+    kingdom_map.remove("careerist");
+    foreach (QString key, kingdom_map.keys()) {
+        if (kingdom_map[key] == 0)
+            continue;
+        if (big_n_small["big"].isEmpty()) {
+            if (kingdom_map[key] == 1)
+                big_n_small["small"] << key;
+            else
+                big_n_small["big"] << key;
+            continue;
+        }
+        if (kingdom_map[key] == kingdom_map[big_n_small["big"].first()]) {
+            big_n_small["big"] << key;
+        } else if (kingdom_map[key] > kingdom_map[big_n_small["big"].first()]) {
+            big_n_small["small"] << big_n_small["big"];
+            big_n_small["big"].clear();
+            big_n_small["big"] << key;
+        } else if (kingdom_map[key] < kingdom_map[big_n_small["big"].first()]) {
+            big_n_small["small"] << key;
+        }
+    }
+    const Player *jade_seal_owner = NULL;
+    foreach (const Player *p, players) {
+        if (p->hasTreasure("JadeSeal") && p->hasShownOneGeneral()) {
+            jade_seal_owner = p;
+            break;
+        }
+    }
+    if (jade_seal_owner != NULL) {
+        if (jade_seal_owner->getRole() == "careerist") {
+            big_n_small["small"] << big_n_small["big"];
+            big_n_small["big"].clear();
+            big_n_small["big"] << jade_seal_owner->objectName(); // record player's objectName who has JadeSeal.
+        } else { // has shown one general but isn't careerist
+            QString kingdom = jade_seal_owner->getKingdom();
+            big_n_small["small"] << big_n_small["big"];
+            big_n_small["big"].clear();
+            big_n_small["small"].removeOne(kingdom);
+            big_n_small["big"] << kingdom;
+        }
+    }
+    return big_n_small;
+}
+
+void ClientPlayer::setHeadSkinId(int id)
+{
+    if (headSkinId == id || (this != Self && Config.IgnoreOthersSwitchesOfSkin))
+        return;
+
+    if (id <= general->skinCount()) {
+        headSkinId = id;
+        emit headSkinIdChanged(general->objectName());
+    }
+
+    if (this == Self && !Self->hasFlag("marshalling"))
+        ClientInstance->onPlayerChangeSkin(id);
+}
+
+void ClientPlayer::setDeputySkinId(int id)
+{
+    if (deputySkinId == id || (this != Self && Config.IgnoreOthersSwitchesOfSkin))
+        return;
+
+    if (id <= general2->skinCount()) {
+        deputySkinId = id;
+        emit deputySkinIdChanged(general2->objectName());
+    }
+
+    if (this == Self && !Self->hasFlag("marshalling"))
+        ClientInstance->onPlayerChangeSkin(id, false);
+}

@@ -1,3 +1,23 @@
+/********************************************************************
+    Copyright (c) 2013-2014 - QSanguosha-Rara
+
+    This file is part of QSanguosha-Hegemony.
+
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    See the LICENSE file for more details.
+
+    QSanguosha-Rara
+    *********************************************************************/
+
 #include "nativesocket.h"
 #include "settings.h"
 #include "clientplayer.h"
@@ -61,7 +81,7 @@ void NativeClientSocket::init() {
     connect(socket, SIGNAL(disconnected()), this, SIGNAL(disconnected()));
     connect(socket, SIGNAL(readyRead()), this, SLOT(getMessage()));
     connect(socket, SIGNAL(error(QAbstractSocket::SocketError)),
-            this, SLOT(raiseError(QAbstractSocket::SocketError)));
+        this, SLOT(raiseError(QAbstractSocket::SocketError)));
     connect(socket, SIGNAL(connected()), this, SIGNAL(connected()));
 }
 
@@ -76,18 +96,28 @@ void NativeClientSocket::connectToHost() {
     } else {
         address = Config.HostAddress;
         if (address == "127.0.0.1")
-            port = Config.value("ServerPort", "9527").toString().toUShort();
+            port = Config.value("ServerPort", 9527u).toUInt();
     }
 
     socket->connectToHost(address, port);
 }
 
+void NativeClientSocket::connectToHost(const QHostAddress &address)
+{
+    ushort port = Config.value("ServerPort", 9527u).toUInt();
+    socket->connectToHost(address, port);
+}
+
+void NativeClientSocket::connectToHost(const QHostAddress &address, ushort port)
+{
+    socket->connectToHost(address, port);
+}
+
 void NativeClientSocket::getMessage() {
     while (socket->canReadLine()) {
-        buffer_t msg;
-        socket->readLine(msg, sizeof(msg));
+        QByteArray msg = socket->readLine();
 #ifndef QT_NO_DEBUG
-        printf("recv: %s", msg);
+        printf("recv: %s", msg.constData());
 #endif
         emit message_got(msg);
     }
@@ -97,11 +127,17 @@ void NativeClientSocket::disconnectFromHost() {
     socket->disconnectFromHost();
 }
 
-void NativeClientSocket::send(const QString &message) {
-    socket->write(message.toAscii());
-    socket->write("\n");
+void NativeClientSocket::send(const QByteArray &message) {
+    if (message.isEmpty())
+        return;
+
+    socket->write(message);
+    if (!message.endsWith('\n')){
+        socket->write("\n");
+    }
+
 #ifndef QT_NO_DEBUG
-    printf(": %s\n", message.toAscii().constData());
+    printf(": %s\n", message.constData());
 #endif
     socket->flush();
 }
@@ -120,6 +156,10 @@ QString NativeClientSocket::peerName() const{
 
 QString NativeClientSocket::peerAddress() const{
     return socket->peerAddress().toString();
+}
+
+ushort NativeClientSocket::peerPort() const{
+    return socket->peerPort();
 }
 
 void NativeClientSocket::raiseError(QAbstractSocket::SocketError socket_error) {
@@ -142,7 +182,7 @@ void NativeClientSocket::raiseError(QAbstractSocket::SocketError socket_error) {
         reason = tr("Socket access error"); break;
     case QAbstractSocket::NetworkError:
         return; // this error is ignored ...
-    default: reason = tr("Unknow error"); break;
+    default: reason = tr("Unknown error"); break;
     }
 
     emit error_message(tr("Connection failed, error code = %1\n reason:\n %2").arg(socket_error).arg(reason));

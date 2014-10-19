@@ -1,16 +1,36 @@
+/********************************************************************
+    Copyright (c) 2013-2014 - QSanguosha-Rara
+
+    This file is part of QSanguosha-Hegemony.
+
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    See the LICENSE file for more details.
+
+    QSanguosha-Rara
+    *********************************************************************/
+
 #ifndef _STRUCTS_H
 #define _STRUCTS_H
 
 class Room;
 class TriggerSkill;
-class ServerPlayer;
 class Card;
 class Slash;
 
 #include "player.h"
+#include "serverplayer.h"
+#include "namespace.h"
 
 #include <QVariant>
-#include <json/json.h>
 
 struct DamageStruct {
     enum Nature {
@@ -76,7 +96,7 @@ struct CardUseStruct {
     CardUseStruct(const Card *card, ServerPlayer *from, ServerPlayer *target, bool isOwnerUse = true);
     bool isValid(const QString &pattern) const;
     void parse(const QString &str, Room *room);
-    bool tryParse(const Json::Value &, Room *room);
+    bool tryParse(const QVariant &usage, Room *room);
 
     const Card *card;
     ServerPlayer *from;
@@ -90,8 +110,8 @@ public:
     int m_reason;
     QString m_playerId; // the cause (not the source) of the movement, such as "lusu" when "dimeng", or "zhanghe" when "qiaobian"
     QString m_targetId; // To keep this structure lightweight, currently this is only used for UI purpose.
-                        // It will be set to empty if multiple targets are involved. NEVER use it for trigger condition
-                        // judgement!!! It will not accurately reflect the real reason.
+    // It will be set to empty if multiple targets are involved. NEVER use it for trigger condition
+    // judgement!!! It will not accurately reflect the real reason.
     QString m_skillName; // skill that triggers movement of the cards, such as "longdang", "dimeng"
     QString m_eventName; // additional arg such as "lebusishu" on top of "S_REASON_JUDGE"
     inline CardMoveReason() { m_reason = S_REASON_UNKNOWN; }
@@ -115,14 +135,14 @@ public:
         m_eventName = eventName;
     }
 
-    bool tryParse(const Json::Value &);
-    Json::Value toJsonValue() const;
+    bool tryParse(const QVariant &);
+    QVariant toVariant() const;
 
     inline bool operator == (const CardMoveReason &other) const{
         return m_reason == other.m_reason
-               && m_playerId == other.m_playerId && m_targetId == other.m_targetId
-               && m_skillName == other.m_skillName
-               && m_eventName == other.m_eventName;
+            && m_playerId == other.m_playerId && m_targetId == other.m_targetId
+            && m_skillName == other.m_skillName
+            && m_eventName == other.m_eventName;
     }
 
     static const int S_REASON_UNKNOWN = 0x00;
@@ -170,7 +190,7 @@ public:
 
     //subcategory of put
     static const int S_REASON_NATURAL_ENTER = 0x1A;     //  a card with no-owner move into discardpile
-                                                        //  e.g. delayed trick enters discardpile
+    //  e.g. delayed trick enters discardpile
     static const int S_REASON_REMOVE_FROM_PILE = 0x2A;  //  cards moved out of game go back into discardpile
     static const int S_REASON_JUDGEDONE = 0x3A;         //  judge card move into discardpile
     static const int S_REASON_CHANGE_EQUIP = 0x4A;      //  replace existed equip
@@ -207,7 +227,7 @@ struct CardsMoveStruct {
     }
 
     inline CardsMoveStruct(const QList<int> &ids, Player *from, Player *to, Player::Place from_place,
-                           Player::Place to_place, CardMoveReason reason) {
+        Player::Place to_place, CardMoveReason reason) {
         this->card_ids = ids;
         this->from_place = from_place;
         this->to_place = to_place;
@@ -231,7 +251,7 @@ struct CardsMoveStruct {
     }
 
     inline CardsMoveStruct(int id, Player *from, Player *to, Player::Place from_place,
-                           Player::Place to_place, CardMoveReason reason) {
+        Player::Place to_place, CardMoveReason reason) {
         this->card_ids << id;
         this->from_place = from_place;
         this->to_place = to_place;
@@ -256,12 +276,12 @@ struct CardsMoveStruct {
 
     inline bool operator == (const CardsMoveStruct &other) const{
         return from == other.from && from_place == other.from_place
-               && from_pile_name == other.from_pile_name && from_player_name == other.from_player_name;
+            && from_pile_name == other.from_pile_name && from_player_name == other.from_player_name;
     }
 
     inline bool operator < (const CardsMoveStruct &other) const{
         return from < other.from || from_place < other.from_place
-               || from_pile_name < other.from_pile_name || from_player_name < other.from_player_name;
+            || from_pile_name < other.from_pile_name || from_player_name < other.from_player_name;
     }
 
     QList<int> card_ids;
@@ -277,8 +297,8 @@ struct CardsMoveStruct {
     Player *origin_from, *origin_to;
     QString origin_from_pile_name, origin_to_pile_name; //for case of the movement transitted
 
-    bool tryParse(const Json::Value &);
-    Json::Value toJsonValue() const;
+    bool tryParse(const QVariant &arg);
+    QVariant toVariant() const;
     inline bool isRelevant(const Player *player) {
         return player != NULL && (from == player || (to == player && to_place != Player::PlaceSpecial));
     }
@@ -398,6 +418,41 @@ struct CardResponseStruct {
     bool m_isUse;
 };
 
+struct PlayerNumStruct {
+    inline PlayerNumStruct() {
+        m_num = 0;
+        m_toCalculate = QString();
+        m_type = MaxCardsType::Max;
+        m_reason = QString();
+    }
+
+    inline PlayerNumStruct(int num, const QString &toCalculate) {
+        m_num = num;
+        m_toCalculate = toCalculate;
+        m_type = MaxCardsType::Max;
+        m_reason = QString();
+    }
+
+    inline PlayerNumStruct(int num, const QString &toCalculate, MaxCardsType::MaxCardsCount type) {
+        m_num = num;
+        m_toCalculate = toCalculate;
+        m_type = type;
+        m_reason = QString();
+    }
+
+    inline PlayerNumStruct(int num, const QString &toCalculate, MaxCardsType::MaxCardsCount type, const QString &reason) {
+        m_num = num;
+        m_toCalculate = toCalculate;
+        m_type = type;
+        m_reason = reason;
+    }
+
+    MaxCardsType::MaxCardsCount m_type;
+    int m_num;
+    QString m_toCalculate;
+    QString m_reason;
+};
+
 enum TriggerEvent {
     NonTrigger,
 
@@ -408,6 +463,8 @@ enum TriggerEvent {
     EventPhaseEnd,
     EventPhaseChanging,
     EventPhaseSkipping,
+
+    ConfirmPlayerNum, // hongfa only
 
     DrawNCards,
     AfterDrawNCards,
@@ -432,6 +489,7 @@ enum TriggerEvent {
 
     TurnedOver,
     ChainStateChanged,
+    RemoveStateChanged,
 
     ConfirmDamage,    // confirm the damage's count and damage's nature
     Predamage,        // trigger the certain skill -- jueqing
@@ -468,9 +526,9 @@ enum TriggerEvent {
 
     PreCardUsed,
     CardUsed,
-    TargetChoosing , //distinguish "choose target" and "confirm target"
+    TargetChoosing, //distinguish "choose target" and "confirm target"
     TargetConfirming,
-    TargetChosen ,
+    TargetChosen,
     TargetConfirmed,
     CardEffect,
     CardEffected,
@@ -492,25 +550,21 @@ enum TriggerEvent {
     NumOfEvents
 };
 
-typedef const Card *CardStar;
-typedef ServerPlayer *PlayerStar;
-typedef JudgeStruct *JudgeStar;
-typedef PindianStruct *PindianStar;
-
 Q_DECLARE_METATYPE(DamageStruct)
 Q_DECLARE_METATYPE(CardEffectStruct)
 Q_DECLARE_METATYPE(SlashEffectStruct)
 Q_DECLARE_METATYPE(CardUseStruct)
 Q_DECLARE_METATYPE(CardsMoveStruct)
 Q_DECLARE_METATYPE(CardsMoveOneTimeStruct)
-Q_DECLARE_METATYPE(CardStar)
-Q_DECLARE_METATYPE(PlayerStar)
 Q_DECLARE_METATYPE(DyingStruct)
 Q_DECLARE_METATYPE(DeathStruct)
 Q_DECLARE_METATYPE(RecoverStruct)
-Q_DECLARE_METATYPE(JudgeStar)
-Q_DECLARE_METATYPE(PindianStar)
 Q_DECLARE_METATYPE(PhaseChangeStruct)
 Q_DECLARE_METATYPE(CardResponseStruct)
+Q_DECLARE_METATYPE(PlayerNumStruct)
+Q_DECLARE_METATYPE(const Card *)
+Q_DECLARE_METATYPE(ServerPlayer *)
+Q_DECLARE_METATYPE(JudgeStruct *)
+Q_DECLARE_METATYPE(PindianStruct *)
 #endif
 

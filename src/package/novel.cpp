@@ -25,7 +25,7 @@ public:
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{
-        return player->getMaxCards() > 0;
+		return player->getMaxHp();//need Changed! should be getMaxCards but it does not exist.
     }
 
     virtual const Card *viewAs() const{

@@ -1,3 +1,23 @@
+/********************************************************************
+    Copyright (c) 2013-2014 - QSanguosha-Rara
+
+    This file is part of QSanguosha-Hegemony.
+
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    See the LICENSE file for more details.
+
+    QSanguosha-Rara
+    *********************************************************************/
+
 #ifndef _CHAT_WIDGET_H
 #define _CHAT_WIDGET_H
 
@@ -9,7 +29,7 @@
 #include <QGraphicsProxyWidget>
 #include <QGraphicsPixmapItem>
 
-class MyPixmapItem: public QObject , public QGraphicsPixmapItem {
+class MyPixmapItem : public QObject, public QGraphicsPixmapItem {
     Q_OBJECT
 
 public:
@@ -41,7 +61,7 @@ signals:
     void my_pixmap_item_msg(QString);
 };
 
-class ChatWidget: public QGraphicsObject {
+class ChatWidget : public QGraphicsObject {
     Q_OBJECT
 
 public:

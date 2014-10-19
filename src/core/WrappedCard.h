@@ -1,3 +1,23 @@
+/********************************************************************
+    Copyright (c) 2013-2014 - QSanguosha-Rara
+
+    This file is part of QSanguosha-Hegemony.
+
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    See the LICENSE file for more details.
+
+    QSanguosha-Rara
+    *********************************************************************/
+
 #ifndef _WRAPPED_CARD_H
 #define _WRAPPED_CARD_H
 
@@ -8,7 +28,7 @@
 // but inside the room they are shared and synced between server/client.
 //
 // WrappedCard's internal card is only intended to provide CardEffect (the card face). The suit,
-// number should not be modified to refelct the updated suit/number of WrappedCard. The modified
+// number should not be modified to reflect the updated suit/number of WrappedCard. The modified
 // suit/number/flags/... are maintained in WrappedCard's own member variables.
 //
 // All WrappedCard's member function that takes a Card as parameter will take over the Card passed
@@ -18,7 +38,7 @@
 //
 // WrappedCard should never have any subcard!!! It's a concrete, single piece card in the room no matter when.
 
-class WrappedCard: public Card {
+class WrappedCard : public Card {
     Q_OBJECT
 
 public:
@@ -130,7 +150,7 @@ public:
     inline virtual CardType getTypeId() const{ return m_card->getTypeId(); }
     inline virtual QString toString(bool hidden = false) const{
         Q_UNUSED(hidden)
-        return QString::number(m_id);
+            return QString::number(m_id);
     }
     inline virtual bool isNDTrick() const{ return m_card->isNDTrick(); }
 
@@ -142,12 +162,12 @@ public:
 
     // @todo: the following two functions should be merged into one.
     inline virtual bool targetFilter(const QList<const Player *> &targets,
-                                     const Player *to_select, const Player *Self) const{
+        const Player *to_select, const Player *Self) const{
         return m_card->targetFilter(targets, to_select, Self);
     }
 
     inline virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select,
-                                     const Player *Self, int &maxVotes) const{
+        const Player *Self, int &maxVotes) const{
         Q_ASSERT(m_card != NULL);
         return m_card->targetFilter(targets, to_select, Self, maxVotes);
     }
@@ -192,6 +212,16 @@ public:
     inline virtual bool isKindOf(const char *cardType) const{
         Q_ASSERT(m_card != NULL);
         return m_card->isKindOf(cardType);
+    }
+
+    inline virtual bool isTransferable() const{
+        Q_ASSERT(m_card != NULL);
+        return m_card->isTransferable();
+    }
+
+    inline virtual void setTransferable(const bool transferbale){
+        Q_ASSERT(m_card != NULL);
+        m_card->setTransferable(transferbale);
     }
 
 protected:

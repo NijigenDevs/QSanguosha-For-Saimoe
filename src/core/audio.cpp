@@ -1,8 +1,28 @@
+/********************************************************************
+    Copyright (c) 2013-2014 - QSanguosha-Rara
+
+    This file is part of QSanguosha-Hegemony.
+
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    See the LICENSE file for more details.
+
+    QSanguosha-Rara
+    *********************************************************************/
+
 #include "audio.h"
-#include "fmod.hpp"
 #include "settings.h"
 
 #include <QCache>
+#include <fmod.hpp>
 
 class Sound;
 
@@ -13,20 +33,20 @@ static FMOD_CHANNEL *BGMChannel;
 
 class Sound {
 public:
-    Sound(const QString &filename): sound(NULL), channel(NULL) {
-        FMOD_System_CreateSound(System, filename.toAscii(), FMOD_DEFAULT, NULL, &sound);
+    Sound(const QString &filename) : sound(NULL), channel(NULL) {
+        FMOD_System_CreateSound(System, filename.toLatin1(), FMOD_DEFAULT, NULL, &sound);
     }
 
     ~Sound() {
         if (sound) FMOD_Sound_Release(sound);
     }
 
-    void play() {
+    void play(const bool doubleVolume = false) {
         if (sound) {
             FMOD_RESULT result = FMOD_System_PlaySound(System, FMOD_CHANNEL_FREE, sound, false, &channel);
 
             if (result == FMOD_OK) {
-                FMOD_Channel_SetVolume(channel, Config.EffectVolume);
+                FMOD_Channel_SetVolume(channel, (doubleVolume ? 2 : 1) * Config.EffectVolume);
                 FMOD_System_Update(System);
             }
         }
@@ -64,10 +84,17 @@ void Audio::play(const QString &filename) {
     if (sound == NULL) {
         sound = new Sound(filename);
         SoundCache.insert(filename, sound);
-    } else if (sound->isPlaying())
+    } else if (sound->isPlaying()) {
         return;
+    }
 
     sound->play();
+}
+
+void Audio::playAudioOfMoxuan()
+{
+    Sound *sound = new Sound("audio/system/moxuan.ogg");
+    sound->play(true);
 }
 
 void Audio::stop() {
@@ -83,7 +110,7 @@ void Audio::stop() {
         if (result == FMOD_OK) channels << channel;
     }
 
-    foreach (FMOD_CHANNEL *channel, channels)
+    foreach(FMOD_CHANNEL *channel, channels)
         FMOD_Channel_Stop(channel);
 
     stopBGM();
@@ -111,6 +138,11 @@ void Audio::stopBGM() {
 }
 
 QString Audio::getVersion() {
-    return "4.38.06";
+    unsigned int version = 0;
+    FMOD_System_GetVersion(System, &version);
+    // convert it to QString
+    return QString("%1.%2.%3").arg((version & 0xFFFF0000) >> 16, 0, 16)
+        .arg((version & 0xFF00) >> 8, 2, 16, QChar('0'))
+        .arg((version & 0xFF), 2, 16, QChar('0'));
 }
 

@@ -1,12 +1,32 @@
+/********************************************************************
+    Copyright (c) 2013-2014 - QSanguosha-Rara
+
+    This file is part of QSanguosha-Hegemony.
+
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    See the LICENSE file for more details.
+
+    QSanguosha-Rara
+    *********************************************************************/
+
 #include "recorder.h"
 #include "client.h"
-
-#include <cstdlib>
-#include <cmath>
+#include "protocol.h"
 
 #include <QFile>
 #include <QBuffer>
 #include <QMessageBox>
+
+#include <cmath>
 using namespace QSanProtocol;
 
 Recorder::Recorder(QObject *parent)
@@ -15,16 +35,15 @@ Recorder::Recorder(QObject *parent)
     watch.start();
 }
 
-void Recorder::record(const char *line) {
-    recordLine(line);
-}
+void Recorder::recordLine(const QByteArray &line) {
+    if (line.isEmpty())
+        return;
 
-void Recorder::recordLine(const QString &line) {
-    int elapsed = watch.elapsed();
-    if (line.endsWith("\n"))
-        data.append(QString("%1 %2").arg(elapsed).arg(line));
-    else
-        data.append(QString("%1 %2\n").arg(elapsed).arg(line));
+    data.append(QString::number(watch.elapsed()));
+    data.append(' ');
+    data.append(line);
+    if (!line.endsWith('\n'))
+        data.append('\n');
 }
 
 bool Recorder::save(const QString &filename) const{
@@ -34,19 +53,20 @@ bool Recorder::save(const QString &filename) const{
             return file.write(data) != -1;
         else
             return false;
-    } else if (filename.endsWith(".png")) {
+    }
+    else if (filename.endsWith(".png")) {
         return TXT2PNG(data).save(filename);
-    } else
+    }
+    else
         return false;
 }
 
-QList<QString> Recorder::getRecords() const{
-    QString record_data(data);
-    QList<QString> records = record_data.split("\n");
+QList<QByteArray> Recorder::getRecords() const{
+    QList<QByteArray> records = data.split('\n');
     return records;
 }
 
-QImage Recorder::TXT2PNG(QByteArray txtData) {
+QImage Recorder::TXT2PNG(const QByteArray &txtData) {
     QByteArray data = qCompress(txtData, 9);
     qint32 actual_size = data.size();
     data.prepend((const char *)&actual_size, sizeof(qint32));
@@ -65,14 +85,15 @@ QImage Recorder::TXT2PNG(QByteArray txtData) {
 
 Replayer::Replayer(QObject *parent, const QString &filename)
     : QThread(parent), m_commandSeriesCounter(1),
-      filename(filename), speed(1.0), playing(true)
+    filename(filename), speed(1.0), playing(true)
 {
     QIODevice *device = NULL;
     if (filename.endsWith(".png")) {
         QByteArray *data = new QByteArray(PNG2TXT(filename));
         QBuffer *buffer = new QBuffer(data);
         device = buffer;
-    } else if (filename.endsWith(".qsgs")) {
+    }
+    else if (filename.endsWith(".qsgs")) {
         QFile *file = new QFile(filename);
         device = file;
     }
@@ -84,16 +105,12 @@ Replayer::Replayer(QObject *parent, const QString &filename)
         return;
 
     while (!device->atEnd()) {
-        QString line = device->readLine();
-        
-        QStringList splited_line = line.split(" ");
-        QString elapsed_str = splited_line.takeFirst();
-        QString cmd = splited_line.join(" ");
-        int elapsed = elapsed_str.toInt();
+        QByteArray line = device->readLine();
+        int split = line.indexOf(' ');
 
         Pair pair;
-        pair.elapsed = elapsed;
-        pair.cmd = cmd;
+        pair.elapsed = line.left(split).toInt();
+        pair.cmd = line.mid(split + 1);
 
         pairs << pair;
     }
@@ -101,7 +118,7 @@ Replayer::Replayer(QObject *parent, const QString &filename)
     delete device;
 }
 
-QByteArray Replayer::PNG2TXT(const QString filename) {
+QByteArray Replayer::PNG2TXT(const QString &filename) {
     QImage image(filename);
     image = image.convertToFormat(QImage::Format_ARGB32);
     const uchar *imageData = image.bits();
@@ -110,30 +127,6 @@ QByteArray Replayer::PNG2TXT(const QString filename) {
     data = qUncompress(data);
 
     return data;
-}
-
-QString &Replayer::commandProceed(QString &cmd) {
-    static QStringList split_flags;
-    if (split_flags.isEmpty())
-        split_flags << ":" << "+" << "_" << "->";
-
-    foreach (QString flag, split_flags) {
-        QStringList messages = cmd.split(flag);
-        if (messages.length() > 1) {
-            QStringList message_analyse;
-            foreach (QString message, messages)
-                message_analyse << commandProceed(message);
-            cmd = "[" + message_analyse.join(",") + "]";
-        } else {
-            bool ok = false;
-            cmd.toInt(&ok);
-
-            if (!cmd.startsWith("\"") && !cmd.startsWith("[") && !ok)
-                cmd = "\"" + cmd +"\"";
-        }
-    }
-
-    return cmd;
 }
 
 int Replayer::getDuration() const{
@@ -192,19 +185,19 @@ void Replayer::toggle() {
 void Replayer::run() {
     int last = 0;
 
-    QStringList nondelays;
-    nondelays << "addPlayer" << "removePlayer" << "speak";
+    static QList<CommandType> nondelays;
+    if (nondelays.isEmpty())
+        nondelays << S_COMMAND_ADD_PLAYER << S_COMMAND_REMOVE_PLAYER << S_COMMAND_SPEAK;
 
-    foreach (Pair pair, pairs) {
+    foreach(Pair pair, pairs) {
         int delay = qMin(pair.elapsed - last, 2500);
         last = pair.elapsed;
 
+        Packet packet;
         bool delayed = true;
-        foreach (QString nondelay, nondelays) {
-            if (pair.cmd.startsWith(nondelay)) {
+        if (packet.parse(pair.cmd)) {
+            if (nondelays.contains(packet.getCommandType()))
                 delayed = false;
-                break;
-            }
         }
 
         if (delayed) {

@@ -1,3 +1,23 @@
+/********************************************************************
+    Copyright (c) 2013-2014 - QSanguosha-Rara
+
+  This file is part of QSanguosha-Hegemony.
+
+  This game is free software; you can redistribute it and/or
+  modify it under the terms of the GNU General Public License as
+  published by the Free Software Foundation; either version 3.0
+  of the License, or (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  General Public License for more details.
+
+  See the LICENSE file for more details.
+
+  QSanguosha-Rara
+*********************************************************************/
+
 %{
 
 #include "settings.h"
@@ -23,7 +43,7 @@ static int GetFileNames(lua_State *lua) {
     lua_createtable(lua, filenames.length(), 0);
 
     for (int i = 0; i < filenames.length(); i++) {
-        lua_pushstring(lua, filenames.at(i).toAscii());
+        lua_pushstring(lua, filenames.at(i).toLatin1());
         lua_rawseti(lua, -2, i + 1);
     }
 
@@ -51,26 +71,26 @@ static int GetConfig(lua_State *lua) {
     int type = lua_type(lua, 2);
     switch (type) {
     case LUA_TNUMBER: {
-            int n = luaL_checkint(lua, 2);
-            lua_pushinteger(lua, Config.value(key, n).toInt());
+        int n = luaL_checkint(lua, 2);
+        lua_pushinteger(lua, Config.value(key, n).toInt());
 
-            break;
-        }
+        break;
+    }
     case LUA_TBOOLEAN: {
-            bool b = lua_toboolean(lua, 2);
-            lua_pushboolean(lua, Config.value(key, b).toBool());
+        bool b = lua_toboolean(lua, 2);
+        lua_pushboolean(lua, Config.value(key, b).toBool());
 
-            break;
-        }
+        break;
+    }
     case LUA_TSTRING: {
-            const char *str = luaL_checkstring(lua, 2);
-            QString qstr = Config.value(key, str).toString();
-            lua_pushstring(lua, qstr.toUtf8().constData());
+        const char *str = luaL_checkstring(lua, 2);
+        QString qstr = Config.value(key, str).toString();
+        lua_pushstring(lua, qstr.toUtf8().constData());
 
-            break;
-        }
+        break;
+    }
     default:
-            luaL_error(lua, "The second argument of %s should be a number, boolean or a string", __FUNCTION__);
+        luaL_error(lua, "The second argument of %s should be a number, boolean or a string", __FUNCTION__);
     }
 
     return 1;
@@ -82,23 +102,23 @@ static int SetConfig(lua_State *lua) {
 
     switch (type) {
     case LUA_TNUMBER: {
-            int n = luaL_checkint(lua, 2);
-            Config.setValue(key, n);
+        int n = luaL_checkint(lua, 2);
+        Config.setValue(key, n);
 
-            break;
-        }
+        break;
+    }
     case LUA_TBOOLEAN: {
-            bool b = lua_toboolean(lua, 2);
-            Config.setValue(key, b);
+        bool b = lua_toboolean(lua, 2);
+        Config.setValue(key, b);
 
-            break;
-        }
+        break;
+    }
     case LUA_TSTRING: {
-            const char *str = luaL_checkstring(lua, 2);
-            Config.setValue(key, str);
+        const char *str = luaL_checkstring(lua, 2);
+        Config.setValue(key, str);
 
-            break;
-        }
+        break;
+    }
     default:
         luaL_error(lua, "The second argument of %s should be a number, boolean or a string", __FUNCTION__);
     }
@@ -117,21 +137,19 @@ static int GetProperty(lua_State *lua) {
 
     switch (value.type()) {
     case QMetaType::Int: {
-            lua_pushinteger(lua, value.toInt());
-            break;
-        }
+        lua_pushinteger(lua, value.toInt());
+        break;
+    }
     case QMetaType::Bool: {
-            lua_pushboolean(lua, value.toBool());
-            break;
-        }
+        lua_pushboolean(lua, value.toBool());
+        break;
+    }
     case QMetaType::QString: {
-            lua_pushstring(lua, value.toString().toUtf8().constData());
-            break;
-        }
-    default: {
-            lua_pushnil(lua);
-            break;
-        }
+        lua_pushstring(lua, value.toString().toUtf8().constData());
+        break;
+    }
+    default:
+        lua_pushnil(lua);
     }
 
     return 1;

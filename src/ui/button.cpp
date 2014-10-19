@@ -1,158 +1,342 @@
+/********************************************************************
+    Copyright (c) 2013-2014 - QSanguosha-Rara
+
+    This file is part of QSanguosha-Hegemony.
+
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    See the LICENSE file for more details.
+
+    QSanguosha-Rara
+    *********************************************************************/
+
 #include "button.h"
-#include "audio.h"
+#include "title.h"
+#include "skinbank.h"
+#include "stylehelper.h"
 
 #include <QPainter>
 #include <QGraphicsSceneMouseEvent>
-#include <QGraphicsRotation>
 #include <QPropertyAnimation>
+#include <QFile>
+#include <QGraphicsDropShadowEffect>
 
-static QRectF ButtonRect(0, 0, 189, 46);
+static QRectF ButtonRect(0, 0, 154, 154);
+static QRectF CompactButtonRect(0, 0, 189, 46);
 
-Button::Button(const QString &label, qreal scale)
-    : label(label), size(ButtonRect.size() * scale), mute(true), font(Config.SmallFont)
+Button::Button(const QString &label, qreal scale, bool compact)
+    : label(label), size((compact ? CompactButtonRect.size() : ButtonRect.size()) * scale),
+      font_name("wqy-microhei"), font_size(Config.TinyFont.pixelSize()),
+      compact(compact), down(false), mouse_area(Outside),
+      rotation(NULL), scale(NULL), title(NULL), frame(NULL)
 {
     init();
 }
 
-Button::Button(const QString &label, const QSizeF &size)
-    : label(label), size(size), mute(true), font(Config.SmallFont)
+Button::Button(const QString &label, const QSizeF &size, bool compact)
+    : label(label), size(size),
+      font_name("wqy-microhei"), font_size(Config.TinyFont.pixelSize()),
+      compact(compact), down(false), mouse_area(Outside),
+      rotation(NULL), scale(NULL), title(NULL), frame(NULL)
 {
     init();
 }
 
-void Button::init() {
-    setFlags(ItemIsFocusable);
-
+void Button::init()
+{
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
+    setAcceptsHoverEvents(true);
+#else
     setAcceptHoverEvents(true);
+#endif
+
     setAcceptedMouseButtons(Qt::LeftButton);
 
-    title = new QPixmap(size.toSize());
-    title->fill(QColor(0, 0, 0, 0));
-    QPainter pt(title);
-    pt.setFont(font);
-    pt.setPen(Config.TextEditColor);
-    pt.setRenderHint(QPainter::TextAntialiasing);
-    pt.drawText(boundingRect(), Qt::AlignCenter, label);
-
-    title_item = new QGraphicsPixmapItem(this);
-    title_item->setPixmap(*title);
-    title_item->show();
-
-    de = new QGraphicsDropShadowEffect;
-    de->setOffset(0);
-    de->setBlurRadius(12);
-    de->setColor(QColor(255, 165, 0));
-
-    title_item->setGraphicsEffect(de);
-
-    QImage bgimg("image/system/button/button.png");
-    outimg = new QImage(size.toSize(), QImage::Format_ARGB32);
-
-    qreal pad = 10;
-
-    int w = bgimg.width();
-    int h = bgimg.height();
-
-    int tw = outimg->width();
-    int th = outimg->height();
-
-    qreal xc = (w - 2 * pad) / (tw - 2 * pad);
-    qreal yc = (h - 2 * pad) / (th - 2 * pad);
-
-    for (int i = 0; i < tw; i++) {
-        for (int j = 0; j < th; j++) {
-            int x = i;
-            int y = j;
-
-            if (x >= pad && x <= (tw - pad))
-                x = pad + (x - pad) * xc;
-            else if (x >= (tw - pad))
-                x = w - (tw - x);
-
-            if (y >= pad && y <= (th - pad))
-                y = pad + (y - pad) * yc;
-            else if (y >= (th - pad))
-                y = h - (th - y);
-
-
-            QRgb rgb = bgimg.pixel(x, y);
-            outimg->setPixel(i, j, rgb);
+    if (!compact) {
+        const QString path = QString("image/system/button/icon/%1.png").arg(label);
+        if (QFile::exists(path)) {
+            icon.load(path);
         }
+        title = new Title(this, label, font_name, font_size);
+        title->setPos(8, boundingRect().height() - title->boundingRect().height() - 8);
+        title->hide();
+
+        frame = new QGraphicsDropShadowEffect(this);
+        frame->setOffset(0);
+        frame->setColor(Qt::white);
+        frame->setBlurRadius(12);
+        frame->setEnabled(false);
+        setGraphicsEffect(frame);
+    } else {
+        setFlags(ItemIsFocusable);
     }
 
-    effect = new QGraphicsDropShadowEffect;
-    effect->setBlurRadius(5);
-    effect->setOffset(this->boundingRect().height() / 7.0);
-    effect->setColor(QColor(0, 0, 0, 200));
-    this->setGraphicsEffect(effect);
-
-    glow = 0;
-    timer_id = 0;
+    connect(this, SIGNAL(enabledChanged()), this, SLOT(onEnabledChanged()));
 }
 
-void Button::setMute(bool mute) {
-    this->mute = mute;
+void Button::setFontName(const QString &name)
+{
+    this->font_name = name;
 }
 
-void Button::setFont(const QFont &font) {
-    this->font = font;
-    title->fill(QColor(0, 0, 0, 0));
-    QPainter pt(title);
-    pt.setFont(font);
-    pt.setPen(Config.TextEditColor);
-    pt.setRenderHint(QPainter::TextAntialiasing);
-    pt.drawText(boundingRect(), Qt::AlignCenter, label);
-
-    title_item->setPixmap(*title);
+void Button::setFontSize(const int &size)
+{
+    this->font_size = size;
 }
 
-#include "engine.h"
-
-void Button::hoverEnterEvent(QGraphicsSceneHoverEvent *) {
-    setFocus(Qt::MouseFocusReason);
-    if (!mute) Sanguosha->playSystemAudioEffect("button-hover");
-    if (!timer_id) timer_id = QObject::startTimer(40);
+void Button::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
+{
+    QPointF pos = event->pos();
+    bool inside = boundingRect().contains(pos);
+    if (down && !inside) {
+        down = false;
+        reset();
+    } else if(inside && boundingRect().contains(event->buttonDownPos(Qt::LeftButton))) {
+        down = true;
+        if (mouse_area != getMouseArea(pos))
+            doTransform(pos);
+    }
+    mouse_area = getMouseArea(pos);
+    QGraphicsObject::mouseMoveEvent(event);
 }
 
-void Button::mousePressEvent(QGraphicsSceneMouseEvent *event) {
-    event->accept();
+void Button::mousePressEvent(QGraphicsSceneMouseEvent *event)
+{
+    down = true;
+    doTransform(event->pos());
 }
 
-void Button::mouseReleaseEvent(QGraphicsSceneMouseEvent *) {
-    if (!mute) Sanguosha->playSystemAudioEffect("button-down");
-    emit clicked();
+void Button::mouseReleaseEvent(QGraphicsSceneMouseEvent *)
+{
+    reset();
+    if (down) {
+        down = false;
+        emit clicked();
+    }
 }
 
-QRectF Button::boundingRect() const{
+void Button::hoverEnterEvent(QGraphicsSceneHoverEvent *)
+{
+    if (compact) {
+        setFocus(Qt::MouseFocusReason);
+    } else {
+        title->show();
+        frame->setEnabled(true);
+    }
+}
+
+void Button::hoverLeaveEvent(QGraphicsSceneHoverEvent *)
+{
+    if (compact) {
+        clearFocus();
+    } else {
+        title->hide();
+        frame->setEnabled(false);
+    }
+}
+
+QRectF Button::boundingRect() const
+{
     return QRectF(QPointF(), size);
 }
 
-void Button::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) {
-    QRectF rect = boundingRect();
-
-    painter->drawImage(rect,*outimg);
-    painter->fillRect(rect, QColor(255, 255, 255, glow * 10));
+QFont Button::defaultFont()
+{
+    QFont font = StyleHelper::getFontByFileName("wqy-microhei.ttc");
+    font.setPixelSize(Config.TinyFont.pixelSize());
+    return font;
 }
 
-void Button::timerEvent(QTimerEvent *) {
-    update();
-    if (hasFocus()) {
-        if (glow < 5) glow++;
+static QColor ReverseColor(const QColor &color)
+{
+    int r = 0xFF - color.red();
+    int g = 0xFF - color.green();
+    int b = 0xFF - color.blue();
+
+    return QColor::fromRgb(r, g, b);
+}
+
+void Button::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
+{
+    painter->setRenderHint(QPainter::HighQualityAntialiasing);
+    QRectF rect = boundingRect();
+
+    QColor edgeColor = Qt::white, boxColor;
+    int edgeWidth = 1;
+    if (compact) {
+        boxColor = Qt::black;
+        if (hasFocus()) boxColor = ReverseColor(boxColor);
+        boxColor.setAlphaF(0.8);
+        edgeWidth = 2;
     } else {
-        if (glow > 0)
-            glow--;
-        else if (timer_id) {
-            QObject::killTimer(timer_id);
-            timer_id = 0;
-        }
+        boxColor = QColor(120, 212, 120);
+        edgeColor.setAlphaF(0.3);
+    }
+
+    painter->fillRect(rect, boxColor);
+
+    QPen pen(edgeColor);
+    pen.setWidth(edgeWidth);
+    painter->setPen(pen);
+    painter->drawRect(rect);
+
+    if (compact) {
+        QColor textColor = Qt::white;
+
+        if (hasFocus())
+            textColor = ReverseColor(textColor);
+
+        IQSanComponentSkin::QSanSimpleTextFont ft;
+        JsonArray val;
+        val << font_name;
+        val << font_size;
+        val << 2;
+
+        JsonArray val3;
+        val3 << textColor.red();
+        val3 << textColor.green();
+        val3 << textColor.blue();
+        val << QVariant(val3);
+
+        ft.tryParse(val);
+        ft.paintText(painter, rect.toRect(), Qt::AlignCenter, label);
+    } else {
+        painter->drawPixmap(rect.toRect(), icon);
     }
 }
 
-Button::~Button() {
-    delete outimg;
-    outimg = NULL;
+void Button::doTransform(const QPointF &pos)
+{
+    if (compact) return;
+    qreal width = boundingRect().width();
+    qreal height = boundingRect().height();
+    QVector3D axis(0, 0, 0);
+    QVector3D origin(width / 2.0, height / 2.0, 0);
+    qreal angle = 0;
 
-    de->deleteLater();
-    effect->deleteLater();
+    QList<QGraphicsTransform *> transforms;
+
+    switch (getMouseArea(pos)) {
+    case Right: {
+        origin.setX(0);
+        axis.setY(1);
+        angle = 15;
+        break;
+    }
+    case Left: {
+        origin.setX(width);
+        axis.setY(1);
+        angle = -15;
+        break;
+    }
+    case Top: {
+        origin.setY(height);
+        axis.setX(1);
+        angle = 15;
+        break;
+    }
+    case Bottom: {
+        origin.setY(0);
+        axis.setX(1);
+        angle = -15;
+        break;
+    }
+    default: {
+        scale = new QGraphicsScale;
+        QPropertyAnimation *xScale_animation = new QPropertyAnimation(scale, "xScale", this);
+        xScale_animation->setDuration(100);
+        xScale_animation->setStartValue(1);
+        xScale_animation->setEndValue(0.95);
+        QPropertyAnimation *yScale_animation = new QPropertyAnimation(scale, "yScale", this);
+        yScale_animation->setDuration(100);
+        yScale_animation->setStartValue(1);
+        yScale_animation->setEndValue(0.95);
+
+        scale->setOrigin(QVector3D(width / 2.0, height / 2.0, 0));
+
+        transforms << scale;
+
+        setTransformations(transforms);
+        xScale_animation->start(QAbstractAnimation::DeleteWhenStopped);
+        yScale_animation->start(QAbstractAnimation::DeleteWhenStopped);
+        return;
+    }
+    }
+
+    rotation = new QGraphicsRotation;
+    QPropertyAnimation *rotation_animation = new QPropertyAnimation(rotation, "angle", this);
+    rotation_animation->setDuration(100);
+    rotation_animation->setStartValue(0);
+    rotation_animation->setEndValue(angle);
+
+    rotation->setAxis(axis);
+    rotation->setOrigin(origin);
+
+    transforms << rotation;
+
+    setTransformations(transforms);
+    rotation_animation->start(QAbstractAnimation::DeleteWhenStopped);
 }
 
+void Button::reset()
+{
+    if (compact) return;
+
+    QList<QGraphicsTransform *> transforms;
+
+    if (scale) {
+        QPropertyAnimation *xScale_animation = new QPropertyAnimation(scale, "xScale", this);
+        xScale_animation->setDuration(100);
+        xScale_animation->setEndValue(1);
+        QPropertyAnimation *yScale_animation = new QPropertyAnimation(scale, "yScale", this);
+        yScale_animation->setDuration(100);
+        yScale_animation->setEndValue(1);
+
+        transforms << scale;
+
+        setTransformations(transforms);
+        xScale_animation->start(QAbstractAnimation::DeleteWhenStopped);
+        yScale_animation->start(QAbstractAnimation::DeleteWhenStopped);
+    }
+
+    if (rotation) {
+        QPropertyAnimation *rotation_animation = new QPropertyAnimation(rotation, "angle", this);
+        rotation_animation->setDuration(100);
+        rotation_animation->setEndValue(0);
+
+        transforms << rotation;
+
+        setTransformations(transforms);
+        rotation_animation->start(QAbstractAnimation::DeleteWhenStopped);
+    }
+}
+
+Button::MouseArea Button::getMouseArea(const QPointF &pos) const
+{
+    QRectF rect = boundingRect();
+    if (!boundingRect().contains(pos))
+        return Outside;
+    else if (pos.x() > rect.width() - 30)
+        return Right;
+    else if (pos.x() < 30)
+        return Left;
+    else if (pos.y() < 30)
+        return Top;
+    else if (pos.y() > rect.height() - 30)
+        return Bottom;
+
+    return Center;
+}
+
+void Button::onEnabledChanged()
+{
+    setOpacity(isEnabled() ? 1.0 : 0.2);
+}

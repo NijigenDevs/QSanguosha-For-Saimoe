@@ -1,9 +1,29 @@
+/********************************************************************
+    Copyright (c) 2013-2014 - QSanguosha-Rara
+
+    This file is part of QSanguosha-Hegemony.
+
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    See the LICENSE file for more details.
+
+    QSanguosha-Rara
+    *********************************************************************/
+
 #ifndef _AUX_SKILLS_H
 #define _AUX_SKILLS_H
 
 #include "skill.h"
 
-class DiscardSkill: public ViewAsSkill {
+class DiscardSkill : public ViewAsSkill {
     Q_OBJECT
 
 public:
@@ -27,7 +47,7 @@ private:
 
 class CardPattern;
 
-class ResponseSkill: public OneCardViewAsSkill {
+class ResponseSkill : public OneCardViewAsSkill {
     Q_OBJECT
 
 public:
@@ -39,12 +59,14 @@ public:
     virtual bool viewFilter(const Card *to_select) const;
     virtual const Card *viewAs(const Card *originalCard) const;
 
+    inline Card::HandlingMethod getRequest() const{ return request; }
+
 protected:
     const CardPattern *pattern;
     Card::HandlingMethod request;
 };
 
-class ShowOrPindianSkill: public ResponseSkill {
+class ShowOrPindianSkill : public ResponseSkill {
     Q_OBJECT
 
 public:
@@ -54,7 +76,7 @@ public:
 
 class YijiCard;
 
-class YijiViewAsSkill: public ViewAsSkill {
+class YijiViewAsSkill : public ViewAsSkill {
     Q_OBJECT
 
 public:
@@ -74,7 +96,7 @@ private:
 
 class ChoosePlayerCard;
 
-class ChoosePlayerSkill: public ZeroCardViewAsSkill {
+class ChoosePlayerSkill : public ZeroCardViewAsSkill {
     Q_OBJECT
 
 public:
@@ -85,6 +107,23 @@ public:
 
 private:
     ChoosePlayerCard *card;
+};
+
+class TransferCard;
+
+class TransferSkill : public OneCardViewAsSkill {
+    Q_OBJECT
+
+public:
+    explicit TransferSkill();
+
+    virtual bool viewFilter(const Card *to_select) const;
+    virtual const Card *viewAs(const Card *originalCard) const;
+    virtual bool isEnabledAtPlay(const Player *player) const;
+    void setToSelect(int _toSelect);
+
+private:
+    int _toSelect;
 };
 
 #endif

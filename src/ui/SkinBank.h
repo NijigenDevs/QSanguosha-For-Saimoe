@@ -1,3 +1,23 @@
+/********************************************************************
+    Copyright (c) 2013-2014 - QSanguosha-Rara
+
+    This file is part of QSanguosha-Hegemony.
+
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    See the LICENSE file for more details.
+
+    QSanguosha-Rara
+    *********************************************************************/
+
 #ifndef _SKIN_BANK_H
 #define _SKIN_BANK_H
 
@@ -5,8 +25,10 @@
 
 #include "card.h"
 #include "qsanbutton.h"
+#include "util.h"
+#include "json.h"
+#include "uiutils.h"
 
-#include <json/json.h>
 #include <QString>
 #include <QPixmap>
 #include <QHash>
@@ -19,54 +41,51 @@
 class QSanPixmapCache {
 public:
     // Load pixmap from a file and map it to the given key.
-    static const QPixmap &getPixmap(const QString &key, const QString &fileName);
+    static QPixmap getPixmap(const QString &key, const QString &fileName);
     // Load pixmap from a existing key.
-    static const QPixmap &getPixmap(const QString &key);
+    static QPixmap getPixmap(const QString &key);
     static bool contains(const QString &key);
-
-private:
-    static QHash<QString, QPixmap> _m_pixmapBank;
 };
 
 class IQSanComponentSkin { // interface class
 public:
     class QSanSimpleTextFont {
     public:
-        int *m_fontFace;
+        QSanUiUtils::QSanFreeTypeFont::QSanFont m_fontFace;
         QSize m_fontSize;
         int m_spacing;
         int m_weight;
         QColor m_color;
         bool m_vertical;
         QSanSimpleTextFont();
-        bool tryParse(Json::Value arg);
-        void paintText(QPainter *painter, QRect pos, Qt::Alignment align, const QString &text) const;
+        bool tryParse(const QVariant &arg);
+        void paintText(QPainter *painter, const QRect &pos, Qt::Alignment align, const QString &text) const;
         // this function's prototype is confusing. It will CLEAR ALL contents on the
         // QGraphicsPixmapItem passed in and then start drawing.
-        void paintText(QGraphicsPixmapItem *item, QRect pos, Qt::Alignment align, const QString &text) const;
+        void paintText(QGraphicsPixmapItem *item, const QRect &pos, Qt::Alignment align, const QString &text) const;
 
     protected:
         static QHash<QString, int *> _m_fontBank;
     };
 
-    class QSanShadowTextFont: public QSanSimpleTextFont {
+    class QSanShadowTextFont : public QSanSimpleTextFont {
     public:
         int m_shadowRadius;
         double m_shadowDecadeFactor;
         QPoint m_shadowOffset;
         QColor m_shadowColor;
-        bool tryParse(Json::Value arg);
-        void paintText(QPainter *painter, QRect pos, Qt::Alignment align, const QString &text) const;
+        bool tryParse(const QVariant &arg);
+        void paintText(QPainter *painter, const QRect &pos, Qt::Alignment align, const QString &text) const;
         // this function's prototype is confusing. It will CLEAR ALL contents on the
         // QGraphicsPixmapItem passed in and then start drawing.
-        void paintText(QGraphicsPixmapItem *item, QRect pos, Qt::Alignment align, const QString &text) const;
+        void paintText(QGraphicsPixmapItem *item, const QRect &pos, Qt::Alignment align, const QString &text) const;
     };
 
     class AnchoredRect {
     public:
-        QRect getTranslatedRect(QRect parentRect) const;
-        QRect getTranslatedRect(QRect parentRect, QSize childSize) const;
-        bool tryParse(Json::Value value);
+        QRect getTranslatedRect(const QRect &parentRect) const;
+        QRect getTranslatedRect(const QRect &parentRect, const QSize &childSize) const;
+        bool tryParse(const QVariant &value);
 
     protected:
         Qt::Alignment m_anchorChild;
@@ -79,8 +98,8 @@ public:
     static const char *S_SKIN_KEY_DEFAULT;
     static const char *S_SKIN_KEY_DEFAULT_SECOND;
     bool load(const QString &layoutConfigFileName, const QString &imageConfigFileName,
-              const QString &audioConfigFileName, const QString &animationConfigFileName);
-    QPixmap getPixmap(const QString &key, const QString &arg = QString()) const;
+        const QString &audioConfigFileName, const QString &animationConfigFileName);
+    QPixmap getPixmap(const QString &key, const QString &arg = QString(), const QString &arg2 = QString()) const;
     QPixmap getPixmapFileName(const QString &key) const;
     QPixmap getPixmapFromFileName(const QString &fileName) const;
     QStringList getAudioFileNames(const QString &key) const;
@@ -89,18 +108,18 @@ public:
     QStringList getAnimationFileNames() const;
 
 protected:
-    virtual bool _loadLayoutConfig(const Json::Value &config) = 0;
-    virtual bool _loadImageConfig(const Json::Value &config);
-    virtual bool _loadAnimationConfig(const Json::Value &config) = 0;
-    QString _readConfig(const Json::Value &dictionary, const QString &key,
-                        const QString &defaultValue = QString()) const;
+    virtual bool _loadLayoutConfig(const QVariant &config) = 0;
+    virtual bool _loadImageConfig(const QVariant &config);
+    virtual bool _loadAnimationConfig(const QVariant &config) = 0;
+    QString _readConfig(const QVariant &dictionary, const QString &key,
+        const QString &defaultValue = QString()) const;
     QString _readImageConfig(const QString &key, QRect &clipRegion, bool &clipping,
-                             QSize &newScale, bool scaled,
-                             const QString &defaultValue = QString()) const;
+        QSize &newScale, bool &scaled,
+        const QString &defaultValue = QString()) const;
 
-    Json::Value _m_imageConfig;
-    Json::Value _m_audioConfig;
-    Json::Value _m_animationConfig;
+    JsonObject _m_imageConfig;
+    JsonObject _m_audioConfig;
+    JsonObject _m_animationConfig;
     // image key -> image file name
     static QHash<QString, QString> S_IMAGE_KEY2FILE;
     static QHash<QString, QPixmap> S_IMAGE_KEY2PIXMAP;
@@ -109,7 +128,7 @@ protected:
     static QHash<QString, int> S_HERO_SKIN_INDEX;
 };
 
-class QSanRoomSkin: public IQSanComponentSkin {
+class QSanRoomSkin : public IQSanComponentSkin {
 public:
     struct RoomLayout {
         int m_scenePadding;
@@ -138,13 +157,13 @@ public:
         QRect m_handCardArea;
 
         // equips
-        QRect m_equipAreas[4];
+        QRect m_equipAreas[S_EQUIP_AREA_LENGTH];
         QRect m_equipImageArea;
-        QRect m_equipTextArea;
         QRect m_equipSuitArea;
-        QRect m_equipDistanceArea;
         QRect m_equipPointArea;
-        QSanShadowTextFont m_equipFont;
+        QRect m_horseImageArea;
+        QRect m_horseSuitArea;
+        QRect m_horsePointArea;
         QSanShadowTextFont m_equipPointFont;
 
         // delayed trick area
@@ -172,6 +191,8 @@ public:
         QSanShadowTextFont m_handCardFont;
         QRect m_screenNameArea;
         QSanShadowTextFont m_screenNameFont;
+        QRect leftDisableShowLockArea;
+        QRect rightDisableShowLockArea;
 
         // progress bar and other controls
         bool m_isProgressBarHorizontal;
@@ -210,7 +231,7 @@ public:
         QRect m_extraSkillTextArea;
     };
 
-    struct PhotoLayout: public PlayerCardContainerLayout {
+    struct PhotoLayout : public PlayerCardContainerLayout {
         int m_normalWidth;
         QRect m_mainFrameArea;
         QRect m_cardMoveRegion;
@@ -221,7 +242,7 @@ public:
         QSanShadowTextFont m_skillNameFont;
     };
 
-    struct DashboardLayout: public PlayerCardContainerLayout {
+    struct DashboardLayout : public PlayerCardContainerLayout {
         int m_leftWidth, m_rightWidth, m_magatamasBaseWidth;
         int m_floatingAreaHeight;
         int m_rswidth;
@@ -241,9 +262,12 @@ public:
         QColor m_skillTextColors[QSanButton::S_NUM_BUTTON_STATES * QSanInvokeSkillButton::S_NUM_SKILL_TYPES];
         QColor m_skillTextShadowColors[QSanButton::S_NUM_BUTTON_STATES * QSanInvokeSkillButton::S_NUM_SKILL_TYPES];
 
+        QPoint m_changeHeadHeroSkinButtonPos;
+        QPoint m_changeDeputyHeroSkinButtonPos;
+
         QSanShadowTextFont getSkillTextFont(QSanButton::ButtonState state,
-                                            QSanInvokeSkillButton::SkillType type,
-                                            QSanInvokeSkillButton::SkillButtonWidth width) const;
+            QSanInvokeSkillButton::SkillType type,
+            QSanInvokeSkillButton::SkillButtonWidth width) const;
     };
 
     struct CommonLayout {
@@ -253,6 +277,7 @@ public:
         QRect m_cardMainArea;
         QRect m_cardSuitArea;
         QRect m_cardNumberArea;
+        QRect m_cardTransferableIconArea;
         QRect m_cardFootnoteArea;
         QRect m_cardAvatarArea;
         QRect m_cardFrameArea;
@@ -279,14 +304,29 @@ public:
         QHash<QString, QColor> m_rolesColor;
         QColor m_roleDarkColor;
 
+        //Graphics Box
+        QColor graphicsBoxBackgroundColor;
+        QColor graphicsBoxBorderColor;
+        QSanSimpleTextFont graphicsBoxTitleFont;
+
         //Choose General Box
-        QColor m_chooseGeneralBoxBackgroundColor;
-        QColor m_chooseGeneralBoxBorderColor;
-        QSanSimpleTextFont m_chooseGeneralBoxTitleFont;
         QSanSimpleTextFont m_chooseGeneralBoxDestSeatFont;
 
         //General Card Item
         QRect m_generalCardItemCompanionPromptRegion;
+
+        //Option Button
+        QSanShadowTextFont optionButtonText;
+
+        //General Button
+        QRect generalButtonPositionIconRegion;
+        QRect generalButtonNameRegion;
+
+        //Player Card Box
+        QSanSimpleTextFont playerCardBoxPlaceNameText;
+
+        //Skin Item
+        QSanShadowTextFont skinItemTitleText;
     };
 
     enum GeneralIconSize {
@@ -298,7 +338,8 @@ public:
         S_GENERAL_ICON_SIZE_DASHBOARD_SECONDARY,
         S_GENERAL_ICON_SIZE_PHOTO_PRIMARY,
         S_GENERAL_ICON_SIZE_DASHBOARD_PRIMARY,
-        S_GENERAL_ICON_SIZE_KOF
+        S_GENERAL_ICON_SIZE_KOF,
+        S_GENERAL_ICON_SIZE_HERO_SKIN
     };
 
     const RoomLayout &getRoomLayout() const;
@@ -309,19 +350,21 @@ public:
     QString getButtonPixmapPath(const QString &groupName, const QString &buttonName, QSanButton::ButtonState state) const;
     QPixmap getButtonPixmap(const QString &groupName, const QString &buttonName, QSanButton::ButtonState state, const bool &first_state = true) const;
     QPixmap getSkillButtonPixmap(QSanButton::ButtonState state,
-                                 QSanInvokeSkillButton::SkillType type,
-                                 QSanInvokeSkillButton::SkillButtonWidth width) const;
+        QSanInvokeSkillButton::SkillType type,
+        QSanInvokeSkillButton::SkillButtonWidth width) const;
     QPixmap getCardMainPixmap(const QString &cardName) const;
+    QPixmap getGeneralCardPixmap(const QString generalName, const int skinId = 0) const;
     QPixmap getCardSuitPixmap(Card::Suit suit) const;
     QPixmap getCardNumberPixmap(int point, bool isBlack) const;
     QPixmap getCardJudgeIconPixmap(const QString &judgeName) const;
     QPixmap getCardFramePixmap(const QString &frameType) const;
     QPixmap getCardAvatarPixmap(const QString &generalName) const;
-    QPixmap getGeneralPixmap(const QString &generalName, GeneralIconSize size) const;
+    QPixmap getGeneralPixmap(const QString &generalName, GeneralIconSize size, const int skinId = 0) const;
     QString getPlayerAudioEffectPath(const QString &eventName, bool isMale, int index = -1) const;
-    QString getPlayerAudioEffectPath(const QString &eventName, const QString &category, int index = -1) const;
+    QString getPlayerAudioEffectPath(const QString &eventName, const QString &category, int index = -1, const Player *player = NULL) const;
     QPixmap getProgressBarPixmap(int percentile) const;
 
+    bool doesGeneralHaveSkin(const QString &general, const int skinId = 1, const bool isCard = false) const;
 
     // static consts
     // main keys
@@ -376,6 +419,7 @@ public:
     static const char *S_SKIN_KEY_HAND_CARD_NUMBER_BLACK;
     static const char *S_SKIN_KEY_HAND_CARD_NUMBER_RED;
     static const char *S_SKIN_KEY_HAND_CARD_FRAME;
+    static const char *S_SKIN_KEY_GENERAL_CARD;
     static const char *S_SKIN_KEY_PLAYER_GENERAL_ICON;
     static const char *S_SKIN_KEY_EXTRA_SKILL_BG;
     static const char *S_SKIN_KEY_MAGATAMAS_BG;
@@ -389,6 +433,7 @@ public:
     static const char *S_SKIN_KEY_HIDDEN_MARK;
     static const char *S_SKIN_KEY_HEAD_ICON;
     static const char *S_SKIN_KEY_DEPUTY_ICON;
+    static const char *S_SKIN_KEY_DISABLE_SHOW_LOCK;
 
     //CardContainer
 
@@ -408,6 +453,9 @@ public:
     static const char *S_SKIN_KEY_CHOOSE_GENERAL_BOX_SPLIT_LINE;
     static const char *S_SKIN_KEY_CHOOSE_GENERAL_BOX_DEST_SEAT;
 
+    //CardItem
+    static const char *S_SKIN_KEY_CARD_TRANSFERABLE_ICON;
+
     //GeneralCardItem
     static const char *S_SKIN_KEY_GENERAL_CARD_ITEM_COMPANION_FONT;
     static const char *S_SKIN_KEY_GENERAL_CARD_ITEM_COMPANION_ICON;
@@ -417,15 +465,15 @@ protected:
     PhotoLayout _m_photoLayout;
     CommonLayout _m_commonLayout;
     DashboardLayout _m_dashboardLayout;
-    virtual bool _loadLayoutConfig(const Json::Value &layoutConfig);
-    virtual bool _loadAnimationConfig(const Json::Value &animationConfig);
+    virtual bool _loadLayoutConfig(const QVariant &layout);
+    virtual bool _loadAnimationConfig(const QVariant &animationConfig);
 };
 
 class QSanSkinScheme {
-// Why do we need another layer above room skin? Because we may add lobby, login interface
-// in the future; and we may need to assemble a set of different skins into a scheme.
+    // Why do we need another layer above room skin? Because we may add lobby, login interface
+    // in the future; and we may need to assemble a set of different skins into a scheme.
 public:
-    bool load(Json::Value configs);
+    bool load(const QVariant &configs);
     const QSanRoomSkin& getRoomSkin() const;
 
 protected:
@@ -435,6 +483,7 @@ protected:
 class QSanSkinFactory {
 public:
     static QSanSkinFactory &getInstance();
+    static void destroyInstance();
     const QString &getCurrentSkinName() const;
     const QSanSkinScheme &getCurrentSkinScheme();
     bool switchSkin(QString skinName);
@@ -446,7 +495,7 @@ protected:
     QSanSkinFactory(const char *fileName);
     static QSanSkinFactory* _sm_singleton;
     QSanSkinScheme _sm_currentSkin;
-    Json::Value _m_skinList;
+    JsonObject _m_skinList;
     QString _m_skinName;
 };
 

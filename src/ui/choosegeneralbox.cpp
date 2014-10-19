@@ -1,35 +1,56 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Hegemony Team
+    Copyright (c) 2013-2014 - QSanguosha-Rara
 
-  This file is part of QSanguosha-Hegemony.
+    This file is part of QSanguosha-Hegemony.
 
-  This game is free software; you can redistribute it and/or
-  modify it under the terms of the GNU Lesser General Public
-  License as published by the Free Software Foundation; either
-  version 3.0 of the License, or (at your option) any later version.
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
 
-  This program is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-  Lesser General Public License for more details.
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
 
-  See the LICENSE file for more details.
+    See the LICENSE file for more details.
 
-  QSanguosha-Hegemony Team    
-*********************************************************************/
+    QSanguosha-Rara
+    *********************************************************************/
+
 #include "choosegeneralbox.h"
 #include "engine.h"
-#include "roomscene.h"
-#include "SkinBank.h"
-#include "protocol.h"
-#include "choosegeneraldialog.h"
+#include "skinbank.h"
+#include "freechoosedialog.h"
+#include "banpair.h"
+#include "button.h"
+#include "client.h"
+#include "clientplayer.h"
 
 #include <QApplication>
+#include <QGraphicsSceneMouseEvent>
+#include <QGraphicsProxyWidget>
 
-GeneralCardItem::GeneralCardItem(const QString &general_name)
-    : CardItem(general_name), has_companion(false)
+GeneralCardItem::GeneralCardItem(const QString &generalName, const int skinId)
+    : CardItem(generalName), hasCompanion(false)
 {
+    _skinId = skinId;
     setAcceptHoverEvents(true);
+
+    const General *general = Sanguosha->getGeneral(generalName);
+    Q_ASSERT(general);
+
+    setOuterGlowEffectEnabled(true);
+    setOuterGlowColor(Sanguosha->getKingdomColor(general->getKingdom()));
+}
+
+void GeneralCardItem::changeGeneral(const QString &generalName)
+{
+    CardItem::changeGeneral(generalName);
+
+    const General *general = Sanguosha->getGeneral(generalName);
+    Q_ASSERT(general);
+    setOuterGlowColor(Sanguosha->getKingdomColor(general->getKingdom()));
 }
 
 void GeneralCardItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) {
@@ -42,11 +63,11 @@ void GeneralCardItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *,
     }
 
     if (!_m_isUnknownGeneral)
-        painter->drawPixmap(rect, G_ROOM_SKIN.getCardMainPixmap(objectName()));
+        painter->drawPixmap(rect, G_ROOM_SKIN.getGeneralCardPixmap(objectName(), _skinId));
     else
         painter->drawPixmap(rect, G_ROOM_SKIN.getPixmap("generalCardBack"));
 
-    if (!has_companion) return;
+    if (!hasCompanion) return;
 
     QString kingdom = Sanguosha->getGeneral(objectName())->getKingdom();
     QPixmap icon = G_ROOM_SKIN.getPixmap(QSanRoomSkin::S_SKIN_KEY_GENERAL_CARD_ITEM_COMPANION_ICON, kingdom);
@@ -56,88 +77,70 @@ void GeneralCardItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *,
 }
 
 void GeneralCardItem::showCompanion() {
-    if (has_companion) return;
-    has_companion = true;
+    if (hasCompanion) return;
+    hasCompanion = true;
     update();
 }
 
 void GeneralCardItem::hideCompanion() {
-    if (!has_companion) return;
-    has_companion = false;
+    if (!hasCompanion) return;
+    hasCompanion = false;
     update();
 }
 
 void GeneralCardItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
-    if (Config.FreeChoose && Qt::RightButton == event->button()) {
+    if (ServerInfo.FreeChoose && Qt::RightButton == event->button()) {
         FreeChooseDialog *general_changer = new FreeChooseDialog(QApplication::focusWidget());
         connect(general_changer, SIGNAL(general_chosen(QString)), this, SLOT(changeGeneral(QString)));
         general_changer->exec();
         general_changer->deleteLater();
         return;
     }
-    if (frozen) return;
 
-    QPointF totalMove = mapToParent(event->pos()) - _m_lastMousePressScenePos;
-    if (totalMove.x() * totalMove.x() + totalMove.y() * totalMove.y() < _S_MOVE_JITTER_TOLERANCE)
-        emit clicked();
-    else
-        emit released();
-
-    if (auto_back) {
-        goBack(true, false);
-    }
+    CardItem::mouseReleaseEvent(event);
 }
 
-void GeneralCardItem::setFrozen(bool is_frozen) {
-    if (frozen != is_frozen) {
-        frozen = is_frozen;
-        update();
-    }
-}
-
-ChooseGeneralBox::ChooseGeneralBox() 
-    : general_number(0), single_result(false)
+ChooseGeneralBox::ChooseGeneralBox()
+    : general_number(0), single_result(false), view_only(false),
+      confirm(new Button(tr("fight"), 0.6, true)),
+      progress_bar(NULL)
 {
-    setFlag(ItemIsFocusable);
-    setFlag(ItemIsMovable);
-    confirm = new QSanButton("choose-general-box", "confirm", this);
     confirm->setEnabled(ClientInstance->getReplayer());
+    confirm->setParentItem(this);
     connect(confirm, SIGNAL(clicked()), this, SLOT(reply()));
-    progress_bar = NULL;
-    animations = new EffectAnimation;
 }
 
-void ChooseGeneralBox::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) {
+void ChooseGeneralBox::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) {
     //============================================================
     //||========================================================||
-    //||                   请选择相同势力的武将                  ||
+    //||      Please select the same nationality generals       ||
     //||       ______   ______   ______   ______   ______       ||
     //||      |      | |      | |      | |      | |      |      ||
     //||      |  g1  | |  g2  | |  g3  | |  g4  | |  g5  |      ||
     //||      |      | |      | |      | |      | |      |      ||
-    //||       ——————   ——————   ——————   ——————   ——————       ||
+    //||       ------   ------   ------   ------   ------       ||
     //||           ______   ______   ______   ______            ||
     //||          |      | |      | |      | |      |           ||
     //||          |  g6  | |  g7  | |  g8  | |  g9  |           ||
     //||          |      | |      | |      | |      |           ||
-    //||           ——————   ——————   ——————   ——————            ||
-    //||     ----------------------------------------------     ||                  
+    //||           ------   ------   ------   ------            ||
+    //||     ----------------------------------------------     ||
     //||                           \/                           ||
     //||                    ______   ______                     ||
     //||                   |      | |      |                    ||
     //||                   |  hg  | |  dg  |                    ||
     //||                   |      | |      |                    ||
-    //||                    ——————   ——————                     ||
+    //||                    ------   ------                     ||
     //||                       __________                       ||
-    //||                      |   确定   |                      ||
-    //||                       ——————————                       ||
-    //||               =========================                || 
+    //||                      |   fight  |                      ||
+    //||                       ----------                       ||
+    //||               =========================                ||
     //||                                                        ||
     //============================================================
     //
     //
     //==================================================
-    //||               知己知彼观看主将                ||
+    //||             KnownBoth View Head              ||
     //||==============================================||
     //||                                              ||
     //||             __________________               ||
@@ -146,40 +149,38 @@ void ChooseGeneralBox::paint(QPainter *painter, const QStyleOptionGraphicsItem *
     //||            |                  |              ||
     //||            |                  |              ||
     //||            |                  |              ||
-    //||            |                  |              || 
     //||            |                  |              ||
     //||            |                  |              ||
     //||            |                  |              ||
     //||            |                  |              ||
-    //||             ——————————————————               ||
+    //||            |                  |              ||
+    //||             ------------------               ||
     //||                                              ||
     //||             ==================               ||
     //||             ||   confirm    ||               ||
     //||             ==================               ||
     //||                                              ||
     //==================================================
-    painter->save();
-    painter->setBrush(QBrush(G_COMMON_LAYOUT.m_chooseGeneralBoxBackgroundColor));
-    QRectF rect = boundingRect();
-    const int x = rect.x();
-    const int y = rect.y();
-    const int w = rect.width();
-    const int h = rect.height();
-    painter->drawRect(QRect(x, y, w, h));
-    painter->drawRect(QRect(x, y, w, top_dark_bar));
-    G_COMMON_LAYOUT.m_chooseGeneralBoxTitleFont.paintText(painter, QRect(x, y, w, top_dark_bar), Qt::AlignCenter, single_result ? tr("Please select one general") : tr("Please select the same nationality generals"));
-    painter->restore();
-    painter->setPen(G_COMMON_LAYOUT.m_chooseGeneralBoxBorderColor);
-    painter->drawRect(QRect(x + 1, y + 1, w - 2, h - 2));
+    if (!view_only) {
+        title = single_result ? tr("Please select one general")
+                              : tr("Please select the same nationality generals");
+        if (!single_result && Self->getSeat() > 0)
+            title.prepend(Sanguosha->translate(QString("SEAT(%1)").arg(Self->getSeat()))
+                          + " ");
+    }
+    GraphicsBox::paint(painter, option, widget);
 
-    if (single_result) return;
+    if (view_only || single_result) return;
 
     int split_line_y = top_blank_width + G_COMMON_LAYOUT.m_cardNormalHeight + card_bottom_to_split_line;
     if (general_number > 5)
         split_line_y += (card_to_center_line + G_COMMON_LAYOUT.m_cardNormalHeight);
+
     QPixmap line = G_ROOM_SKIN.getPixmap(QSanRoomSkin::S_SKIN_KEY_CHOOSE_GENERAL_BOX_SPLIT_LINE);
     const int line_length = boundingRect().width() - 2 * left_blank_width;
-    painter->drawPixmap(left_blank_width, split_line_y, line, (line.width() - line_length) / 2, y, line_length, line.height());
+    const QRectF rect = boundingRect();
+
+    painter->drawPixmap(left_blank_width, split_line_y, line, (line.width() - line_length) / 2, rect.y(), line_length, line.height());
 
     QPixmap seat = G_ROOM_SKIN.getPixmap(QSanRoomSkin::S_SKIN_KEY_CHOOSE_GENERAL_BOX_DEST_SEAT);
     QRect seat1_rect(rect.center().x() - G_COMMON_LAYOUT.m_cardNormalWidth - card_to_center_line - 2, split_line_y + split_line_to_card_seat - 2, G_COMMON_LAYOUT.m_cardNormalWidth + 4, G_COMMON_LAYOUT.m_cardNormalHeight + 4);
@@ -192,13 +193,15 @@ void ChooseGeneralBox::paint(QPainter *painter, const QStyleOptionGraphicsItem *
 }
 
 QRectF ChooseGeneralBox::boundingRect() const {
-    //确定第一行和第二行容纳的武将数
+    //confirm the general count of the first and second row
     int first_row, second_row = 0;
 
-    //6将及以上分成两行，第二行牌数不超过第一行，两行牌差不超过1
-    if (general_number < 6)
+    //arrange them in two rows if there are more than 6 generals.
+    //Number of cards in the second row cannot be greater than that in the first row
+    //and the difference should not be greater than 1.
+    if (general_number < 6) {
         first_row = general_number;
-    else {
+    } else {
         second_row = general_number / 2;
         first_row = general_number - second_row;
     }
@@ -210,42 +213,88 @@ QRectF ChooseGeneralBox::boundingRect() const {
     if (second_row)
         height += (card_to_center_line + G_COMMON_LAYOUT.m_cardNormalHeight);
 
-    if (single_result) return QRectF(0, 0, width, height);
-    
-    height += G_COMMON_LAYOUT.m_cardNormalHeight + card_bottom_to_split_line + split_line_to_card_seat;
+    //No need to reserve space for button
+    if (single_result) {
+        height -= 30;
+    } else if (!view_only) {
+        height += G_COMMON_LAYOUT.m_cardNormalHeight + card_bottom_to_split_line + split_line_to_card_seat;
+    }
 
     return QRectF(0, 0, width, height);
 }
 
-void ChooseGeneralBox::chooseGeneral(QStringList generals) {
-    //重新绘制背景
-    if (generals.contains("anjiang(lord)")) generals.removeAll("anjiang(lord)");
+static bool sortByKingdom(const QString &gen1, const QString &gen2){
+    static QMap<QString, int> kingdom_priority_map;
+    if (kingdom_priority_map.isEmpty()){
+        QStringList kingdoms = Sanguosha->getKingdoms();
+        //kingdoms << "god";
+        int i = 0;
+        foreach(QString kingdom, kingdoms){
+            kingdom_priority_map[kingdom] = i++;
+        }
+    }
+    const General *g1 = Sanguosha->getGeneral(gen1);
+    const General *g2 = Sanguosha->getGeneral(gen2);
+
+    return kingdom_priority_map[g1->getKingdom()] < kingdom_priority_map[g2->getKingdom()];
+}
+
+void ChooseGeneralBox::chooseGeneral(const QStringList &_generals, bool view_only, bool single_result, const QString &reason, const Player *player) {
+    //repaint background
+    QStringList generals = _generals;
+    this->single_result = single_result;
+    if (view_only)
+        title = reason;
+    if (this->view_only != view_only) {
+        this->view_only = view_only;
+        confirm->setText(view_only ? tr("confirm") : tr("fight"));
+    }
+    foreach(QString general, _generals){
+        if (general.endsWith("(lord)"))
+            generals.removeOne(general);
+    }
+
     general_number = generals.length();
-    update();
+    prepareGeometryChange();
 
     items.clear();
     selected.clear();
-    foreach(QString general, generals) {
-        if (general.endsWith("(lord)")) continue;
-        GeneralCardItem *general_item = new GeneralCardItem(general);
-        general_item->setFlag(QGraphicsItem::ItemIsFocusable);
+    int z = generals.length();
 
-        if (single_result)
+    //DO NOT USE qSort HERE FOR WE NEED TO KEEP THE INITIAL ORDER IN SOME CASES
+    qStableSort(generals.begin(), generals.end(), sortByKingdom);
+
+    foreach(QString general, generals) {
+        int skinId = 0;
+        if (player) {
+            if (player->getGeneralName() == general)
+                skinId = player->getHeadSkinId();
+            else
+                skinId = player->getDeputySkinId();
+        }
+
+        GeneralCardItem *general_item = new GeneralCardItem(general, skinId);
+        general_item->setFlag(QGraphicsItem::ItemIsFocusable);
+        general_item->setZValue(z--);
+
+        if (view_only || single_result) {
             general_item->setFlag(QGraphicsItem::ItemIsMovable, false);
-        else {
+        } else {
             general_item->setAutoBack(true);
             connect(general_item, SIGNAL(released()), this, SLOT(_adjust()));
         }
 
-        connect(general_item, SIGNAL(clicked()), this, SLOT(_onItemClicked()));
-        connect(general_item, SIGNAL(enter_hover()), this, SLOT(_onCardItemHover()));
-        connect(general_item, SIGNAL(leave_hover()), this, SLOT(_onCardItemLeaveHover()));
-        connect(general_item, SIGNAL(general_changed()), this, SLOT(adjustItems()));
+        if (!view_only) {
+            connect(general_item, SIGNAL(clicked()), this, SLOT(_onItemClicked()));
+            if (!single_result) {
+                connect(general_item, SIGNAL(general_changed()), this,
+                        SLOT(adjustItems()));
+            }
+        }
 
-        if (!single_result) {
+        if (!single_result && !view_only) {
             const General *hero = Sanguosha->getGeneral(general);
-            foreach (QString other, generals) {
-                if (other.endsWith("(lord)")) continue;
+            foreach(QString other, generals) {
                 if (general != other && hero->isCompanionWith(other)) {
                     general_item->showCompanion();
                     break;
@@ -257,14 +306,14 @@ void ChooseGeneralBox::chooseGeneral(QStringList generals) {
         general_item->setParentItem(this);
     }
 
-    setPos(RoomSceneInstance->tableCenterPos() - QPointF(boundingRect().width() / 2, boundingRect().height() / 2));
+    moveToCenter();
     show();
 
     int card_width = G_COMMON_LAYOUT.m_cardNormalWidth;
     int card_height = G_COMMON_LAYOUT.m_cardNormalHeight;
     int first_row = (general_number < 6) ? general_number : ((general_number + 1) / 2);
 
-    for (int i = 0; i < items.length(); ++ i) {
+    for (int i = 0; i < items.length(); ++i) {
         GeneralCardItem *card_item = items.at(i);
 
         QPointF pos;
@@ -272,31 +321,33 @@ void ChooseGeneralBox::chooseGeneral(QStringList generals) {
             pos.setX(left_blank_width + (card_width + card_to_center_line) * i + card_width / 2);
             pos.setY(top_blank_width + card_height / 2);
         } else {
-            if (items.length() % 2 == 1)
-                pos.setX(left_blank_width + card_width / 2 + card_to_center_line / 2 
-                    + (card_width + card_to_center_line) * (i - first_row) + card_width / 2);
-            else
+            if (items.length() % 2 == 1) {
+                pos.setX(left_blank_width + card_width / 2 + card_to_center_line / 2
+                + (card_width + card_to_center_line) * (i - first_row) + card_width / 2);
+            } else {
                 pos.setX(left_blank_width + (card_width + card_to_center_line) * (i - first_row) + card_width / 2);
+            }
             pos.setY(top_blank_width + card_height + card_to_center_line + card_height / 2);
         }
 
         card_item->setPos(25, 45);
-        if (!single_result)
-            //把我家庭住址存下来，防止回不来
+        //store initial position
+        if (!single_result && !view_only)
             card_item->setData(S_DATA_INITIAL_HOME_POS, pos);
         card_item->setHomePos(pos);
         card_item->goBack(true);
     }
 
-    if (single_result)
+    if (single_result) {
         confirm->hide();
-    else {
+    } else {
         confirm->setPos(boundingRect().center().x() - confirm->boundingRect().width() / 2, boundingRect().height() - 60);
         confirm->show();
     }
-    _initializeItems();
+    if (!view_only && !single_result)
+        _initializeItems();
 
-    if (ServerInfo.OperationTimeout != 0) {
+    if (!view_only && ServerInfo.OperationTimeout != 0) {
         if (!progress_bar) {
             progress_bar = new QSanCommandProgressBar();
             progress_bar->setMinimumWidth(200);
@@ -304,7 +355,7 @@ void ChooseGeneralBox::chooseGeneral(QStringList generals) {
             progress_bar->setTimerEnabled(true);
             progress_bar_item = new QGraphicsProxyWidget(this);
             progress_bar_item->setWidget(progress_bar);
-            progress_bar_item->setPos(boundingRect().center().x() - progress_bar_item->boundingRect().width() / 2, boundingRect().height() - 30);
+            progress_bar_item->setPos(boundingRect().center().x() - progress_bar_item->boundingRect().width() / 2, boundingRect().height() - 20);
             connect(progress_bar, SIGNAL(timedOut()), this, SLOT(reply()));
         }
         progress_bar->setCountdown(QSanProtocol::S_COMMAND_CHOOSE_GENERAL);
@@ -316,9 +367,6 @@ void ChooseGeneralBox::_adjust() {
     GeneralCardItem *item = qobject_cast<GeneralCardItem *>(sender());
     if (item == NULL) return;
 
-    const int card_width = G_COMMON_LAYOUT.m_cardNormalWidth;
-
-    const int card_height = G_COMMON_LAYOUT.m_cardNormalHeight;
     int middle_y = top_blank_width + G_COMMON_LAYOUT.m_cardNormalHeight + card_bottom_to_split_line;
     if (general_number > 5)
         middle_y += (card_to_center_line + G_COMMON_LAYOUT.m_cardNormalHeight);
@@ -328,8 +376,11 @@ void ChooseGeneralBox::_adjust() {
         items << item;
         item->setHomePos(item->data(S_DATA_INITIAL_HOME_POS).toPointF());
         item->goBack(true);
-        //孩纸，回去吧
-    } else if (selected.length() == 2 && !Sanguosha->getGeneral(selected.first()->objectName())->isLord() && (selected.first() == item && item->x() > boundingRect().center().x() || selected.last() == item && item->x() < boundingRect().center().x()))
+        //the item is on the way
+    } else if (selected.length() == 2
+            && ((!Sanguosha->getGeneral(selected.first()->objectName())->isLord()
+                    && selected.first() == item && item->x() > boundingRect().center().x())
+                || (selected.last() == item && item->x() < boundingRect().center().x())))
         qSwap(selected[0], selected[1]);
     else if (items.contains(item) && item->y() > middle_y) {
         if (selected.length() > 1) return;
@@ -337,33 +388,44 @@ void ChooseGeneralBox::_adjust() {
         selected << item;
     }
 
-    if (!selected.isEmpty()) {
-        int dest_seat_y = top_blank_width + G_COMMON_LAYOUT.m_cardNormalHeight + card_bottom_to_split_line + split_line_to_card_seat + card_height / 2;
-        if (general_number > 5)
-            dest_seat_y += (card_to_center_line + card_height);
-        selected.first()->setHomePos(QPointF(boundingRect().center().x() - card_to_center_line - card_width / 2, dest_seat_y));
-        selected.first()->goBack(true);
-        if (selected.length() == 2) {
-            selected.last()->setHomePos(QPointF(boundingRect().center().x() + card_to_center_line + card_width / 2, dest_seat_y));
-            selected.last()->goBack(true);
-        }
-    }
-
     adjustItems();
 }
 
 void ChooseGeneralBox::adjustItems() {
+    if (!selected.isEmpty()) {
+        const int card_width = G_COMMON_LAYOUT.m_cardNormalWidth;
+        const int card_height = G_COMMON_LAYOUT.m_cardNormalHeight;
+
+        int dest_seat_y = top_blank_width + G_COMMON_LAYOUT.m_cardNormalHeight
+                + card_bottom_to_split_line + split_line_to_card_seat + card_height / 2
+                - 1;
+        if (general_number > 5)
+            dest_seat_y += (card_to_center_line + card_height);
+        selected.first()->setHomePos(QPointF(boundingRect().center().x()
+                                             - card_to_center_line - card_width / 2 - 2,
+                                             dest_seat_y));
+        selected.first()->goBack(true);
+        if (selected.length() == 2) {
+            selected.last()->setHomePos(QPointF(boundingRect().center().x()
+                                                + card_to_center_line + card_width / 2
+                                                - 1, dest_seat_y));
+            selected.last()->goBack(true);
+        }
+    }
+
     if (selected.length() == 2){
         foreach(GeneralCardItem *card, items)
             card->setFrozen(true);
         confirm->setEnabled(Sanguosha->getGeneral(selected.first()->objectName())->getKingdom()
-                         == Sanguosha->getGeneral(selected.last()->objectName())->getKingdom());
-    } else if (selected.length() == 1) {
+            == Sanguosha->getGeneral(selected.last()->objectName())->getKingdom());
+    }
+    else if (selected.length() == 1) {
         selected.first()->hideCompanion();
+        const General *seleted_general = Sanguosha->getGeneral(selected.first()->objectName());
         foreach(GeneralCardItem *card, items) {
-            const General *seleted_general = Sanguosha->getGeneral(selected.first()->objectName());
             const General *general = Sanguosha->getGeneral(card->objectName());
-            if (general->getKingdom() != seleted_general->getKingdom() || general->isLord()) {
+            if (BanPair::isBanned(seleted_general->objectName(), general->objectName())
+                || (general->getKingdom() != seleted_general->getKingdom() || general->isLord())){
                 if (!card->isFrozen())
                     card->setFrozen(true);
                 card->hideCompanion();
@@ -373,15 +435,17 @@ void ChooseGeneralBox::adjustItems() {
                 if (general->isCompanionWith(selected.first()->objectName())) {
                     selected.first()->showCompanion();
                     card->showCompanion();
-                } else card->hideCompanion();
+                } else {
+                    card->hideCompanion();
+                }
             }
         }
         if (confirm->isEnabled()) confirm->setEnabled(false);
     } else {
         _initializeItems();
-        foreach (GeneralCardItem *card, items) {
+        foreach(GeneralCardItem *card, items) {
             card->hideCompanion();
-            foreach (GeneralCardItem *other, items) {
+            foreach(GeneralCardItem *other, items) {
                 if (other->objectName().endsWith("(lord)")) continue;
                 const General *hero = Sanguosha->getGeneral(card->objectName());
                 if (card != other && hero->isCompanionWith(other->objectName())) {
@@ -400,10 +464,10 @@ void ChooseGeneralBox::_initializeItems() {
         generals << Sanguosha->getGeneral(item->objectName());
 
     int index = 0;
-    foreach (const General *general, generals) {
+    foreach(const General *general, generals) {
         int party = 0;
         bool has_lord = false;
-        foreach (const General *other, generals) {
+        foreach(const General *other, generals) {
             if (other->getKingdom() == general->getKingdom()) {
                 party++;
                 if (other != general && other->isLord())
@@ -414,16 +478,20 @@ void ChooseGeneralBox::_initializeItems() {
         if ((party < 2 || (selected.isEmpty() && has_lord && party == 2))) {
             if (!item->isFrozen())
                 item->setFrozen(true);
-        } else if (item->isFrozen())
+        } else if (item->isFrozen()) {
             item->setFrozen(false);
+        }
 
         if (Self->isDead() && item->isFrozen())
             item->setFrozen(false);
-        ++ index;
+        ++index;
     }
 }
 
 void ChooseGeneralBox::reply() {
+    if (view_only)
+        return clear();
+
     QString generals;
     if (!selected.isEmpty()) {
         generals = selected.first()->objectName();
@@ -439,18 +507,16 @@ void ChooseGeneralBox::reply() {
 }
 
 void ChooseGeneralBox::clear() {
-    foreach (GeneralCardItem *card_item, items)
+    foreach(GeneralCardItem *card_item, items)
         card_item->deleteLater();
 
-    foreach (GeneralCardItem *card_item, selected)
+    foreach(GeneralCardItem *card_item, selected)
         card_item->deleteLater();
 
     items.clear();
     selected.clear();
 
-    update();
-
-    hide();
+    disappear();
 }
 
 void ChooseGeneralBox::_onItemClicked() {
@@ -463,9 +529,6 @@ void ChooseGeneralBox::_onItemClicked() {
         return;
     }
 
-    const int card_width = G_COMMON_LAYOUT.m_cardNormalWidth;
-    const int card_height = G_COMMON_LAYOUT.m_cardNormalHeight;
-
     if (selected.contains(item)) {
         selected.removeOne(item);
         items << item;
@@ -477,31 +540,5 @@ void ChooseGeneralBox::_onItemClicked() {
         selected << item;
     }
 
-    if (!selected.isEmpty()) {
-        int dest_seat_y = top_blank_width + G_COMMON_LAYOUT.m_cardNormalHeight + card_bottom_to_split_line + split_line_to_card_seat + card_height / 2;
-        if (general_number > 5)
-            dest_seat_y += (card_to_center_line + card_height);
-        selected.first()->setHomePos(QPointF(boundingRect().center().x() - card_to_center_line - card_width / 2, dest_seat_y));
-        selected.first()->goBack(true);
-        if (selected.length() == 2) {
-            selected.last()->setHomePos(QPointF(boundingRect().center().x() + card_to_center_line + card_width / 2, dest_seat_y));
-            selected.last()->goBack(true);
-        }
-    }
-
     adjustItems();
-}
-
-void ChooseGeneralBox::_onCardItemHover() {
-    GeneralCardItem *card_item = qobject_cast<GeneralCardItem *>(sender());
-    if (!card_item || card_item->isFrozen()) return;
-
-    animations->emphasize(card_item);
-}
-
-void ChooseGeneralBox::_onCardItemLeaveHover() {
-    GeneralCardItem *card_item = qobject_cast<GeneralCardItem *>(sender());
-    if (!card_item || card_item->isFrozen()) return;
-
-    animations->effectOut(card_item);
 }

@@ -341,11 +341,9 @@ XiayingCard::XiayingCard() {
 void XiayingCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
     ServerPlayer *target = room->getCurrent();
 
-    CardMoveReason reason(CardMoveReason::S_REASON_GIVE, source->objectName(), target->objectName(), "haixing", QString());
+    CardMoveReason reason(CardMoveReason::S_REASON_GIVE, source->objectName(), target->objectName(), "xiaying", QString());
     room->obtainCard(target, this, reason, false);
-
-    int old_value = target->getMark("xiaying");
-    int new_value = old_value + subcards.length();
+	int new_value = target->getMark("xiaying") + subcards.length();
     room->setPlayerMark(target, "xiaying", new_value);
 }
 
@@ -405,22 +403,23 @@ public:
             }
             return QStringList();
         }
-        foreach (ServerPlayer *p, room->getAllPlayers())
+        foreach(ServerPlayer *p, room->getAllPlayers()){
             if (p->getMark("xiaying") > 0) {
                 room->setPlayerMark(p, "xiaying", 0);
                 room->detachSkillFromPlayer(p, "xiayingVS", true, true);
             }
-
-        QList<ServerPlayer *> inoris = room->findPlayersBySkillName(objectName());
-        foreach (ServerPlayer *inori, inoris)
-            if (inori->hasShownSkill(this)) {
-                foreach (ServerPlayer *p, room->getOtherPlayers(inori))
-                    if (inori->isFriendWith(p)) {
+        }
+        QList<ServerPlayer *> misuzus = room->findPlayersBySkillName(objectName());
+        foreach(ServerPlayer *misuzu, misuzus){
+            if (misuzu->hasShownSkill(this)) {
+                foreach(ServerPlayer *p, room->getOtherPlayers(misuzu)){
+                    if (misuzu->isFriendWith(p)) {
                         room->setPlayerMark(p, "xiaying", 1);
                         room->attachSkillToPlayer(p, "xiayingVS");
                     }
+                }
             }
-
+        }
         return QStringList();
     }
 

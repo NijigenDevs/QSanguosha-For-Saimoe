@@ -117,9 +117,6 @@
     <ClCompile Include="..\..\src\dialog\playercarddialog.cpp">
       <Filter>dialog</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\dialog\packagingeditor.cpp">
-      <Filter>dialog</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\dialog\mainwindow.cpp">
       <Filter>dialog</Filter>
     </ClCompile>
@@ -136,9 +133,6 @@
       <Filter>dialog</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\dialog\configdialog.cpp">
-      <Filter>dialog</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\dialog\choosegeneraldialog.cpp">
       <Filter>dialog</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\package\package.cpp">
@@ -232,9 +226,6 @@
       <Filter>server</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\core\protocol.cpp">
-      <Filter>core</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\core\jsonutils.cpp">
       <Filter>core</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\core\util.cpp">
@@ -441,9 +432,6 @@
     <ClCompile Include="Release\moc_chatwidget.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
-    <ClCompile Include="Release\moc_choosegeneraldialog.cpp">
-      <Filter>Generated Files\Release</Filter>
-    </ClCompile>
     <ClCompile Include="Release\moc_client.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
@@ -502,9 +490,6 @@
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
     <ClCompile Include="Release\moc_package.cpp">
-      <Filter>Generated Files\Release</Filter>
-    </ClCompile>
-    <ClCompile Include="Release\moc_packagingeditor.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
     <ClCompile Include="Release\moc_photo.cpp">
@@ -597,9 +582,6 @@
     <ClCompile Include="Debug\moc_chatwidget.cpp">
       <Filter>Generated Files\Debug</Filter>
     </ClCompile>
-    <ClCompile Include="Debug\moc_choosegeneraldialog.cpp">
-      <Filter>Generated Files\Debug</Filter>
-    </ClCompile>
     <ClCompile Include="Debug\moc_client.cpp">
       <Filter>Generated Files\Debug</Filter>
     </ClCompile>
@@ -658,9 +640,6 @@
       <Filter>Generated Files\Debug</Filter>
     </ClCompile>
     <ClCompile Include="Debug\moc_package.cpp">
-      <Filter>Generated Files\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="Debug\moc_packagingeditor.cpp">
       <Filter>Generated Files\Debug</Filter>
     </ClCompile>
     <ClCompile Include="Debug\moc_photo.cpp">
@@ -739,43 +718,232 @@
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\main.cpp" />
-    <ClCompile Include="Debug\moc_animation.cpp">
+    <ClCompile Include="Debug\moc_generalselector.cpp">
       <Filter>Generated Files\Debug</Filter>
     </ClCompile>
-    <ClCompile Include="Release\moc_animation.cpp">
+    <ClCompile Include="Release\moc_generalselector.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\package\comic.cpp">
-      <Filter>package</Filter>
+    <ClCompile Include="..\..\src\server\generalselector.cpp">
+      <Filter>server</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\package\game.cpp">
-      <Filter>package</Filter>
+    <ClCompile Include="..\..\src\dialog\UpdateChecker.cpp">
+      <Filter>dialog</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\package\moesen-package.cpp">
-      <Filter>package</Filter>
-    </ClCompile>
-    <ClCompile Include="Debug\moc_moesen-package.cpp">
+    <ClCompile Include="Debug\moc_UpdateChecker.cpp">
       <Filter>Generated Files\Debug</Filter>
     </ClCompile>
-    <ClCompile Include="Release\moc_moesen-package.cpp">
+    <ClCompile Include="Release\moc_UpdateChecker.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\package\novel.cpp">
+    <ClCompile Include="..\..\src\core\banpair.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\package\strategic-advantage.cpp">
       <Filter>package</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\package\animation.cpp">
-      <Filter>package</Filter>
-    </ClCompile>
-    <ClCompile Include="Debug\moc_novel.cpp">
+    <ClCompile Include="Debug\moc_strategic-advantage.cpp">
       <Filter>Generated Files\Debug</Filter>
     </ClCompile>
-    <ClCompile Include="Release\moc_novel.cpp">
+    <ClCompile Include="Release\moc_strategic-advantage.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
-    <ClCompile Include="Debug\moc_game.cpp">
+    <ClCompile Include="..\..\src\core\version.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\dialog\cardbutton.cpp">
+      <Filter>dialog</Filter>
+    </ClCompile>
+    <ClCompile Include="Debug\moc_cardbutton.cpp">
       <Filter>Generated Files\Debug</Filter>
     </ClCompile>
-    <ClCompile Include="Release\moc_game.cpp">
+    <ClCompile Include="Release\moc_cardbutton.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\ChooseOptionsBox.cpp">
+      <Filter>ui</Filter>
+    </ClCompile>
+    <ClCompile Include="Debug\moc_ChooseOptionsBox.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="Release\moc_ChooseOptionsBox.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\ChooseTriggerOrderBox.cpp">
+      <Filter>ui</Filter>
+    </ClCompile>
+    <ClCompile Include="Debug\moc_ChooseTriggerOrderBox.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="Release\moc_ChooseTriggerOrderBox.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\GraphicsBox.cpp">
+      <Filter>ui</Filter>
+    </ClCompile>
+    <ClCompile Include="Debug\moc_GraphicsBox.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="Release\moc_GraphicsBox.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\GuanxingBox.cpp">
+      <Filter>ui</Filter>
+    </ClCompile>
+    <ClCompile Include="Debug\moc_GuanxingBox.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="Release\moc_GuanxingBox.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\scenario\jiange-defense-scenario.cpp">
+      <Filter>scenario</Filter>
+    </ClCompile>
+    <ClCompile Include="Debug\moc_jiange-defense-scenario.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="Release\moc_jiange-defense-scenario.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\package\jiange-defense.cpp">
+      <Filter>package</Filter>
+    </ClCompile>
+    <ClCompile Include="Debug\moc_jiange-defense.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="Release\moc_jiange-defense.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="Debug\moc_Title.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="Release\moc_Title.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\Title.cpp">
+      <Filter>ui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\BubbleChatBox.cpp">
+      <Filter>ui</Filter>
+    </ClCompile>
+    <ClCompile Include="Debug\moc_BubbleChatBox.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="Release\moc_BubbleChatBox.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\StyleHelper.cpp">
+      <Filter>ui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\PlayerCardBox.cpp">
+      <Filter>ui</Filter>
+    </ClCompile>
+    <ClCompile Include="Debug\moc_PlayerCardBox.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="Release\moc_PlayerCardBox.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\core\json.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\dialog\FreeChooseDialog.cpp">
+      <Filter>dialog</Filter>
+    </ClCompile>
+    <ClCompile Include="Debug\moc_FreeChooseDialog.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="Release\moc_FreeChooseDialog.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\dialog\FlatDialog.cpp">
+      <Filter>dialog</Filter>
+    </ClCompile>
+    <ClCompile Include="Debug\moc_FlatDialog.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="Release\moc_FlatDialog.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\dialog\AvatarModel.cpp">
+      <Filter>dialog</Filter>
+    </ClCompile>
+    <ClCompile Include="Debug\moc_AvatarModel.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="Release\moc_AvatarModel.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\dialog\UdpDetectorDialog.cpp">
+      <Filter>dialog</Filter>
+    </ClCompile>
+    <ClCompile Include="Debug\moc_UdpDetectorDialog.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="Release\moc_UdpDetectorDialog.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\GraphicsPixmapHoverItem.cpp">
+      <Filter>ui</Filter>
+    </ClCompile>
+    <ClCompile Include="Debug\moc_GraphicsPixmapHoverItem.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="Release\moc_GraphicsPixmapHoverItem.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\HeroSkinContainer.cpp">
+      <Filter>ui</Filter>
+    </ClCompile>
+    <ClCompile Include="Debug\moc_HeroSkinContainer.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="Release\moc_HeroSkinContainer.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\dialog\GeneralModel.cpp">
+      <Filter>dialog</Filter>
+    </ClCompile>
+    <ClCompile Include="Debug\moc_GeneralModel.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="Release\moc_GeneralModel.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\SkinItem.cpp">
+      <Filter>ui</Filter>
+    </ClCompile>
+    <ClCompile Include="Debug\moc_SkinItem.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="Release\moc_SkinItem.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\dialog\banipdialog.cpp">
+      <Filter>dialog</Filter>
+    </ClCompile>
+    <ClCompile Include="Debug\moc_banipdialog.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="Release\moc_banipdialog.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\dialog\banlistdialog.cpp">
+      <Filter>dialog</Filter>
+    </ClCompile>
+    <ClCompile Include="Debug\moc_banlistdialog.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="Release\moc_banlistdialog.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\dialog\serverdialog.cpp">
+      <Filter>dialog</Filter>
+    </ClCompile>
+    <ClCompile Include="Debug\moc_serverdialog.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="Release\moc_serverdialog.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
   </ItemGroup>
@@ -837,9 +1005,6 @@
     <CustomBuild Include="..\..\src\dialog\cardoverview.h">
       <Filter>dialog</Filter>
     </CustomBuild>
-    <CustomBuild Include="..\..\src\dialog\choosegeneraldialog.h">
-      <Filter>dialog</Filter>
-    </CustomBuild>
     <CustomBuild Include="..\..\src\dialog\configdialog.h">
       <Filter>dialog</Filter>
     </CustomBuild>
@@ -853,9 +1018,6 @@
       <Filter>dialog</Filter>
     </CustomBuild>
     <CustomBuild Include="..\..\src\dialog\mainwindow.h">
-      <Filter>dialog</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\..\src\dialog\packagingeditor.h">
       <Filter>dialog</Filter>
     </CustomBuild>
     <CustomBuild Include="..\..\src\dialog\playercarddialog.h">
@@ -996,27 +1158,87 @@
     <CustomBuild Include="..\..\src\package\standard-package.h">
       <Filter>package</Filter>
     </CustomBuild>
-    <CustomBuild Include="..\..\src\package\animation.h">
+    <CustomBuild Include="..\..\src\server\generalselector.h">
+      <Filter>server</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\src\dialog\UpdateChecker.h">
+      <Filter>dialog</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\src\package\strategic-advantage.h">
       <Filter>package</Filter>
     </CustomBuild>
-    <CustomBuild Include="..\..\src\package\moesen-package.h">
+    <CustomBuild Include="..\..\src\dialog\cardbutton.h">
+      <Filter>dialog</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\src\ui\ChooseOptionsBox.h">
+      <Filter>ui</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\src\ui\ChooseTriggerOrderBox.h">
+      <Filter>ui</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\src\ui\GraphicsBox.h">
+      <Filter>ui</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\src\ui\GuanxingBox.h">
+      <Filter>ui</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\src\scenario\jiange-defense-scenario.h">
+      <Filter>scenario</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\src\package\jiange-defense.h">
       <Filter>package</Filter>
     </CustomBuild>
-    <CustomBuild Include="..\..\src\package\novel.h">
-      <Filter>package</Filter>
+    <CustomBuild Include="..\..\src\ui\Title.h">
+      <Filter>ui</Filter>
     </CustomBuild>
-    <CustomBuild Include="..\..\src\package\comic.h">
-      <Filter>package</Filter>
+    <CustomBuild Include="..\..\src\ui\BubbleChatBox.h">
+      <Filter>ui</Filter>
     </CustomBuild>
-    <CustomBuild Include="..\..\src\package\game.h">
-      <Filter>package</Filter>
+    <CustomBuild Include="..\..\src\ui\PlayerCardBox.h">
+      <Filter>ui</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\src\dialog\FreeChooseDialog.h">
+      <Filter>dialog</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\src\dialog\FlatDialog.h">
+      <Filter>dialog</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\src\dialog\AvatarModel.h">
+      <Filter>dialog</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\src\dialog\UdpDetectorDialog.h">
+      <Filter>dialog</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\src\ui\GraphicsPixmapHoverItem.h">
+      <Filter>ui</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\src\ui\HeroSkinContainer.h">
+      <Filter>ui</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\src\dialog\GeneralModel.h">
+      <Filter>dialog</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\src\ui\SkinItem.h">
+      <Filter>ui</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\src\dialog\banipdialog.h">
+      <Filter>dialog</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\src\dialog\banlistdialog.h">
+      <Filter>dialog</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\src\dialog\serverdialog.h">
+      <Filter>dialog</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\src\dialog\mainwindow_nonwin.ui">
+      <Filter>dialog\form</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\swig\sanguosha.i">
       <Filter>Swig Files</Filter>
     </None>
-    <None Include="sanguosha.ts">
+    <None Include="..\sanguosha.ts">
       <Filter>Translation Files</Filter>
     </None>
     <None Include="..\..\swig\ai.i">
@@ -1089,9 +1311,6 @@
     <ClInclude Include="..\..\src\core\protocol.h">
       <Filter>core</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\core\jsonutils.h">
-      <Filter>core</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\core\structs.h">
       <Filter>core</Filter>
     </ClInclude>
@@ -1109,6 +1328,21 @@
     </ClInclude>
     <ClInclude Include="..\..\src\core\util.h">
       <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\core\banpair.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\core\version.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\ui\StyleHelper.h">
+      <Filter>ui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\core\json.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GeneratedFiles\ui_mainwindow_nonwin.h">
+      <Filter>Generated Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

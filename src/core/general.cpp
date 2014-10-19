@@ -1,17 +1,41 @@
+/********************************************************************
+    Copyright (c) 2013-2014 - QSanguosha-Rara
+
+    This file is part of QSanguosha-Hegemony.
+
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    See the LICENSE file for more details.
+
+    QSanguosha-Rara
+    *********************************************************************/
+
 #include "general.h"
 #include "engine.h"
 #include "skill.h"
 #include "package.h"
 #include "client.h"
 #include "settings.h"
+#include "skinbank.h"
 
 #include <QSize>
 #include <QFile>
 
 General::General(Package *package, const QString &name, const QString &kingdom,
-                 int double_max_hp, bool male, bool hidden, bool never_shown)
-    : QObject(package), kingdom(kingdom), double_max_hp(double_max_hp), gender(male ? Male : Female),
-      hidden(hidden), never_shown(never_shown), head_max_hp_adjusted_value(0), deputy_max_hp_adjusted_value(0)
+    int double_max_hp, bool male, bool hidden, bool never_shown)
+    : QObject(package), kingdom(kingdom),
+      double_max_hp(double_max_hp), gender(male ? Male : Female),
+      hidden(hidden), never_shown(never_shown),
+      head_max_hp_adjusted_value(0), deputy_max_hp_adjusted_value(0),
+      skin_count(-1)
 {
     static QChar lord_symbol('$');
     if (name.endsWith(lord_symbol)) {
@@ -19,7 +43,8 @@ General::General(Package *package, const QString &name, const QString &kingdom,
         copy.remove(lord_symbol);
         lord = true;
         setObjectName(copy);
-    } else {
+    }
+    else {
         lord = false;
         setObjectName(name);
     }
@@ -93,7 +118,7 @@ bool General::hasSkill(const QString &skill_name) const{
 
 QList<const Skill *> General::getSkillList(bool relate_to_place, bool head_only) const{
     QList<const Skill *> skills;
-    foreach (QString skill_name, skillname_list) {
+    foreach(QString skill_name, skillname_list) {
         const Skill *skill = Sanguosha->getSkill(skill_name);
         Q_ASSERT(skill != NULL);
         if (relate_to_place && !skill->relateToPlace(!head_only))
@@ -105,7 +130,7 @@ QList<const Skill *> General::getSkillList(bool relate_to_place, bool head_only)
 
 QList<const Skill *> General::getVisibleSkillList(bool relate_to_place, bool head_only) const{
     QList<const Skill *> skills;
-    foreach (const Skill *skill, getSkillList(relate_to_place, head_only)) {
+    foreach(const Skill *skill, getSkillList(relate_to_place, head_only)) {
         if (skill->isVisible())
             skills << skill;
     }
@@ -119,7 +144,7 @@ QSet<const Skill *> General::getVisibleSkills(bool relate_to_place, bool head_on
 
 QSet<const TriggerSkill *> General::getTriggerSkills() const{
     QSet<const TriggerSkill *> skills;
-    foreach (QString skill_name, skillname_list) {
+    foreach(QString skill_name, skillname_list) {
         const TriggerSkill *skill = Sanguosha->getTriggerSkill(skill_name);
         if (skill)
             skills << skill;
@@ -147,13 +172,14 @@ QString General::getCompanions() const{
     if (isLord())
         return tr("%1 Generals").arg(Sanguosha->translate(getKingdom()));
     QStringList name;
-    foreach (QString general, companions)
+    foreach(QString general, companions)
         name << QString("%1").arg(Sanguosha->translate(general));
-    foreach (QString gnr, Sanguosha->getGeneralNames()) {
-        if (!Sanguosha->getGeneral(gnr))
+    GeneralList generals(Sanguosha->getGeneralList());
+    foreach(const General *gnr, generals) {
+        if (!gnr)
             continue;
-        if (Sanguosha->getGeneral(gnr)->companions.contains(objectName()))
-            name << QString("%1").arg(Sanguosha->translate(gnr));
+        if (gnr->companions.contains(objectName()))
+            name << QString("%1").arg(Sanguosha->translate(gnr->objectName()));
     }
     return name.join(" ");
 }
@@ -161,7 +187,7 @@ QString General::getCompanions() const{
 QString General::getSkillDescription(bool include_name, bool inToolTip) const{
     QString description;
 
-    foreach (const Skill *skill, getVisibleSkillList()) {
+    foreach(const Skill *skill, getVisibleSkillList()) {
         QString skill_name = Sanguosha->translate(skill->objectName());
         QString desc = skill->getDescription(inToolTip);
         desc.replace("\n", "<br/>");
@@ -190,7 +216,7 @@ QString General::getSkillDescription(bool include_name, bool inToolTip) const{
                 name.append("<img src='image/system/magatamas/half.png' height = 12/>");
             else {
                 name.append("<img src='image/system/magatamas/full-waken.png' height = 12/>");
-                waken ++;
+                waken++;
             }
         }
         if (waken < 0) {
@@ -214,15 +240,58 @@ QString General::getSkillDescription(bool include_name, bool inToolTip) const{
     return description;
 }
 
-void General::lastWord() const{
-    QString filename = QString("audio/death/%1.ogg").arg(objectName());
-    bool fileExists = QFile::exists(filename);
-    if (!fileExists) {
-        QStringList origin_generals = objectName().split("_");
-        if (origin_generals.length() > 1)
-            filename = QString("audio/death/%1.ogg").arg(origin_generals.last());
+void General::lastWord(const int skinId) const
+{
+    QString fileName;
+    if (skinId == 0) {
+        fileName = QString("audio/death/%1.ogg").arg(objectName());
+        if (!QFile::exists(fileName)) {
+            QStringList origin_generals = objectName().split("_");
+            if (origin_generals.length() > 1) {
+                fileName = QString("audio/death/%1.ogg")
+                        .arg(origin_generals.last());
+            }
+        }
+    } else {
+        fileName = QString("hero-skin/%1/%2/death.ogg")
+                .arg(objectName()).arg(skinId);
+        if (!QFile::exists(fileName)) {
+            QStringList origin_generals = objectName().split("_");
+            if (origin_generals.length() > 1) {
+                fileName = QString("hero-skin/%1/%2/death.ogg")
+                        .arg(origin_generals.last()).arg(skinId);
+            }
+        }
+        if (!QFile::exists(fileName)) {
+            fileName = QString("audio/death/%1.ogg").arg(objectName());
+            if (!QFile::exists(fileName)) {
+                QStringList origin_generals = objectName().split("_");
+                if (origin_generals.length() > 1) {
+                    fileName = QString("audio/death/%1.ogg")
+                            .arg(origin_generals.last());
+                }
+            }
+        }
     }
-    Sanguosha->playAudioEffect(filename);
+
+    Sanguosha->playAudioEffect(fileName);
+}
+
+void General::tryLoadingSkinTranslation(const int skinId) const
+{
+    if (translated_skins.contains(skinId))
+        return;
+
+    const QString file = QString("hero-skin/%1/%2/%3.lua")
+            .arg(objectName()).arg(skinId)
+            .arg(Config.value("Language", "zh_CN").toString());
+
+    if (QFile::exists(file)) {
+        Sanguosha->setProperty("CurrentSkinId", skinId);
+        DoLuaScript(Sanguosha->getLuaState(), file.toLatin1().constData());
+    }
+
+    translated_skins << skinId;
 }
 
 void General::addCompanion(const QString &name) {
@@ -235,13 +304,50 @@ bool General::isCompanionWith(const QString &name) const {
     if (kingdom != other->kingdom)
         return false;
     return lord || other->lord || companions.contains(name)
-           || other->companions.contains(objectName());
+        || other->companions.contains(objectName());
 }
 
-void General::setHeadMaxHpAdjustedValue(const int adjusted_value /* = -1 */) {
-    this->head_max_hp_adjusted_value = adjusted_value;
+void General::setHeadMaxHpAdjustedValue(int adjusted_value /* = -1 */) {
+    head_max_hp_adjusted_value = adjusted_value;
 }
 
-void General::setDeputyMaxHpAdjustedValue(const int adjusted_value /* = -1 */) {
-    this->deputy_max_hp_adjusted_value = adjusted_value;
+void General::setDeputyMaxHpAdjustedValue(int adjusted_value /* = -1 */) {
+    deputy_max_hp_adjusted_value = adjusted_value;
+}
+
+int General::skinCount() const
+{
+    if (skin_count != -1)
+        return skin_count;
+
+    forever {
+        if (!G_ROOM_SKIN.doesGeneralHaveSkin(objectName(), (++skin_count) + 1))
+            return skin_count;
+    }
+}
+
+QString General::getTitle(const int skinId) const
+{
+    QString title;
+    const QString id = QString::number(skinId);
+    if (skinId == 0)
+        title = Sanguosha->translate("#" + objectName());
+    else
+        title = Sanguosha->translate("#" + id + objectName());
+
+    if (title.startsWith("#")) {
+        if (objectName().contains("_")) {
+            const QString generalName = objectName().split("_").last();
+            if (skinId == 0) {
+                title = Sanguosha->translate(("#") + generalName);
+            } else {
+                title = Sanguosha->translate(("#") + id + generalName);
+                if (title.startsWith("#"))
+                    title = Sanguosha->translate(("#") + generalName);
+            }
+        } else if (skinId != 0) {
+            title = Sanguosha->translate("#" + objectName());
+        }
+    }
+    return title;
 }

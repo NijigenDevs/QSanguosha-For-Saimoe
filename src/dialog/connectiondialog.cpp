@@ -1,40 +1,42 @@
+/********************************************************************
+    Copyright (c) 2013-2014 - QSanguosha-Rara
+
+    This file is part of QSanguosha-Hegemony.
+
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    See the LICENSE file for more details.
+
+    QSanguosha-Rara
+    *********************************************************************/
+
 #include "connectiondialog.h"
 #include "ui_connectiondialog.h"
 #include "settings.h"
 #include "engine.h"
-#include "detector.h"
-#include "SkinBank.h"
+#include "stylehelper.h"
+#include "udpdetectordialog.h"
+#include "avatarmodel.h"
+#include "skinbank.h"
 
 #include <QMessageBox>
-#include <QTimer>
 #include <QRadioButton>
 #include <QBoxLayout>
+#include <QScrollBar>
 
-static const int ShrinkWidth = 285;
-static const int ExpandWidth = 826;
-
-void ConnectionDialog::hideAvatarList() {
-    if (!ui->avatarList->isVisible()) return;
-    ui->avatarList->hide();
-    ui->avatarList->clear();
-}
-
-void ConnectionDialog::showAvatarList() {
-    if (ui->avatarList->isVisible()) return;
-    ui->avatarList->clear();
-    QList<const General *> generals = Sanguosha->findChildren<const General *>();
-    foreach (const General *general, generals) {
-        if (general->isTotallyHidden()) continue;
-        QIcon icon(G_ROOM_SKIN.getGeneralPixmap(general->objectName(), QSanRoomSkin::S_GENERAL_ICON_SIZE_LARGE));
-        QString text = Sanguosha->translate(general->objectName());
-        QListWidgetItem *item = new QListWidgetItem(icon, text, ui->avatarList);
-        item->setData(Qt::UserRole, general->objectName());
-    }
-    ui->avatarList->show();
-}
+static const int ShrinkWidth = 317;
+static const int ExpandWidth = 619;
 
 ConnectionDialog::ConnectionDialog(QWidget *parent)
-    : QDialog(parent), ui(new Ui::ConnectionDialog)
+    : FlatDialog(parent, false), ui(new Ui::ConnectionDialog)
 {
     ui->setupUi(this);
 
@@ -46,18 +48,45 @@ ConnectionDialog::ConnectionDialog(QWidget *parent)
     ui->connectButton->setFocus();
 
     ui->avatarPixmap->setPixmap(G_ROOM_SKIN.getGeneralPixmap(Config.UserAvatar,
-                                QSanRoomSkin::S_GENERAL_ICON_SIZE_LARGE));
-
-    hideAvatarList();
+        QSanRoomSkin::S_GENERAL_ICON_SIZE_LARGE));
 
     ui->reconnectionCheckBox->setChecked(Config.value("EnableReconnection", false).toBool());
 
-    setFixedHeight(height());
-    setFixedWidth(ShrinkWidth);
+    connect(this, SIGNAL(windowTitleChanged(QString)), ui->title, SLOT(setText(QString)));
+
+    QScrollBar *bar = ui->avatarList->verticalScrollBar();
+    bar->setStyleSheet(StyleHelper::styleSheetOfScrollBar());
+
+    resize(ShrinkWidth, height());
+
+    ui->avatarList->hide();
 }
 
 ConnectionDialog::~ConnectionDialog() {
     delete ui;
+}
+
+void ConnectionDialog::hideAvatarList() {
+    if (!ui->avatarList->isVisible()) return;
+    ui->avatarList->hide();
+}
+
+void ConnectionDialog::showAvatarList() {
+    if (ui->avatarList->isVisible()) return;
+
+    if (ui->avatarList->model() == NULL) {
+        QList<const General *> generals = Sanguosha->getGeneralList();
+        QMutableListIterator<const General *> itor = generals;
+        while (itor.hasNext()) {
+            if (itor.next()->isTotallyHidden())
+                itor.remove();
+        }
+
+        AvatarModel *model = new AvatarModel(generals);
+        model->setParent(this);
+        ui->avatarList->setModel(model);
+    }
+    ui->avatarList->show();
 }
 
 void ConnectionDialog::on_connectButton_clicked() {
@@ -80,28 +109,30 @@ void ConnectionDialog::on_connectButton_clicked() {
 
 void ConnectionDialog::on_changeAvatarButton_clicked() {
     if (ui->avatarList->isVisible()) {
-        QListWidgetItem *selected = ui->avatarList->currentItem();
-        if (selected)
-            on_avatarList_itemDoubleClicked(selected);
-        else {
+        QModelIndex index = ui->avatarList->currentIndex();
+        if (index.isValid()) {
+            on_avatarList_doubleClicked(index);
+        } else {
             hideAvatarList();
-            setFixedWidth(ShrinkWidth);
+            resize(ShrinkWidth, height());
         }
     } else {
         showAvatarList();
-        setFixedWidth(ExpandWidth);
+        //Avoid violating the constraints
+        //setFixedWidth(ExpandWidth);
+        resize(ExpandWidth, height());
     }
 }
 
-void ConnectionDialog::on_avatarList_itemDoubleClicked(QListWidgetItem *item) {
-    QString general_name = item->data(Qt::UserRole).toString();
+void ConnectionDialog::on_avatarList_doubleClicked(const QModelIndex &index) {
+    QString general_name = ui->avatarList->model()->data(index, Qt::UserRole).toString();
     QPixmap avatar(G_ROOM_SKIN.getGeneralPixmap(general_name, QSanRoomSkin::S_GENERAL_ICON_SIZE_LARGE));
     ui->avatarPixmap->setPixmap(avatar);
     Config.UserAvatar = general_name;
     Config.setValue("UserAvatar", general_name);
     hideAvatarList();
 
-    setFixedWidth(ShrinkWidth);
+    resize(ShrinkWidth, height());
 }
 
 void ConnectionDialog::on_clearHistoryButton_clicked() {
@@ -115,67 +146,7 @@ void ConnectionDialog::on_clearHistoryButton_clicked() {
 void ConnectionDialog::on_detectLANButton_clicked() {
     UdpDetectorDialog *detector_dialog = new UdpDetectorDialog(this);
     connect(detector_dialog, SIGNAL(address_chosen(QString)),
-            ui->hostComboBox->lineEdit(), SLOT(setText(QString)));
+        ui->hostComboBox->lineEdit(), SLOT(setText(QString)));
 
     detector_dialog->exec();
 }
-
-// -----------------------------------
-
-UdpDetectorDialog::UdpDetectorDialog(QDialog *parent)
-    : QDialog(parent)
-{
-    setWindowTitle(tr("Detect available server's addresses at LAN"));
-    detect_button = new QPushButton(tr("Refresh"));
-
-    QHBoxLayout *hlayout = new QHBoxLayout;
-    hlayout->addStretch();
-    hlayout->addWidget(detect_button);
-
-    list = new QListWidget;
-    QVBoxLayout *layout = new QVBoxLayout;
-    layout->addWidget(list);
-    layout->addLayout(hlayout);
-
-    setLayout(layout);
-
-    detector = NULL;
-    connect(detect_button, SIGNAL(clicked()), this, SLOT(startDetection()));
-    connect(list, SIGNAL(itemDoubleClicked(QListWidgetItem *)), this, SLOT(chooseAddress(QListWidgetItem *)));
-
-    detect_button->click();
-}
-
-void UdpDetectorDialog::startDetection() {
-    list->clear();
-    detect_button->setEnabled(false);
-
-    detector = new UdpDetector;
-    connect(detector, SIGNAL(detected(QString, QString)), this, SLOT(addServerAddress(QString, QString)));
-    QTimer::singleShot(2000, this, SLOT(stopDetection()));
-
-    detector->detect();
-}
-
-void UdpDetectorDialog::stopDetection() {
-    detect_button->setEnabled(true);
-    detector->stop();
-    delete detector;
-    detector = NULL;
-}
-
-void UdpDetectorDialog::addServerAddress(const QString &server_name, const QString &address) {
-    QString label = QString("%1 [%2]").arg(server_name).arg(address);
-    QListWidgetItem *item = new QListWidgetItem(label);
-    item->setData(Qt::UserRole, address);
-
-    list->addItem(item);
-}
-
-void UdpDetectorDialog::chooseAddress(QListWidgetItem *item) {
-    accept();
-
-    QString address = item->data(Qt::UserRole).toString();
-    emit address_chosen(address);
-}
-

@@ -1,3 +1,23 @@
+/********************************************************************
+    Copyright (c) 2013-2014 - QSanguosha-Rara
+
+    This file is part of QSanguosha-Hegemony.
+
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    See the LICENSE file for more details.
+
+    QSanguosha-Rara
+    *********************************************************************/
+
 #include "standard-shu-generals.h"
 #include "structs.h"
 #include "standard-basics.h"
@@ -11,12 +31,13 @@ RendeCard::RendeCard() {
     handling_method = Card::MethodNone;
 }
 
-void RendeCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
-    ServerPlayer *target = targets.first();
-
-    CardMoveReason reason(CardMoveReason::S_REASON_GIVE, source->objectName(), target->objectName(), "rende", QString());
+void RendeCard::extraCost(Room *room, const CardUseStruct &card_use) const{
+    ServerPlayer *target = card_use.to.first();
+    CardMoveReason reason(CardMoveReason::S_REASON_GIVE, card_use.from->objectName(), target->objectName(), "rende", QString());
     room->obtainCard(target, this, reason, false);
+}
 
+void RendeCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const{
     int old_value = source->getMark("rende");
     int new_value = old_value + subcards.length();
     room->setPlayerMark(source, "rende", new_value);
@@ -29,9 +50,9 @@ void RendeCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &tar
     }
 }
 
-class RendeViewAsSkill: public ViewAsSkill {
+class RendeViewAsSkill : public ViewAsSkill {
 public:
-    RendeViewAsSkill(): ViewAsSkill("rende") {
+    RendeViewAsSkill() : ViewAsSkill("rende") {
     }
 
     virtual bool viewFilter(const QList<const Card *> &, const Card *to_select) const{
@@ -53,14 +74,14 @@ public:
     }
 };
 
-class Rende: public TriggerSkill {
+class Rende : public TriggerSkill {
 public:
-    Rende(): TriggerSkill("rende") {
+    Rende() : TriggerSkill("rende") {
         events << EventPhaseChanging;
         view_as_skill = new RendeViewAsSkill;
     }
 
-    virtual QStringList triggerable(TriggerEvent , Room *room, ServerPlayer *target, QVariant &data, ServerPlayer * &) const{
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *target, QVariant &data, ServerPlayer * &) const{
         if (target->getMark("rende") > 0) {
             PhaseChangeStruct change = data.value<PhaseChangeStruct>();
             if (change.to == Player::NotActive)
@@ -70,9 +91,10 @@ public:
     }
 };
 
-class Wusheng: public OneCardViewAsSkill {
+class Wusheng : public OneCardViewAsSkill {
 public:
-    Wusheng(): OneCardViewAsSkill("wusheng") {
+    Wusheng() : OneCardViewAsSkill("wusheng") {
+        response_or_use = true;
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{
@@ -85,7 +107,7 @@ public:
 
     virtual bool viewFilter(const Card *card) const{
         const Player *lord = Self->getLord();
-        if (lord == NULL || !lord->hasLordSkill("shouyue"))
+        if (lord == NULL || !lord->hasLordSkill("shouyue") || !lord->hasShownGeneral1())
             if (!card->isRed())
                 return false;
 
@@ -107,9 +129,9 @@ public:
     }
 };
 
-class Paoxiao: public TargetModSkill {
+class Paoxiao : public TargetModSkill {
 public:
-    Paoxiao(): TargetModSkill("paoxiao") {
+    Paoxiao() : TargetModSkill("paoxiao") {
     }
 
     virtual int getResidueNum(const Player *from, const Card *) const{
@@ -120,34 +142,29 @@ public:
     }
 };
 
-class PaoxiaoArmorNullificaion: public TriggerSkill{
+class PaoxiaoArmorNullificaion : public TriggerSkill{
 public:
-    PaoxiaoArmorNullificaion(): TriggerSkill("paoxiao_null"){
+    PaoxiaoArmorNullificaion() : TriggerSkill("#paoxiao-null"){
         events << TargetChosen;
-        global = true;
         frequency = Compulsory;
     }
 
-    virtual QStringList triggerable(TriggerEvent , Room *room, ServerPlayer *player, QVariant &data, ServerPlayer * &) const{
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer * &) const{
         if (!(player != NULL && player->isAlive() && player->hasSkill("paoxiao")))
             return QStringList();
 
         ServerPlayer *lord = room->getLord(player->getKingdom());
-        if (lord != NULL && lord->hasLordSkill("shouyue")){
+        if (lord != NULL && lord->hasLordSkill("shouyue") && lord->hasShownGeneral1()){
             CardUseStruct use = data.value<CardUseStruct>();
-            if (use.card->isKindOf("Slash") && use.from == player){
-                foreach (ServerPlayer *p, use.to.toSet()){
-                    if (p->getMark("Equips_of_Others_Nullified_to_You") == 0)
-                        return QStringList(objectName());
-                }
-            }
+            if (use.card->isKindOf("Slash") && use.from == player)
+                return QStringList(objectName());
         }
 
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent , Room *, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
-        if (player->hasShownSkill(Sanguosha->getSkill("paoxiao")))
+    virtual bool cost(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        if (player->hasShownSkill("paoxiao"))
             return true;
         else {
             player->tag["paoxiao_use"] = data;
@@ -161,20 +178,19 @@ public:
         return false;
     }
 
-    virtual bool effect(TriggerEvent , Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
         ServerPlayer *lord = room->getLord(player->getKingdom());
         room->notifySkillInvoked(lord, "shouyue");
         CardUseStruct use = data.value<CardUseStruct>();
-        foreach (ServerPlayer *p, use.to.toSet()){
+        foreach (ServerPlayer *p, use.to.toSet())
             p->addQinggangTag(use.card);
-        }
         return false;
     }
 };
 
-class Guanxing: public PhaseChangeSkill {
+class Guanxing : public PhaseChangeSkill {
 public:
-    Guanxing(): PhaseChangeSkill("guanxing") {
+    Guanxing() : PhaseChangeSkill("guanxing") {
         frequency = Frequent;
     }
 
@@ -182,26 +198,37 @@ public:
         return false;
     }
 
-    virtual QStringList triggerable(TriggerEvent , Room *, ServerPlayer *player, QVariant &, ServerPlayer * &) const{
-        return (TriggerSkill::triggerable(player) && player->getPhase() == Player::Start) ? QStringList(objectName()) : QStringList();
+    virtual bool triggerable(const ServerPlayer *player) const{
+        return TriggerSkill::triggerable(player) && player->getPhase() == Player::Start;
     }
 
-    virtual bool cost(TriggerEvent , Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
-        if (!player->hasSkill("guanxing"))
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        if (!player->hasSkill("guanxing")){
             if (player->askForSkillInvoke(objectName())) {
-                room->broadcastSkillInvoke("yizhi");
+                LogMessage log;
+                log.type = "#InvokeSkill";
+                log.from = player;
+                log.arg = objectName();
+                room->sendLog(log);
+                room->broadcastSkillInvoke("yizhi", player);
                 player->showGeneral(false);
                 return true;
+            } else {
+                return false;
             }
-        if (!player->hasSkill("yizhi"))
+        }
+        if (!player->hasSkill("yizhi")){
             if (player->askForSkillInvoke(objectName())) {
-                room->broadcastSkillInvoke(objectName());
+                room->broadcastSkillInvoke(objectName(), player);
                 return true;
+            } else {
+                return false;
             }
-        // if it runs to here, it means player own both two skill;
+        }
+        // if it runs here, it means player own both two skill;
         if (player->askForSkillInvoke(objectName())) {
             bool show1 = player->hasShownSkill(this);
-            bool show2 = player->hasShownSkill(Sanguosha->getSkill("yizhi"));
+            bool show2 = player->hasShownSkill("yizhi");
             QStringList choices;
             if (!show1)
                 choices << "show_head_general";
@@ -211,26 +238,26 @@ public:
                 choices << "show_both_generals";
             if (choices.length() != 3)
                 choices << "cancel";
-            QString choice = room->askForChoice(player, "GuanxingShowGeneral", choices.join("+"));
-            if (choice == "cancel"){
+            QString choice = room->askForChoice(player, "TurnStartShowGeneral", choices.join("+"));
+            if (choice == "cancel") {
                 if (show1) {
-                    room->broadcastSkillInvoke(objectName());
+                    room->broadcastSkillInvoke(objectName(), player);
                     return true;
                 } else {
-                    room->broadcastSkillInvoke("yizhi");
+                    room->broadcastSkillInvoke("yizhi", player);
                     onPhaseChange(player);
                     return false;
                 }
             }
             if (choice != "show_head_general")
                 player->showGeneral(false);
-            if (choice == "show_deputy_general" && !show1){
-                room->broadcastSkillInvoke("yizhi");
+            if (choice == "show_deputy_general" && !show1) {
+                room->broadcastSkillInvoke("yizhi", player);
                 player->showGeneral(false);
                 onPhaseChange(player);
                 return false;
             } else {
-                room->broadcastSkillInvoke(objectName());
+                room->broadcastSkillInvoke(objectName(), player);
                 return true;
             }
         }
@@ -246,7 +273,7 @@ public:
         log.type = "$ViewDrawPile";
         log.from = zhuge;
         log.card_str = IntList2StringList(guanxing).join("+");
-        room->doNotify(zhuge, QSanProtocol::S_COMMAND_LOG_SKILL, log.toJsonValue());
+        room->doNotify(zhuge, QSanProtocol::S_COMMAND_LOG_SKILL, log.toVariant());
 
         room->askForGuanxing(zhuge, guanxing, Room::GuanxingBothSides);
 
@@ -255,19 +282,19 @@ public:
     }
 
     virtual int getGuanxingNum(ServerPlayer *zhuge) const{
-        if (zhuge->hasShownSkill(this) && zhuge->hasShownSkill(Sanguosha->getSkill("yizhi"))) return 5;
+        if (zhuge->hasShownSkill(this) && zhuge->hasShownSkill("yizhi")) return 5;
         return qMin(5, zhuge->aliveCount());
     }
 };
 
-class Kongcheng: public TriggerSkill{
+class Kongcheng : public TriggerSkill{
 public:
-    Kongcheng(): TriggerSkill("kongcheng"){
+    Kongcheng() : TriggerSkill("kongcheng"){
         events << TargetConfirming;
         frequency = Compulsory;
     }
 
-    virtual QStringList triggerable(TriggerEvent , Room *, ServerPlayer *player, QVariant &data, ServerPlayer * &) const{
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer * &) const{
         if (TriggerSkill::triggerable(player) && player->isKongcheng()){
             CardUseStruct use = data.value<CardUseStruct>();
             if (use.card != NULL && (use.card->isKindOf("Slash") || use.card->isKindOf("Duel")) && use.to.contains(player)){
@@ -277,28 +304,30 @@ public:
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent , Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
-        bool invoke = player->hasShownSkill(this) ? true : room->askForSkillInvoke(player, objectName());
-        if (invoke){
-            room->broadcastSkillInvoke(objectName());
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        if (player->hasShownSkill(this) || player->askForSkillInvoke(objectName())){
+            room->broadcastSkillInvoke(objectName(), player);
             return true;
         }
         return false;
     }
 
-    virtual bool effect(TriggerEvent , Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
         CardUseStruct use = data.value<CardUseStruct>();
         room->notifySkillInvoked(player, objectName());
         LogMessage log;
         if (use.from) {
             log.type = "$CancelTarget";
             log.from = use.from;
-        } else {
+        }
+        else {
             log.type = "$CancelTargetNoUser";
         }
         log.to << player;
         log.arg = use.card->objectName();
         room->sendLog(log);
+
+        room->setEmotion(player, "cancel");
 
         use.to.removeOne(player);
         data = QVariant::fromValue(use);
@@ -306,10 +335,10 @@ public:
     }
 };
 
-
-class LongdanVS: public OneCardViewAsSkill {
+class LongdanVS : public OneCardViewAsSkill {
 public:
-    LongdanVS(): OneCardViewAsSkill("longdan") {
+    LongdanVS() : OneCardViewAsSkill("longdan") {
+        response_or_use = true;
     }
 
     virtual bool viewFilter(const Card *to_select) const{
@@ -317,16 +346,16 @@ public:
 
         switch (Sanguosha->currentRoomState()->getCurrentCardUseReason()) {
         case CardUseStruct::CARD_USE_REASON_PLAY: {
-                return card->isKindOf("Jink");
-            }
+            return card->isKindOf("Jink");
+        }
         case CardUseStruct::CARD_USE_REASON_RESPONSE:
         case CardUseStruct::CARD_USE_REASON_RESPONSE_USE: {
-                QString pattern = Sanguosha->currentRoomState()->getCurrentCardUsePattern();
-                if (pattern == "slash")
-                    return card->isKindOf("Jink");
-                else if (pattern == "jink")
-                    return card->isKindOf("Slash");
-            }
+            QString pattern = Sanguosha->currentRoomState()->getCurrentCardUsePattern();
+            if (pattern == "slash")
+                return card->isKindOf("Jink");
+            else if (pattern == "jink")
+                return card->isKindOf("Slash");
+        }
         default:
             return false;
         }
@@ -347,20 +376,22 @@ public:
             jink->setSkillName(objectName());
             jink->setShowSkill(objectName());
             return jink;
-        } else if (originalCard->isKindOf("Jink")) {
+        }
+        else if (originalCard->isKindOf("Jink")) {
             Slash *slash = new Slash(originalCard->getSuit(), originalCard->getNumber());
             slash->addSubcard(originalCard);
             slash->setSkillName(objectName());
             slash->setShowSkill(objectName());
             return slash;
-        } else
+        }
+        else
             return NULL;
     }
 };
 
-class Longdan: public TriggerSkill{
+class Longdan : public TriggerSkill{
 public:
-    Longdan(): TriggerSkill("longdan"){
+    Longdan() : TriggerSkill("longdan"){
         view_as_skill = new LongdanVS;
         events << CardUsed << CardResponded;
     }
@@ -370,7 +401,7 @@ public:
             return QStringList();
 
         ServerPlayer *lord = room->getLord(player->getKingdom());
-        if (lord != NULL && lord->hasLordSkill("shouyue")){
+        if (lord != NULL && lord->hasLordSkill("shouyue") && lord->hasShownGeneral1()){
             const Card *card = NULL;
             if (triggerEvent == CardUsed)
                 card = data.value<CardUseStruct>().card;
@@ -384,11 +415,11 @@ public:
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent , Room *, ServerPlayer *, QVariant &, ServerPlayer *) const{
+    virtual bool cost(TriggerEvent, Room *, ServerPlayer *, QVariant &, ServerPlayer *) const{
         return true;
     }
 
-    virtual bool effect(TriggerEvent , Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
         ServerPlayer *lord = room->getLord(player->getKingdom());
         room->notifySkillInvoked(lord, "shouyue");
         player->drawCards(1);
@@ -405,7 +436,7 @@ public:
     }
 };
 
-Mashu::Mashu(const QString &owner): DistanceSkill("mashu_" + owner), owner(owner) {
+Mashu::Mashu(const QString &owner) : DistanceSkill("mashu_" + owner) {
 }
 
 int Mashu::getCorrect(const Player *from, const Player *) const{
@@ -415,24 +446,25 @@ int Mashu::getCorrect(const Player *from, const Player *) const{
         return 0;
 }
 
-class Tieji: public TriggerSkill {
+class Tieqi : public TriggerSkill {
 public:
-    Tieji(): TriggerSkill("tieji") {
+    Tieqi() : TriggerSkill("tieqi") {
         events << TargetChosen;
+        frequency = Frequent;
     }
 
     virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer * &ask_who) const {
         CardUseStruct use = data.value<CardUseStruct>();
-        if (use.from->hasSkill(objectName()) && use.card != NULL && use.card->isKindOf("Slash") && use.to.contains(player)){
+        if (TriggerSkill::triggerable(use.from) && use.card != NULL && use.card->isKindOf("Slash") && use.to.contains(player)){
             ask_who = use.from;
             return QStringList(objectName());
         }
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent , Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const {
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const {
         if (ask_who->askForSkillInvoke(objectName(), QVariant::fromValue(player))) {
-            room->broadcastSkillInvoke(objectName(), 1);
+            room->broadcastSkillInvoke(objectName(), 1, ask_who);
             return true;
         }
         return false;
@@ -443,16 +475,15 @@ public:
         ServerPlayer *machao = ask_who;
         QVariantList jink_list = machao->tag["Jink_" + use.card->toString()].toList();
 
-        doTieji(player, machao, use, jink_list);
+        doTieqi(player, machao, use, jink_list);
 
         machao->tag["Jink_" + use.card->toString()] = QVariant::fromValue(jink_list);
         return false;
     }
 
 private:
-    static void doTieji(ServerPlayer *target, ServerPlayer *source, CardUseStruct use, QVariantList &jink_list){
+    static void doTieqi(ServerPlayer *target, ServerPlayer *source, CardUseStruct use, QVariantList &jink_list){
         Room *room = target->getRoom();
-        target->setFlags("TiejiTarget"); // For AI
 
         int index = use.to.indexOf(target);
 
@@ -460,29 +491,23 @@ private:
 
         ServerPlayer *lord = room->getLord(source->getKingdom());
         bool has_lord = false;
-        if (lord != NULL && lord->hasLordSkill("shouyue")){
+        if (lord != NULL && lord->hasLordSkill("shouyue") && lord->hasShownGeneral1()){
             has_lord = true;
             judge.pattern = ".|spade";
             judge.good = false;
-        }
-        else {
+        } else {
             judge.pattern = ".|red";
             judge.good = true;
         }
-        judge.reason = "tieji";
+        judge.reason = "tieqi";
         judge.who = source;
 
-        try {
-            if (has_lord)
-                room->notifySkillInvoked(lord, "shouyue");
+        if (has_lord)
+            room->notifySkillInvoked(lord, "shouyue");
 
-            room->judge(judge);
-        }
-        catch (TriggerEvent triggerEvent) {
-            if (triggerEvent == TurnBroken || triggerEvent == StageChange)
-                target->setFlags("-TiejiTarget");
-            throw triggerEvent;
-        }
+        target->setFlags("TieqiTarget"); //for AI
+        room->judge(judge);
+        target->setFlags("-TieqiTarget");
 
         if (judge.isGood()) {
             LogMessage log;
@@ -491,28 +516,26 @@ private:
             room->sendLog(log);
 
             jink_list.replace(index, QVariant(0));
-            room->broadcastSkillInvoke("tieji", 2);
+            room->broadcastSkillInvoke("tieqi", 2, source);
         }
-
-        target->setFlags("-TiejiTarget");
     }
 };
 
-class Jizhi: public TriggerSkill {
+class Jizhi : public TriggerSkill {
 public:
-    Jizhi(): TriggerSkill("jizhi") {
+    Jizhi() : TriggerSkill("jizhi") {
         frequency = Frequent;
         events << CardUsed;
     }
 
-    virtual QStringList triggerable(TriggerEvent , Room *, ServerPlayer *player, QVariant &data, ServerPlayer * &) const{
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer * &) const{
         if (!TriggerSkill::triggerable(player))
             return QStringList();
         CardUseStruct use = data.value<CardUseStruct>();
-        if (use.card != NULL && use.card->isNDTrick()){
-            if (!use.card->isVirtualCard())
+        if (use.card != NULL && use.card->isNDTrick()) {
+            if (!use.card->isVirtualCard() || use.card->getSubcards().isEmpty())
                 return QStringList(objectName());
-            else if (use.card->getSubcards().length() == 1){
+            else if (use.card->getSubcards().length() == 1) {
                 if (Sanguosha->getCard(use.card->getEffectiveId())->objectName() == use.card->objectName())
                     return QStringList(objectName());
             }
@@ -520,23 +543,23 @@ public:
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent , Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
         if (player->askForSkillInvoke(objectName(), data)){
-            room->broadcastSkillInvoke(objectName());
+            room->broadcastSkillInvoke(objectName(), player);
             return true;
         }
         return false;
     }
 
-    virtual bool effect(TriggerEvent , Room *, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+    virtual bool effect(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *) const{
         player->drawCards(1);
         return false;
     }
 };
 
-class Qicai: public TargetModSkill {
+class Qicai : public TargetModSkill {
 public:
-    Qicai(): TargetModSkill("qicai") {
+    Qicai() : TargetModSkill("qicai") {
         pattern = "TrickCard";
     }
 
@@ -548,15 +571,15 @@ public:
     }
 };
 
-class Liegong: public TriggerSkill {
+class Liegong : public TriggerSkill {
 public:
-    Liegong(): TriggerSkill("liegong") {
+    Liegong() : TriggerSkill("liegong") {
         events << TargetChosen;
     }
 
     virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer * &ask_who) const {
         CardUseStruct use = data.value<CardUseStruct>();
-        if (use.from->hasSkill(objectName()) && use.from->getPhase() == Player::Play && use.card && use.card->isKindOf("Slash") && use.to.contains(player)){
+        if (TriggerSkill::triggerable(use.from) && use.from->getPhase() == Player::Play && use.card != NULL && use.card->isKindOf("Slash") && use.to.contains(player)){
             int handcard_num = player->getHandcardNum();
             if (handcard_num >= use.from->getHp() || handcard_num <= use.from->getAttackRange()){
                 ask_who = use.from;
@@ -566,9 +589,9 @@ public:
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent , Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const {
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const {
         if (ask_who->askForSkillInvoke(objectName(), QVariant::fromValue(player))) {
-            room->broadcastSkillInvoke(objectName(), 1);
+            room->broadcastSkillInvoke(objectName(), 1, ask_who);
             return true;
         }
         return false;
@@ -596,16 +619,16 @@ private:
     }
 };
 
-class LiegongRange: public AttackRangeSkill{
+class LiegongRange : public AttackRangeSkill{
 public:
-    LiegongRange(): AttackRangeSkill("#liegong-for-lord"){
+    LiegongRange() : AttackRangeSkill("#liegong-for-lord"){
     }
 
     virtual int getExtra(const Player *target, bool) const{
-        if (target->hasShownSkill(Sanguosha->getSkill("liegong"))){
+        if (target->hasShownSkill("liegong")){
             const Player *lord = target->getLord();
 
-            if (lord != NULL && lord->hasLordSkill("shouyue")){
+            if (lord != NULL && lord->hasLordSkill("shouyue") && lord->hasShownGeneral1()){
                 return 1;
             }
         }
@@ -614,38 +637,41 @@ public:
 };
 
 
-class KuangguGlobal: public TriggerSkill{
+class KuangguRecord : public TriggerSkill{
 public:
-    KuangguGlobal(): TriggerSkill("KuangguGlobal"){
-        global = true;
+    KuangguRecord() : TriggerSkill("#kuanggu-record"){
         events << PreDamageDone;
         frequency = Compulsory;
     }
 
-    virtual QStringList triggerable(TriggerEvent , Room *, ServerPlayer *player, QVariant &data, ServerPlayer * &) const{
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer * &) const{
         if (player != NULL){
             DamageStruct damage = data.value<DamageStruct>();
             ServerPlayer *weiyan = damage.from;
-            if (weiyan)
-                weiyan->tag["InvokeKuanggu"] = weiyan->distanceTo(damage.to) <= 1;
+            if (weiyan != NULL){
+                if (weiyan->distanceTo(damage.to) != -1 && weiyan->distanceTo(damage.to) <= 1)
+                    weiyan->tag["InvokeKuanggu"] = damage.damage;
+                else
+                    weiyan->tag.remove("InvokeKuanggu");
+            }
         }
 
         return QStringList();
     }
 };
 
-class Kuanggu: public TriggerSkill {
+class Kuanggu : public TriggerSkill {
 public:
-    Kuanggu(): TriggerSkill("kuanggu") {
+    Kuanggu() : TriggerSkill("kuanggu") {
         frequency = Compulsory;
         events << Damage;
     }
 
-    virtual QStringList triggerable(TriggerEvent , Room *, ServerPlayer *player, QVariant &data, ServerPlayer * &) const{
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer * &) const{
         if (TriggerSkill::triggerable(player)){
-            bool invoke = player->tag.value("InvokeKuanggu", false).toBool();
-            player->tag["InvokeKuanggu"] = false;
-            if (invoke && player->isWounded()) {
+            bool ok = false;
+            int recorded_damage = player->tag["InvokeKuanggu"].toInt(&ok);
+            if (ok && recorded_damage > 0 && player->isWounded()) {
                 QStringList skill_list;
                 DamageStruct damage = data.value<DamageStruct>();
                 for (int i = 0; i < damage.damage; i++)
@@ -656,16 +682,16 @@ public:
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent , Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
         bool invoke = player->hasShownSkill(this) ? true : room->askForSkillInvoke(player, objectName());
-        if (invoke){
-            room->broadcastSkillInvoke(objectName());
+        if (invoke) {
+            room->broadcastSkillInvoke(objectName(), player);
             return true;
         }
         return false;
     }
 
-    virtual bool effect(TriggerEvent , Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
         LogMessage log;
         log.type = "#TriggerSkill";
         log.from = player;
@@ -682,10 +708,11 @@ public:
 };
 
 
-class Lianhuan: public OneCardViewAsSkill {
+class Lianhuan : public OneCardViewAsSkill {
 public:
-    Lianhuan(): OneCardViewAsSkill("lianhuan") {
+    Lianhuan() : OneCardViewAsSkill("lianhuan") {
         filter_pattern = ".|club|.|hand";
+        response_or_use = true;
     }
 
     virtual const Card *viewAs(const Card *originalCard) const{
@@ -697,15 +724,15 @@ public:
     }
 };
 
-class Niepan: public TriggerSkill {
+class Niepan : public TriggerSkill {
 public:
-    Niepan(): TriggerSkill("niepan") {
+    Niepan() : TriggerSkill("niepan") {
         events << AskForPeaches;
         frequency = Limited;
         limit_mark = "@nirvana";
     }
 
-    virtual QStringList triggerable(TriggerEvent , Room *, ServerPlayer *target, QVariant &data, ServerPlayer * &) const {
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *target, QVariant &data, ServerPlayer * &) const {
         if (TriggerSkill::triggerable(target) && target->getMark("@nirvana") > 0){
             DyingStruct dying_data = data.value<DyingStruct>();
 
@@ -719,10 +746,10 @@ public:
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent , Room *room, ServerPlayer *pangtong, QVariant &data, ServerPlayer *) const{
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *pangtong, QVariant &data, ServerPlayer *) const{
         if (pangtong->askForSkillInvoke(objectName(), data)) {
-            room->broadcastSkillInvoke(objectName());
-            room->doLightbox("$NiepanAnimate");
+            room->broadcastSkillInvoke(objectName(), pangtong);
+            room->doSuperLightbox("pangtong", objectName());
             return true;
         }
         return false;
@@ -732,7 +759,7 @@ public:
         room->removePlayerMark(pangtong, "@nirvana");
         pangtong->throwAllHandCardsAndEquips();
         QList<const Card *> tricks = pangtong->getJudgingArea();
-        foreach (const Card *trick, tricks) {
+        foreach(const Card *trick, tricks) {
             CardMoveReason reason(CardMoveReason::S_REASON_NATURAL_ENTER, pangtong->objectName());
             room->throwCard(trick, reason, NULL);
         }
@@ -753,10 +780,11 @@ public:
     }
 };
 
-class Huoji: public OneCardViewAsSkill {
+class Huoji : public OneCardViewAsSkill {
 public:
-    Huoji(): OneCardViewAsSkill("huoji") {
+    Huoji() : OneCardViewAsSkill("huoji") {
         filter_pattern = ".|red|.|hand";
+        response_or_use = true;
     }
 
     virtual const Card *viewAs(const Card *originalCard) const{
@@ -768,14 +796,14 @@ public:
     }
 };
 
-class Bazhen: public TriggerSkill {
+class Bazhen : public TriggerSkill {
 public:
-    Bazhen(): TriggerSkill("bazhen") {
+    Bazhen() : TriggerSkill("bazhen") {
         frequency = Compulsory;
         events << CardAsked;
     }
 
-    virtual QStringList triggerable(TriggerEvent , Room *, ServerPlayer *player, QVariant &data, ServerPlayer * &) const{
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer * &) const{
         if (!TriggerSkill::triggerable(player))
             return QStringList();
 
@@ -793,16 +821,17 @@ public:
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent , Room *, ServerPlayer *, QVariant &, ServerPlayer *) const{
+    virtual bool cost(TriggerEvent, Room *, ServerPlayer *, QVariant &, ServerPlayer *) const{
         return false;
     }
 };
 
-class Kanpo: public OneCardViewAsSkill {
+class Kanpo : public OneCardViewAsSkill {
 public:
-    Kanpo(): OneCardViewAsSkill("kanpo") {
+    Kanpo() : OneCardViewAsSkill("kanpo") {
         filter_pattern = ".|black|.|hand";
         response_pattern = "nullification";
+        response_or_use = true;
     }
 
     virtual const Card *viewAs(const Card *originalCard) const{
@@ -814,10 +843,7 @@ public:
     }
 
     virtual bool isEnabledAtNullification(const ServerPlayer *player) const{
-        foreach (const Card *card, player->getHandcards()) {
-            if (card->isBlack()) return true;
-        }
-        return false;
+        return !player->isKongcheng() || !player->getPile("wooden_ox").isEmpty();
     }
 
     virtual int getEffectIndex(const ServerPlayer *player, const Card *) const{
@@ -828,12 +854,12 @@ public:
     }
 };
 
-SavageAssaultAvoid::SavageAssaultAvoid(const QString &avoid_skill): TriggerSkill("#sa_avoid_" + avoid_skill), avoid_skill(avoid_skill){
+SavageAssaultAvoid::SavageAssaultAvoid(const QString &avoid_skill) : TriggerSkill("#sa_avoid_" + avoid_skill), avoid_skill(avoid_skill){
     events << CardEffected;
     frequency = Compulsory;
 }
 
-QStringList SavageAssaultAvoid::triggerable(TriggerEvent , Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+QStringList SavageAssaultAvoid::triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
     if (!player || !player->isAlive() || !player->hasSkill(avoid_skill)) return QStringList();
     CardEffectStruct effect = data.value<CardEffectStruct>();
     if (effect.card->isKindOf("SavageAssault"))
@@ -842,18 +868,17 @@ QStringList SavageAssaultAvoid::triggerable(TriggerEvent , Room *, ServerPlayer 
     return QStringList();
 }
 
-bool SavageAssaultAvoid::cost(TriggerEvent , Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
-    if (player->hasShownSkill(Sanguosha->getSkill(avoid_skill))) return true;
+bool SavageAssaultAvoid::cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+    if (player->hasShownSkill(avoid_skill)) return true;
     if (player->askForSkillInvoke(avoid_skill)) {
-        room->broadcastSkillInvoke(avoid_skill, 1);
+        room->broadcastSkillInvoke(avoid_skill, 1, player);
         player->showGeneral(player->inHeadSkills(avoid_skill));
         return true;
     }
     return false;
 }
 
-bool SavageAssaultAvoid::effect(TriggerEvent , Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
-
+bool SavageAssaultAvoid::effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
     LogMessage log;
     log.type = "#SkillNullify";
     log.from = player;
@@ -864,9 +889,9 @@ bool SavageAssaultAvoid::effect(TriggerEvent , Room *room, ServerPlayer *player,
     return true;
 }
 
-class Huoshou: public TriggerSkill {
+class Huoshou : public TriggerSkill {
 public:
-    Huoshou(): TriggerSkill("huoshou") {
+    Huoshou() : TriggerSkill("huoshou") {
         events << TargetChosen << ConfirmDamage << CardFinished;
         frequency = Compulsory;
     }
@@ -877,15 +902,17 @@ public:
             CardUseStruct use = data.value<CardUseStruct>();
             if (use.card->isKindOf("SavageAssault") && use.from != player)
                 return QStringList(objectName());
-        } else if (triggerEvent == ConfirmDamage && !room->getTag("HuoshouSource").isNull()) {
+        }
+        else if (triggerEvent == ConfirmDamage && !room->getTag("HuoshouSource").isNull()) {
             DamageStruct damage = data.value<DamageStruct>();
             if (!damage.card || !damage.card->isKindOf("SavageAssault"))
                 return QStringList();
 
-            ServerPlayer *menghuo = room->getTag("HuoshouSource").value<PlayerStar>();
+            ServerPlayer *menghuo = room->getTag("HuoshouSource").value<ServerPlayer *>();
             damage.from = menghuo->isAlive() ? menghuo : NULL;
             data = QVariant::fromValue(damage);
-        } else if (triggerEvent == CardFinished) {
+        }
+        else if (triggerEvent == CardFinished) {
             CardUseStruct use = data.value<CardUseStruct>();
             if (use.card->isKindOf("SavageAssault"))
                 room->removeTag("HuoshouSource");
@@ -893,31 +920,31 @@ public:
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent , Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
         bool invoke = player->hasShownSkill(this) ? true : room->askForSkillInvoke(player, objectName());
         if (invoke){
-            room->broadcastSkillInvoke(objectName());
+            room->broadcastSkillInvoke(objectName(), 2, player);
             return true;
         }
 
         return false;
     }
 
-    virtual bool effect(TriggerEvent , Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
         room->notifySkillInvoked(player, objectName());
-        room->broadcastSkillInvoke(objectName());
-        room->setTag("HuoshouSource", QVariant::fromValue((PlayerStar)player));
+        room->setTag("HuoshouSource", QVariant::fromValue(player));
 
         return false;
     }
 };
 
-class Zaiqi: public PhaseChangeSkill {
+class Zaiqi : public PhaseChangeSkill {
 public:
-    Zaiqi(): PhaseChangeSkill("zaiqi") {
+    Zaiqi() : PhaseChangeSkill("zaiqi") {
+        frequency = Frequent;
     }
 
-    virtual QStringList triggerable(TriggerEvent , Room *, ServerPlayer *menghuo, QVariant &, ServerPlayer* &) const{
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *menghuo, QVariant &, ServerPlayer* &) const{
         if (!PhaseChangeSkill::triggerable(menghuo))
             return QStringList();
 
@@ -926,9 +953,9 @@ public:
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent , Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
         if (player->askForSkillInvoke(objectName())){
-            room->broadcastSkillInvoke(objectName(), 1);
+            room->broadcastSkillInvoke(objectName(), 1, player);
             return true;
         }
 
@@ -942,7 +969,7 @@ public:
         int x = menghuo->getLostHp();
         QList<int> ids = room->getNCards(x, false);
         CardsMoveStruct move(ids, menghuo, Player::PlaceTable,
-                             CardMoveReason(CardMoveReason::S_REASON_TURNOVER, menghuo->objectName(), "zaiqi", QString()));
+            CardMoveReason(CardMoveReason::S_REASON_TURNOVER, menghuo->objectName(), "zaiqi", QString()));
         room->moveCardsAtomic(move, true);
 
         room->getThread()->delay();
@@ -975,16 +1002,16 @@ public:
         }
 
         if (has_heart)
-            room->broadcastSkillInvoke(objectName(), 2);
+            room->broadcastSkillInvoke(objectName(), 2, menghuo);
 
         return true;
     }
 };
 
-class Juxiang: public TriggerSkill {
+class Juxiang : public TriggerSkill {
 public:
-    Juxiang(): TriggerSkill("juxiang") {
-        events << CardUsed << BeforeCardsMove;
+    Juxiang() : TriggerSkill("juxiang") {
+        events << CardUsed << CardsMoveOneTime;
         frequency = Compulsory;
     }
 
@@ -999,10 +1026,11 @@ public:
                     && Sanguosha->getEngineCard(use.card->getEffectiveId())->isKindOf("SavageAssault"))
                     room->setCardFlag(use.card->getEffectiveId(), "real_SA");
             }
-        } else if (TriggerSkill::triggerable(player)) {
+        }
+        else if (TriggerSkill::triggerable(player)) {
             CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
             if (move.card_ids.length() == 1 && move.from_places.contains(Player::PlaceTable) && move.to_place == Player::DiscardPile
-                && move.reason.m_reason == CardMoveReason::S_REASON_USE) {
+                && move.reason.m_reason == CardMoveReason::S_REASON_USE && room->getCardPlace(move.card_ids[0]) == Player::DiscardPile) {
                 Card *card = Sanguosha->getCard(move.card_ids.first());
                 if (card->hasFlag("real_SA") && player != move.from)
                     return QStringList(objectName());
@@ -1011,17 +1039,17 @@ public:
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent , Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
         bool invoke = player->hasShownSkill(this) ? true : room->askForSkillInvoke(player, objectName());
         if (invoke){
-            room->broadcastSkillInvoke(objectName(), 2);
+            room->broadcastSkillInvoke(objectName(), 2, player);
             return true;
         }
 
         return false;
     }
 
-    virtual bool effect(TriggerEvent , Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
         CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
         room->notifySkillInvoked(player, objectName());
         LogMessage log;
@@ -1030,21 +1058,20 @@ public:
         log.arg = objectName();
         room->sendLog(log);
 
-        player->obtainCard(Sanguosha->getCard(move.card_ids.first()));
-        move.card_ids.clear();
-        data = QVariant::fromValue(move);
+        DummyCard sa(move.card_ids);
+        player->obtainCard(&sa);
 
         return false;
     }
 };
 
-class Lieren: public TriggerSkill {
+class Lieren : public TriggerSkill {
 public:
-    Lieren(): TriggerSkill("lieren") {
+    Lieren() : TriggerSkill("lieren") {
         events << Damage;
     }
 
-    virtual QStringList triggerable(TriggerEvent , Room *, ServerPlayer *zhurong, QVariant &data, ServerPlayer* &) const{
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *zhurong, QVariant &data, ServerPlayer* &) const{
         if (!TriggerSkill::triggerable(zhurong)) return QStringList();
         DamageStruct damage = data.value<DamageStruct>();
         if (damage.card && damage.card->isKindOf("Slash") && !zhurong->isKongcheng()
@@ -1053,35 +1080,45 @@ public:
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *zhurong, QVariant &, ServerPlayer *) const{
-        if (zhurong->askForSkillInvoke(objectName())){
-            room->broadcastSkillInvoke(objectName(), 1);
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *zhurong, QVariant &data, ServerPlayer *) const{
+        if (zhurong->askForSkillInvoke(objectName(), data)){
+            DamageStruct damage = data.value<DamageStruct>();
+            room->doAnimate(QSanProtocol::S_ANIMATE_INDICATE, zhurong->objectName(), damage.to->objectName());
+            room->broadcastSkillInvoke(objectName(), 1, zhurong);
+            PindianStruct *pd = zhurong->pindianSelect(damage.to, "lieren");
+            zhurong->tag["lieren_pd"] = QVariant::fromValue(pd);
             return true;
         }
         return false;
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *zhurong, QVariant &data, ServerPlayer *) const{
-        DamageStruct damage = data.value<DamageStruct>();
-        ServerPlayer *target = damage.to;
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *zhurong, QVariant &, ServerPlayer *) const{
+        PindianStruct *pd = zhurong->tag["lieren_pd"].value<PindianStruct *>();
+        zhurong->tag.remove("lieren_pd");
+        if (pd != NULL){
+            ServerPlayer *target = pd->to;
 
-        bool success = zhurong->pindian(target, "lieren", NULL);
-        if (!success) return false;
+            bool success = zhurong->pindian(pd);
+            pd = NULL;
+            if (!success) return false;
 
-        room->broadcastSkillInvoke(objectName(), 2);
-        if (!target->isNude()) {
-            int card_id = room->askForCardChosen(zhurong, target, "he", objectName());
-            CardMoveReason reason(CardMoveReason::S_REASON_EXTRACTION, zhurong->objectName());
-            room->obtainCard(zhurong, Sanguosha->getCard(card_id), reason, room->getCardPlace(card_id) != Player::PlaceHand);
+            room->broadcastSkillInvoke(objectName(), 2, zhurong);
+            if (!target->isNude()) {
+                int card_id = room->askForCardChosen(zhurong, target, "he", objectName());
+                CardMoveReason reason(CardMoveReason::S_REASON_EXTRACTION, zhurong->objectName());
+                room->obtainCard(zhurong, Sanguosha->getCard(card_id), reason, room->getCardPlace(card_id) != Player::PlaceHand);
+            }
         }
+        else
+            Q_ASSERT(false);
 
         return false;
     }
 };
 
-class Xiangle: public TriggerSkill {
+class Xiangle : public TriggerSkill {
 public:
-    Xiangle(): TriggerSkill("xiangle") {
+    Xiangle() : TriggerSkill("xiangle") {
         events << SlashEffected << TargetConfirming << CardFinished;
         frequency = Compulsory;
     }
@@ -1091,17 +1128,18 @@ public:
             CardUseStruct use = data.value<CardUseStruct>();
             if (use.card->isKindOf("Slash") && TriggerSkill::triggerable(player) && use.to.contains(player))
                 return QStringList(objectName());
-        } else if (triggerEvent == SlashEffected){
+        }
+        else if (triggerEvent == SlashEffected){
             if (!TriggerSkill::triggerable(player)) return QStringList();
             if (player->getMark("xiangle") > 0) {
-                player->setMark("xiangle", 0);
                 if (!player->hasShownSkill(this))
                     return QStringList();
                 return QStringList(objectName());
             }
-        } else if (triggerEvent == CardFinished){
+        }
+        else if (triggerEvent == CardFinished){
             CardUseStruct use = data.value<CardUseStruct>();
-            foreach (ServerPlayer *p, use.to){
+            foreach(ServerPlayer *p, use.to){
                 p->setMark("xiangle", 0);
             }
         }
@@ -1113,7 +1151,7 @@ public:
             return true;
         bool invoke = player->hasShownSkill(this) ? true : room->askForSkillInvoke(player, objectName(), data);
         if (invoke){
-            room->broadcastSkillInvoke(objectName());
+            room->broadcastSkillInvoke(objectName(), player);
             return true;
         }
         return false;
@@ -1121,6 +1159,7 @@ public:
 
     virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *liushan, QVariant &data, ServerPlayer *) const{
         if (triggerEvent == SlashEffected){
+            liushan->removeMark("xiangle");
             SlashEffectStruct effect = data.value<SlashEffectStruct>();
             LogMessage log;
             log.type = "#DanlaoAvoid";
@@ -1141,7 +1180,7 @@ public:
         room->sendLog(log);
 
         QVariant dataforai = QVariant::fromValue(liushan);
-        if (!room->askForCard(use.from, ".Basic", "@xiangle-discard", dataforai))
+        if (!room->askForCard(use.from, ".Basic", "@xiangle-discard:" + liushan->objectName(), dataforai))
             liushan->addMark("xiangle");
 
         return false;
@@ -1165,12 +1204,12 @@ void FangquanCard::onEffect(const CardEffectStruct &effect) const{
     log.to << player;
     room->sendLog(log);
 
-    room->setTag("FangquanTarget", QVariant::fromValue((PlayerStar)player));
+    player->gainAnExtraTurn();
 }
 
-class FangquanViewAsSkill: public OneCardViewAsSkill {
+class FangquanViewAsSkill : public OneCardViewAsSkill {
 public:
-    FangquanViewAsSkill(): OneCardViewAsSkill("fangquan") {
+    FangquanViewAsSkill() : OneCardViewAsSkill("fangquan") {
         filter_pattern = ".|.|.|hand!";
         response_pattern = "@@fangquan";
     }
@@ -1183,9 +1222,9 @@ public:
     }
 };
 
-class Fangquan: public TriggerSkill {
+class Fangquan : public TriggerSkill {
 public:
-    Fangquan(): TriggerSkill("fangquan") {
+    Fangquan() : TriggerSkill("fangquan") {
         events << EventPhaseChanging;
         view_as_skill = new FangquanViewAsSkill;
     }
@@ -1194,7 +1233,7 @@ public:
         return true;
     }
 
-    virtual QStringList triggerable(TriggerEvent , Room *, ServerPlayer *player, QVariant &data, ServerPlayer * &) const{
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer * &) const{
         if (!TriggerSkill::triggerable(player))
             return QStringList();
 
@@ -1208,25 +1247,23 @@ public:
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent , Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
         PhaseChangeStruct change = data.value<PhaseChangeStruct>();
         if (change.to == Player::Play){
             if (player->askForSkillInvoke(objectName())){
-                room->broadcastSkillInvoke(objectName(), 1);
+                player->skip(Player::Play);
+                room->broadcastSkillInvoke(objectName(), 1, player);
                 return true;
             }
-        }
-        else if (change.to == Player::NotActive)
-            return room->askForUseCard(player, "@@fangquan", "@fangquan-discard", -1, Card::MethodDiscard);
+        } else if (change.to == Player::NotActive)
+            room->askForUseCard(player, "@@fangquan", "@fangquan-discard", -1, Card::MethodDiscard);
         return false;
     }
 
-    virtual bool effect(TriggerEvent , Room *, ServerPlayer *liushan, QVariant &data, ServerPlayer *) const{
+    virtual bool effect(TriggerEvent, Room *, ServerPlayer *liushan, QVariant &data, ServerPlayer *) const{
         PhaseChangeStruct change = data.value<PhaseChangeStruct>();
         if (change.to == Player::Play){
             liushan->setFlags(objectName());
-            liushan->skip(Player::Play);
-
         }
         return false;
     }
@@ -1236,44 +1273,9 @@ public:
     }
 };
 
-class FangquanGive: public PhaseChangeSkill {
+class Shushen : public TriggerSkill {
 public:
-    FangquanGive(): PhaseChangeSkill("fangquan-give") {
-        global = true;
-        frequency = Compulsory;
-    }
-
-    virtual int getPriority() const{
-        return 1;
-    }
-
-    virtual QStringList triggerable(TriggerEvent , Room *room, ServerPlayer *player, QVariant &, ServerPlayer * &ask_who) const{
-        if (player != NULL && player->isAlive() && player->hasSkill("fangquan")){
-            if (!room->getTag("FangquanTarget").isNull()){
-                ServerPlayer *target = room->getTag("FangquanTarget").value<ServerPlayer *>();
-                ask_who = target;
-                return (target->isAlive()) ? QStringList(objectName()) : QStringList();
-            }
-        }
-        return QStringList();
-    }
-
-    virtual bool cost(TriggerEvent , Room *, ServerPlayer *, QVariant &, ServerPlayer *) const{
-        return true;
-    }
-
-    virtual bool onPhaseChange(ServerPlayer *liushan) const{
-        Room *room = liushan->getRoom();
-        PlayerStar target = room->getTag("FangquanTarget").value<PlayerStar>();
-        room->removeTag("FangquanTarget");
-        target->gainAnExtraTurn();
-        return false;
-    }
-};
-
-class Shushen: public TriggerSkill {
-public:
-    Shushen(): TriggerSkill("shushen") {
+    Shushen() : TriggerSkill("shushen") {
         events << HpRecover;
     }
 
@@ -1281,11 +1283,11 @@ public:
         return true;
     }
 
-    virtual QStringList triggerable(TriggerEvent , Room *room, ServerPlayer *player, QVariant &data, ServerPlayer * &) const{
-        if (TriggerSkill::triggerable(player)){
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer * &) const{
+        if (TriggerSkill::triggerable(player)) {
             QList<ServerPlayer *> friends;
-            foreach (ServerPlayer *p, room->getOtherPlayers(player)){
-                if (p->isFriendWith(player))
+            foreach(ServerPlayer *p, room->getOtherPlayers(player)) {
+                if (player->isFriendWith(p) || player->willBeFriendWith(p))
                     friends << p;
             }
 
@@ -1302,17 +1304,17 @@ public:
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent , Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
         QList<ServerPlayer *> friends;
-        foreach (ServerPlayer *p, room->getOtherPlayers(player)){
-            if (p->isFriendWith(player))
+        foreach(ServerPlayer *p, room->getOtherPlayers(player)){
+            if (player->isFriendWith(p) || player->willBeFriendWith(p))
                 friends << p;
         }
 
         if (friends.isEmpty()) return false;
         ServerPlayer *target = room->askForPlayerChosen(player, friends, objectName(), "shushen-invoke", true, true);
         if (target != NULL){
-            room->broadcastSkillInvoke(objectName());
+            room->broadcastSkillInvoke(objectName(), player);
 
             QStringList target_list = player->tag["shushen_target"].toStringList();
             target_list.append(target->objectName());
@@ -1323,7 +1325,7 @@ public:
         return false;
     }
 
-    virtual bool effect(TriggerEvent , Room *, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+    virtual bool effect(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *) const{
         QStringList target_list = player->tag["shushen_target"].toStringList();
         QString target_name = target_list.last();
         target_list.removeLast();
@@ -1331,7 +1333,7 @@ public:
 
         ServerPlayer *to = NULL;
 
-        foreach (ServerPlayer *p, player->getRoom()->getPlayers()){
+        foreach(ServerPlayer *p, player->getRoom()->getPlayers()){
             if (p->objectName() == target_name){
                 to = p;
                 break;
@@ -1343,43 +1345,41 @@ public:
     }
 };
 
-class Shenzhi: public PhaseChangeSkill {
+class Shenzhi : public PhaseChangeSkill {
 public:
-    Shenzhi(): PhaseChangeSkill("shenzhi") {
-
+    Shenzhi() : PhaseChangeSkill("shenzhi") {
+        frequency = Frequent;
+        //This skill can't be frequent in game actually.
+        //because the frequency = Frequent has no effect in UI currently, we use this to reduce the AI delay
     }
 
     virtual bool canPreshow() const {
         return false;
     }
 
-    virtual QStringList triggerable(TriggerEvent , Room *, ServerPlayer *player, QVariant &, ServerPlayer * &) const{
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer * &) const{
         if (!PhaseChangeSkill::triggerable(player))
             return QStringList();
         if (player->getPhase() != Player::Start || player->isKongcheng())
             return QStringList();
-
-        foreach (const Card *card, player->getHandcards()){
-            if (player->isJilei(card))
-                return QStringList();
-        }
         return QStringList(objectName());
     }
 
-    virtual bool cost(TriggerEvent , Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
-        if (player->askForSkillInvoke(objectName())){
-            room->broadcastSkillInvoke(objectName());
-            int handcard_num = player->getHandcardNum();
-            player->tag["shenzhi_num"] = handcard_num;
-            player->throwAllHandCards();
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        if (player->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName(), player);
             return true;
         }
-
         return false;
     }
 
     virtual bool onPhaseChange(ServerPlayer *ganfuren) const{
-        int handcard_num = ganfuren->tag["shenzhi_num"].toInt();
+        int handcard_num = 0;
+        foreach(const Card *card, ganfuren->getHandcards()) {
+            if (!ganfuren->isJilei(card))
+                handcard_num++;
+        }
+        ganfuren->throwAllHandCards();
         if (handcard_num >= ganfuren->getHp()) {
             RecoverStruct recover;
             recover.who = ganfuren;
@@ -1397,13 +1397,13 @@ void StandardPackage::addShuGenerals()
     liubei->addCompanion("ganfuren");
     liubei->addSkill(new Rende);
 
-
     General *guanyu = new General(this, "guanyu", "shu", 5); // SHU 002
     guanyu->addSkill(new Wusheng);
 
     General *zhangfei = new General(this, "zhangfei", "shu"); // SHU 003
     zhangfei->addSkill(new Paoxiao);
-    skills << new PaoxiaoArmorNullificaion;
+    zhangfei->addSkill(new PaoxiaoArmorNullificaion);
+    insertRelatedSkills("paoxiao", "#paoxiao-null");
 
     General *zhugeliang = new General(this, "zhugeliang", "shu", 3); // SHU 004
     zhugeliang->addCompanion("huangyueying");
@@ -1415,7 +1415,7 @@ void StandardPackage::addShuGenerals()
     zhaoyun->addSkill(new Longdan);
 
     General *machao = new General(this, "machao", "shu"); // SHU 006
-    machao->addSkill(new Tieji);
+    machao->addSkill(new Tieqi);
     machao->addSkill(new Mashu("machao"));
 
     General *huangyueying = new General(this, "huangyueying", "shu", 3, false); // SHU 007
@@ -1426,11 +1426,12 @@ void StandardPackage::addShuGenerals()
     huangzhong->addCompanion("weiyan");
     huangzhong->addSkill(new Liegong);
     huangzhong->addSkill(new LiegongRange);
-    related_skills.insertMulti("liegong", "#liegong-for-lord");
+    insertRelatedSkills("liegong", "#liegong-for-lord");
 
     General *weiyan = new General(this, "weiyan", "shu"); // SHU 009
     weiyan->addSkill(new Kuanggu);
-    skills << new KuangguGlobal;
+    weiyan->addSkill(new KuangguRecord);
+    insertRelatedSkills("kuanggu", "#kuanggu-record");
 
     General *pangtong = new General(this, "pangtong", "shu", 3); // SHU 010
     pangtong->addSkill(new Lianhuan);
@@ -1446,20 +1447,19 @@ void StandardPackage::addShuGenerals()
     General *liushan = new General(this, "liushan", "shu", 3); // SHU 013
     liushan->addSkill(new Xiangle);
     liushan->addSkill(new Fangquan);
-    skills << new FangquanGive;
 
     General *menghuo = new General(this, "menghuo", "shu"); // SHU 014
     menghuo->addCompanion("zhurong");
     menghuo->addSkill(new SavageAssaultAvoid("huoshou"));
     menghuo->addSkill(new Huoshou);
     menghuo->addSkill(new Zaiqi);
-    related_skills.insertMulti("huoshou", "#sa_avoid_huoshou");
+    insertRelatedSkills("huoshou", "#sa_avoid_huoshou");
 
     General *zhurong = new General(this, "zhurong", "shu", 4, false); // SHU 015
     zhurong->addSkill(new SavageAssaultAvoid("juxiang"));
     zhurong->addSkill(new Juxiang);
     zhurong->addSkill(new Lieren);
-    related_skills.insertMulti("juxiang", "#sa_avoid_juxiang");
+    insertRelatedSkills("juxiang", "#sa_avoid_juxiang");
 
     General *ganfuren = new General(this, "ganfuren", "shu", 3, false); // SHU 016
     ganfuren->addSkill(new Shushen);

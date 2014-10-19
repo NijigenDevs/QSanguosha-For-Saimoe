@@ -1,10 +1,31 @@
-#include "RoomState.h"
+/********************************************************************
+    Copyright (c) 2013-2014 - QSanguosha-Rara
+
+    This file is part of QSanguosha-Hegemony.
+
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    See the LICENSE file for more details.
+
+    QSanguosha-Rara
+    *********************************************************************/
+
+#include "roomstate.h"
 #include "engine.h"
-#include "WrappedCard.h"
+#include "wrappedcard.h"
 
 RoomState::~RoomState() {
-    foreach (Card *card, m_cards.values())
+    foreach (WrappedCard *card, m_cards) {
         delete card;
+    }
     m_cards.clear();
 }
 
@@ -25,15 +46,14 @@ void RoomState::resetCard(int cardId) {
 
 // Reset all cards, generals' states of the room instance
 void RoomState::reset() {
-    foreach (WrappedCard *card, m_cards.values())
+    foreach (WrappedCard *card, m_cards) {
         delete card;
+    }
     m_cards.clear();
 
     int n = Sanguosha->getCardCount();
     for (int i = 0; i < n; i++) {
-        const Card *card = Sanguosha->getEngineCard(i);
-        Card *clonedCard = Card::Clone(card);
-        m_cards[i] = new WrappedCard(Card::Clone(clonedCard));
+        Card *newCard = Card::Clone(Sanguosha->getEngineCard(i));
+        m_cards[i] = new WrappedCard(newCard);
     }
 }
-

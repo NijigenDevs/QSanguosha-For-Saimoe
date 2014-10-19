@@ -1,34 +1,35 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Hegemony Team
+    Copyright (c) 2013-2014 - QSanguosha-Rara
 
-  This file is part of QSanguosha-Hegemony.
+    This file is part of QSanguosha-Hegemony.
 
-  This game is free software; you can redistribute it and/or
-  modify it under the terms of the GNU Lesser General Public
-  License as published by the Free Software Foundation; either
-  version 3.0 of the License, or (at your option) any later version.
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
 
-  This program is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-  Lesser General Public License for more details.
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
 
-  See the LICENSE file for more details.
+    See the LICENSE file for more details.
 
-  QSanguosha-Hegemony Team    
-*********************************************************************/
+    QSanguosha-Rara
+    *********************************************************************/
+
 #ifndef _ROOM_SCENE_H
 #define _ROOM_SCENE_H
 
 #include "photo.h"
 #include "dashboard.h"
-#include "TablePile.h"
+#include "tablepile.h"
 #include "card.h"
 #include "client.h"
 #include "aux-skills.h"
 #include "clientlogbox.h"
 #include "chatwidget.h"
-#include "SkinBank.h"
+#include "skinbank.h"
 #include "sprite.h"
 #include "qsanbutton.h"
 
@@ -39,7 +40,21 @@ class GuanxingBox;
 class QSanButton;
 class QGroupBox;
 class ChooseGeneralBox;
+class ChooseOptionsBox;
+class ChooseTriggerOrderBox;
+class BubbleChatBox;
+class PlayerCardBox;
 struct RoomLayout;
+
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+class QQmlEngine;
+class QQmlContext;
+class QQmlComponent;
+#else
+class QDeclarativeEngine;
+class QDeclarativeContext;
+class QDeclarativeComponent;
+#endif
 
 #include <QGraphicsScene>
 #include <QTableWidget>
@@ -54,7 +69,7 @@ struct RoomLayout;
 #include <QMutex>
 #include <QStack>
 
-class ScriptExecutor: public QDialog {
+class ScriptExecutor : public QDialog {
     Q_OBJECT
 
 public:
@@ -64,7 +79,7 @@ public slots:
     void doScript();
 };
 
-class DeathNoteDialog: public QDialog {
+class DeathNoteDialog : public QDialog {
     Q_OBJECT
 
 public:
@@ -77,7 +92,7 @@ private:
     QComboBox *killer, *victim;
 };
 
-class DamageMakerDialog: public QDialog {
+class DamageMakerDialog : public QDialog {
     Q_OBJECT
 
 public:
@@ -98,7 +113,7 @@ private slots:
     void disableSource();
 };
 
-class ReplayerControlBar: public QGraphicsObject{
+class ReplayerControlBar : public QGraphicsObject{
     Q_OBJECT
 
 public:
@@ -122,26 +137,27 @@ private:
     qreal speed;
 };
 
-class RoomScene: public QGraphicsScene {
+class RoomScene : public QGraphicsScene {
     Q_OBJECT
 
 public:
     RoomScene(QMainWindow *main_window);
-    void changeTextEditBackground();
-    void adjustItems();
     void showIndicator(const QString &from, const QString &to);
     void showPromptBox();
     static void FillPlayerNames(QComboBox *ComboBox, bool add_none);
     void updateTable();
     inline QMainWindow *mainWindow() { return main_window; }
 
-    void changeTableBg();
-
     inline bool isCancelButtonEnabled() const{ return cancel_button != NULL && cancel_button->isEnabled(); }
+
+    void stopHeroSkinChangingAnimations();
 
     bool m_skillButtonSank;
 
     bool game_started;
+
+    void addHeroSkinContainer(HeroSkinContainer *heroSkinContainer);
+    HeroSkinContainer *findHeroSkinContainer(const QString &generalName) const;
 
 public slots:
     void addPlayer(ClientPlayer *player);
@@ -154,12 +170,13 @@ public slots:
     void chooseGeneral(const QStringList &generals, const bool single_result);
     void chooseSuit(const QStringList &suits);
     void chooseCard(const ClientPlayer *playerName, const QString &flags, const QString &reason,
-                    bool handcard_visible, Card::HandlingMethod method, QList<int> disabled_ids);
+        bool handcard_visible, Card::HandlingMethod method, QList<int> disabled_ids);
     void chooseKingdom(const QStringList &kingdoms);
     void chooseOption(const QString &skillName, const QStringList &options);
-    void chooseOrder(QSanProtocol::Game3v3ChooseOrderCommand reason);
+    //void chooseOrder(QSanProtocol::Game3v3ChooseOrderCommand reason);
     void chooseRole(const QString &scheme, const QStringList &roles);
-    void chooseDirection();
+    //void chooseDirection();
+    void chooseTriggerOrder(const QString &reason, const QStringList &options, const bool optional);
 
     void bringToFront(QGraphicsItem *item);
     void arrangeSeats(const QList<const ClientPlayer *> &seats);
@@ -179,7 +196,7 @@ public slots:
     void doScript();
     void viewGenerals(const QString &reason, const QStringList &names);
 
-    void handleGameEvent(const Json::Value &arg);
+    void handleGameEvent(const QVariant &args);
 
     void doOkButton();
     void doCancelButton();
@@ -187,7 +204,7 @@ public slots:
 
     void doTimeout();
 
-    inline QPointF tableCenterPos() {    return m_tableCenterPos;    };
+    inline QPointF tableCenterPos() { return m_tableCenterPos; }
 
     void doGongxin(const QList<int> &card_ids, bool enable_heart, QList<int> enabled_ids);
 
@@ -206,8 +223,8 @@ private:
     void _getSceneSizes(QSize &minSize, QSize &maxSize);
     bool _shouldIgnoreDisplayMove(CardsMoveStruct &movement);
     bool _processCardsMove(CardsMoveStruct &move, bool isLost);
-    bool _m_isMouseButtonDown;
     bool _m_isInDragAndUseMode;
+    bool _m_superDragStarted;
     const QSanRoomSkin::RoomLayout *_m_roomLayout;
     const QSanRoomSkin::PhotoLayout *_m_photoLayout;
     const QSanRoomSkin::CommonLayout *_m_commonLayout;
@@ -251,11 +268,17 @@ private:
 
     ChooseGeneralBox *choose_general_box;
 
+    ChooseOptionsBox *choose_options_box;
+
+    ChooseTriggerOrderBox *chooseTriggerOrderBox;
+
+    PlayerCardBox *playerCardBox;
+
     QList<CardItem *> gongxin_items;
 
     ClientLogBox *log_box;
-    QTextEdit *chat_box;
-    QLineEdit *chat_edit;
+    QTextEdit *chatBox;
+    QLineEdit *chatEdit;
     QGraphicsProxyWidget *chat_box_widget;
     QGraphicsProxyWidget *log_box_widget;
     QGraphicsProxyWidget *chat_edit_widget;
@@ -264,9 +287,10 @@ private:
     QPixmap m_rolesBoxBackground;
     QGraphicsPixmapItem *m_rolesBox;
     QGraphicsTextItem *m_pileCardNumInfoTextBox;
-    QGraphicsPixmapItem *m_tableBg;
     int m_tablew;
     int m_tableh;
+
+    QMap<QString, BubbleChatBox *> bubbleChatBoxes;
 
     // for 3v3 & 1v1 mode
     QSanSelectableItem *selector_box;
@@ -301,6 +325,9 @@ private:
 
     void callViewAsSkill();
     void cancelViewAsSkill();
+    void highlightSkillButton(const QString &skillName,
+                              const CardUseStruct::CardUseReason reason = CardUseStruct::CARD_USE_REASON_UNKNOWN,
+                              const QString &pattern = QString());
 
     void freeze();
     void addRestartButton(QDialog *dialog);
@@ -309,6 +336,8 @@ private:
 
     void showPindianBox(const QString &from_name, int from_id, const QString &to_name, int to_id, const QString &reason);
     void setChatBoxVisible(bool show);
+
+    QRect getBubbleChatBoxShowArea(const QString &who) const;
 
     // animation related functions
     typedef void (RoomScene::*AnimationFunc)(const QString &, const QStringList &);
@@ -330,12 +359,28 @@ private:
 
     QRectF _m_infoPlane;
 
+    // for animation effects
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
+    QDeclarativeEngine *_m_animationEngine;
+    QDeclarativeContext *_m_animationContext;
+    QDeclarativeComponent *_m_animationComponent;
+#else
+    QQmlEngine *_m_animationEngine;
+    QQmlContext *_m_animationContext;
+    QQmlComponent *_m_animationComponent;
+#endif
+
+    QSet<HeroSkinContainer *> m_heroSkinContainers;
+
 private slots:
+    void onSceneRectChanged(const QRectF &rect);
+
     void fillCards(const QList<int> &card_ids, const QList<int> &disabled_ids = QList<int>());
     void updateSkillButtons();
     void acquireSkill(const ClientPlayer *player, const QString &skill_name, const bool &head = true);
     void updateSelectedTargets();
     void onSkillActivated();
+    void onTransferButtonActivated();
     void onSkillDeactivated();
     void startInXs();
     void hideAvatars();
@@ -364,7 +409,7 @@ private slots:
     void onStandoff();
 
     void appendChatEdit(QString txt);
-    void appendChatBox(QString txt);
+    void showBubbleChatBox(const QString &who, const QString &words);
 
     //animations
     void onEnabledChange();

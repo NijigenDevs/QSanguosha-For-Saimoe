@@ -1,3 +1,23 @@
+/********************************************************************
+    Copyright (c) 2013-2014 - QSanguosha-Rara
+
+    This file is part of QSanguosha-Hegemony.
+
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    See the LICENSE file for more details.
+
+    QSanguosha-Rara
+    *********************************************************************/
+
 #ifndef _MINI_SCENARIOS_H
 #define _MINI_SCENARIOS_H
 
@@ -5,7 +25,7 @@
 #include "engine.h"
 #include "room.h"
 
-class MiniSceneRule: public ScenarioRule {
+class MiniSceneRule : public ScenarioRule {
     Q_OBJECT
 
 public:
@@ -13,7 +33,8 @@ public:
     static const char *S_EXTRA_OPTION_REST_IN_DISCARD_PILE;
 
     MiniSceneRule(Scenario *scenario);
-    void assign(QStringList &generals, QStringList &roles) const;
+    void assign(QStringList &generals, QStringList &generals2, QStringList &kingdoms, Room *room) const;
+    virtual int getPlayerCount() const;
     QStringList existedGenerals() const;
 
     virtual bool effect(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who = NULL) const;
@@ -31,37 +52,37 @@ protected:
     QList<int> m_fixedDrawCards;
 };
 
-class MiniScene: public Scenario {
+class MiniScene : public Scenario {
     Q_OBJECT
 
 public:
     static const char *S_KEY_MINISCENE;
     MiniScene(const QString &name);
+    ~MiniScene();
     void setupCustom(QString name) const;
     virtual void onTagSet(Room *room, const QString &key) const;
-    virtual void assign(QStringList &generals, QStringList &roles) const{
+    virtual void assign(QStringList &generals, QStringList &generals2, QStringList &roles, Room *room) const{
         MiniSceneRule *rule = qobject_cast<MiniSceneRule *>(getRule());
-        rule->assign(generals, roles);
+        rule->assign(generals, generals2, roles, room);
     }
     virtual int getPlayerCount() const{
-        QStringList generals, roles;
-        assign(generals, roles);
-        return roles.length();
+        MiniSceneRule *rule = qobject_cast<MiniSceneRule *>(getRule());
+        return rule->getPlayerCount();
     }
 };
 
-class CustomScenario: public MiniScene {
+class CustomScenario : public MiniScene {
     Q_OBJECT
 
 public:
-    CustomScenario(): MiniScene("custom_scenario") { setupCustom(NULL); }
+    CustomScenario() : MiniScene("custom_scenario") { setupCustom(NULL); }
 };
 
-class LoadedScenario: public MiniScene {
+class LoadedScenario : public MiniScene {
     Q_OBJECT
 
 public:
-    LoadedScenario(const QString &name): MiniScene(QString(MiniScene::S_KEY_MINISCENE).arg(name)) { setupCustom(name); }
+    LoadedScenario(const QString &name) : MiniScene(QString(MiniScene::S_KEY_MINISCENE).arg(name)) { setupCustom(name); }
 };
 
 #endif

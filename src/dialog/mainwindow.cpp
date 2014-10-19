@@ -1,3 +1,23 @@
+/********************************************************************
+    Copyright (c) 2013-2014 - QSanguosha-Rara
+
+    This file is part of QSanguosha-Hegemony.
+
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    See the LICENSE file for more details.
+
+    QSanguosha-Rara
+    *********************************************************************/
+
 #include "mainwindow.h"
 #include "startscene.h"
 #include "roomscene.h"
@@ -5,14 +25,25 @@
 #include "client.h"
 #include "generaloverview.h"
 #include "cardoverview.h"
+#if defined(Q_OS_WIN) || defined(Q_OS_ANDROID)
 #include "ui_mainwindow.h"
+#else
+#include "ui_mainwindow_nonwin.h"
+#endif
 #include "rule-summary.h"
-#include "window.h"
 #include "pixmapanimation.h"
 #include "record-analysis.h"
-#include "AboutUs.h"
+#include "aboutus.h"
+#include "updatechecker.h"
+#include "recorder.h"
+#include "audio.h"
+#include "stylehelper.h"
+#include "uiutils.h"
+#include "serverdialog.h"
+#include "banipdialog.h"
+#include "cardeditor.h"
 
-#include <qmath.h>
+#include <lua.hpp>
 #include <QGraphicsView>
 #include <QGraphicsItem>
 #include <QGraphicsPixmapItem>
@@ -28,49 +59,108 @@
 #include <QInputDialog>
 #include <QLabel>
 #include <QStatusBar>
+#include <QGroupBox>
+#include <QToolButton>
+#include <QCommandLinkButton>
+#include <QFormLayout>
+#include <QNetworkReply>
+#include <QBitmap>
 
-class FitView: public QGraphicsView {
+#if !defined(QT_NO_OPENGL) && defined(USING_OPENGL)
+#include <QtOpenGL/QGLWidget>
+#endif
+
+
+class FitView : public QGraphicsView {
 public:
-    FitView(QGraphicsScene *scene): QGraphicsView(scene) {
+    FitView(QGraphicsScene *scene) : QGraphicsView(scene) {
         setSceneRect(Config.Rect);
-        setRenderHints(QPainter::TextAntialiasing | QPainter::Antialiasing);
+        setRenderHints(QPainter::TextAntialiasing | QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
+
+#if !defined(QT_NO_OPENGL) && defined(USING_OPENGL)
+        if (QGLFormat::hasOpenGL()) {
+            QGLWidget *widget = new QGLWidget(QGLFormat(QGL::SampleBuffers));
+            widget->makeCurrent();
+            setViewport(widget);
+            setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
+        }
+#endif
     }
+
+#ifdef Q_OS_WIN
+    virtual void mousePressEvent(QMouseEvent *event) {
+        MainWindow *parent = qobject_cast<MainWindow *>(parentWidget());
+        if (parent)
+            parent->mousePressEvent(event);
+        QGraphicsView::mousePressEvent(event);
+    }
+
+    virtual void mouseMoveEvent(QMouseEvent *event) {
+        MainWindow *parent = qobject_cast<MainWindow *>(parentWidget());
+        if (parent)
+            parent->mouseMoveEvent(event);
+        QGraphicsView::mouseMoveEvent(event);
+    }
+
+    virtual void mouseReleaseEvent(QMouseEvent *event) {
+        MainWindow *parent = qobject_cast<MainWindow *>(parentWidget());
+        if (parent)
+            parent->mouseReleaseEvent(event);
+        QGraphicsView::mouseReleaseEvent(event);
+    }
+
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
+    virtual void mouseDoubleClickEvent(QMouseEvent *event) {
+        MainWindow *parent = qobject_cast<MainWindow *>(parentWidget());
+        if (parent)
+            parent->mouseDoubleClickEvent(event);
+        QGraphicsView::mouseDoubleClickEvent(event);
+    }
+#endif
+#endif
 
     virtual void resizeEvent(QResizeEvent *event) {
         QGraphicsView::resizeEvent(event);
-        MainWindow *main_window = qobject_cast<MainWindow *>(parentWidget());
-        if (scene()->inherits("RoomScene")) {
-            RoomScene *room_scene = qobject_cast<RoomScene *>(scene());
+        QGraphicsScene *scene = this->scene();
+        if (scene) {
             QRectF newSceneRect(0, 0, event->size().width(), event->size().height());
-            room_scene->setSceneRect(newSceneRect);
-            room_scene->adjustItems();
-            setSceneRect(room_scene->sceneRect());
-            if (newSceneRect != room_scene->sceneRect())
-                fitInView(room_scene->sceneRect(), Qt::KeepAspectRatio);
-            else
-                this->resetTransform();
-            main_window->setBackgroundBrush(false);
-            return;
-        } else if (scene()->inherits("StartScene")) {
-            StartScene *start_scene = qobject_cast<StartScene *>(scene());
-            QRectF newSceneRect(-event->size().width() / 2, -event->size().height() / 2,
-                                event->size().width(), event->size().height());
-            start_scene->setSceneRect(newSceneRect);
-            setSceneRect(start_scene->sceneRect());
-            if (newSceneRect != start_scene->sceneRect())
-                fitInView(start_scene->sceneRect(), Qt::KeepAspectRatio);
+            scene->setSceneRect(newSceneRect);
+            if (scene->sceneRect().size() != event->size()) {
+                QSizeF from(scene->sceneRect().size());
+                QSizeF to(event->size());
+                QTransform transform;
+                transform.scale(to.width() / from.width(), to.height() / from.height());
+                setTransform(transform);
+            } else {
+                resetTransform();
+            }
+            setSceneRect(scene->sceneRect());
         }
+
+        MainWindow *main_window = qobject_cast<MainWindow *>(parentWidget());
         if (main_window)
-            main_window->setBackgroundBrush(true);
+            main_window->fitBackgroundBrush();
     }
 };
 
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent), ui(new Ui::MainWindow)
+    : QMainWindow(parent), isLeftPressDown(false),
+      scene(NULL), ui(new Ui::MainWindow), server(NULL), about_window(NULL),
+      minButton(NULL), maxButton(NULL), normalButton(NULL), closeButton(NULL),
+      versionInfomationReply(NULL), changeLogReply(NULL)
 {
     ui->setupUi(this);
     setWindowTitle(tr("QSanguosha-Hegemony") + " " + Sanguosha->getVersion());
-    scene = NULL;
+#ifdef Q_OS_WIN
+    setWindowFlags(Qt::FramelessWindowHint | Qt::WindowSystemMenuHint | Qt::WindowMinMaxButtonsHint);
+#endif
+    setAttribute(Qt::WA_TranslucentBackground);
+
+    setMouseTracking(true);
+    setMinimumWidth(800);
+    setMinimumHeight(580);
+
+    fetchUpdateInformation();
 
     connection_dialog = new ConnectionDialog(this);
     connect(ui->actionStart_Game, SIGNAL(triggered()), connection_dialog, SLOT(exec()));
@@ -79,44 +169,255 @@ MainWindow::MainWindow(QWidget *parent)
     config_dialog = new ConfigDialog(this);
     connect(ui->actionConfigure, SIGNAL(triggered()), config_dialog, SLOT(show()));
     connect(config_dialog, SIGNAL(bg_changed()), this, SLOT(changeBackground()));
-    connect(config_dialog, SIGNAL(tableBg_changed()), this, SLOT(changeTableBg()));
+    connect(config_dialog, SIGNAL(tableBg_changed()), this, SLOT(changeBackground()));
 
     connect(ui->actionAbout_Qt, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
     connect(ui->actionAcknowledgement_2, SIGNAL(triggered()), this, SLOT(on_actionAcknowledgement_triggered()));
 
-    StartScene *start_scene = new StartScene;
+    StartScene *start_scene = new StartScene(this);
 
     QList<QAction *> actions;
     actions << ui->actionStart_Game
-            << ui->actionStart_Server
-            << ui->actionPC_Console_Start
-            << ui->actionReplay
-            << ui->actionConfigure
-            << ui->actionGeneral_Overview
-            << ui->actionCard_Overview
-            << ui->actionRule_Summary
-            << ui->actionAbout
-            << ui->actionAbout_Us;
+        << ui->actionStart_Server
+        << ui->actionPC_Console_Start
+        << ui->actionReplay
+        << ui->actionConfigure
+        << ui->actionGeneral_Overview
+        << ui->actionCard_Overview
+        << ui->actionAbout;
 
-    foreach (QAction *action, actions)
+    foreach(QAction *action, actions)
         start_scene->addButton(action);
+
+#if defined(Q_OS_WIN) || defined(Q_OS_ANDROID)
+    ui->menuSumMenu->setAttribute(Qt::WA_TranslucentBackground);
+    ui->menuGame->setAttribute(Qt::WA_TranslucentBackground);
+    ui->menuView->setAttribute(Qt::WA_TranslucentBackground);
+    ui->menuOptions->setAttribute(Qt::WA_TranslucentBackground);
+    ui->menuDIY->setAttribute(Qt::WA_TranslucentBackground);
+    ui->menuCheat->setAttribute(Qt::WA_TranslucentBackground);
+    ui->menuHelp->setAttribute(Qt::WA_TranslucentBackground);
+#endif
+
     view = new FitView(scene);
 
     setCentralWidget(view);
     restoreFromConfig();
 
+    roundCorners();
+
     BackLoader::preload();
     gotoScene(start_scene);
 
-    addAction(ui->actionShow_Hide_Menu);
     addAction(ui->actionFullscreen);
 
+#if defined(Q_OS_WIN) || defined(Q_OS_ANDROID)
+    menu = new QPushButton(this);
+    menu->setMenu(ui->menuSumMenu);
+    menu->setProperty("control", true);
+    StyleHelper::getInstance()->setIcon(menu, QChar(0xf0c9), 15);
+    menu->setToolTip(tr("<font color=%1>Config</font>").arg(Config.SkillDescriptionInToolTipColor.name()));
+#endif
+
+#if defined(Q_OS_WIN)
+    minButton = new QPushButton(this);
+    minButton->setProperty("control", true);
+
+    maxButton = new QPushButton(this);
+    maxButton->setProperty("bold", true);
+    maxButton->setProperty("control", true);
+
+    normalButton = new QPushButton(this);
+    normalButton->setProperty("bold", true);
+    normalButton->setProperty("control", true);
+
+    closeButton= new QPushButton(this);
+    closeButton->setObjectName("closeButton");
+    closeButton->setProperty("control", true);
+
+    StyleHelper::getInstance()->setIcon(minButton, QChar(0xf068), 15);
+    StyleHelper::getInstance()->setIcon(maxButton, QChar(0xf106), 15);
+    StyleHelper::getInstance()->setIcon(normalButton, QChar(0xf107), 15);
+    StyleHelper::getInstance()->setIcon(closeButton, QChar(0xf00d), 15);
+
+    minButton->setToolTip(tr("<font color=%1>Minimize</font>").arg(Config.SkillDescriptionInToolTipColor.name()));
+    connect(minButton, SIGNAL(clicked()), this, SLOT(showMinimized()));
+    maxButton->setToolTip(tr("<font color=%1>Maximize</font>").arg(Config.SkillDescriptionInToolTipColor.name()));
+    connect(maxButton, SIGNAL(clicked()), this, SLOT(showMaximized()));
+    normalButton->setToolTip(tr("<font color=%1>Restore downward</font>").arg(Config.SkillDescriptionInToolTipColor.name()));
+    connect(normalButton, SIGNAL(clicked()), this, SLOT(showNormal()));
+    closeButton->setToolTip(tr("<font color=%1>Close</font>").arg(Config.SkillDescriptionInToolTipColor.name()));
+    connect(closeButton, SIGNAL(clicked()), this, SLOT(close()));
+
+    menuBar()->hide();
+#elif defined(Q_OS_ANDROID)
+    ui->menuSumMenu->removeAction(ui->menuView->menuAction());
+#endif
+    repaintButtons();
+
+#ifndef Q_OS_ANDROID
+    QPropertyAnimation *animation = new QPropertyAnimation(this, "windowOpacity");
+    animation->setDuration(1000);
+    animation->setStartValue(0);
+    animation->setEndValue(1);
+    animation->setEasingCurve(QEasingCurve::OutCurve);
+    animation->start(QAbstractAnimation::DeleteWhenStopped);
+#endif
+
+    start_scene->showOrganization();
+
     systray = NULL;
+}
+
+#ifdef Q_OS_WIN
+void MainWindow::mousePressEvent(QMouseEvent *event)
+{
+    if (windowState() & (Qt::WindowMaximized | Qt::WindowFullScreen))
+        return;
+    if (event->button() == Qt::LeftButton) {
+        if (isZoomReady) {
+            isLeftPressDown = true;
+            if (direction != None) {
+                releaseMouse();
+                setCursor(QCursor(Qt::ArrowCursor));
+            }
+        } else {
+            bool can_move = true;
+            if (view && view->scene()) {
+                QPointF pos = view->mapToScene(event->pos());
+                if (scene->itemAt(pos, QTransform()))
+                    can_move = false;
+            }
+            if (can_move) {
+                isLeftPressDown = true;
+                movePosition = event->globalPos() - frameGeometry().topLeft();
+                event->accept();
+            }
+        }
+    }
+}
+
+void MainWindow::mouseMoveEvent(QMouseEvent *event)
+{
+    if (windowState() & (Qt::WindowMaximized | Qt::WindowFullScreen))
+        return;
+    QPoint globalPoint = event->globalPos();
+    if (isZoomReady && isLeftPressDown) {
+        QRect rect = this->rect();
+        QPoint topLeft = mapToGlobal(rect.topLeft());
+        QPoint bottomRight = mapToGlobal(rect.bottomRight());
+
+        QRect rMove(topLeft, bottomRight);
+
+        switch (direction) {
+        case Left:
+            if (bottomRight.x() - globalPoint.x() <= minimumWidth())
+                rMove.setX(topLeft.x());
+            else
+                rMove.setX(globalPoint.x());
+            break;
+        case Right:
+            rMove.setWidth(globalPoint.x() - topLeft.x());
+            break;
+        case Up:
+            if (bottomRight.y() - globalPoint.y() <= minimumHeight())
+                rMove.setY(topLeft.y());
+            else
+                rMove.setY(globalPoint.y());
+            break;
+        case Down:
+            rMove.setHeight(globalPoint.y() - topLeft.y());
+            break;
+        case LeftTop:
+            if (bottomRight.x() - globalPoint.x() <= minimumWidth())
+                rMove.setX(topLeft.x());
+            else
+                rMove.setX(globalPoint.x());
+            if (bottomRight.y() - globalPoint.y() <= minimumHeight())
+                rMove.setY(topLeft.y());
+            else
+                rMove.setY(globalPoint.y());
+            break;
+        case RightTop:
+            rMove.setWidth(globalPoint.x() - topLeft.x());
+            if (bottomRight.y() - globalPoint.y() <= minimumHeight())
+                rMove.setY(topLeft.y());
+            else
+                rMove.setY(globalPoint.y());
+            break;
+        case LeftBottom:
+            if (bottomRight.x() - globalPoint.x() <= minimumWidth())
+                rMove.setX(topLeft.x());
+            else
+                rMove.setX(globalPoint.x());
+            rMove.setHeight(globalPoint.y() - topLeft.y());
+            break;
+        case RightBottom:
+            rMove.setWidth(globalPoint.x() - topLeft.x());
+            rMove.setHeight(globalPoint.y() - topLeft.y());
+            break;
+        default:
+            break;
+        }
+        setGeometry(rMove);
+    } else if (isLeftPressDown && (event->buttons() & Qt::LeftButton)) {
+        move(event->globalPos() - movePosition);
+        event->accept();
+    } else if (!isLeftPressDown) {
+        region(globalPoint);
+    }
+}
+
+void MainWindow::mouseReleaseEvent(QMouseEvent *)
+{
+    isLeftPressDown = false;
+    if (direction != None) {
+        releaseMouse();
+        setCursor(QCursor(Qt::ArrowCursor));
+    }
+}
+
+void MainWindow::mouseDoubleClickEvent(QMouseEvent *event)
+{
+    bool can_change = true;
+    if (view && view->scene()) {
+        QPointF pos = view->mapToScene(event->pos());
+        if (scene->itemAt(pos, QTransform()))
+            can_change = false;
+    }
+    if (can_change) {
+        if (windowState() & Qt::WindowMaximized)
+            showNormal();
+        else
+            showMaximized();
+    }
+}
+#endif
+
+void MainWindow::changeEvent(QEvent *event)
+{
+    if (event->type() == QEvent::WindowStateChange) {
+        repaintButtons();
+        roundCorners();
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
+        if (view && view->viewport())
+            view->viewport()->repaint();
+#endif
+    }
+    QMainWindow::changeEvent(event);
+}
+
+void MainWindow::resizeEvent(QResizeEvent *event)
+{
+    repaintButtons();
+    roundCorners();
+    QMainWindow::resizeEvent(event);
 }
 
 void MainWindow::restoreFromConfig() {
     resize(Config.value("WindowSize", QSize(1366, 706)).toSize());
     move(Config.value("WindowPosition", QPoint(-8, -8)).toPoint());
+    setWindowState((Qt::WindowStates) Config.value("WindowState", 0).toInt());
 
     QFont font;
     if (Config.UIFont != font)
@@ -127,32 +428,158 @@ void MainWindow::restoreFromConfig() {
     ui->actionNever_nullify_my_trick->setEnabled(false);
 }
 
+void MainWindow::region(const QPoint &cursorGlobalPoint)
+{
+    QRect rect = this->rect();
+    QPoint topLeft = mapToGlobal(rect.topLeft());
+    QPoint bottomRight = mapToGlobal(rect.bottomRight());
+
+    int x = cursorGlobalPoint.x();
+    int y = cursorGlobalPoint.y();
+
+    if (topLeft.x() + S_PADDING >= x && topLeft.x() <= x && topLeft.y() + S_PADDING >= y && topLeft.y() <= y) {
+        direction = LeftTop;
+        setCursor(QCursor(Qt::SizeFDiagCursor));
+    } else if (x >= bottomRight.x() - S_PADDING && x <= bottomRight.x() && y >= bottomRight.y() - S_PADDING && y <= bottomRight.y()) {
+        direction = RightBottom;
+        setCursor(QCursor(Qt::SizeFDiagCursor));
+    } else if (x <= topLeft.x() + S_PADDING && x >= topLeft.x() && y >= bottomRight.y() - S_PADDING && y <= bottomRight.y()) {
+        direction = LeftBottom;
+        setCursor(QCursor(Qt::SizeBDiagCursor));
+    } else if (x <= bottomRight.x() && x >= bottomRight.x() - S_PADDING && y >= topLeft.y() && y <= topLeft.y() + S_PADDING) {
+        direction = RightTop;
+        setCursor(QCursor(Qt::SizeBDiagCursor));
+    } else if (x <= topLeft.x() + S_PADDING && x >= topLeft.x()) {
+        direction = Left;
+        setCursor(QCursor(Qt::SizeHorCursor));
+    } else if (x <= bottomRight.x() && x >= bottomRight.x() - S_PADDING) {
+        direction = Right;
+        setCursor(QCursor(Qt::SizeHorCursor));
+    } else if (y >= topLeft.y() && y <= topLeft.y() + S_PADDING) {
+        direction = Up;
+        setCursor(QCursor(Qt::SizeVerCursor));
+    } else if (y <= bottomRight.y() && y >= bottomRight.y() - S_PADDING) {
+        direction = Down;
+        setCursor(QCursor(Qt::SizeVerCursor));
+    } else {
+        direction = None;
+        setCursor(QCursor(Qt::ArrowCursor));
+    }
+    if (direction != None)
+        isZoomReady = true;
+    else
+        isZoomReady = false;
+}
+
+void MainWindow::fetchUpdateInformation()
+{
+    static QNetworkAccessManager *mgr = new QNetworkAccessManager(this);
+#ifdef QT_DEBUG
+    QString URL1 = "http://ver.qsanguosha.org/test/UpdateInfo";
+    QString URL2 = "http://ver.qsanguosha.org/test/whatsnew.html";
+#else
+    QString URL1 = "http://ver.qsanguosha.org/UpdateInfo";
+    QString URL2 = "http://ver.qsanguosha.org/whatsnew.html";
+#endif
+
+    versionInfomationReply = mgr->get(QNetworkRequest(QUrl(URL1)));
+    changeLogReply = mgr->get(QNetworkRequest(QUrl(URL2)));
+
+    connect(versionInfomationReply, SIGNAL(finished()), SLOT(onVersionInfomationGotten()));
+    connect(changeLogReply, SIGNAL(finished()), SLOT(onChangeLogGotten()));
+}
+
+void MainWindow::roundCorners()
+{
+#ifndef Q_OS_ANDROID
+    QBitmap mask(size());
+    if (windowState() & (Qt::WindowMaximized | Qt::WindowFullScreen)) {
+        mask.fill(Qt::black);
+    } else {
+        mask.fill();
+        QPainter painter(&mask);
+        QPainterPath path;
+        QRect windowRect = mask.rect();
+        QRect maskRect(windowRect.x(), windowRect.y(), windowRect.width(), windowRect.height());
+        path.addRoundedRect(maskRect, S_CORNER_SIZE, S_CORNER_SIZE);
+        painter.setRenderHint(QPainter::Antialiasing);
+
+        painter.fillPath(path, Qt::black);
+    }
+    setMask(mask);
+#endif
+}
+
+void MainWindow::repaintButtons()
+{
+#if defined(Q_OS_WIN)
+    if (!minButton || !maxButton || !normalButton || !closeButton || !menu)
+        return;
+    int width = this->width();
+    minButton->setGeometry(width - 130, 0, 40, 33);
+    maxButton->setGeometry(width - 90, 0, 40, 33);
+    normalButton->setGeometry(width - 90, 0, 40, 33);
+    closeButton->setGeometry(width - 50, 0, 40, 33);
+
+    Qt::WindowStates state = windowState();
+    if (state & Qt::WindowMaximized) {
+        maxButton->setVisible(false);
+        normalButton->setVisible(true);
+        minButton->setVisible(true);
+        menu->setGeometry(width - 170, 0, 40, 33);
+    } else if (state & Qt::WindowFullScreen) {
+        maxButton->setVisible(false);
+        normalButton->setVisible(false);
+        minButton->setVisible(false);
+        menu->setGeometry(width - 90, 0, 40, 33);
+    } else {
+        maxButton->setVisible(true);
+        normalButton->setVisible(false);
+        minButton->setVisible(true);
+        menu->setGeometry(width - 170, 0, 40, 33);
+    }
+#elif defined(Q_OS_ANDROID)
+    if (menu)
+        menu->setGeometry(width() - 50, 0, 40, 33);
+#endif
+}
+
 void MainWindow::closeEvent(QCloseEvent *) {
-    Config.setValue("WindowSize", size());
-    Config.setValue("WindowPosition", pos());
+    if (!isFullScreen() && !isMaximized()) {
+        Config.setValue("WindowSize", size());
+        Config.setValue("WindowPosition", pos());
+    }
+    Config.setValue("WindowState", (int)windowState());
 }
 
 MainWindow::~MainWindow() {
     delete ui;
+    view->deleteLater();
+    QSanSkinFactory::destroyInstance();
+    QSanUiUtils::QSanFreeTypeFont::quit();
 }
 
 void MainWindow::gotoScene(QGraphicsScene *scene) {
-    if (this->scene)
+    if (this->scene) {
         this->scene->deleteLater();
+        if (about_window) {
+            about_window->deleteLater();
+            about_window = NULL;
+        }
+    }
+
     this->scene = scene;
     view->setScene(scene);
-    /* @todo: Need a better way to replace the magic number '4' */
-    QResizeEvent e(QSize(view->size().width() - 4, view->size().height() - 4), view->size());
+    QResizeEvent e(QSize(view->size().width(), view->size().height()), view->size());
     view->resizeEvent(&e);
-    changeBackground();
 }
 
 void MainWindow::on_actionExit_triggered() {
     QMessageBox::StandardButton result;
     result = QMessageBox::question(this,
-                                   tr("Sanguosha"),
-                                   tr("Are you sure to exit?"),
-                                   QMessageBox::Ok | QMessageBox::Cancel);
+        tr("Sanguosha"),
+        tr("Are you sure to exit?"),
+        QMessageBox::Ok | QMessageBox::Cancel);
     if (result == QMessageBox::Ok) {
         delete systray;
         systray = NULL;
@@ -165,7 +592,7 @@ void MainWindow::on_actionStart_Server_triggered() {
     if (!dialog->config())
         return;
 
-    Server *server = new Server(this);
+    server = new Server(this);
     if (!server->listen()) {
         QMessageBox::warning(this, tr("Warning"), tr("Can not start server!"));
         return;
@@ -174,8 +601,11 @@ void MainWindow::on_actionStart_Server_triggered() {
     server->daemonize();
 
     ui->actionStart_Game->disconnect();
+#ifdef QT_NO_PROCESS
+    ui->actionStart_Game->setEnabled(false);
+#else
     connect(ui->actionStart_Game, SIGNAL(triggered()), this, SLOT(startGameInAnotherInstance()));
-
+#endif
     StartScene *start_scene = qobject_cast<StartScene *>(scene);
     if (start_scene) {
         start_scene->switchToServer(server);
@@ -184,7 +614,7 @@ void MainWindow::on_actionStart_Server_triggered() {
     }
 }
 
-void MainWindow::checkVersion(const QString &server_version, const QString &server_mod) {
+void MainWindow::checkVersion(const QString &server_version_str, const QString &server_mod) {
     QString client_mod = Sanguosha->getMODName();
     if (client_mod != server_mod) {
         QMessageBox::warning(this, tr("Warning"), tr("Client MOD name is not same as the server!"));
@@ -192,7 +622,8 @@ void MainWindow::checkVersion(const QString &server_version, const QString &serv
     }
 
     Client *client = qobject_cast<Client *>(sender());
-    QString client_version = Sanguosha->getVersionNumber();
+    const QSanVersionNumber &client_version = Sanguosha->getVersionNumber();
+    QSanVersionNumber server_version(server_version_str);
 
     if (server_version == client_version) {
         client->signup();
@@ -221,15 +652,19 @@ void MainWindow::startConnection() {
 }
 
 void MainWindow::on_actionReplay_triggered() {
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
     QString location = QDesktopServices::storageLocation(QDesktopServices::HomeLocation);
+#else
+    QString location = QStandardPaths::writableLocation(QStandardPaths::HomeLocation);
+#endif
     QString last_dir = Config.value("LastReplayDir").toString();
     if (!last_dir.isEmpty())
         location = last_dir;
 
     QString filename = QFileDialog::getOpenFileName(this,
-                                                    tr("Select a reply file"),
-                                                    location,
-                                                    tr("QSanguosha Replay File(*.qsgs);; Image replay file (*.png)"));
+        tr("Select a reply file"),
+        location,
+        tr("QSanguosha Replay File(*.qsgs);; Image replay file (*.png)"));
 
     if (filename.isEmpty())
         return;
@@ -246,12 +681,16 @@ void MainWindow::on_actionReplay_triggered() {
 void MainWindow::networkError(const QString &error_msg) {
     if (isVisible())
         QMessageBox::warning(this, tr("Network error"), error_msg);
+
+    if (NULL != RoomSceneInstance) {
+        RoomSceneInstance->stopHeroSkinChangingAnimations();
+    }
 }
 
 void BackLoader::preload() {
     QStringList emotions = G_ROOM_SKIN.getAnimationFileNames();
 
-    foreach (QString emotion, emotions) {
+    foreach(QString emotion, emotions) {
         int n = PixmapAnimation::GetFrameCount(emotion);
         for (int i = 0; i < n; i++) {
             QString filename = QString("image/system/emotion/%1/%2.png").arg(emotion).arg(QString::number(i));
@@ -294,7 +733,8 @@ void MainWindow::enterRoom() {
         connect(ui->actionDamage_maker, SIGNAL(triggered()), room_scene, SLOT(makeDamage()));
         connect(ui->actionRevive_wand, SIGNAL(triggered()), room_scene, SLOT(makeReviving()));
         connect(ui->actionExecute_script_at_server_side, SIGNAL(triggered()), room_scene, SLOT(doScript()));
-    } else {
+    }
+    else {
         ui->menuCheat->setEnabled(false);
         ui->actionDeath_note->disconnect();
         ui->actionDamage_maker->disconnect();
@@ -310,30 +750,29 @@ void MainWindow::enterRoom() {
 }
 
 void MainWindow::gotoStartScene() {
-    QList<Server *> servers = findChildren<Server *>();
-    if (!servers.isEmpty())
-        servers.first()->deleteLater();
+    if (server != NULL){
+        server->deleteLater();
+        server = NULL;
+    }
 
     if (Self) {
         delete Self;
         Self = NULL;
     }
 
-    StartScene *start_scene = new StartScene;
+    StartScene *start_scene = new StartScene(this);
 
     QList<QAction *> actions;
     actions << ui->actionStart_Game
-            << ui->actionStart_Server
-            << ui->actionPC_Console_Start
-            << ui->actionReplay
-            << ui->actionConfigure
-            << ui->actionGeneral_Overview
-            << ui->actionCard_Overview
-            << ui->actionRule_Summary
-            << ui->actionAbout
-            << ui->actionAbout_Us;
+        << ui->actionStart_Server
+        << ui->actionPC_Console_Start
+        << ui->actionReplay
+        << ui->actionConfigure
+        << ui->actionGeneral_Overview
+        << ui->actionCard_Overview
+        << ui->actionAbout;
 
-    foreach (QAction *action, actions)
+    foreach(QAction *action, actions)
         start_scene->addButton(action);
 
     setCentralWidget(view);
@@ -356,12 +795,14 @@ void MainWindow::gotoStartScene() {
 }
 
 void MainWindow::startGameInAnotherInstance() {
+#ifndef QT_NO_PROCESS
     QProcess::startDetached(QApplication::applicationFilePath(), QStringList());
+#endif
 }
 
 void MainWindow::on_actionGeneral_Overview_triggered() {
     GeneralOverview *overview = GeneralOverview::getInstance(this);
-    overview->fillGenerals(Sanguosha->findChildren<const General *>());
+    overview->fillGenerals(Sanguosha->getGeneralList());
     overview->show();
 }
 
@@ -386,57 +827,62 @@ void MainWindow::on_actionNever_nullify_my_trick_toggled(bool checked) {
 }
 
 void MainWindow::on_actionAbout_triggered() {
-    // Cao Cao's pixmap
-    QString content =  "<center><img src='image/system/shencc.png'> <br /> </center>";
+    if (scene == NULL)
+        return;
 
-    // Cao Cao' poem
-    QString poem = tr("Disciples dressed in blue, my heart worries for you. You are the cause, of this song without pause");
-    content.append(QString("<p align='right'><i>%1</i></p>").arg(poem));
+    if (about_window == NULL) {
+        // Cao Cao's pixmap
+        QString content = "<center><img src='image/system/shencc.png'> <br /> </center>";
 
-    // Cao Cao's signature
-    QString signature = tr("\"A Short Song\" by Cao Cao");
-    content.append(QString("<p align='right'><i>%1</i></p>").arg(signature));
+        // Cao Cao' poem
+        QString poem = tr("Disciples dressed in blue, my heart worries for you. You are the cause, of this song without pause");
+        content.append(QString("<p align='right'><i>%1</i></p>").arg(poem));
 
-    QString email = "moligaloo@gmail.com";
-    content.append(tr("This is the open source clone of the popular <b>Sanguosha</b> game,"
-                      "totally written in C++ Qt GUI framework <br />"
-                      "My Email: <a href='mailto:%1' style = \"color:#0072c1; \">%1</a> <br/>"
-                      "My QQ: 365840793 <br/>"
-                      "My Weibo: http://weibo.com/moligaloo <br/>").arg(email));
+        // Cao Cao's signature
+        QString signature = tr("\"A Short Song\" by Cao Cao");
+        content.append(QString("<p align='right'><i>%1</i></p>").arg(signature));
 
-    QString config;
+        QString email = "moligaloo@gmail.com";
+        content.append(tr("This is the open source clone of the popular <b>Sanguosha</b> game,"
+                          "totally written in C++ Qt GUI framework <br />"
+                          "My Email: <a href='mailto:%1' style = \"color:#0072c1; \">%1</a> <br/>"
+                          "My QQ: 365840793 <br/>"
+                          "My Weibo: http://weibo.com/moligaloo <br/>").arg(email));
+
+        QString config;
 
 #ifdef QT_NO_DEBUG
-    config = "release";
+        config = "release";
 #else
-    config = "debug";
+        config = "debug";
 #endif
 
-    content.append(tr("Current version: %1 %2 (%3)<br/>")
-                      .arg(Sanguosha->getVersion())
-                      .arg(config)
-                      .arg(Sanguosha->getVersionName()));
+        content.append(tr("Current version: %1 %2 (%3)<br/>")
+                       .arg(Sanguosha->getVersion())
+                       .arg(config)
+                       .arg(Sanguosha->getVersionName()));
 
-    const char *date = __DATE__;
-    const char *time = __TIME__;
-    content.append(tr("Compilation time: %1 %2 <br/>").arg(date).arg(time));
+        const char *date = __DATE__;
+        const char *time = __TIME__;
+        content.append(tr("Compilation time: %1 %2 <br/>").arg(date).arg(time));
 
-    QString project_url = "https://github.com/Fsu0413/QSanguosha-For-Hegemony";
-    content.append(tr("Source code: <a href='%1' style = \"color:#0072c1; \">%1</a> <br/>").arg(project_url));
+        QString project_url = "https://github.com/QSanguosha-Rara/QSanguosha-For-Hegemony";
+        content.append(tr("Source code: <a href='%1' style = \"color:#0072c1; \">%1</a> <br/>").arg(project_url));
 
-    QString forum_url = "http://qsanguosha.org";
-    content.append(tr("Forum: <a href='%1' style = \"color:#0072c1; \">%1</a> <br/>").arg(forum_url));
+        QString forum_url = "http://qsanguosha.org";
+        content.append(tr("Forum: <a href='%1' style = \"color:#0072c1; \">%1</a> <br/>").arg(forum_url));
 
-    Window *window = new Window(tr("About QSanguosha"), QSize(420, 465));
-    scene->addItem(window);
-    window->setZValue(32766);
+        about_window = new Window(tr("About QSanguosha"), QSize(420, 465));
+        scene->addItem(about_window);
+        about_window->setZValue(32766);
 
-    window->addContent(content);
-    window->addCloseButton(tr("OK"));
-    window->shift(scene->inherits("RoomScene") ? scene->width() : 0,
-                  scene->inherits("RoomScene") ? scene->height() : 0);
+        about_window->addContent(content);
+        about_window->addCloseButton(tr("OK"));
+        about_window->keepWhenDisappear();
+    }
 
-    window->appear();
+    about_window->shift(scene->sceneRect().center());
+    about_window->appear();
 }
 
 void MainWindow::on_actionAbout_Us_triggered() {
@@ -444,37 +890,28 @@ void MainWindow::on_actionAbout_Us_triggered() {
     dialog->show();
 }
 
-void MainWindow::setBackgroundBrush(bool centerAsOrigin) {
+void MainWindow::fitBackgroundBrush() {
     if (scene) {
-        QPixmap pixmap(Config.BackgroundImage);
-        QBrush brush(pixmap);
-        qreal sx = (qreal)width() / qreal(pixmap.width());
-        qreal sy = (qreal)height() / qreal(pixmap.height());
+        QBrush brush(scene->backgroundBrush());
+        QPixmap pixmap(brush.texture());
 
+        QRectF rect(scene->sceneRect());
         QTransform transform;
-        if (centerAsOrigin)
-            transform.translate(-(qreal)width() / 2, -(qreal)height() / 2);
-        transform.scale(sx, sy);
+        transform.translate(-rect.left(), -rect.top());
+        transform.scale(rect.width() / pixmap.width(), rect.height() / pixmap.height());
         brush.setTransform(transform);
         scene->setBackgroundBrush(brush);
     }
 }
 
 void MainWindow::changeBackground() {
-    bool centerAsOrigin = scene != NULL && !scene->inherits("RoomScene");
-    setBackgroundBrush(centerAsOrigin);
+    scene->setBackgroundBrush(QBrush(QPixmap(scene->inherits("RoomScene") ? Config.TableBgImage : Config.BackgroundImage)));
+    fitBackgroundBrush();
 
     if (scene->inherits("StartScene")) {
         StartScene *start_scene = qobject_cast<StartScene *>(scene);
         start_scene->setServerLogBackground();
     }
-}
-
-void MainWindow::changeTableBg() {
-    if (!scene->inherits("RoomScene"))
-        return;
-
-    RoomSceneInstance->changeTableBg();
 }
 
 void MainWindow::on_actionFullscreen_triggered()
@@ -483,12 +920,6 @@ void MainWindow::on_actionFullscreen_triggered()
         showNormal();
     else
         showFullScreen();
-}
-
-void MainWindow::on_actionShow_Hide_Menu_triggered()
-{
-    QMenuBar *menu_bar = menuBar();
-    menu_bar->setVisible(! menu_bar->isVisible());
 }
 
 void MainWindow::on_actionMinimize_to_system_tray_triggered()
@@ -503,6 +934,7 @@ void MainWindow::on_actionMinimize_to_system_tray_triggered()
         QMenu *menu = new QMenu;
         menu->addAction(appear);
         menu->addMenu(ui->menuGame);
+
         menu->addMenu(ui->menuView);
         menu->addMenu(ui->menuOptions);
         menu->addMenu(ui->menuHelp);
@@ -547,7 +979,7 @@ BroadcastBox::BroadcastBox(Server *server, QWidget *parent)
 
 void BroadcastBox::accept() {
     QDialog::accept();
-    server->broadcast(text_edit->toPlainText());
+    server->broadcastSystemMessage(text_edit->toPlainText());
 }
 
 void MainWindow::on_actionBroadcast_triggered() {
@@ -562,47 +994,43 @@ void MainWindow::on_actionBroadcast_triggered() {
 }
 
 void MainWindow::on_actionAcknowledgement_triggered() {
+    if (scene == NULL)
+        return;
+
     Window *window = new Window(QString(), QSize(1000, 677), "image/system/acknowledgement.png");
     scene->addItem(window);
 
     Button *button = window->addCloseButton(tr("OK"));
     button->moveBy(-85, -35);
     window->setZValue(32766);
-    window->shift(scene && scene->inherits("RoomScene") ? scene->width() : 0,
-                    scene && scene->inherits("RoomScene") ? scene->height() : 0);
+    window->shift(scene->sceneRect().center());
 
     window->appear();
 }
 
 void MainWindow::on_actionPC_Console_Start_triggered() {
     ServerDialog *dialog = new ServerDialog(this);
-    dialog->ensureEnableAI();
     if (!dialog->config())
         return;
 
-    Server *server = new Server(this);
+    server = new Server(this);
     if (!server->listen()) {
         QMessageBox::warning(this, tr("Warning"), tr("Can not start server!"));
         return;
     }
 
+    server->daemonize();
     server->createNewRoom();
 
     Config.HostAddress = "127.0.0.1";
     startConnection();
 }
 
-#include <QGroupBox>
-#include <QToolButton>
-#include <QCommandLinkButton>
-#include <QFormLayout>
-#include "recorder.h"
-
 void MainWindow::on_actionReplay_file_convert_triggered() {
     QString filename = QFileDialog::getOpenFileName(this,
-                                                    tr("Please select a replay file"),
-                                                    Config.value("LastReplayDir").toString(),
-                                                    tr("QSanguosha Replay File(*.qsgs);; Image replay file (*.png)"));
+        tr("Please select a replay file"),
+        Config.value("LastReplayDir").toString(),
+        tr("QSanguosha Replay File(*.qsgs);; Image replay file (*.png)"));
 
     if (filename.isEmpty())
         return;
@@ -618,7 +1046,8 @@ void MainWindow::on_actionReplay_file_convert_triggered() {
             // txt to png
             Recorder::TXT2PNG(file.readAll()).save(tosave);
 
-        } else if (filename.endsWith(".png")) {
+        }
+        else if (filename.endsWith(".png")) {
             tosave.append(".qsgs");
 
             // png to txt
@@ -632,11 +1061,19 @@ void MainWindow::on_actionReplay_file_convert_triggered() {
 }
 
 void MainWindow::on_actionRecord_analysis_triggered() {
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
     QString location = QDesktopServices::storageLocation(QDesktopServices::HomeLocation);
+#else
+    QString location = QStandardPaths::writableLocation(QStandardPaths::HomeLocation);
+#endif
+    QString last_dir = Config.value("LastReplayDir").toString();
+    if (!last_dir.isEmpty())
+        location = last_dir;
+
     QString filename = QFileDialog::getOpenFileName(this,
-                                                    tr("Load replay record"),
-                                                    location,
-                                                    tr("QSanguosha Replay File(*.qsgs);; Image replay file (*.png)"));
+        tr("Load replay record"),
+        location,
+        tr("QSanguosha Replay File(*.qsgs);; Image replay file (*.png)"));
 
     if (filename.isEmpty()) return;
 
@@ -645,8 +1082,8 @@ void MainWindow::on_actionRecord_analysis_triggered() {
     rec_dialog->resize(800, 500);
     QTableWidget *table = new QTableWidget;
 
-    RecAnalysis *record = new RecAnalysis(filename);
-    QMap<QString, PlayerRecordStruct *> record_map = record->getRecordMap();
+    RecAnalysis record(filename);
+    QMap<QString, PlayerRecordStruct *> record_map = record.getRecordMap();
     table->setColumnCount(11);
     table->setRowCount(record_map.keys().length());
     table->setEditTriggers(QAbstractItemView::NoEditTriggers);
@@ -654,13 +1091,13 @@ void MainWindow::on_actionRecord_analysis_triggered() {
     static QStringList labels;
     if (labels.isEmpty()) {
         labels << tr("ScreenName") << tr("General") << tr("Role") << tr("Living") << tr("WinOrLose") << tr("TurnCount")
-               << tr("Recover") << tr("Damage") << tr("Damaged") << tr("Kill") << tr("Designation");
+            << tr("Recover") << tr("Damage") << tr("Damaged") << tr("Kill") << tr("Designation");
     }
     table->setHorizontalHeaderLabels(labels);
     table->setSelectionBehavior(QTableWidget::SelectRows);
 
     int i = 0;
-    foreach (PlayerRecordStruct *rec, record_map.values()) {
+    foreach (PlayerRecordStruct *rec, record_map) {
         QTableWidgetItem *item = new QTableWidgetItem;
         QString screen_name = Sanguosha->translate(rec->m_screenName);
         if (rec->m_statue == "robot")
@@ -685,8 +1122,8 @@ void MainWindow::on_actionRecord_analysis_triggered() {
         table->setItem(i, 3, item);
 
         item = new QTableWidgetItem;
-        bool is_win = record->getRecordWinners().contains(rec->m_role)
-                      || record->getRecordWinners().contains(record_map.key(rec));
+        bool is_win = record.getRecordWinners().contains(rec->m_role)
+            || record.getRecordWinners().contains(record_map.key(rec));
         item->setText(is_win ? tr("Win") : tr("Lose"));
         table->setItem(i, 4, item);
 
@@ -719,17 +1156,17 @@ void MainWindow::on_actionRecord_analysis_triggered() {
     table->resizeColumnsToContents();
 
     QLabel *label = new QLabel;
-    label->setText(tr("Packages:") + record->getRecordPackages().join(","));
+    label->setText(tr("Packages:") + record.getRecordPackages().join(","));
 
     QLabel *label_game_mode = new QLabel;
-    label_game_mode->setText(tr("GameMode:") + Sanguosha->getModeName(record->getRecordGameMode()));
+    label_game_mode->setText(tr("GameMode:") + Sanguosha->getModeName(record.getRecordGameMode()));
 
     QLabel *label_options = new QLabel;
-    label_options->setText(tr("ServerOptions:") + record->getRecordServerOptions().join(","));
+    label_options->setText(tr("ServerOptions:") + record.getRecordServerOptions().join(","));
 
     QTextEdit *chat_info = new QTextEdit;
     chat_info->setReadOnly(chat_info);
-    chat_info->setText(record->getRecordChat());
+    chat_info->setText(record.getRecordChat());
 
     QLabel *table_chat_title = new QLabel;
     table_chat_title->setText(tr("Chat Information:"));
@@ -747,9 +1184,10 @@ void MainWindow::on_actionRecord_analysis_triggered() {
     rec_dialog->exec();
 }
 
-#include "audio.h"
-
 void MainWindow::on_actionAbout_fmod_triggered() {
+    if (scene == NULL)
+        return;
+
     QString content = tr("FMOD is a proprietary audio library made by Firelight Technologies");
     content.append("<p align='center'> <img src='image/logo/fmod.png' /> </p> <br/>");
 
@@ -766,15 +1204,15 @@ void MainWindow::on_actionAbout_fmod_triggered() {
     window->addContent(content);
     window->addCloseButton(tr("OK"));
     window->setZValue(32766);
-    window->shift(scene && scene->inherits("RoomScene") ? scene->width() : 0,
-                  scene && scene->inherits("RoomScene") ? scene->height() : 0);
+    window->shift(scene->sceneRect().center());
 
     window->appear();
 }
 
-#include "lua.hpp"
-
 void MainWindow::on_actionAbout_Lua_triggered() {
+    if (scene == NULL)
+        return;
+
     QString content = tr("Lua is a powerful, fast, lightweight, embeddable scripting language.");
     content.append("<p align='center'> <img src='image/logo/lua.png' /> </p> <br/>");
 
@@ -790,13 +1228,15 @@ void MainWindow::on_actionAbout_Lua_triggered() {
     window->addContent(content);
     window->addCloseButton(tr("OK"));
     window->setZValue(32766);
-    window->shift(scene && scene->inherits("RoomScene") ? scene->width() : 0,
-                  scene && scene->inherits("RoomScene") ? scene->height() : 0);
+    window->shift(scene->sceneRect().center());
 
     window->appear();
 }
 
 void MainWindow::on_actionAbout_GPLv3_triggered() {
+    if (scene == NULL)
+        return;
+
     QString content = tr("The GNU General Public License is the most widely used free software license, which guarantees end users the freedoms to use, study, share, and modify the software.");
     content.append("<p align='center'> <img src='image/logo/gplv3.png' /> </p> <br/>");
 
@@ -809,15 +1249,94 @@ void MainWindow::on_actionAbout_GPLv3_triggered() {
     window->addContent(content);
     window->addCloseButton(tr("OK"));
     window->setZValue(32766);
-    window->shift(scene && scene->inherits("RoomScene") ? scene->width() : 0,
-                  scene && scene->inherits("RoomScene") ? scene->height() : 0);
+    window->shift(scene->sceneRect().center());
 
     window->appear();
 }
 
 void MainWindow::on_actionManage_Ban_IP_triggered(){
-    Server *server = findChild<Server *>();
+    BanIpDialog *dlg = new BanIpDialog(this, server);
+    if (server) {
+        connect(server, SIGNAL(newPlayer(ServerPlayer*)), dlg, SLOT(addPlayer(ServerPlayer*)));
+    }
 
-    BanIPDialog *dlg = new BanIPDialog(this, server);
     dlg->show();
+}
+
+void MainWindow::onVersionInfomationGotten()
+{
+    while (!versionInfomationReply->atEnd()) {
+        QString line = versionInfomationReply->readLine();
+        line.remove('\n');
+
+        QStringList texts = line.split('|', QString::SkipEmptyParts);
+
+        if(texts.size() != 2)
+            return;
+
+        QString key = texts.at(0);
+        QString value = texts.at(1);
+        if ("VersionNumber" == key) {
+            QString v = value;
+            if (value.contains("Patch")) {
+                updateInfomation.is_patch = true;
+                v.chop(6);
+            } else {
+                updateInfomation.is_patch = false;
+            }
+
+            QSanVersionNumber latest_version = Sanguosha->getVersionNumber();
+            if (!v.isNull() && latest_version.tryParse(v))
+                v = latest_version;
+
+            updateInfomation.version_number = v;
+            if (Sanguosha->getVersionNumber() < latest_version)
+                setWindowTitle(tr("New Version Available") + "  " + windowTitle());
+        } else if ("Address" == key) {
+            updateInfomation.address = value;
+        }
+        if (!updateInfomation.address.isNull() && !updateInfomation.version_number.isNull())
+            ui->actionCheckUpdate->setEnabled(true);
+    }
+    versionInfomationReply->deleteLater();
+}
+
+void MainWindow::onChangeLogGotten()
+{
+    QString fileName = "info.html";
+    QFile file(fileName);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Truncate))
+    {
+        qDebug() << "Cannot open the file: " << fileName;
+        return;
+    }
+    QByteArray codeContent = changeLogReply->readAll();
+    file.write(codeContent);
+    file.close();
+    changeLogReply->deleteLater();
+}
+
+void MainWindow::on_actionCheckUpdate_triggered()
+{
+    QDialog *dialog = new QDialog(this);
+    dialog->setWindowTitle(tr("Check Update"));
+
+    QHBoxLayout *layout = new QHBoxLayout;
+    UpdateChecker *widget = new UpdateChecker;
+    connect(dialog, SIGNAL(finished(int)), widget, SLOT(deleteLater()));
+    widget->fill(updateInfomation);
+    layout->addWidget(widget);
+    dialog->setLayout(layout);
+
+    dialog->show();
+}
+
+
+void MainWindow::on_actionCard_editor_triggered()
+{
+    static CardEditor *editor;
+    if (editor == NULL)
+        editor = new CardEditor(this);
+
+    editor->show();
 }

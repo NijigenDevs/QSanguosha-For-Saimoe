@@ -1,8 +1,28 @@
+/********************************************************************
+    Copyright (c) 2013-2014 - QSanguosha-Rara
+
+    This file is part of QSanguosha-Hegemony.
+
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    See the LICENSE file for more details.
+
+    QSanguosha-Rara
+    *********************************************************************/
+
 #include "scenario.h"
 #include "engine.h"
 
 Scenario::Scenario(const QString &name)
-    : Package(name, Package::SpecialPack), rule(NULL)
+    : Package(name, Package::SpecialPack), rule(NULL), random_seat(true)
 {
 }
 
@@ -29,11 +49,11 @@ QString Scenario::getRoles() const{
     return roles;
 }
 
-void Scenario::assign(QStringList &generals, QStringList &roles) const{
+void Scenario::assign(QStringList &generals, QStringList &, QStringList &roles, Room *) const{
     generals << lord << loyalists << rebels << renegades;
     qShuffle(generals);
 
-    foreach (QString general, generals) {
+    foreach(QString general, generals) {
         if (general == lord)
             roles << "lord";
         else if (loyalists.contains(general))
@@ -50,6 +70,6 @@ bool Scenario::generalSelection() const{
 }
 
 AI::Relation Scenario::relationTo(const ServerPlayer *a, const ServerPlayer *b) const{
-    return AI::GetRelation(a, b);
+    return AI::GetRelationHegemony(a, b);
 }
 

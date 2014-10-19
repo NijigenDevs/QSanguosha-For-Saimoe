@@ -32,13 +32,13 @@
     "canvasArea": [0, 0, 131, 152],
     "handCardNumIconArea": [-8, 76, 30, 18],
     "handCardFont": ["Arial", [12, 12, -1], 20, [255, 255, 255, 255], 1, 30, [0, 0], [20, 20, 20, 200]],
-    "equipAreas": [[1, 91, 150, 21], [1, 105, 150, 21], [1, 119, 150, 21], [1, 133, 150, 21]],
+    "equipAreas": [[1, 91, 150, 21], [1, 105, 150, 21], [1, 119, 75, 21], [58, 119, 75, 21], [1, 133, 150, 21]],
     "equipImageArea": [0, 1, 114, 19],
-    //"equipTextArea": [35, -5, 85, 21], // need adjustment
     "equipSuitArea": [94, 2, 21, 17],
-    //"equipDistanceArea": [14, -5, 30, 21], // need adjustment
     "equipPointArea": [88, -4, 25, 25],
-    //"equipFont": ["FZLiBian-S02", [14, 14, 0], 50, [0, 0, 0, 255], 3, 50, [0, 0], [255, 255, 190, 255]],
+    "horseImageArea": [0, 1, 57, 19],
+    "horseSuitArea": [37, 2, 21, 17],
+    "horsePointArea": [31, -4, 25, 25],
     "equipPointFont": ["Arial", [13, 13, 3], 20, [0, 0, 0, 255], 1, 1, [0, 0], [255, 255, 190, 128]],
     "delayedTrickFirstRegion": [-13, 16, 28, 28],
     "delayedTrickStep": [0, 19],
@@ -62,10 +62,10 @@
     "screenNameArea": [0, 0, 131, 15],
     "screenNameFont": ["SimSun", 12, 0, [255, 255, 255, 255], 0, 10, [0, 0], [20, 20, 20, 155]],
     "magatamasHorizontal": false,
-    "magatamaSize": [18, 18],
-    "magatamaImageArea": [1, -13, 17, 17],
+    "magatamaSize": [18, 17],
+    "magatamaImageArea": [1, 1, 17, 17],
     "magatamasBgVisible": true,
-    "magatamasAnchor": ["bottomRight", [130, 165]],
+    "magatamasAnchor": ["bottomRight", [130, 149]],
     "cardMoveArea": [-25, 35, 200, 130],
     "phaseArea": [5, 147, 140, 12],
     "onlineStatusArea": [93, 20, 30, 25],
@@ -88,6 +88,8 @@
     "extraSkillArea": [28, 75, 48, 17],
     "extraSkillFont": ["SimLi", [14, 14, 3], 0, [255, 255, 255, 255], 2, 100, [0, 0], [102, 16, 120, 255]],
     "extraSkillTextArea": [28, 73, 48, 17],
-    "seatIconRegion": [54, 154, 23, 16]
+    "seatIconRegion": [54, 154, 23, 16],
+	"leftDisableShowLockArea": [8, 45, 50, 61],
+	"rightDisableShowLockArea": [73, 45, 50, 61]
 }
 }

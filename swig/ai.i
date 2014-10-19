@@ -1,3 +1,23 @@
+/********************************************************************
+    Copyright (c) 2013-2014 - QSanguosha-Rara
+
+  This file is part of QSanguosha-Hegemony.
+
+  This game is free software; you can redistribute it and/or
+  modify it under the terms of the GNU General Public License as
+  published by the Free Software Foundation; either version 3.0
+  of the License, or (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  General Public License for more details.
+
+  See the LICENSE file for more details.
+
+  QSanguosha-Rara
+*********************************************************************/
+
 %{
 
 #include "ai.h"
@@ -76,16 +96,6 @@ public:
     LuaFunction callback;
 };
 
-// for some AI use
-/*class Shit:public BasicCard{
-public:
-    Shit(Card::Suit suit, int number);
-    virtual QString getSubtype() const;
-    virtual void onMove(const CardMoveStruct &move) const;
-
-    static bool HasShit(const Card *card);
-};*/
-
 %{
 
 bool LuaAI::askForSkillInvoke(const QString &skill_name, const QVariant &data) {
@@ -95,7 +105,7 @@ bool LuaAI::askForSkillInvoke(const QString &skill_name, const QVariant &data) {
     lua_State *L = room->getLuaState();
 
     pushCallback(L, __FUNCTION__);
-    lua_pushstring(L, skill_name.toAscii());
+    lua_pushstring(L, skill_name.toLatin1());
     SWIG_NewPointerObj(L, &data, SWIGTYPE_p_QVariant, 0);
 
     int error = lua_pcall(L, 3, 1, 0);
@@ -103,7 +113,8 @@ bool LuaAI::askForSkillInvoke(const QString &skill_name, const QVariant &data) {
         const char *error_msg = lua_tostring(L, -1);
         lua_pop(L, 1);
         room->output(error_msg);
-    } else {
+    }
+    else {
         bool invoke = lua_toboolean(L, -1);
         lua_pop(L, 1);
         return invoke;
@@ -118,8 +129,8 @@ QString LuaAI::askForChoice(const QString &skill_name, const QString &choices, c
 
     lua_State *L = room->getLuaState();
     pushCallback(L, __FUNCTION__);
-    lua_pushstring(L, skill_name.toAscii());
-    lua_pushstring(L, choices.toAscii());
+    lua_pushstring(L, skill_name.toLatin1());
+    lua_pushstring(L, choices.toLatin1());
     SWIG_NewPointerObj(L, &data, SWIGTYPE_p_QVariant, 0);
     int error = lua_pcall(L, 4, 1, 0);
     const char *result = lua_tostring(L, -1);
@@ -128,7 +139,7 @@ QString LuaAI::askForChoice(const QString &skill_name, const QString &choices, c
         room->output(result);
         return TrustAI::askForChoice(skill_name, choices, data);
     }
-   return result;
+    return result;
 }
 
 void LuaAI::activate(CardUseStruct &card_use) {
@@ -153,9 +164,6 @@ AI *Room::cloneAI(ServerPlayer *player) {
     if (L == NULL)
         return new TrustAI(player);
 
-    if(!Config.EnableAI)
-        return new TrustAI(player);
-
     lua_getglobal(L, "CloneAI");
 
     SWIG_NewPointerObj(L, player, SWIGTYPE_p_ServerPlayer, 0);
@@ -165,7 +173,8 @@ AI *Room::cloneAI(ServerPlayer *player) {
         const char *error_msg = lua_tostring(L, -1);
         lua_pop(L, 1);
         output(error_msg);
-    } else {
+    }
+    else {
         void *ai_ptr;
         int result = SWIG_ConvertPtr(L, -1, &ai_ptr, SWIGTYPE_p_AI, 0);
         lua_pop(L, 1);
@@ -186,7 +195,7 @@ ServerPlayer *LuaAI::askForYiji(const QList<int> &cards, const QString &reason, 
 
     pushCallback(L, __FUNCTION__);
     lua_createtable(L, cards.length(), 0);
-    lua_pushstring(L, reason.toAscii());
+    lua_pushstring(L, reason.toLatin1());
 
     for (int i = 0; i < cards.length(); i++) {
         int elem = cards.at(i);
@@ -238,8 +247,8 @@ const Card *LuaAI::askForCard(const QString &pattern, const QString &prompt, con
     lua_State *L = room->getLuaState();
 
     pushCallback(L, __FUNCTION__);
-    lua_pushstring(L, pattern.toAscii());
-    lua_pushstring(L, prompt.toAscii());
+    lua_pushstring(L, pattern.toLatin1());
+    lua_pushstring(L, prompt.toLatin1());
     SWIG_NewPointerObj(L, &data, SWIGTYPE_p_QVariant, 0);
 
     int error = lua_pcall(L, 4, 1, 0);
@@ -261,8 +270,8 @@ int LuaAI::askForCardChosen(ServerPlayer *who, const QString &flags, const QStri
 
     pushCallback(L, __FUNCTION__);
     SWIG_NewPointerObj(L, who, SWIGTYPE_p_ServerPlayer, 0);
-    lua_pushstring(L, flags.toAscii());
-    lua_pushstring(L, reason.toAscii());
+    lua_pushstring(L, flags.toLatin1());
+    lua_pushstring(L, reason.toLatin1());
     lua_pushinteger(L, (int)method);
 
     int error = lua_pcall(L, 5, 1, 0);
@@ -290,7 +299,7 @@ ServerPlayer *LuaAI::askForPlayerChosen(const QList<ServerPlayer *> &targets, co
 
     pushCallback(L, __FUNCTION__);
     SWIG_NewPointerObj(L, &targets, SWIGTYPE_p_QListT_ServerPlayer_p_t, 0);
-    lua_pushstring(L, reason.toAscii());
+    lua_pushstring(L, reason.toLatin1());
 
     int error = lua_pcall(L, 3, 1, 0);
     if (error) {
@@ -342,7 +351,7 @@ const Card *LuaAI::askForCardShow(ServerPlayer *requestor, const QString &reason
 
     pushCallback(L, __FUNCTION__);
     SWIG_NewPointerObj(L, requestor, SWIGTYPE_p_ServerPlayer, 0);
-    lua_pushstring(L, reason.toAscii());
+    lua_pushstring(L, reason.toLatin1());
 
     int error = lua_pcall(L, 3, 1, 0);
     if (error) {
@@ -388,7 +397,7 @@ const Card *LuaAI::askForPindian(ServerPlayer *requestor, const QString &reason)
 
     pushCallback(L, __FUNCTION__);
     SWIG_NewPointerObj(L, requestor, SWIGTYPE_p_ServerPlayer, 0);
-    lua_pushstring(L, reason.toAscii());
+    lua_pushstring(L, reason.toLatin1());
 
     int error = lua_pcall(L, 3, 1, 0);
     if (error) {
@@ -412,7 +421,7 @@ Card::Suit LuaAI::askForSuit(const QString &reason) {
     lua_State *L = room->getLuaState();
 
     pushCallback(L, __FUNCTION__);
-    lua_pushstring(L, reason.toAscii());
+    lua_pushstring(L, reason.toLatin1());
     int error = lua_pcall(L, 2, 1, 0);
     if (error) {
         const char *error_msg = lua_tostring(L, -1);

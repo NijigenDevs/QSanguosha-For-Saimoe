@@ -1,3 +1,23 @@
+/********************************************************************
+    Copyright (c) 2013-2014 - QSanguosha-Rara
+
+    This file is part of QSanguosha-Hegemony.
+
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    See the LICENSE file for more details.
+
+    QSanguosha-Rara
+    *********************************************************************/
+
 #ifndef _GENERAL_H
 #define _GENERAL_H
 
@@ -10,8 +30,9 @@ class QSize;
 #include <QSet>
 #include <QMap>
 #include <QStringList>
+#include <QMetaType>
 
-class General: public QObject {
+class General : public QObject {
     Q_OBJECT
     Q_ENUMS(Gender)
     Q_PROPERTY(QString kingdom READ getKingdom CONSTANT)
@@ -24,7 +45,7 @@ class General: public QObject {
 
 public:
     explicit General(Package *package, const QString &name, const QString &kingdom,
-                     int double_max_hp = 4, bool male = true, bool hidden = false, bool never_shown = false);
+        int double_max_hp = 4, bool male = true, bool hidden = false, bool never_shown = false);
 
     // property getters/setters
     int getDoubleMaxHp() const;
@@ -63,11 +84,16 @@ public:
     void addCompanion(const QString &name);
     bool isCompanionWith(const QString &name) const;
 
-    void setHeadMaxHpAdjustedValue(const int adjusted_value = -1);
-    void setDeputyMaxHpAdjustedValue(const int adjusted_value = -1);
+    void setHeadMaxHpAdjustedValue(int adjusted_value = -1);
+    void setDeputyMaxHpAdjustedValue(int adjusted_value = -1);
+
+    int skinCount() const;
+    QString getSkinNameById(const int skinId);
+    void tryLoadingSkinTranslation(const int skinId) const;
+    QString getTitle(const int skinId = 0) const;
 
 public slots:
-    void lastWord() const;
+    void lastWord(const int skinId) const;
 
 private:
     QString kingdom;
@@ -83,7 +109,12 @@ private:
     QStringList companions;
     int head_max_hp_adjusted_value;
     int deputy_max_hp_adjusted_value;
+    mutable int skin_count;
+    mutable QList<int> translated_skins;
 };
 
-#endif
+Q_DECLARE_METATYPE(const General *)
 
+typedef QList<const General *> GeneralList;
+
+#endif

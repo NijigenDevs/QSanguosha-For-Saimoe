@@ -1,10 +1,30 @@
+/********************************************************************
+    Copyright (c) 2013-2014 - QSanguosha-Rara
+
+    This file is part of QSanguosha-Hegemony.
+
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    See the LICENSE file for more details.
+
+    QSanguosha-Rara
+    *********************************************************************/
+
 #include "standard-tricks.h"
 #include "standard-package.h"
 #include "room.h"
 #include "util.h"
 #include "engine.h"
 #include "skill.h"
-#include "jsonutils.h"
+#include "json.h"
 
 AmazingGrace::AmazingGrace(Suit suit, int number)
     : GlobalEffect(suit, number)
@@ -45,7 +65,7 @@ void AmazingGrace::onEffect(const CardEffectStruct &effect) const{
     Room *room = effect.from->getRoom();
     QVariantList ag_list = room->getTag("AmazingGrace").toList();
     QList<int> card_ids;
-    foreach (QVariant card_id, ag_list)
+    foreach(QVariant card_id, ag_list)
         card_ids << card_id.toInt();
 
     int card_id = room->askForAG(effect.to, card_ids, false, objectName());
@@ -87,15 +107,16 @@ SavageAssault::SavageAssault(Suit suit, int number)
 void SavageAssault::onEffect(const CardEffectStruct &effect) const{
     Room *room = effect.to->getRoom();
     const Card *slash = room->askForCard(effect.to,
-                                         "slash",
-                                         "savage-assault-slash:"+ effect.from->objectName(),
-                                         QVariant::fromValue(effect),
-                                         Card::MethodResponse,
-                                         effect.from->isAlive() ? effect.from : NULL);
+        "slash",
+        "savage-assault-slash:" + effect.from->objectName(),
+        QVariant::fromValue(effect),
+        Card::MethodResponse,
+        effect.from->isAlive() ? effect.from : NULL);
     if (slash) {
-        if (slash->getSkillName() == "spear") room->setEmotion(effect.to, "weapon/spear");
+        if (slash->getSkillName() == "Spear") room->setEmotion(effect.to, "weapon/spear");
         room->setEmotion(effect.to, "killer");
-    } else{
+    }
+    else{
         room->damage(DamageStruct(this, effect.from->isAlive() ? effect.from : NULL, effect.to));
         room->getThread()->delay();
     }
@@ -110,11 +131,11 @@ ArcheryAttack::ArcheryAttack(Card::Suit suit, int number)
 void ArcheryAttack::onEffect(const CardEffectStruct &effect) const{
     Room *room = effect.to->getRoom();
     const Card *jink = room->askForCard(effect.to,
-                                        "jink",
-                                        "archery-attack-jink:" + effect.from->objectName(),
-                                        QVariant::fromValue(effect),
-                                        Card::MethodResponse,
-                                        effect.from->isAlive() ? effect.from : NULL);
+        "jink",
+        "archery-attack-jink:" + effect.from->objectName(),
+        QVariant::fromValue(effect),
+        Card::MethodResponse,
+        effect.from->isAlive() ? effect.from : NULL);
     if (jink && jink->getSkillName() != "EightDiagram")
         room->setEmotion(effect.to, "jink");
 
@@ -132,7 +153,7 @@ Collateral::Collateral(Card::Suit suit, int number)
 
 bool Collateral::isAvailable(const Player *player) const{
     bool canUse = false;
-    foreach (const Player *p, player->getAliveSiblings()) {
+    foreach(const Player *p, player->getAliveSiblings()) {
         if (p->getWeapon()) {
             canUse = true;
             break;
@@ -146,18 +167,19 @@ bool Collateral::targetsFeasible(const QList<const Player *> &targets, const Pla
 }
 
 bool Collateral::targetFilter(const QList<const Player *> &targets,
-                              const Player *to_select, const Player *Self) const{
+    const Player *to_select, const Player *Self) const{
     if (!targets.isEmpty()) {
         // @todo: fix this. We should probably keep the codes here, but change the code in
-        // roomscene such that if it is collateral, then targetFilter's result is overrode
+        // roomscene such that if it is collateral, then targetFilter's result is overriden
         Q_ASSERT(targets.length() <= 2);
         if (targets.length() == 2) return false;
         const Player *slashFrom = targets[0];
         return slashFrom->canSlash(to_select);
-    } else {
+    }
+    else {
         if (!to_select->getWeapon() || to_select == Self)
             return false;
-        foreach (const Player *p, to_select->getAliveSiblings()) {
+        foreach(const Player *p, to_select->getAliveSiblings()) {
             if (to_select->canSlash(p))
                 return true;
         }
@@ -172,7 +194,7 @@ void Collateral::onUse(Room *room, const CardUseStruct &card_use) const{
 
     CardUseStruct new_use = card_use;
     new_use.to.removeAt(1);
-    killer->tag["collateralVictim"] = QVariant::fromValue((PlayerStar)victim);
+    killer->tag["collateralVictim"] = QVariant::fromValue(victim);
 
     SingleTargetTrick::onUse(room, new_use);
 }
@@ -188,7 +210,7 @@ void Collateral::onEffect(const CardEffectStruct &effect) const{
     ServerPlayer *source = effect.from;
     Room *room = source->getRoom();
     ServerPlayer *killer = effect.to;
-    ServerPlayer *victim = effect.to->tag["collateralVictim"].value<PlayerStar>();
+    ServerPlayer *victim = effect.to->tag["collateralVictim"].value<ServerPlayer *>();
     effect.to->tag.remove("collateralVictim");
     if (!victim) return;
     WrappedCard *weapon = killer->getWeapon();
@@ -196,21 +218,28 @@ void Collateral::onEffect(const CardEffectStruct &effect) const{
     QString prompt = QString("collateral-slash:%1:%2").arg(victim->objectName()).arg(source->objectName());
 
     if (victim->isDead()) {
-        if (source->isAlive() && killer->isAlive() && killer->getWeapon())
-            source->obtainCard(weapon);
+        if (source->isAlive() && killer->isAlive() && killer->getWeapon()){
+            CardMoveReason reason(CardMoveReason::S_REASON_GIVE, killer->objectName());
+            room->obtainCard(source, weapon, reason);
+        }
     }
     else if (source->isDead()) {
         if (killer->isAlive())
             doCollateral(room, killer, victim, prompt);
-    } else {
+    }
+    else {
         if (killer->isDead()) {
             ; // do nothing
-        } else if (!killer->getWeapon()) {
+        }
+        else if (!killer->getWeapon()) {
             doCollateral(room, killer, victim, prompt);
-        } else {
+        }
+        else {
             if (!doCollateral(room, killer, victim, prompt)) {
-                if (killer->getWeapon())
-                    source->obtainCard(weapon);
+                if (killer->getWeapon()){
+                    CardMoveReason reason(CardMoveReason::S_REASON_GIVE, killer->objectName());
+                    room->obtainCard(source, weapon, reason);
+                }
             }
         }
     }
@@ -225,9 +254,11 @@ Nullification::Nullification(Suit suit, int number)
 
 void Nullification::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const{
     // does nothing, just throw it
-    if (room->getCardPlace(getEffectiveId()) == Player::PlaceTable){
+    QList<int> table_cardids = room->getCardIdsOnTable(this);
+    if (!table_cardids.isEmpty()) {
+        DummyCard dummy(table_cardids);
         CardMoveReason reason(CardMoveReason::S_REASON_USE, source->objectName());
-        room->moveCardTo(this, NULL, Player::DiscardPile, reason);
+        room->moveCardTo(&dummy, NULL, Player::DiscardPile, reason);
     }
 }
 
@@ -288,33 +319,34 @@ void Duel::onEffect(const CardEffectStruct &effect) const{
     room->setEmotion(first, "duel");
     room->setEmotion(second, "duel");
 
-    forever {
+    forever{
         if (!first->isAlive())
-            break;
+        break;
         if (second->getMark("WushuangTarget") > 0) {
             const Card *slash = room->askForCard(first,
-                                                 "slash",
-                                                 "@wushuang-slash-1:" + second->objectName(),
-                                                 QVariant::fromValue(effect),
-                                                 Card::MethodResponse,
-                                                 second);
+                "slash",
+                "@wushuang-slash-1:" + second->objectName(),
+                QVariant::fromValue(effect),
+                Card::MethodResponse,
+                second);
             if (slash == NULL)
                 break;
 
             slash = room->askForCard(first, "slash",
-                                     "@wushuang-slash-2:" + second->objectName(),
-                                     QVariant::fromValue(effect),
-                                     Card::MethodResponse,
-                                     second);
+                "@wushuang-slash-2:" + second->objectName(),
+                QVariant::fromValue(effect),
+                Card::MethodResponse,
+                second);
             if (slash == NULL)
                 break;
-        } else {
+        }
+        else {
             const Card *slash = room->askForCard(first,
-                                                 "slash",
-                                                 "duel-slash:" + second->objectName(),
-                                                 QVariant::fromValue(effect),
-                                                 Card::MethodResponse,
-                                                 second);
+                "slash",
+                "duel-slash:" + second->objectName(),
+                QVariant::fromValue(effect),
+                Card::MethodResponse,
+                second);
             if (slash == NULL)
                 break;
         }
@@ -337,7 +369,7 @@ QStringList Duel::checkTargetModSkillShow(const CardUseStruct &use) const{
         QList<const Skill *> skills = from->getSkillList(false, false);
         QList<const TargetModSkill *> tarmods;
 
-        foreach (const Skill *skill, skills){
+        foreach(const Skill *skill, skills){
             if (from->hasSkill(skill->objectName()) && skill->inherits("TargetModSkill")){
                 const TargetModSkill *tarmod = qobject_cast<const TargetModSkill *>(skill);
                 tarmods << tarmod;
@@ -350,7 +382,7 @@ QStringList Duel::checkTargetModSkillShow(const CardUseStruct &use) const{
         int n = use.to.length() - 1;
         QList<const TargetModSkill *> tarmods_copy = tarmods;
 
-        foreach (const TargetModSkill *tarmod, tarmods_copy){
+        foreach(const TargetModSkill *tarmod, tarmods_copy){
             const Skill *main_skill = Sanguosha->getMainSkill(tarmod->objectName());
             if (from->hasShownSkill(main_skill)){
                 tarmods.removeOne(tarmod);
@@ -364,7 +396,7 @@ QStringList Duel::checkTargetModSkillShow(const CardUseStruct &use) const{
         tarmods_copy = tarmods;
 
         QStringList shows;
-        foreach (const TargetModSkill *tarmod, tarmods_copy){
+        foreach(const TargetModSkill *tarmod, tarmods_copy){
             const Skill *main_skill = Sanguosha->getMainSkill(tarmod->objectName());
             shows << main_skill->objectName();
         }
@@ -393,11 +425,12 @@ bool Snatch::targetFilter(const QList<const Player *> &targets, const Player *to
     int distance_limit = 1 + Sanguosha->correctCardTarget(TargetModSkill::DistanceLimit, Self, this);
     int rangefix = 0;
     if (Self->getOffensiveHorse() && subcards.contains(Self->getOffensiveHorse()->getId()))
-        ++ rangefix;
+        ++rangefix;
     if (m_skillName == "jixi")
-        ++ rangefix;
+        ++rangefix;
 
-    if (Self->distanceTo(to_select, rangefix) > distance_limit)
+    int distance = Self->distanceTo(to_select, rangefix);
+    if (distance == -1 || distance > distance_limit)
         return false;
 
     return true;
@@ -422,7 +455,7 @@ QStringList Snatch::checkTargetModSkillShow(const CardUseStruct &use) const{
         QList<const Skill *> skills = from->getSkillList(false, false);
         QList<const TargetModSkill *> tarmods;
 
-        foreach (const Skill *skill, skills){
+        foreach(const Skill *skill, skills){
             if (from->hasSkill(skill->objectName()) && skill->inherits("TargetModSkill")){
                 const TargetModSkill *tarmod = qobject_cast<const TargetModSkill *>(skill);
                 tarmods << tarmod;
@@ -435,7 +468,7 @@ QStringList Snatch::checkTargetModSkillShow(const CardUseStruct &use) const{
         int n = use.to.length() - 1;
         QList<const TargetModSkill *> tarmods_copy = tarmods;
 
-        foreach (const TargetModSkill *tarmod, tarmods_copy){
+        foreach(const TargetModSkill *tarmod, tarmods_copy){
             const Skill *main_skill = Sanguosha->getMainSkill(tarmod->objectName());
             if (from->hasShownSkill(main_skill)){
                 tarmods.removeOne(tarmod);
@@ -448,13 +481,13 @@ QStringList Snatch::checkTargetModSkillShow(const CardUseStruct &use) const{
 
         tarmods_copy = tarmods;
 
-        foreach (const TargetModSkill *tarmod, tarmods_copy){
+        foreach(const TargetModSkill *tarmod, tarmods_copy){
             const Skill *main_skill = Sanguosha->getMainSkill(tarmod->objectName());
             show << main_skill->objectName();
         }
     }
     int distance_max = 1;
-    foreach (ServerPlayer *p, use.to){
+    foreach(ServerPlayer *p, use.to){
         distance_max = qMax(distance_max, use.from->distanceTo(p));
     }
     if (distance_max > 1){
@@ -462,7 +495,7 @@ QStringList Snatch::checkTargetModSkillShow(const CardUseStruct &use) const{
         QList<const Skill *> skills = from->getSkillList(false, false);
         QList<const TargetModSkill *> tarmods;
 
-        foreach (const Skill *skill, skills){
+        foreach(const Skill *skill, skills){
             if (from->hasSkill(skill->objectName()) && skill->inherits("TargetModSkill")){
                 const TargetModSkill *tarmod = qobject_cast<const TargetModSkill *>(skill);
                 tarmods << tarmod;
@@ -478,7 +511,7 @@ QStringList Snatch::checkTargetModSkillShow(const CardUseStruct &use) const{
 
         QList<const TargetModSkill *> tarmods_copy = tarmods;
 
-        foreach (const TargetModSkill *tarmod, tarmods_copy){
+        foreach(const TargetModSkill *tarmod, tarmods_copy){
             const Skill *main_skill = Sanguosha->getMainSkill(tarmod->objectName());
             if (from->hasShownSkill(main_skill)){
                 tarmods.removeOne(tarmod);
@@ -491,7 +524,7 @@ QStringList Snatch::checkTargetModSkillShow(const CardUseStruct &use) const{
 
         tarmods_copy = tarmods;
 
-        foreach (const TargetModSkill *tarmod, tarmods_copy){
+        foreach(const TargetModSkill *tarmod, tarmods_copy){
             const Skill *main_skill = Sanguosha->getMainSkill(tarmod->objectName());
             show << main_skill->objectName();
         }
@@ -537,7 +570,7 @@ QStringList Dismantlement::checkTargetModSkillShow(const CardUseStruct &use) con
         QList<const Skill *> skills = from->getSkillList(false, false);
         QList<const TargetModSkill *> tarmods;
 
-        foreach (const Skill *skill, skills){
+        foreach(const Skill *skill, skills){
             if (from->hasSkill(skill->objectName()) && skill->inherits("TargetModSkill")){
                 const TargetModSkill *tarmod = qobject_cast<const TargetModSkill *>(skill);
                 tarmods << tarmod;
@@ -550,7 +583,7 @@ QStringList Dismantlement::checkTargetModSkillShow(const CardUseStruct &use) con
         int n = use.to.length() - 1;
         QList<const TargetModSkill *> tarmods_copy = tarmods;
 
-        foreach (const TargetModSkill *tarmod, tarmods_copy){
+        foreach(const TargetModSkill *tarmod, tarmods_copy){
             const Skill *main_skill = Sanguosha->getMainSkill(tarmod->objectName());
             if (from->hasShownSkill(main_skill)){
                 tarmods.removeOne(tarmod);
@@ -564,7 +597,7 @@ QStringList Dismantlement::checkTargetModSkillShow(const CardUseStruct &use) con
         tarmods_copy = tarmods;
 
         QStringList shows;
-        foreach (const TargetModSkill *tarmod, tarmods_copy){
+        foreach(const TargetModSkill *tarmod, tarmods_copy){
             const Skill *main_skill = Sanguosha->getMainSkill(tarmod->objectName());
             shows << main_skill->objectName();
         }
@@ -595,17 +628,32 @@ bool IronChain::targetFilter(const QList<const Player *> &targets, const Player 
 }
 
 bool IronChain::targetsFeasible(const QList<const Player *> &targets, const Player *Self) const{
-    if (Self->isCardLimited(this, Card::MethodUse))
+    bool rec = (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_PLAY);
+    QList<int> sub;
+    if (isVirtualCard())
+        sub = subcards;
+    else
+        sub << getEffectiveId();
+    foreach (int id, sub) {
+        if (Self->getPile("wooden_ox").contains(id)) {
+            rec = false;
+            break;
+        }
+    }
+
+    if (rec && Self->isCardLimited(this, Card::MethodUse))
         return targets.length() == 0;
     int total_num = 2 + Sanguosha->correctCardTarget(TargetModSkill::ExtraTarget, Self, this);
-    return targets.length() <= total_num;
+    if (targets.length() > total_num)
+        return false;
+    return rec || targets.length() > 0;
 }
 
 void IronChain::onUse(Room *room, const CardUseStruct &card_use) const{
     if (card_use.to.isEmpty()) {
         CardMoveReason reason(CardMoveReason::S_REASON_RECAST, card_use.from->objectName());
-        reason.m_skillName = this->getSkillName();
-        room->moveCardTo(this, card_use.from, NULL, Player::DiscardPile, reason);
+        reason.m_skillName = getSkillName();
+        room->moveCardTo(this, card_use.from, NULL, Player::PlaceTable, reason, true);
         card_use.from->broadcastSkillInvoke("@recast");
 
         LogMessage log;
@@ -614,12 +662,24 @@ void IronChain::onUse(Room *room, const CardUseStruct &card_use) const{
         log.card_str = card_use.card->toString();
         room->sendLog(log);
 
+        QString skill_name = card_use.card->showSkill();
+        if (!skill_name.isNull() && card_use.from->ownSkill(skill_name) && !card_use.from->hasShownSkill(skill_name))
+            card_use.from->showGeneral(card_use.from->inHeadSkills(skill_name));
+
+        QList<int> table_cardids = room->getCardIdsOnTable(this);
+        if (!table_cardids.isEmpty()) {
+            DummyCard dummy(table_cardids);
+            room->moveCardTo(&dummy, card_use.from, NULL, Player::DiscardPile, reason, true);
+        }
+
         card_use.from->drawCards(1);
     } else
         TrickCard::onUse(room, card_use);
 }
 
 void IronChain::onEffect(const CardEffectStruct &effect) const{
+    if (!effect.to->canBeChainedBy(effect.from))
+        return;
     effect.to->setChained(!effect.to->isChained());
 
     Room *room = effect.to->getRoom();
@@ -635,7 +695,7 @@ QStringList IronChain::checkTargetModSkillShow(const CardUseStruct &use) const{
         QList<const Skill *> skills = from->getSkillList(false, false);
         QList<const TargetModSkill *> tarmods;
 
-        foreach (const Skill *skill, skills){
+        foreach(const Skill *skill, skills){
             if (from->hasSkill(skill->objectName()) && skill->inherits("TargetModSkill")){
                 const TargetModSkill *tarmod = qobject_cast<const TargetModSkill *>(skill);
                 tarmods << tarmod;
@@ -648,7 +708,7 @@ QStringList IronChain::checkTargetModSkillShow(const CardUseStruct &use) const{
         int n = use.to.length() - 2;
         QList<const TargetModSkill *> tarmods_copy = tarmods;
 
-        foreach (const TargetModSkill *tarmod, tarmods_copy){
+        foreach(const TargetModSkill *tarmod, tarmods_copy){
             const Skill *main_skill = Sanguosha->getMainSkill(tarmod->objectName());
             if (from->hasShownSkill(main_skill)){
                 tarmods.removeOne(tarmod);
@@ -662,7 +722,7 @@ QStringList IronChain::checkTargetModSkillShow(const CardUseStruct &use) const{
         tarmods_copy = tarmods;
 
         QStringList shows;
-        foreach (const TargetModSkill *tarmod, tarmods_copy){
+        foreach(const TargetModSkill *tarmod, tarmods_copy){
             const Skill *main_skill = Sanguosha->getMainSkill(tarmod->objectName());
             shows << main_skill->objectName();
         }
@@ -671,22 +731,54 @@ QStringList IronChain::checkTargetModSkillShow(const CardUseStruct &use) const{
     return QStringList();
 }
 
-AwaitExhausted::AwaitExhausted(Card::Suit suit, int number): TrickCard(suit, number){
+AwaitExhausted::AwaitExhausted(Card::Suit suit, int number) : TrickCard(suit, number){
     setObjectName("await_exhausted");
     target_fixed = true;
 }
-
 
 QString AwaitExhausted::getSubtype() const{
     return "await_exhausted";
 }
 
+bool AwaitExhausted::isAvailable(const Player *player) const{
+    bool canUse = false;
+    if (!player->isProhibited(player, this))
+        canUse = true;
+    if (!canUse) {
+        QList<const Player *> players = player->getAliveSiblings();
+        foreach(const Player *p, players) {
+            if (player->isProhibited(p, this))
+                continue;
+            if (player->isFriendWith(p)) {
+                canUse = true;
+                break;
+            }
+        }
+    }
+
+    return canUse && TrickCard::isAvailable(player);
+}
+
 void AwaitExhausted::onUse(Room *room, const CardUseStruct &card_use) const{
     CardUseStruct new_use = card_use;
-    new_use.to << new_use.from;
-    foreach (ServerPlayer *p, room->getOtherPlayers(new_use.from)) {
-        if (p->isFriendWith(new_use.from))
-            new_use.to << p;
+    if (!card_use.from->isProhibited(card_use.from, this))
+        new_use.to << new_use.from;
+    foreach(ServerPlayer *p, room->getOtherPlayers(new_use.from)) {
+        if (p->isFriendWith(new_use.from)) {
+            const ProhibitSkill *skill = room->isProhibited(card_use.from, p, this);
+            if (skill) {
+                LogMessage log;
+                log.type = "#SkillAvoid";
+                log.from = p;
+                log.arg = skill->objectName();
+                log.arg2 = objectName();
+                room->sendLog(log);
+
+                room->broadcastSkillInvoke(skill->objectName(), p);
+            } else {
+                new_use.to << p;
+            }
+        }
     }
 
     if (getSkillName() == "duoshi")
@@ -696,7 +788,7 @@ void AwaitExhausted::onUse(Room *room, const CardUseStruct &card_use) const{
 }
 
 void AwaitExhausted::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
-    foreach (ServerPlayer *target, targets) {
+    foreach(ServerPlayer *target, targets) {
         CardEffectStruct effect;
         effect.card = this;
         effect.from = source;
@@ -705,17 +797,19 @@ void AwaitExhausted::use(Room *room, ServerPlayer *source, QList<ServerPlayer *>
         room->cardEffect(effect);
     }
 
-    foreach (ServerPlayer *target, targets) {
+    foreach(ServerPlayer *target, targets) {
         if (target->hasFlag("AwaitExhaustedEffected")) {
             room->setPlayerFlag(target, "-AwaitExhaustedEffected");
             room->askForDiscard(target, objectName(), 2, 2, false, true);
         }
     }
 
-    if (room->getCardPlace(getEffectiveId()) == Player::PlaceTable) {
+    QList<int> table_cardids = room->getCardIdsOnTable(this);
+    if (!table_cardids.isEmpty()) {
+        DummyCard dummy(table_cardids);
         CardMoveReason reason(CardMoveReason::S_REASON_USE, source->objectName(), QString(), this->getSkillName(), QString());
         if (targets.size() == 1) reason.m_targetId = targets.first()->objectName();
-        room->moveCardTo(this, source, NULL, Player::DiscardPile, reason, true);
+        room->moveCardTo(&dummy, source, NULL, Player::DiscardPile, reason, true);
     }
 }
 
@@ -724,9 +818,33 @@ void AwaitExhausted::onEffect(const CardEffectStruct &effect) const {
     effect.to->getRoom()->setPlayerFlag(effect.to, "AwaitExhaustedEffected");
 }
 
-KnownBoth::KnownBoth(Card::Suit suit, int number): SingleTargetTrick(suit, number){
+KnownBoth::KnownBoth(Card::Suit suit, int number)
+    :SingleTargetTrick(suit, number)
+{
     setObjectName("known_both");
     can_recast = true;
+}
+
+bool KnownBoth::isAvailable(const Player *player) const{
+    bool can_use = false;
+    foreach (const Player *p, player->getSiblings()) {
+        if (player->isProhibited(p, this))
+            continue;
+        if (p->isKongcheng() && p->hasShownAllGenerals())
+            continue;
+        can_use = true;
+        break;
+    }
+    bool can_rec = true;
+    QList<int> sub;
+    if (isVirtualCard())
+        sub = subcards;
+    else
+        sub << getEffectiveId();
+    if (sub.isEmpty() || sub.contains(-1))
+        can_rec = false;
+    return (can_use && !player->isCardLimited(this, Card::MethodUse))
+           || (can_rec && can_recast && !player->isCardLimited(this, Card::MethodRecast));
 }
 
 bool KnownBoth::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
@@ -741,21 +859,32 @@ bool KnownBoth::targetFilter(const QList<const Player *> &targets, const Player 
 }
 
 bool KnownBoth::targetsFeasible(const QList<const Player *> &targets, const Player *Self) const{
-    if (Self->isCardLimited(this, Card::MethodUse))
+    bool rec = (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_PLAY);
+    QList<int> sub;
+    if (isVirtualCard())
+        sub = subcards;
+    else
+        sub << getEffectiveId();
+    foreach (int id, sub) {
+        if (Self->getPile("wooden_ox").contains(id)) {
+            rec = false;
+            break;
+        }
+    }
+
+    if (rec && Self->isCardLimited(this, Card::MethodUse))
         return targets.length() == 0;
-
-    if (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE)
-        return targets.length() != 0;
-
     int total_num = 1 + Sanguosha->correctCardTarget(TargetModSkill::ExtraTarget, Self, this);
-    return targets.length() <= total_num;
+    if (targets.length() > total_num)
+        return false;
+    return rec || targets.length() > 0;
 }
 
 void KnownBoth::onUse(Room *room, const CardUseStruct &card_use) const{
     if (card_use.to.isEmpty()){
         CardMoveReason reason(CardMoveReason::S_REASON_RECAST, card_use.from->objectName());
-        reason.m_skillName = this->getSkillName();
-        room->moveCardTo(this, card_use.from, NULL, Player::DiscardPile, reason);
+        reason.m_skillName = getSkillName();
+        room->moveCardTo(this, card_use.from, NULL, Player::PlaceTable, reason);
         card_use.from->broadcastSkillInvoke("@recast");
 
         LogMessage log;
@@ -764,9 +893,18 @@ void KnownBoth::onUse(Room *room, const CardUseStruct &card_use) const{
         log.card_str = card_use.card->toString();
         room->sendLog(log);
 
+        QString skill_name = card_use.card->showSkill();
+        if (!skill_name.isNull() && card_use.from->ownSkill(skill_name) && !card_use.from->hasShownSkill(skill_name))
+            card_use.from->showGeneral(card_use.from->inHeadSkills(skill_name));
+
+        QList<int> table_cardids = room->getCardIdsOnTable(this);
+        if (!table_cardids.isEmpty()) {
+            DummyCard dummy(table_cardids);
+            room->moveCardTo(&dummy, card_use.from, NULL, Player::DiscardPile, reason, true);
+        }
+
         card_use.from->drawCards(1);
-    }
-    else
+    } else
         SingleTargetTrick::onUse(room, card_use);
 }
 
@@ -776,41 +914,41 @@ void KnownBoth::onEffect(const CardEffectStruct &effect) const {
         choices << "handcards";
     if (!effect.to->hasShownGeneral1())
         choices << "head_general";
-    if (!effect.to->hasShownGeneral2())
+    if (effect.to->getGeneral2() && !effect.to->hasShownGeneral2())
         choices << "deputy_general";
 
     Room *room = effect.from->getRoom();
 
     effect.to->setFlags("KnownBothTarget");// For AI
     QString choice = room->askForChoice(effect.from, objectName(),
-                                        choices.join("+"), QVariant::fromValue(effect.to));
+        choices.join("+"), QVariant::fromValue(effect.to));
     effect.to->setFlags("-KnownBothTarget");
     LogMessage log;
     log.type = "#KnownBothView";
     log.from = effect.from;
     log.to << effect.to;
     log.arg = choice;
-    foreach (ServerPlayer *p, room->getOtherPlayers(effect.from, true)){
-        room->doNotify(p, QSanProtocol::S_COMMAND_LOG_SKILL, log.toJsonValue());
+    foreach(ServerPlayer *p, room->getOtherPlayers(effect.from, true)){
+        room->doNotify(p, QSanProtocol::S_COMMAND_LOG_SKILL, log.toVariant());
     }
 
     if (choice == "handcards")
         room->showAllCards(effect.to, effect.from);
     else {
         QStringList list = room->getTag(effect.to->objectName()).toStringList();
-        list.removeAt(choice == "head_general"? 1 : 0);
-        foreach (QString name, list) {
+        list.removeAt(choice == "head_general" ? 1 : 0);
+        foreach(QString name, list) {
             LogMessage log;
             log.type = "$KnownBothViewGeneral";
             log.from = effect.from;
             log.to << effect.to;
             log.arg = name;
             log.arg2 = choice;
-            room->doNotify(effect.from, QSanProtocol::S_COMMAND_LOG_SKILL, log.toJsonValue());
+            room->doNotify(effect.from, QSanProtocol::S_COMMAND_LOG_SKILL, log.toVariant());
         }
-        Json::Value arg(Json::arrayValue);
-        arg[0] = QSanProtocol::Utils::toJsonString(objectName());
-        arg[1] = QSanProtocol::Utils::toJsonArray(list);
+        JsonArray arg;
+        arg << objectName();
+        arg << JsonUtils::toJsonArray(list);
         room->doNotify(effect.from, QSanProtocol::S_COMMAND_VIEW_GENERALS, arg);
     }
 }
@@ -821,7 +959,7 @@ QStringList KnownBoth::checkTargetModSkillShow(const CardUseStruct &use) const{
         QList<const Skill *> skills = from->getSkillList(false, false);
         QList<const TargetModSkill *> tarmods;
 
-        foreach (const Skill *skill, skills){
+        foreach(const Skill *skill, skills){
             if (from->hasSkill(skill->objectName()) && skill->inherits("TargetModSkill")){
                 const TargetModSkill *tarmod = qobject_cast<const TargetModSkill *>(skill);
                 tarmods << tarmod;
@@ -834,7 +972,7 @@ QStringList KnownBoth::checkTargetModSkillShow(const CardUseStruct &use) const{
         int n = use.to.length() - 1;
         QList<const TargetModSkill *> tarmods_copy = tarmods;
 
-        foreach (const TargetModSkill *tarmod, tarmods_copy){
+        foreach(const TargetModSkill *tarmod, tarmods_copy){
             const Skill *main_skill = Sanguosha->getMainSkill(tarmod->objectName());
             if (from->hasShownSkill(main_skill)){
                 tarmods.removeOne(tarmod);
@@ -848,7 +986,7 @@ QStringList KnownBoth::checkTargetModSkillShow(const CardUseStruct &use) const{
         tarmods_copy = tarmods;
 
         QStringList shows;
-        foreach (const TargetModSkill *tarmod, tarmods_copy){
+        foreach(const TargetModSkill *tarmod, tarmods_copy){
             const Skill *main_skill = Sanguosha->getMainSkill(tarmod->objectName());
             shows << main_skill->objectName();
         }
@@ -857,7 +995,7 @@ QStringList KnownBoth::checkTargetModSkillShow(const CardUseStruct &use) const{
     return QStringList();
 }
 
-BefriendAttacking::BefriendAttacking(Card::Suit suit, int number): SingleTargetTrick(suit, number) {
+BefriendAttacking::BefriendAttacking(Card::Suit suit, int number) : SingleTargetTrick(suit, number) {
     setObjectName("befriend_attacking");
 }
 
@@ -869,17 +1007,13 @@ bool BefriendAttacking::targetFilter(const QList<const Player *> &targets, const
     return to_select->hasShownOneGeneral() && !Self->isFriendWith(to_select);
 }
 
-bool BefriendAttacking::targetsFeasible(const QList<const Player *> &targets, const Player *) const {
-    return targets.length() > 0;
-}
-
 void BefriendAttacking::onEffect(const CardEffectStruct &effect) const {
     effect.to->drawCards(1);
     effect.from->drawCards(3);
 }
 
 bool BefriendAttacking::isAvailable(const Player *player) const {
-    return player->hasShownOneGeneral();
+    return player->hasShownOneGeneral() && TrickCard::isAvailable(player);
 }
 
 QStringList BefriendAttacking::checkTargetModSkillShow(const CardUseStruct &use) const{
@@ -888,7 +1022,7 @@ QStringList BefriendAttacking::checkTargetModSkillShow(const CardUseStruct &use)
         QList<const Skill *> skills = from->getSkillList(false, false);
         QList<const TargetModSkill *> tarmods;
 
-        foreach (const Skill *skill, skills){
+        foreach(const Skill *skill, skills){
             if (from->hasSkill(skill->objectName()) && skill->inherits("TargetModSkill")){
                 const TargetModSkill *tarmod = qobject_cast<const TargetModSkill *>(skill);
                 tarmods << tarmod;
@@ -901,7 +1035,7 @@ QStringList BefriendAttacking::checkTargetModSkillShow(const CardUseStruct &use)
         int n = use.to.length() - 1;
         QList<const TargetModSkill *> tarmods_copy = tarmods;
 
-        foreach (const TargetModSkill *tarmod, tarmods_copy){
+        foreach(const TargetModSkill *tarmod, tarmods_copy){
             const Skill *main_skill = Sanguosha->getMainSkill(tarmod->objectName());
             if (from->hasShownSkill(main_skill)){
                 tarmods.removeOne(tarmod);
@@ -915,7 +1049,7 @@ QStringList BefriendAttacking::checkTargetModSkillShow(const CardUseStruct &use)
         tarmods_copy = tarmods;
 
         QStringList shows;
-        foreach (const TargetModSkill *tarmod, tarmods_copy){
+        foreach(const TargetModSkill *tarmod, tarmods_copy){
             const Skill *main_skill = Sanguosha->getMainSkill(tarmod->objectName());
             shows << main_skill->objectName();
         }
@@ -973,7 +1107,7 @@ QStringList FireAttack::checkTargetModSkillShow(const CardUseStruct &use) const{
         QList<const Skill *> skills = from->getSkillList(false, false);
         QList<const TargetModSkill *> tarmods;
 
-        foreach (const Skill *skill, skills){
+        foreach(const Skill *skill, skills){
             if (from->hasSkill(skill->objectName()) && skill->inherits("TargetModSkill")){
                 const TargetModSkill *tarmod = qobject_cast<const TargetModSkill *>(skill);
                 tarmods << tarmod;
@@ -986,7 +1120,7 @@ QStringList FireAttack::checkTargetModSkillShow(const CardUseStruct &use) const{
         int n = use.to.length() - 1;
         QList<const TargetModSkill *> tarmods_copy = tarmods;
 
-        foreach (const TargetModSkill *tarmod, tarmods_copy){
+        foreach(const TargetModSkill *tarmod, tarmods_copy){
             const Skill *main_skill = Sanguosha->getMainSkill(tarmod->objectName());
             if (from->hasShownSkill(main_skill)){
                 tarmods.removeOne(tarmod);
@@ -1000,7 +1134,7 @@ QStringList FireAttack::checkTargetModSkillShow(const CardUseStruct &use) const{
         tarmods_copy = tarmods;
 
         QStringList shows;
-        foreach (const TargetModSkill *tarmod, tarmods_copy){
+        foreach(const TargetModSkill *tarmod, tarmods_copy){
             const Skill *main_skill = Sanguosha->getMainSkill(tarmod->objectName());
             shows << main_skill->objectName();
         }
@@ -1048,9 +1182,10 @@ bool SupplyShortage::targetFilter(const QList<const Player *> &targets, const Pl
     int distance_limit = 1 + Sanguosha->correctCardTarget(TargetModSkill::DistanceLimit, Self, this);
     int rangefix = 0;
     if (Self->getOffensiveHorse() && subcards.contains(Self->getOffensiveHorse()->getId()))
-        ++ rangefix;
+        ++rangefix;
 
-    if (Self->distanceTo(to_select, rangefix) > distance_limit)
+    int distance = Self->distanceTo(to_select, rangefix);
+    if (distance == -1 || distance > distance_limit)
         return false;
 
     return true;
@@ -1069,7 +1204,7 @@ QStringList SupplyShortage::checkTargetModSkillShow(const CardUseStruct &use) co
         QList<const Skill *> skills = from->getSkillList(false, false);
         QList<const TargetModSkill *> tarmods;
 
-        foreach (const Skill *skill, skills){
+        foreach(const Skill *skill, skills){
             if (from->hasSkill(skill->objectName()) && skill->inherits("TargetModSkill")){
                 const TargetModSkill *tarmod = qobject_cast<const TargetModSkill *>(skill);
                 tarmods << tarmod;
@@ -1083,7 +1218,7 @@ QStringList SupplyShortage::checkTargetModSkillShow(const CardUseStruct &use) co
 
         QList<const TargetModSkill *> tarmods_copy = tarmods;
 
-        foreach (const TargetModSkill *tarmod, tarmods_copy){
+        foreach(const TargetModSkill *tarmod, tarmods_copy){
             const Skill *main_skill = Sanguosha->getMainSkill(tarmod->objectName());
             if (from->hasShownSkill(main_skill)){
                 tarmods.removeOne(tarmod);
@@ -1097,7 +1232,7 @@ QStringList SupplyShortage::checkTargetModSkillShow(const CardUseStruct &use) co
         tarmods_copy = tarmods;
 
         QStringList shows;
-        foreach (const TargetModSkill *tarmod, tarmods_copy){
+        foreach(const TargetModSkill *tarmod, tarmods_copy){
             const Skill *main_skill = Sanguosha->getMainSkill(tarmod->objectName());
             shows << main_skill->objectName();
         }
@@ -1126,7 +1261,7 @@ bool Disaster::isAvailable(const Player *player) const{
     return !player->isProhibited(player, this) && DelayedTrick::isAvailable(player);
 }
 
-Lightning::Lightning(Suit suit, int number):Disaster(suit, number) {
+Lightning::Lightning(Suit suit, int number) :Disaster(suit, number) {
     setObjectName("lightning");
 
     judge.pattern = ".|spade|2~9";

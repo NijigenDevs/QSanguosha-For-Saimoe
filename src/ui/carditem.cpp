@@ -1,27 +1,29 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Hegemony Team
+    Copyright (c) 2013-2014 - QSanguosha-Rara
 
-  This file is part of QSanguosha-Hegemony.
+    This file is part of QSanguosha-Hegemony.
 
-  This game is free software; you can redistribute it and/or
-  modify it under the terms of the GNU Lesser General Public
-  License as published by the Free Software Foundation; either
-  version 3.0 of the License, or (at your option) any later version.
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
 
-  This program is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-  Lesser General Public License for more details.
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
 
-  See the LICENSE file for more details.
+    See the LICENSE file for more details.
 
-  QSanguosha-Hegemony Team    
-*********************************************************************/
+    QSanguosha-Rara
+    *********************************************************************/
+
 #include "carditem.h"
 #include "engine.h"
 #include "skill.h"
 #include "clientplayer.h"
 #include "settings.h"
+#include "roomscene.h"
 
 #include <cmath>
 #include <QPainter>
@@ -30,6 +32,7 @@
 #include <QFocusEvent>
 #include <QParallelAnimationGroup>
 #include <QPropertyAnimation>
+#include <QGraphicsDropShadowEffect>
 
 void CardItem::_initialize() {
     setFlag(QGraphicsItem::ItemIsMovable);
@@ -44,6 +47,12 @@ void CardItem::_initialize() {
     frozen = false;
     resetTransform();
     setTransform(QTransform::fromTranslate(-_m_width / 2, -_m_height / 2), true);
+    outerGlowEffectEnabled = false;
+    outerGlowEffect = NULL;
+    outerGlowColor = Qt::white;
+    _transferButton = NULL;
+    _transferable = false;
+    _skinId = 0;
 }
 
 CardItem::CardItem(const Card *card) {
@@ -78,7 +87,7 @@ void CardItem::setCard(const Card *card) {
 }
 
 void CardItem::setEnabled(bool enabled) {
-     QSanSelectableItem::setEnabled(enabled);
+    QSanSelectableItem::setEnabled(enabled);
 }
 
 CardItem::~CardItem() {
@@ -90,9 +99,9 @@ CardItem::~CardItem() {
     m_animationMutex.unlock();
 }
 
-void CardItem::changeGeneral(const QString &general_name) {
-    setObjectName(general_name);
-    const General *general = Sanguosha->getGeneral(general_name);
+void CardItem::changeGeneral(const QString &generalName) {
+    setObjectName(generalName);
+    const General *general = Sanguosha->getGeneral(generalName);
     if (general) {
         _m_isUnknownGeneral = false;
         setToolTip(general->getSkillDescription(true));
@@ -101,6 +110,12 @@ void CardItem::changeGeneral(const QString &general_name) {
         setToolTip(QString());
     }
     emit general_changed();
+}
+
+void CardItem::onTransferEnabledChanged()
+{
+    if (!_transferButton->isEnabled())
+        setTransferable(false);
 }
 
 const Card *CardItem::getCard() const{
@@ -120,7 +135,8 @@ void CardItem::goBack(bool playAnimation, bool doFade) {
         getGoBackAnimation(doFade);
         if (m_currentAnimation != NULL)
             m_currentAnimation->start();
-    } else {
+    }
+    else {
         m_animationMutex.lock();
         if (m_currentAnimation != NULL) {
             m_currentAnimation->stop();
@@ -160,7 +176,8 @@ QAbstractAnimation *CardItem::getGoBackAnimation(bool doFade, bool smoothTransit
         group->addAnimation(disappear);
 
         m_currentAnimation = group;
-    } else {
+    }
+    else {
         m_currentAnimation = goback;
     }
     m_animationMutex.unlock();
@@ -194,12 +211,17 @@ bool CardItem::isEquipped() const{
     return Self->hasEquip(card);
 }
 
-void CardItem::setFrozen(bool is_frozen) {
-    frozen = is_frozen;
+void CardItem::setFrozen(bool is_frozen, bool update_movable) {
+    if (frozen != is_frozen) {
+        frozen = is_frozen;
+        if (update_movable || frozen)
+            setFlag(QGraphicsItem::ItemIsMovable, !frozen);
+        update();
+    }
 }
 
 CardItem *CardItem::FindItem(const QList<CardItem *> &items, int card_id) {
-    foreach (CardItem *item, items) {
+    foreach(CardItem *item, items) {
         if (item->getCard() == NULL) {
             if (card_id == Card::S_UNKNOWN_CARD_ID)
                 return item;
@@ -211,6 +233,66 @@ CardItem *CardItem::FindItem(const QList<CardItem *> &items, int card_id) {
     }
 
     return NULL;
+}
+
+void CardItem::setOuterGlowEffectEnabled(const bool &willPlay)
+{
+    if (outerGlowEffectEnabled == willPlay) return;
+    if (willPlay) {
+        if (outerGlowEffect == NULL) {
+            outerGlowEffect = new QGraphicsDropShadowEffect(this);
+            outerGlowEffect->setOffset(0);
+            outerGlowEffect->setBlurRadius(18);
+            outerGlowEffect->setColor(outerGlowColor);
+            outerGlowEffect->setEnabled(false);
+            setGraphicsEffect(outerGlowEffect);
+        }
+        connect(this, SIGNAL(hoverChanged(bool)), outerGlowEffect, SLOT(setEnabled(bool)));
+    } else {
+        if (outerGlowEffect != NULL) {
+            disconnect(this, SIGNAL(hoverChanged(bool)), outerGlowEffect, SLOT(setEnabled(bool)));
+            outerGlowEffect->setEnabled(false);
+        }
+    }
+    outerGlowEffectEnabled = willPlay;
+}
+
+bool CardItem::isOuterGlowEffectEnabled() const
+{
+    return outerGlowEffectEnabled;
+}
+
+void CardItem::setOuterGlowColor(const QColor &color)
+{
+    if (!outerGlowEffect || outerGlowColor == color) return;
+    outerGlowColor = color;
+    outerGlowEffect->setColor(color);
+}
+
+QColor CardItem::getOuterGlowColor() const
+{
+    return outerGlowColor;
+}
+
+void CardItem::setTransferable(const bool transferable)
+{
+    _transferable = transferable;
+    if (transferable && _transferButton == NULL) {
+        _transferButton = new TransferButton(this);
+        _transferButton->setPos(0, -20);
+        _transferButton->setEnabled(false);
+        _transferButton->hide();
+        connect(_transferButton, SIGNAL(_activated()), RoomSceneInstance, SLOT(onTransferButtonActivated()));
+        connect(_transferButton, SIGNAL(_deactivated()), RoomSceneInstance, SLOT(onSkillDeactivated()));
+        connect(_transferButton, SIGNAL(enabledChanged()), SLOT(onTransferEnabledChanged()));
+    } else if (!transferable) {
+        _transferButton->hide();
+    }
+}
+
+TransferButton *CardItem::getTransferButton() const
+{
+    return _transferButton;
 }
 
 const int CardItem::_S_CLICK_JITTER_TOLERANCE = 1600;
@@ -251,16 +333,23 @@ void CardItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event) {
     if (hasFocus()) {
         event->accept();
         emit double_clicked();
-    } else
+    }
+    else
         emit toggle_discards();
 }
 
 void CardItem::hoverEnterEvent(QGraphicsSceneHoverEvent *) {
+    if (_transferable && _transferButton->isEnabled())
+        _transferButton->show();
     emit enter_hover();
+    emit hoverChanged(true);
 }
 
 void CardItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *) {
+    if (_transferButton)
+        _transferButton->hide();
     emit leave_hover();
+    emit hoverChanged(false);
 }
 
 
@@ -270,22 +359,35 @@ void CardItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidge
     if (!_m_frameType.isEmpty())
         painter->drawPixmap(G_COMMON_LAYOUT.m_cardFrameArea, G_ROOM_SKIN.getCardAvatarPixmap(_m_frameType));
 
-    if (!isEnabled()) {
+    if (frozen || !isEnabled()) {
         painter->fillRect(G_COMMON_LAYOUT.m_cardMainArea, QColor(100, 100, 100, 255 * opacity()));
         painter->setOpacity(0.7 * opacity());
     }
 
-    if (!_m_isUnknownGeneral)
-        painter->drawPixmap(G_COMMON_LAYOUT.m_cardMainArea, G_ROOM_SKIN.getCardMainPixmap(objectName()));
-    else
-        painter->drawPixmap(G_COMMON_LAYOUT.m_cardMainArea, G_ROOM_SKIN.getPixmap("generalCardBack"));
     const Card *card = Sanguosha->getEngineCard(m_cardId);
+    if (!_m_isUnknownGeneral) {
+        if (card || objectName() == "unknown") {
+            painter->drawPixmap(G_COMMON_LAYOUT.m_cardMainArea,
+                                G_ROOM_SKIN.getCardMainPixmap(objectName()));
+        } else {
+            painter->drawPixmap(G_COMMON_LAYOUT.m_cardMainArea,
+                                G_ROOM_SKIN.getGeneralCardPixmap(objectName(), _skinId));
+        }
+    } else {
+        painter->drawPixmap(G_COMMON_LAYOUT.m_cardMainArea,
+                            G_ROOM_SKIN.getPixmap("generalCardBack"));
+    }
     if (card) {
         painter->drawPixmap(G_COMMON_LAYOUT.m_cardSuitArea, G_ROOM_SKIN.getCardSuitPixmap(card->getSuit()));
         painter->drawPixmap(G_COMMON_LAYOUT.m_cardNumberArea, G_ROOM_SKIN.getCardNumberPixmap(card->getNumber(), card->isBlack()));
+        if (card->isTransferable())
+            painter->drawPixmap(G_COMMON_LAYOUT.m_cardTransferableIconArea,
+                                G_ROOM_SKIN.getPixmap(QSanRoomSkin::S_SKIN_KEY_CARD_TRANSFERABLE_ICON));
+
         QRect rect = G_COMMON_LAYOUT.m_cardFootnoteArea;
         // Deal with stupid QT...
-        if (_m_showFootnote) painter->drawImage(rect, _m_footnoteImage);
+        if (_m_showFootnote)
+            painter->drawImage(rect, _m_footnoteImage);
     }
 
     if (!_m_avatarName.isEmpty())
@@ -303,3 +405,27 @@ void CardItem::setFootnote(const QString &desc) {
                    (Qt::AlignmentFlag)((int)Qt::AlignHCenter | Qt::AlignBottom | Qt::TextWrapAnywhere), desc);
 }
 
+int TransferButton::getCardId() const
+{
+    return _id;
+}
+
+CardItem *TransferButton::getCardItem() const
+{
+    return _cardItem;
+}
+
+TransferButton::TransferButton(CardItem *parent)
+    : QSanButton("carditem", "give", parent), _id(parent->getId()), _cardItem(parent)
+{
+    _m_style = S_STYLE_TOGGLE;
+    connect(this, SIGNAL(clicked()), SLOT(onClicked()));
+}
+
+void TransferButton::onClicked()
+{
+    if (isDown())
+        emit _activated();
+    else
+        emit _deactivated();
+}

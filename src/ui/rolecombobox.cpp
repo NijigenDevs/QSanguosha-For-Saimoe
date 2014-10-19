@@ -1,5 +1,25 @@
+/********************************************************************
+    Copyright (c) 2013-2014 - QSanguosha-Rara
+
+    This file is part of QSanguosha-Hegemony.
+
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    See the LICENSE file for more details.
+
+    QSanguosha-Rara
+    *********************************************************************/
+
 #include "rolecombobox.h"
-#include "SkinBank.h"
+#include "skinbank.h"
 #include "roomscene.h"
 #include "engine.h"
 
@@ -10,7 +30,8 @@ void RoleComboBox::mousePressEvent(QGraphicsSceneMouseEvent *event) {
         expanding = false;
         update();
         return;
-    } else if (!expanding) {
+    }
+    else if (!expanding) {
         expanding = true;
         update();
         return;
@@ -40,12 +61,11 @@ void RoleComboBox::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QW
       ||       ||       ||
       --------------------
       --------------------
-    */
+      */
     if (!fixed_role.isEmpty()) {
         QPixmap pix;
         pix.load(QString("image/system/roles/%1.png").arg(fixed_role));
         painter->drawPixmap(0, 0, pix);
-        update();
         return;
     }
     QStringList kingdoms = Sanguosha->getKingdoms();
@@ -54,21 +74,23 @@ void RoleComboBox::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QW
         if (circle) {
             QPixmap pix;
             pix.load("image/system/roles/unknown.png");
-            painter->drawPixmap(0, 0, pix);
-        } else {
+            painter->drawPixmap(1, 0, 28, 28, pix);
+        }
+        else {
             QColor grey = G_COMMON_LAYOUT.m_roleDarkColor;
             QPen pen(Qt::black);
             pen.setWidth(1);
             painter->setPen(pen);
-            
+
             int index = 0;
             foreach(QString kingdom, kingdoms) {
                 painter->setBrush(QBrush(kingdoms_excluded.value(kingdom) ? grey : G_COMMON_LAYOUT.m_rolesColor.value(kingdom)));
                 painter->drawRect(COMPACT_BORDER_WIDTH + ((index % 2) ? COMPACT_BORDER_WIDTH + COMPACT_ITEM_LENGTH : 0), COMPACT_BORDER_WIDTH + (COMPACT_BORDER_WIDTH + COMPACT_ITEM_LENGTH) * (index / 2), COMPACT_ITEM_LENGTH, COMPACT_ITEM_LENGTH);
-                ++ index;
+                ++index;
             }
         }
-    } else {
+    }
+    else {
         QPixmap pix = G_ROOM_SKIN.getPixmap(QSanRoomSkin::S_SKIN_KEY_EXPANDING_ROLE_BOX);
         painter->drawPixmap(0, 0, pix);
 

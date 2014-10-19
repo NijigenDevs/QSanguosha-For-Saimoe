@@ -1,3 +1,23 @@
+/********************************************************************
+    Copyright (c) 2013-2014 - QSanguosha-Rara
+
+    This file is part of QSanguosha-Hegemony.
+
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    See the LICENSE file for more details.
+
+    QSanguosha-Rara
+    *********************************************************************/
+
 #ifndef _SERVER_PLAYER_H
 #define _SERVER_PLAYER_H
 
@@ -7,6 +27,7 @@ class Recorder;
 
 class CardMoveReason;
 struct PhaseStruct;
+struct PindianStruct;
 
 #include "structs.h"
 #include "player.h"
@@ -29,19 +50,20 @@ public:
 };
 #endif
 
-class ServerPlayer: public Player {
+class ServerPlayer : public Player {
     Q_OBJECT
     Q_PROPERTY(QString ip READ getIp)
 
 public:
     explicit ServerPlayer(Room *room);
+    ~ServerPlayer();
 
     void setSocket(ClientSocket *socket);
-    void invoke(const QSanProtocol::QSanPacket *packet);
-    void invoke(const char *method, const QString &arg = ".");
+    void unicast(const QSanProtocol::AbstractPacket *packet);
+    void notify(QSanProtocol::CommandType type, const QVariant &arg = QVariant());
     void kick();
     QString reportHeader() const;
-    void unicast(const QString &message);
+    void unicast(const QByteArray &message);
     void drawCard(const Card *card);
     Room *getRoom() const;
     void broadcastSkillInvoke(const Card *card) const;
@@ -55,8 +77,9 @@ public:
     void throwAllCards();
     void bury();
     void throwAllMarks(bool visible_only = true);
-    void clearOnePrivatePile(QString pile_name);
+    void clearOnePrivatePile(const QString &pile_name);
     void clearPrivatePiles();
+    int getMaxCards(MaxCardsType::MaxCardsCount type = MaxCardsType::Max) const;
     void drawCards(int n, const QString &reason = QString());
     bool askForSkillInvoke(const QString &skill_name, const QVariant &data = QVariant());
     QList<int> forceToDiscard(int discard_num, bool include_equip, bool is_discard = true);
@@ -65,7 +88,8 @@ public:
     QList<const Card *> getCards(const QString &flags) const;
     DummyCard *wholeHandCards() const;
     bool hasNullification() const;
-    bool pindian(ServerPlayer *target, const QString &reason, const Card *card1 = NULL);
+    PindianStruct *pindianSelect(ServerPlayer *target, const QString &reason, const Card *card1 = NULL);
+    bool pindian(PindianStruct *pd); //pd is deleted after this function
     void turnOver();
     void play(QList<Player::Phase> set_phases = QList<Player::Phase>());
     bool changePhase(Player::Phase from, Player::Phase to);
@@ -91,7 +115,9 @@ public:
     bool isOnline() const;
     inline bool isOffline() const{ return getState() == "robot" || getState() == "offline"; }
 
-    virtual int aliveCount() const;
+    virtual int aliveCount(bool includeRemoved = true) const;
+    int getPlayerNumWithSameKingdom(const QString &reason, const QString &_to_calculate = QString(),
+                                    MaxCardsType::MaxCardsCount type = MaxCardsType::Max) const;
     virtual int getHandcardNum() const;
     virtual void removeCard(const Card *card, Place place);
     virtual void addCard(const Card *card, Place place);
@@ -102,8 +128,6 @@ public:
 
     void startRecord();
     void saveRecord(const QString &filename);
-
-    void setNext(ServerPlayer *next);
 
     // 3v3 methods
     void addToSelected(const QString &general);
@@ -118,11 +142,10 @@ public:
     void introduceTo(ServerPlayer *player);
     void marshal(ServerPlayer *player) const;
 
-    void addToPile(const QString &pile_name, const Card *card, bool open = true);
-    void addToPile(const QString &pile_name, int card_id, bool open = true);
-    void addToPile(const QString &pile_name, QList<int> card_ids, bool open = true);
-    void addToPile(const QString &pile_name, QList<int> card_ids, bool open, CardMoveReason reason);
-    void exchangeFreelyFromPrivatePile(const QString &skill_name, const QString &pile_name, int upperlimit = 1000, bool include_equip = false);
+    void addToPile(const QString &pile_name, const Card *card, bool open = true, QList<ServerPlayer *> open_players = QList<ServerPlayer *>());
+    void addToPile(const QString &pile_name, int card_id, bool open = true, QList<ServerPlayer *> open_players = QList<ServerPlayer *>());
+    void addToPile(const QString &pile_name, QList<int> card_ids, bool open = true, QList<ServerPlayer *> open_players = QList<ServerPlayer *>());
+    void addToPile(const QString &pile_name, QList<int> card_ids, bool open, QList<ServerPlayer *> open_players, CardMoveReason reason);
     void gainAnExtraTurn();
 
     void copyFrom(ServerPlayer *sp);
@@ -143,38 +166,39 @@ public:
     inline void releaseLock(SemaphoreType type) { semas[type]->release(); }
     inline void drainLock(SemaphoreType type) { while (semas[type]->tryAcquire()) {} }
     inline void drainAllLocks() {
-        for (int i  =0; i < S_NUM_SEMAPHORES; i++) {
+        for (int i = 0; i < S_NUM_SEMAPHORES; i++) {
             drainLock((SemaphoreType)i);
         }
     }
-    inline QString getClientReplyString() { return m_clientResponseString; }
-    inline void setClientReplyString(const QString &val) { m_clientResponseString = val; }
-    inline Json::Value getClientReply() { return _m_clientResponse; }
-    inline void setClientReply(const Json::Value &val) { _m_clientResponse = val; }
+    inline const QVariant &getClientReply() const{ return _m_clientResponse; }
+    inline void setClientReply(const QVariant &val) { _m_clientResponse = val; }
     unsigned int m_expectedReplySerial; // Suggest the acceptable serial number of an expected response.
     bool m_isClientResponseReady; //Suggest whether a valid player's reponse has been received.
     bool m_isWaitingReply; // Suggest if the server player is waiting for client's response.
-    Json::Value m_cheatArgs; // Store the cheat code received from client.
+    QVariant m_cheatArgs; // Store the cheat code received from client.
     QSanProtocol::CommandType m_expectedReplyCommand; // Store the command to be sent to the client.
-    Json::Value m_commandArgs; // Store the command args to be sent to the client.
+    QVariant m_commandArgs; // Store the command args to be sent to the client.
 
     // static function
     static bool CompareByActionOrder(ServerPlayer *a, ServerPlayer *b);
 
-    void showGeneral(bool head_general = true, bool trigger_event = true);
+    void showGeneral(bool head_general = true, bool trigger_event = true, bool sendLog = true);
     void hideGeneral(bool head_general = true);
     void removeGeneral(bool head_general = true);
     void sendSkillsToOthers(bool head_skill = true);
     void disconnectSkillsFromOthers(bool head_skill = true);
-    bool askForGeneralShow(bool one = true);
+    bool askForGeneralShow(bool one = true, bool refusable = false);
     void notifyPreshow();
 
     bool inSiegeRelation(const ServerPlayer *skill_owner, const ServerPlayer *victim) const;
-    QList<ServerPlayer *> getFormation() const;
     bool inFormationRalation(ServerPlayer *teammate) const;
     void summonFriends(const HegemonyMode::ArrayType type);
 
+    virtual QHash<QString, QStringList> getBigAndSmallKingdoms(const QString &reason, MaxCardsType::MaxCardsCount type = MaxCardsType::Min) const;
+
     bool event_received;
+
+    void changeToLord();
 
 protected:
     //Synchronization helpers
@@ -197,18 +221,20 @@ private:
     QList<PhaseStruct> _m_phases_state;
     QStringList selected; // 3v3 mode use only
     QDateTime test_time;
-    QString m_clientResponseString;
-    Json::Value _m_clientResponse;
+    QVariant _m_clientResponse;
 
 private slots:
-    void getMessage(const char *message);
-    void sendMessage(const QString &message);
+    void getMessage(QByteArray request);
+    void sendMessage(const QByteArray &message);
 
 signals:
     void disconnected();
-    void request_got(const QString &request);
-    void message_ready(const QString &msg);
+    void request_got(const QByteArray &request);
+    void message_ready(const QByteArray &msg);
+
+    void roomPacketReceived(const QSanProtocol::Packet &packet);
+    void lobbyPacketReceived(const QSanProtocol::Packet &packet);
+    void invalidPacketReceived(const QByteArray &message);
 };
 
 #endif
-
