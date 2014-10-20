@@ -374,6 +374,7 @@ public:
     Xiaying(): TriggerSkill("xiaying") {
     view_as_skill = new XiayingViewAsSkill;
     events << GeneralShown << GeneralHidden << GeneralRemoved << Death << EventPhaseStart;
+    frequency = Compulsory;
     }
 
     virtual bool canPreshow() const{
