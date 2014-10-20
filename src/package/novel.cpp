@@ -10,7 +10,7 @@ WeihaoCard::WeihaoCard() {
     target_fixed = true;
 }
 
-void WeihaoCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const{
+void WeihaoCard::use(Room *, ServerPlayer *source, QList<ServerPlayer *> &) const{
      //broadcast
     source->drawCards(1);
     if (source->getMark("@zhenhao") == 0)
@@ -25,7 +25,7 @@ public:
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{
-		return player->getMaxHp();//need Changed! should be getMaxCards but it does not exist.
+        return player->getMaxHp();//need Changed! should be getMaxCards but it does not exist.
     }
 
     virtual const Card *viewAs() const{
@@ -65,7 +65,7 @@ public:
         filter_pattern = "EquipCard|.|.|hand";
     }
 
-    virtual bool isEnabledAtPlay(const Player *player) const {
+    virtual bool isEnabledAtPlay(const Player *) const {
         return true;
     }
 
@@ -93,7 +93,7 @@ public:
         events << EventPhaseEnd;
     }
 
-    virtual QStringList triggerable(TriggerEvent , Room *room, ServerPlayer *player, QVariant &data, ServerPlayer * &) const {
+    virtual QStringList triggerable(TriggerEvent , Room *room, ServerPlayer *player, QVariant &, ServerPlayer * &) const {
         if (player->getPhase() == Player::Finish){
             room->setPlayerMark(player, "@weihao", 0);
             room->setPlayerMark(player, "@zhenhao", 0);
@@ -101,6 +101,163 @@ public:
         return QStringList();
     }
 };
+
+HaoqiCard::HaoqiCard() {
+    will_throw = false;
+    mute = true;
+    handling_method = Card::MethodNone;
+    m_skillName = "_haoqi";
+}
+
+bool HaoqiCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+    if (to_select == Self)
+        return false;
+    return targets.isEmpty();
+}
+
+void HaoqiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
+    CardMoveReason reason(CardMoveReason::S_REASON_GIVE, source->objectName(),
+        targets.first()->objectName(), "haoqi", QString());
+    room->moveCardTo(this, targets.first(), Player::PlaceHand, reason);
+    QStringList choices;
+    if (targets.first()->getHandcardNum() > 0)
+        choices << "halfcards";
+    if (!targets.first()->hasShownOneGeneral())
+        choices << "showallgenerals";
+    choices << "turnoverself";
+    QString choice = room->askForChoice(targets.first(),objectName(),choices.join("+"));
+    if (choice == "halfcards"){
+        const Card *cards = room->askForExchange(targets.first(), objectName(), (targets.first()->getHandcardNum() + 1 / 2));
+        CardMoveReason reason(CardMoveReason::S_REASON_GIVE, targets.first()->objectName(),
+        source->objectName(), "haoqi", QString());
+        room->moveCardTo(cards, source, Player::PlaceHand, reason);
+    } else if (choice == "showallgenerals"){
+        targets.first()->showGeneral();
+        targets.first()->showGeneral(false);
+    } else if (choice == "turnoverself") {
+        targets.first()->turnOver();
+    }
+
+}
+
+class Haoqi : public ViewAsSkill {
+public:
+    Haoqi() : ViewAsSkill("haoqi") {
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return player->getHandcardNum() > 1;
+    }
+
+    virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const{
+        if (to_select->isEquipped())
+            return false;
+
+        int length = Self->getHandcardNum() / 2;
+        return selected.length() < length;
+    }
+
+    virtual const Card *viewAs(const QList<const Card *> &cards) const{
+        if (cards.length() != Self->getHandcardNum() / 2)
+            return NULL;
+
+        HaoqiCard *card = new HaoqiCard;
+        card->addSubcards(cards);
+        return card;
+    }
+};
+
+class Jinzhi : public PhaseChangeSkill {
+public:
+    Jinzhi() : PhaseChangeSkill("jinzhi") {
+        frequency = Frequent;
+    }
+
+    virtual bool canPreshow() const{
+        return true;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer * &) const{
+        if (!PhaseChangeSkill::triggerable(player))
+            return QStringList();
+
+        if (player->getPhase() == Player::Draw)
+            return QStringList(objectName());
+
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        if (player->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName(), player);
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool onPhaseChange(ServerPlayer *source) const{
+        Room *room = source->getRoom();
+
+        JudgeStruct judge;
+        judge.reason = objectName();
+        judge.play_animation = false;
+        judge.who = source;
+        judge.time_consuming = true;
+
+        int lastno = 0 ;
+        do {
+            if (judge.card)
+                lastno = judge.card->getNumber();
+            room->judge(judge);
+        } while (judge.card->getNumber() > lastno  && source->askForSkillInvoke(objectName()));
+
+        QList<int> card_list = VariantList2IntList(source->tag[objectName()].toList());
+        source->tag.remove(objectName());
+        QList<int> subcards;
+        foreach(int id, card_list)
+            if (room->getCardPlace(id) == Player::PlaceTable && !subcards.contains(id))
+                subcards << id;
+        if (subcards.length() != 0){
+            DummyCard dummy(subcards);
+            source->obtainCard(&dummy);
+        }
+        return true;
+    }
+};
+
+class JinzhiMove : public TriggerSkill {
+public:
+    JinzhiMove() : TriggerSkill("#jinzhi-move") {
+        events << FinishJudge;
+        frequency = Compulsory;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer * &) const{
+        if (player != NULL) {
+            JudgeStruct *judge = data.value<JudgeStruct *>();
+            if (judge->reason == "jinzhi") {
+                QVariantList jinzhi_list = player->tag["jinzhi"].toList();
+                jinzhi_list << judge->card->getEffectiveId();
+                player->tag["jinzhi"] = jinzhi_list;
+
+                if (room->getCardPlace(judge->card->getEffectiveId()) == Player::PlaceJudge) {
+                    return QStringList(objectName());
+                }
+            }
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *eru, QVariant &data, ServerPlayer *) const{
+        JudgeStruct *judge = data.value<JudgeStruct *>();
+        CardMoveReason reason(CardMoveReason::S_REASON_JUDGEDONE, eru->objectName(), QString(), judge->reason);
+        room->moveCardTo(judge->card, NULL, Player::PlaceTable, reason, true);
+
+        return false;
+    }
+};
+
+
 
 void MoesenPackage::addNovelGenerals()
 {
@@ -118,6 +275,12 @@ void MoesenPackage::addNovelGenerals()
     a_azusa->addSkill(new AzusaMaxCards);
     a_azusa->addSkill(new AzusaTrigger);
 
+
+    General *eru = new General(this, "eru", "qun", 3, false); // Novel 013
+    eru->addSkill(new Haoqi);
+    eru->addSkill(new Jinzhi);
+    eru->addSkill(new JinzhiMove);
+    insertRelatedSkills("jinzhi", "#jinzhi-move");
     /*
     General *yuki = new General(this, "yuki", "qun", 3, false); // Novel 006
 
@@ -147,4 +310,5 @@ void MoesenPackage::addNovelGenerals()
     */
     addMetaObject<WeihaoCard>();
     addMetaObject<ZhuyiCard>();
+    addMetaObject<HaoqiCard>();
 }
