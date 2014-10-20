@@ -56,14 +56,14 @@ public:
 class Haixing: public TriggerSkill {
 public:
     Haixing(): TriggerSkill("haixing") {
-        events << EventPhaseEnd;
+        events << EventPhaseStart;
         frequency = NotFrequent;
         view_as_skill = new HaixingViewAsSkill;
     }
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer * &) const{
-        if (triggerEvent == EventPhaseEnd && player->getPhase() == Player::Draw)
-            if (TriggerSkill::triggerable(player))
+        if (triggerEvent == EventPhaseStart && player->getPhase() == Player::Start)
+            if (TriggerSkill::triggerable(player) && ( player->getHandcardNum() > 0 ))
                 return QStringList(objectName());
         return QStringList();
     }
@@ -98,41 +98,97 @@ public:
     }
 };
 
+TaozuiCard::TaozuiCard() {
+    mute = true;
+}
+
+bool TaozuiCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+	bool invoke = false;
+	foreach(const Card *card , to_select->getJudgingArea()) {
+		if ( Self->canDiscard(to_select,"j") && (card->isKindOf("Indulgence") || card->isKindOf("SupplyShortage")))
+			invoke = true;
+	}
+    return invoke;
+}
+
+void TaozuiCard::use(Room *, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
+    foreach(ServerPlayer *target, targets) {
+        if (!source->canDiscard(target, "j"))
+            targets.removeOne(target);
+    }
+
+    if (targets.length() > 0) {
+
+        QVariantList target_list;
+        foreach(ServerPlayer *target, targets){
+            target_list << QVariant::fromValue(target);
+        }
+
+        source->tag["taozui_invoke"] = target_list;
+        source->setFlags("taozui");
+    }
+}
+
+class TaozuiViewAsSkill : public ViewAsSkill {
+public:
+    TaozuiViewAsSkill() : ViewAsSkill("taozui") {
+    }
+
+    virtual bool isEnabledAtPlay(const Player *) const{
+        return false;
+    }
+
+    virtual bool isEnabledAtResponse(const Player *, const QString &pattern) const{
+        return pattern.startsWith("@@taozui");
+    }
+
+    virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const{
+        return false;
+    }
+
+    virtual const Card *viewAs(const QList<const Card *> &cards) const{
+        if (cards.isEmpty()){
+            TaozuiCard *taozui = new TaozuiCard;
+            return taozui;
+        }
+        return NULL;
+    }
+};
+
 class Taozui: public TriggerSkill {
 public:
     Taozui(): TriggerSkill("taozui") {
-        events << EventPhaseStart;
+        events << EventPhaseChanging;
         frequency = NotFrequent;
+        view_as_skill = new TaozuiViewAsSkill;
     }
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer * &) const{
-        if (triggerEvent == EventPhaseStart){
-            if (TriggerSkill::triggerable(player) && player->getPhase() == Player::Start){
-                 foreach (const Card *c, player->getJudgingArea()){
-                    if (c->isKindOf("Indulgence"))
-                        return QStringList();
-                }
-                foreach (ServerPlayer *p, room->getOtherPlayers(player)){
-                    if (!p->getJudgingArea().isEmpty()){
-                        foreach (const Card *c, p->getJudgingArea()){
-                            if (c->isKindOf("Indulgence"))
-                                return QStringList(objectName());
-                        }
-                    }
-                }
-                foreach(const Card *c, player->getJudgingArea()){
-                    if (c->isKindOf("SupplyShortage"))
-                        return QStringList(objectName());
-                }
-            }
-        }
+    	if (!TriggerSkill::triggerable(player))
+    		return QStringList();
+    	PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+    	if (change.to == Player::Judge && !player->isSkipped(Player::Judge) && !player->isSkipped(Player::Draw)){
+			bool invoke = false;
+			foreach(ServerPlayer *p, room->getAlivePlayers()){
+				foreach(const Card *card, p->getJudgingArea()){
+					if (card->isKindOf("Indulgence") || card->isKindOf("SupplyShortage")){
+						invoke = true;
+					}
+				}
+			}
+			if (invoke){
+				player->tag.remove("taozui_invoke");
+				return QStringList(objectName());
+			}
+		}
         return QStringList();
     }
 
     virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
-       if (triggerEvent == EventPhaseStart){
-            if (player->askForSkillInvoke(objectName())){
-                room->broadcastSkillInvoke(objectName());
+        if (room->askForUseCard(player, "@@taozui", "@taozui")) {
+            if (player->hasFlag("taozui") && player->tag.contains("taozui_invoke")) {
+                player->skip(Player::Judge);
+                player->skip(Player::Draw);
                 return true;
             }
         }
@@ -140,50 +196,34 @@ public:
     }
 
     virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *fuuko, QVariant &data, ServerPlayer *) const{
-        if (triggerEvent == EventPhaseStart){
-            fuuko->skip(Player::Play);
-            bool dis =  false, get = false;
-            const Card *to_do;
-            foreach(const Card *c, fuuko->getJudgingArea()){
-                    if (c->isKindOf("SupplyShortage")){
-                        dis = true;
-                        to_do = c;
-                    }
-             }
+    	QVariantList target_list;
+    	target_list = fuuko->tag["taozui_invoke"].toList();
+        fuuko->tag.remove("taozui_invoke");
+        QList<ServerPlayer *> targets;
 
-
-            QList<ServerPlayer *> targets;
-            foreach(ServerPlayer *p, room->getOtherPlayers(fuuko)){
-                if (!p->getJudgingArea().isEmpty()){
-                    foreach(const Card *card, p->getJudgingArea()){
-                        if (card->isKindOf("Indulgence")){
-                            targets.append(p);
-                            get = true;
-                        }
-                    }
-                }
-            }
-            QString choice = "taozui_get";
-            if (dis && get){
-                choice = room->askForChoice(fuuko, objectName(), "taozui_get+taozui_discard");
-            }else if(dis && !get){
-                choice = "taozui_discard";
-            }
-
-            if (choice == "taozui_discard"){
-                room->throwCard(to_do, CardMoveReason(CardMoveReason::S_REASON_DISCARD, fuuko->objectName(), "taozui", QString()), fuuko, fuuko);
-            }else{
-                if (targets.isEmpty())
-                    return false;
-                ServerPlayer *target = room->askForPlayerChosen(fuuko, targets, "taozui_from");
-                foreach(const Card *card,target->getJudgingArea()){
-                    if (card->isKindOf("Indulgence"))
-                        to_do = card;
-                }
-                if (!to_do)
-                    return false;
-                room->obtainCard(fuuko, to_do,CardMoveReason(CardMoveReason::S_REASON_GOTCARD, fuuko->objectName(), "taozui", QString()));
-            }
+        foreach(QVariant x, target_list){
+            targets << x.value<ServerPlayer *>();
+        }
+		if (targets.length() == 0)
+			return false;
+        foreach(ServerPlayer *p , targets){
+        	QStringList choices;
+			choices << "cancel";
+        	foreach(const Card *card , p->getJudgingArea()){
+        		if (card->isKindOf("Indulgence"))
+        			choices << "indulgence";
+        		if (card->isKindOf("SupplyShortage"))
+        			choices << "supply_shortage";
+        	}
+        	QString choice = room->askForChoice(fuuko, objectName(), choices.join("+"));
+			if (choice != "cancel"){
+				foreach(const Card *disc, p->getJudgingArea()){
+					if (disc->objectName() == choice) {
+						CardMoveReason reason(CardMoveReason::S_REASON_PUT, fuuko->objectName());
+						room->throwCard(disc, reason, NULL);
+					}
+				}
+			}
         }
         return false;
     }
@@ -560,4 +600,5 @@ void MoesenPackage::addGameGenerals()
     */
 
    addMetaObject<HaixingCard>();
+   addMetaObject<TaozuiCard>();
 }
