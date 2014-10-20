@@ -18,8 +18,8 @@ class MiaolvCard: public SkillCard {
 
 public:
     Q_INVOKABLE MiaolvCard();
-    bool MiaolvCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
-    void MiaolvCard::use(Room *room, ServerPlayer *xunyu, QList<ServerPlayer *> &targets) const;
+    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+    virtual void use(Room *room, ServerPlayer *xunyu, QList<ServerPlayer *> &targets) const;
 };
 
 class XiehangCard: public SkillCard {
@@ -46,8 +46,8 @@ class BajianCard: public SkillCard {
 
 public:
     Q_INVOKABLE BajianCard();
-	bool BajianCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
-    void BajianCard::use(Room *room, ServerPlayer *xunyu, QList<ServerPlayer *> &targets) const;
+    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+    virtual void use(Room *room, ServerPlayer *xunyu, QList<ServerPlayer *> &targets) const;
 };
 
 class MengyinCard: public SkillCard {
@@ -55,7 +55,7 @@ class MengyinCard: public SkillCard {
 
 public:
     Q_INVOKABLE MengyinCard();
-    void MengyinCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const;
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const;
 };
 
 class GejiCard: public SkillCard {
@@ -63,8 +63,8 @@ class GejiCard: public SkillCard {
 
 public:
     Q_INVOKABLE GejiCard();
-    bool GejiCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
-    void GejiCard::use(Room *, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+    virtual void use(Room *, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
 class Tengyue: public DrawCardsSkill {

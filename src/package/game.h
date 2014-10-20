@@ -9,8 +9,8 @@ class HaixingCard: public SkillCard {
 
 public:
     Q_INVOKABLE HaixingCard();
-    bool HaixingCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
-    void HaixingCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
 class TaozuiCard : public SkillCard {
@@ -28,7 +28,7 @@ class XiayingCard: public SkillCard {
 
 public:
     Q_INVOKABLE XiayingCard();
-    void XiayingCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
 class YumengDraw: public DrawCardsSkill {
