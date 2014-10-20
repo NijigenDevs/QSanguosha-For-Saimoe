@@ -423,6 +423,7 @@ function SmartAI:useCardSlash(card, use)
 	local no_distance = sgs.Sanguosha:correctCardTarget(sgs.TargetModSkill_DistanceLimit, self.player, card) > 50
 						or self.player:hasFlag("slashNoDistanceLimit")
 	self.slash_targets = 1 + sgs.Sanguosha:correctCardTarget(sgs.TargetModSkill_ExtraTarget, self.player, card)
+	if self.player:hasFlag("HalberdUse") then self.slash_targets = self.slash_targets + 99 end
 	if use.isDummy and use.extra_target then self.slash_targets = self.slash_targets + use.extra_target end
 	if self.player:hasSkill("duanbing") then self.slash_targets = self.slash_targets + 1 end
 	local rangefix = 0
@@ -569,6 +570,11 @@ end
 
 sgs.ai_skill_use.slash = function(self, prompt)
 	local parsedPrompt = prompt:split(":")
+	if prompt == "@halberd" then
+		local ret = sgs.ai_skill_cardask["@halberd"](self)
+		return ret or "."
+	end
+
 	local callback = sgs.ai_skill_cardask[parsedPrompt[1]] -- for askForUseSlashTo
 	if self.player:hasFlag("slashTargetFixToOne") and type(callback) == "function" then
 		local slash
@@ -583,6 +589,7 @@ sgs.ai_skill_use.slash = function(self, prompt)
 		if ret == nil or ret == "." then return "." end
 		slash = sgs.Card_Parse(ret)
 		assert(slash)
+		if slash:isKindOf("HalberdCard") then return ret end
 		local no_distance = sgs.Sanguosha:correctCardTarget(sgs.TargetModSkill_DistanceLimit, self.player, slash) > 50 or self.player:hasFlag("slashNoDistanceLimit")
 		local targets = {}
 		local use = { to = sgs.SPlayerList() }
@@ -925,7 +932,7 @@ sgs.ai_card_intention.Peach = function(self, card, from, tos)
 	end
 end
 
-sgs.ai_use_value.Peach = 6
+sgs.ai_use_value.Peach = 7
 sgs.ai_keep_value.Peach = 7
 sgs.ai_use_priority.Peach = 0.9
 
@@ -1489,7 +1496,7 @@ sgs.ai_skill_cardask["archery-attack-jink"] = function(self, data, pattern, targ
 end
 
 sgs.ai_keep_value.Nullification = 3.8
-sgs.ai_use_value.Nullification = 8
+sgs.ai_use_value.Nullification = 7.8
 
 function SmartAI:useCardAmazingGrace(card, use)
 	-- if (self.role == "lord" or self.role == "loyalist") and sgs.turncount <= 2 and self.player:getSeat() <= 3 and self.player:aliveCount() > 5 then return end
@@ -2329,7 +2336,7 @@ sgs.ai_skill_cardask["collateral-slash"] = function(self, data, pattern, target2
 	-- self.player = killer
 	-- target = user
 	-- target2 = victim
-	if true then return "." end
+
 	if self:isFriend(target) and (target:hasFlag("AI_needCrossbow") or
 			(getCardsNum("Slash", target, self.player) >= 2 and self.player:getWeapon():isKindOf("Crossbow"))) then
 		if target:hasFlag("AI_needCrossbow") then self.room:setPlayerFlag(target, "-AI_needCrossbow") end
@@ -2516,7 +2523,7 @@ function SmartAI:useCardIndulgence(card, use)
 	end
 end
 
-sgs.ai_use_value.Indulgence = 8
+sgs.ai_use_value.Indulgence = 7.7
 sgs.ai_use_priority.Indulgence = 0.5
 sgs.ai_card_intention.Indulgence = 120
 sgs.ai_keep_value.Indulgence = 3.5
@@ -3040,7 +3047,7 @@ function SmartAI:useCardBefriendAttacking(BefriendAttacking, use)
 	end
 end
 sgs.ai_use_priority.BefriendAttacking = 9.28
-sgs.ai_use_value.BefriendAttacking = 9
+sgs.ai_use_value.BefriendAttacking = 8.9
 sgs.ai_keep_value.BefriendAttacking = 3.88
 
 sgs.ai_nullification.BefriendAttacking = function(self, card, from, to, positive)

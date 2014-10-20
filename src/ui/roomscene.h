@@ -44,6 +44,8 @@ class ChooseOptionsBox;
 class ChooseTriggerOrderBox;
 class BubbleChatBox;
 class PlayerCardBox;
+class QQuickWindow;
+
 struct RoomLayout;
 
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
@@ -142,6 +144,7 @@ class RoomScene : public QGraphicsScene {
 
 public:
     RoomScene(QMainWindow *main_window);
+    ~RoomScene();
     void showIndicator(const QString &from, const QString &to);
     void showPromptBox();
     static void FillPlayerNames(QComboBox *ComboBox, bool add_none);
@@ -368,6 +371,7 @@ private:
     QQmlEngine *_m_animationEngine;
     QQmlContext *_m_animationContext;
     QQmlComponent *_m_animationComponent;
+    QQuickWindow *m_animationWindow;
 #endif
 
     QSet<HeroSkinContainer *> m_heroSkinContainers;

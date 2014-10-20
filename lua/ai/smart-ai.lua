@@ -268,8 +268,10 @@ function sgs.cloneCard(name, suit, number)
 end
 
 function SmartAI:getTurnUse(priority)
-	local cards = self.player:getHandcards()
-	cards = sgs.QList2Table(cards)
+	local cards = {}
+	for _ ,c in sgs.qlist(self.player:getHandcards()) do
+		if c:isAvailable(self.player) then table.insert(cards, c) end
+	end
 
 	local turnUse = {}
 	local slash = sgs.cloneCard("slash")
@@ -288,7 +290,6 @@ function SmartAI:getTurnUse(priority)
 	end
 
 	for _, card in ipairs(cards) do
-		if not card:isAvailable(self.player) then continue end
 
 		if priority and self:getDynamicUsePriority(card) < 6 then continue end
 
@@ -1002,13 +1003,13 @@ function SmartAI:getUseValue(card)
 			if self.player:getPhase() == sgs.Player_Play and self:slashIsAvailable() and #self.enemies > 0 and self:getCardsNum("Slash") == 1 then v = v + 5 end
 			if self:hasCrossbowEffect() then v = v + 4 end
 			if card:getSkillName() == "Spear" then v = v - 1 end
-			if card:getSkillName() == "Halberd" then v = v + 1 end
 		elseif card:isKindOf("Jink") then
 			if self:getCardsNum("Jink") > 1 then v = v - 6 end
 		elseif card:isKindOf("Peach") then
 			if self.player:isWounded() then v = v + 6 end
 		end
 	elseif card:getTypeId() == sgs.Card_TypeTrick then
+		if self.player:getPhase() == sgs.Player_Play and not card:isAvailable(self.player) then v = 0 end
 		if self.player:getWeapon() and not self.player:hasSkills(sgs.lose_equip_skill) and card:isKindOf("Collateral") then v = 2 end
 		if card:getSkillName() == "shuangxiong" then v = 6 end
 		if card:isKindOf("Duel") then v = v + self:getCardsNum("Slash") * 2 end
@@ -1081,9 +1082,14 @@ function SmartAI:adjustUsePriority(card, v)
 			end
 		end
 		if self.player:hasSkill("jiang") and card:isRed() then v = v + 0.21 end
-
+		if self.slashAvail == 1 then
+			v = v + math.min(sgs.Sanguosha:correctCardTarget(sgs.TargetModSkill_ExtraTarget, self.player, card) * 0.1, 0.5)
+			v = v + math.min(sgs.Sanguosha:correctCardTarget(sgs.TargetModSkill_DistanceLimit, self.player, card) * 0.05, 0.5)
+		end
 	end
-
+	
+	if card:isKindOf("HalberdCard") then v = v + 1 end
+	
 	local suits_value = {}
 	for index, suit in ipairs(suits) do
 		suits_value[suit] = -index
@@ -1460,7 +1466,7 @@ function SmartAI:getEnemies(player)
 end
 
 function SmartAI:sort(players, key)
-	if not players then self.room:writeToConsole(debug.traceback()) end
+	if type(players) ~= "table" then self.room:writeToConsole(debug.traceback()) end
 	if #players == 0 then return end
 	local func
 	if not key or key == "defense" or key == "defenseSlash" then
@@ -2109,16 +2115,18 @@ function SmartAI:askForNullification(trick, from, to, positive)
 				return null_card
 			end
 		elseif trick:isKindOf("Snatch") then
-			if to:containsTrick("indulgence") or to:containsTrick("supply_shortage") and self:isFriend(to) and to:isNude() then return nil end
+			if (to:containsTrick("indulgence") or to:containsTrick("supply_shortage")) and self:isFriend(to) and to:isNude() then return nil end
 			if isEnemyFrom and self:isFriend(to, from) and to:getCards("j"):length() > 0 then
 				return null_card
+			elseif from and self:isFriend(from) and self:isFriend(to) and self:askForCardChosen(to, "ej", "dummyreason") then return false
 			elseif self:isFriend(to) then return null_card
 			end
 		elseif trick:isKindOf("Dismantlement") then
-			if to:containsTrick("indulgence") or to:containsTrick("supply_shortage") and self:isFriend(to) and to:isNude() then return nil end
+			if (to:containsTrick("indulgence") or to:containsTrick("supply_shortage")) and self:isFriend(to) and to:isNude() then return nil end
 			if isEnemyFrom and self:isFriend(to, from) and to:getCards("j"):length() > 0 then
 				return null_card
 			end
+			if from and self:isFriend(from) and self:isFriend(to) and self:askForCardChosen(to, "ej", "dummyreason") then return false end
 			if self:isFriend(to) then
 				if self:getDangerousCard(to) or self:getValuableCard(to) then return null_card end
 				if to:getHandcardNum() == 1 and not self:needKongcheng(to) then
@@ -3396,6 +3404,7 @@ local function getSkillViewCard(card, class_name, player, card_place)
 				if skill_card_str then
 					local skill_card = sgs.Card_Parse(skill_card_str)
 					assert(skill_card)
+					if skill_card:isKindOf("HalberdCard") and class_name == "Slash" then return skill_card_str end
 					if skill_card:isKindOf(class_name) and not player:isCardLimited(skill_card, skill_card:getHandlingMethod()) then return skill_card_str end
 				end
 			end

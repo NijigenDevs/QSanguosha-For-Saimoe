@@ -26,11 +26,13 @@
 #include <QVBoxLayout>
 #include <QMouseEvent>
 #include <QGraphicsDropShadowEffect>
+#include <QPushButton>
 
 FlatDialog::FlatDialog(QWidget *parent, bool initialLayoutWithTitle)
-    : QDialog(parent, Qt::FramelessWindowHint | Qt::Dialog),
-      mousePressed(false)
+    : QDialog(parent), mousePressed(false)
 {
+#ifdef Q_OS_WIN
+    setWindowFlags(Qt::FramelessWindowHint | Qt::Dialog);
     setAttribute(Qt::WA_TranslucentBackground);
 
     if (initialLayoutWithTitle) {
@@ -52,8 +54,29 @@ FlatDialog::FlatDialog(QWidget *parent, bool initialLayoutWithTitle)
         effect->setOffset(0);
         setGraphicsEffect(effect);
     }
+#else
+    if (initialLayoutWithTitle) {
+        layout = new QVBoxLayout;
+        setLayout(layout);
+    }
+#endif
 }
 
+bool FlatDialog::addCloseButton(QString name)
+{
+    if (layout == NULL)
+        return false;
+
+    if (name.isEmpty())
+        name = tr("Close");
+
+    QPushButton *closeButton = new QPushButton(name);
+    connect(closeButton, SIGNAL(clicked()), this, SLOT(reject()));
+    layout->addWidget(closeButton);
+    return true;
+}
+
+#ifdef Q_OS_WIN
 void FlatDialog::paintEvent(QPaintEvent *)
 {
     QPainter painter(this);
@@ -81,5 +104,4 @@ void FlatDialog::mouseReleaseEvent(QMouseEvent *event)
     if (event->button() & Qt::LeftButton)
         mousePressed = false;
 }
-
-
+#endif
