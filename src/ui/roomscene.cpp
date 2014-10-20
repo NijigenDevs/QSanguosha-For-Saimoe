@@ -24,7 +24,6 @@
 #include "engine.h"
 #include "cardoverview.h"
 #include "distanceviewdialog.h"
-#include "playercarddialog.h"
 #include "freechoosedialog.h"
 #include "window.h"
 #include "button.h"
@@ -45,6 +44,7 @@
 #include "playercardbox.h"
 #include "stylehelper.h"
 #include "heroskincontainer.h"
+#include "flatdialog.h"
 
 #include <QPropertyAnimation>
 #include <QParallelAnimationGroup>
@@ -405,7 +405,17 @@ RoomScene::RoomScene(QMainWindow *main_window)
     _m_animationEngine = new QQmlEngine(this);
     _m_animationContext = new QQmlContext(_m_animationEngine->rootContext(), this);
     _m_animationComponent = new QQmlComponent(_m_animationEngine, QUrl::fromLocalFile("ui-script/animation.qml"), this);
+
+    m_animationWindow = new QQuickWindow;
+    m_animationWindow->setFlags(Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
+    m_animationWindow->setGeometry(main_window->geometry());
+    m_animationWindow->setColor(Qt::transparent);
 #endif
+}
+
+RoomScene::~RoomScene()
+{
+    m_animationWindow->deleteLater();
 }
 
 void RoomScene::handleGameEvent(const QVariant &args) {
@@ -1569,8 +1579,8 @@ void RoomScene::chooseGeneral(const QStringList &generals, const bool single_res
 }
 
 void RoomScene::chooseSuit(const QStringList &suits) {
-    QDialog *dialog = new QDialog;
-    QVBoxLayout *layout = new QVBoxLayout;
+    FlatDialog *dialog = new FlatDialog;
+    QVBoxLayout *layout = dialog->mainLayout();
 
     foreach(QString suit, suits) {
         QCommandLinkButton *button = new QCommandLinkButton;
@@ -1584,11 +1594,8 @@ void RoomScene::chooseSuit(const QStringList &suits) {
         connect(button, SIGNAL(clicked()), dialog, SLOT(accept()));
     }
 
-    connect(dialog, SIGNAL(rejected()), ClientInstance, SLOT(onPlayerChooseSuit()));
-
     dialog->setObjectName(".");
     dialog->setWindowTitle(tr("Please choose a suit"));
-    dialog->setLayout(layout);
     delete m_choiceDialog;
     m_choiceDialog = dialog;
 }
@@ -3927,18 +3934,12 @@ void RoomScene::doLightboxAnimation(const QString &, const QStringList &args) {
         bringToFront(object);
 #else
         QQuickItem *object = qobject_cast<QQuickItem *>(_m_animationComponent->create(_m_animationContext));
-        connect(object, SIGNAL(animationCompleted()), object, SLOT(deleteLater()));
-        QQuickWindow *animationWindow = new QQuickWindow;
-        animationWindow->setFlags(Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
-        animationWindow->setGeometry(main_window->geometry());
-        animationWindow->setColor(Qt::transparent);
-        object->setParentItem(animationWindow->contentItem());
-        animationWindow->show();
-        connect(object, SIGNAL(animationCompleted()), animationWindow, SLOT(close()));
-        connect(object, SIGNAL(animationCompleted()), animationWindow, SLOT(deleteLater()));
+        //connect(object, SIGNAL(animationCompleted()), object, SLOT(deleteLater()));
+        object->setParentItem(m_animationWindow->contentItem());
+        m_animationWindow->show();
+        connect(object, SIGNAL(animationCompleted()), m_animationWindow, SLOT(hide()));
 #endif
-    }
-    else {
+    } else {
         QFont font = Config.BigFont;
         if (reset_size) font.setPixelSize(100);
         QGraphicsTextItem *line = addText(word, font);
