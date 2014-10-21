@@ -257,6 +257,112 @@ public:
     }
 };
 
+JisuiCard::JisuiCard() {
+}
+
+bool JisuiCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *) const{
+    if (to_select == Self || (!to_select->hasShownOneGeneral())) 
+        return false;
+    bool invoke = true;
+    foreach ( const Player *p , targets){
+        if (to_select->isFriendWith(p)){
+            invoke = false;
+            break;            
+        }
+    }
+    return invoke;
+}
+
+void JisuiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
+    targets << source;
+    QList<int> card_ids = room->getNCards(targets.length());
+    room->fillAG(card_ids);
+    room->setTag("Jisui_Card", IntList2VariantList(card_ids));
+    room->sortByActionOrder(targets);
+    Card::use(room, source, targets);
+    room->clearAG();
+    QVariantList ag_list = room->getTag("Jisui_Card").toList();
+    if (ag_list.isEmpty()) return;
+
+    QList<int> card2_ids;
+    foreach(QVariant card_id, ag_list)
+        card2_ids << card_id.toInt();
+
+    QList<int> guanxing_ids;
+
+    do {
+        room->fillAG(card2_ids);
+        int card_id = room->askForAG(source, card2_ids, true, "jisui");
+        if (card_id == -1) {
+            room->clearAG(source);
+            break;
+        }
+
+        card2_ids.removeOne(card_id);
+        ag_list.removeOne(card_id);
+        guanxing_ids << card_id;
+        room->clearAG(source);
+    } while (!card2_ids.isEmpty());
+
+    if (guanxing_ids.length() > 0 )
+        room->askForGuanxing(source, guanxing_ids , Room::GuanxingUpOnly);
+
+    if (card2_ids.length() > 0 ) {
+        DummyCard dummy(VariantList2IntList(ag_list));
+        CardMoveReason reason(CardMoveReason::S_REASON_NATURAL_ENTER, QString(), "jisui", QString());
+        room->throwCard(&dummy, reason , NULL);
+    }
+}
+
+void JisuiCard::onEffect(const CardEffectStruct &effect) const{
+    Room *room = effect.from->getRoom();
+    QVariantList ag_list = room->getTag("Jisui_Card").toList();
+    QList<int> card_ids;
+    foreach(QVariant card_id, ag_list)
+        card_ids << card_id.toInt();
+    if (effect.to->getHandcardNum() > 0 ){
+
+        QList<CardsMoveStruct> exchangeMove;
+
+        const Card *excard = room->askForExchange(effect.to,"jisui",1,false,NULL,true);
+
+        if (excard){
+            int card_id = room->askForAG(effect.to, card_ids, false, objectName());
+            card_ids.removeOne(card_id);
+
+            CardsMoveStruct move1( excard->getEffectiveId() ,  NULL , Player::PlaceTable ,
+                CardMoveReason(CardMoveReason::S_REASON_SWAP, effect.to->objectName(), NULL , "jisui" , NULL));
+            CardsMoveStruct move2( card_id , effect.to , Player::PlaceHand ,
+                CardMoveReason(CardMoveReason::S_REASON_SWAP, NULL , effect.to->objectName(), "jisui" , NULL));
+            exchangeMove.push_back(move1);
+            exchangeMove.push_back(move2);
+            room->moveCardsAtomic(exchangeMove, true);
+
+            card_ids << excard->getEffectiveId();
+
+            ag_list.removeOne(card_id);
+            ag_list << excard->getEffectiveId();
+
+            room->setTag("Jisui_Card", ag_list);
+        }
+    }
+}
+
+class Jisui: public ZeroCardViewAsSkill {
+public:
+    Jisui(): ZeroCardViewAsSkill("jisui") {
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return (!player->hasUsed("JisuiCard"));
+    }
+
+    virtual const Card *viewAs() const{
+        JisuiCard *card = new JisuiCard;
+        card->setShowSkill(objectName());
+        return card;
+    }
+};
 
 
 void MoesenPackage::addNovelGenerals()
@@ -281,6 +387,10 @@ void MoesenPackage::addNovelGenerals()
     eru->addSkill(new Jinzhi);
     eru->addSkill(new JinzhiMove);
     insertRelatedSkills("jinzhi", "#jinzhi-move");
+
+    General *holo = new General(this, "holo", "qun", 4, false); // Novel 018
+    holo->addSkill(new Jisui);
+
     /*
     General *yuki = new General(this, "yuki", "qun", 3, false); // Novel 006
 
@@ -296,8 +406,6 @@ void MoesenPackage::addNovelGenerals()
 
     General *mikoto = new General(this, "mikoto", "qun", 3, false); // Novel 012
 
-    General *eru = new General(this, "eru", "qun", 3, false); // Novel 013
-
     General *asuna = new General(this, "asuna", "qun", 3, false); // Novel 014
 
     General *sena = new General(this, "sena", "qun", 3, false); // Novel 015
@@ -306,9 +414,9 @@ void MoesenPackage::addNovelGenerals()
 
     General *rikka = new General(this, "rikka", "qun", 3, false); // Novel 017
 
-    General *holo = new General(this, "holo", "qun", 3, false); // Novel 018
     */
     addMetaObject<WeihaoCard>();
     addMetaObject<ZhuyiCard>();
     addMetaObject<HaoqiCard>();
+    addMetaObject<JisuiCard>();
 }
