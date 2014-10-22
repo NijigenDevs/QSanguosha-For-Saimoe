@@ -127,7 +127,7 @@ void HaoqiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &tar
     choices << "turnoverself";
     QString choice = room->askForChoice(targets.first(),objectName(),choices.join("+"));
     if (choice == "halfcards"){
-        const Card *cards = room->askForExchange(targets.first(), objectName(), (targets.first()->getHandcardNum() + 1 / 2));
+        const Card *cards = room->askForExchange(targets.first(), objectName(), ( (targets.first()->getHandcardNum() + 1) / 2) );
         CardMoveReason reason(CardMoveReason::S_REASON_GIVE, targets.first()->objectName(),
         source->objectName(), "haoqi", QString());
         room->moveCardTo(cards, source, Player::PlaceHand, reason);
