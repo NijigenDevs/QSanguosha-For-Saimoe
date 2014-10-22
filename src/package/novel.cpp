@@ -163,6 +163,7 @@ public:
 
         HaoqiCard *card = new HaoqiCard;
         card->addSubcards(cards);
+        card->setShowSkill(objectName());
         return card;
     }
 };
