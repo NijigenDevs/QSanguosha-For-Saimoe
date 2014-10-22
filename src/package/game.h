@@ -39,4 +39,14 @@ public:
     virtual int getDrawNum(ServerPlayer *player, int n) const;
 };
 
+class Key : public DelayedTrick {
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE Key(Card::Suit suit, int number);
+
+    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+    virtual void takeEffect(ServerPlayer *target) const;
+};
+
 #endif
