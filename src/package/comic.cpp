@@ -7,9 +7,99 @@
 
 
 
-void MoesenPackage::addComicGenerals()
-{
-    /*General *hinagiku = new General(this, "hinagiku", "shu", 3, false); // Comic 001
+class Jiandao : public TriggerSkill {
+public:
+    Jiandao() : TriggerSkill("jiandao") {
+        events << CardUsed << CardFinished;
+        frequency = Compulsory;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        CardUseStruct use = data.value<CardUseStruct>();
+        if (player->getWeapon() != NULL)
+            return QStringList();
+        if (triggerEvent == CardUsed) {
+            if (!TriggerSkill::triggerable(player))
+                return QStringList();
+            if (use.card->isKindOf("Slash"))
+                return QStringList(objectName());
+        } else {
+            if (use.card->isKindOf("Slash")) {
+                foreach (ServerPlayer *p, use.to) {
+                    QStringList blade_use = p->property("blade_use").toStringList();
+                    if (!blade_use.contains(use.card->toString()))
+                        return QStringList();
+
+                    blade_use.removeOne(use.card->toString());
+                    room->setPlayerProperty(p, "blade_use", blade_use);
+
+                    if (blade_use.isEmpty())
+                        room->removePlayerDisableShow(p, "Blade");
+                }
+            }
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        bool invoke = player->hasShownSkill(this) ? true : player->askForSkillInvoke(objectName(),data);
+        if (invoke){
+            player->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        CardUseStruct use = data.value<CardUseStruct>();
+        bool play_animation = false;
+        foreach (ServerPlayer *p, use.to) {
+            if (p->getMark("Equips_of_Others_Nullified_to_You") > 0)
+                continue;
+            QStringList blade_use = p->property("blade_use").toStringList();
+            if (blade_use.contains(use.card->toString()))
+                return false;
+
+            blade_use << use.card->toString();
+            room->setPlayerProperty(p, "blade_use", blade_use);
+
+            if (!p->hasShownAllGenerals())
+                play_animation = true;
+
+            room->setPlayerDisableShow(p, "hd", "Blade"); // this effect should always make sense.
+        }
+
+        if (play_animation)
+            room->setEmotion(player, "weapon/blade");
+
+        return false;
+    }
+};
+
+class JiandaoRange : public AttackRangeSkill{
+public:
+    JiandaoRange() : AttackRangeSkill("#jiandao-range"){
+    }
+
+    virtual int getExtra(const Player *target, bool) const{
+        if (target->hasShownSkill("jiandao")){
+            if (target->getWeapon() == NULL ){
+                return 2;
+            }
+        }
+        return 0;
+    }
+};
+
+void MoesenPackage::addComicGenerals(){
+
+
+    General *hinagiku = new General(this, "hinagiku", "shu", 4, false); // Comic 001  (should change No.)
+    hinagiku->addSkill(new Jiandao);
+    hinagiku->addSkill(new JiandaoRange);
+    insertRelatedSkills("jiandao", "#jiandao-range");
+
+    /*
 
     General *izumi = new General(this, "izumi", "shu", 3, false); // Comic 002
 
