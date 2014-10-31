@@ -624,7 +624,7 @@ void Key::takeEffect(ServerPlayer *target) const{
 class Jiuzhu : public TriggerSkill {
 public:
     Jiuzhu() : TriggerSkill("jiuzhu") {
-        events << Dying, PreHpLost, CardsMoveOneTime;
+        events << Dying, PreHpLost, BeforeCardsMove;
     }
 
     virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent event, Room *room, ServerPlayer *, QVariant &data) const{
@@ -634,37 +634,37 @@ public:
             if (dying.who->containsTrick("keyCard")) return skill_list;
             QList<ServerPlayer *> rins = room->findPlayersBySkillName(objectName());
             foreach(ServerPlayer *rin, rins){
-                if (rin != NULL && !rin->hasFlag("jiuUsed")){
-                    rin->setFlags("jiuUsed");
+                if (rin != NULL){
                     skill_list.insert(rin, QStringList(objectName()));
                 }
             }
         }
         else if (event == PreHpLost){//need to add lost reason? not sure
             QList<ServerPlayer *> rins = room->findPlayersBySkillName(objectName());
-            foreach(ServerPlayer *p, room->getAlivePlayers()){
-                if (p->containsTrick("keyCard")){
-                    foreach(ServerPlayer *rin, rins){
-                        if (rin != NULL)
+            foreach(const Card *c , player->getJudgingArea()){
+                foreach(ServerPlayer *rin, rins){
+                    if (rin != NULL)
+                        if (c->getRealCard()->hasFlag("keyCard_flag"))
                             skill_list.insert(rin, QStringList(objectName()));
-                    }
-                    break;
                 }
             }
         }
-        else if (event == CardsMoveOneTime){
+        else if (event == BeforeCardsMove){
             QList<ServerPlayer *> rins = room->findPlayersBySkillName(objectName());
             CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+
             foreach(int id, move.card_ids){
-                if (id==room->getTag("jiuzhuCard").toInt()){
-                    room->setTag("jiuzhuCard", QVariant::fromValue(0));
-                    if (move.to_place == Player::DiscardPile){
-                        foreach(ServerPlayer *rin, rins){
-                            if (rin != NULL)
+                if (move.to_place == Player::DiscardPile){
+                    foreach(ServerPlayer *rin, rins){
+                        if (rin != NULL) {
+                            if (Sanguosha->getCard(id)->getRealCard()->hasFlag("keyCard_flag")){
+                                Sanguosha->getCard(id)->getRealCard()->clearFlags();
                                 skill_list.insert(rin, QStringList(objectName()));
-                        }
-                        break;
+                                return skill_list;
+                            }
+                        }    
                     }
+                    break;
                 }
             }
         }
@@ -685,47 +685,46 @@ public:
                 return true;
             }
         }
-        else{
+        else if (event == BeforeCardsMove){
             if (room->askForSkillInvoke(ask_who, "jiuzhu_getCard")){
                 return true;
             }
         }
         return false;
     }
-    virtual bool effect(TriggerEvent event, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *ask_who) const{
+    virtual bool effect(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const{
         if (event == Dying){
             DyingStruct dying = data.value<DyingStruct>();
             if (room->getDrawPile().length() == 0)
                 room->swapPile();
             Card *card = Sanguosha->getCard(room->getDrawPile().at(0));
-            room->setTag("jiuzhuCard", QVariant::fromValue(card->getEffectiveId()));
+            card->setFlags("keyCard_flag");
             Key* key = new Key(card->getSuit(), card->getNumber());
             key->addSubcard(card);
             key->setShowSkill(objectName());
             key->setSkillName(objectName());
             room->useCard(CardUseStruct(key, ask_who, dying.who));
+            
             return false;
         }
         else if (event == PreHpLost){
-            QList<ServerPlayer *> keys;
-            foreach(ServerPlayer *p, room->getAlivePlayers()){
-                if (p->containsTrick("keyCard")){
-                    keys.append(p);
-                }
-            }
-            if (keys.length() == 0){
+            if (!player->containsTrick("keyCard")){
                 return false;
             }
-            ServerPlayer *toDis = room->askForPlayerChosen(ask_who, keys, "Jiuzhu_Diskey");
-            foreach (const Card *card, toDis->getJudgingArea()){
-                if (card->isKindOf("keyCard")){
-                    room->throwCard(card, toDis, ask_who);
-                    return true;
+            bool have = false;
+            foreach (const Card *card, player->getJudgingArea()){
+                if (card->isKindOf("Key")){
+                    room->throwCard(card, NULL, ask_who);
+                    have = true;
                 }
             }
+            if (have)
+                return true;
+            return false;
         }
-        else{
+        else if (event == BeforeCardsMove){
             ask_who->drawCards(2);
+            return false;
         }
         return false;
     }
