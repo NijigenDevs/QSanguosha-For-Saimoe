@@ -1403,13 +1403,13 @@ public:
                 return QStringList();
             foreach (int id, move.card_ids){
                 //nico->gainMark("lvdong_cards");//for debug--BUG:when yingan used, the skill will be triggered 1 more time.
-                nico->setMark("lvdong_cards", nico->getMark("lvdong_cards") + 1);
+                nico->setMark("@lvdong_cards", nico->getMark("@lvdong_cards") + 1);
                 return QStringList();
             }
         }else{
             if (nico->getPhase() == Player::Finish){
-                if (nico->getMark("lvdong_cards") < 5){
-                    nico->setMark("lvdong_cards", 0);
+                if (nico->getMark("@lvdong_cards") < 5){
+                    nico->setMark("@lvdong_cards", 0);
                     return QStringList();
                 }else{
                     return QStringList(objectName());
@@ -1431,7 +1431,7 @@ public:
 
     virtual bool effect(TriggerEvent, Room *, ServerPlayer *nico, QVariant &, ServerPlayer *) const{
         nico->drawCards(1);
-        nico->setMark("lvdong_cards", 0);
+        nico->setMark("@lvdong_cards", 0);
         return false;
     }
 };

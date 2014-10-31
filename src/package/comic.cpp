@@ -94,7 +94,7 @@ public:
 void MoesenPackage::addComicGenerals(){
 
 
-    General *hinagiku = new General(this, "hinagiku", "shu", 4, false); // Comic 001  (should change No.)
+    General *hinagiku = new General(this, "hinagiku", "shu", 5, false); // Comic 001  (should change No.)
     hinagiku->addSkill(new Jiandao);
     hinagiku->addSkill(new JiandaoRange);
     insertRelatedSkills("jiandao", "#jiandao-range");

@@ -609,7 +609,7 @@ Key::Key(Card::Suit suit, int number)
     setObjectName("keyCard");
 }
 
-bool Key::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+bool Key::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *) const{
     return targets.isEmpty() && !to_select->containsTrick(objectName());
 }
 
@@ -627,7 +627,7 @@ public:
         events << Dying, PreHpLost, CardsMoveOneTime;
     }
 
-    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data) const{
+    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent event, Room *room, ServerPlayer *, QVariant &data) const{
         QMap<ServerPlayer *, QStringList> skill_list;
         if (event == Dying){
             DyingStruct dying = data.value<DyingStruct>();
@@ -731,6 +731,49 @@ public:
     }
 };
 
+//luoxuan by SE
+LuoxuanCard::LuoxuanCard() {
+}
+
+bool LuoxuanCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *) const{
+    return targets.isEmpty() && to_select->isWounded();
+}
+
+void LuoxuanCard::onEffect(const CardEffectStruct &effect) const{
+    RecoverStruct recover;
+    recover.card = this;
+    recover.who = effect.from;
+    effect.to->getRoom()->recover(effect.to, recover);
+    if (effect.to->getEquips().length() > 0){
+        QString choice = effect.to->getRoom()->askForChoice(effect.from, "Luoxuan_choice", "luoxuan_get+luoxuan_give_up");
+        if (choice == "luoxuan_get"){
+            int c = effect.to->getRoom()->askForCardChosen(effect.from, effect.to, "e", objectName());
+            effect.from->obtainCard(Sanguosha->getCard(c));
+        }
+    }
+}
+
+class Luoxuan : public OneCardViewAsSkill {
+public:
+    Luoxuan() : OneCardViewAsSkill("luoxuan") {
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return player->canDiscard(player, "h");
+    }
+
+    virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const{
+        return selected.isEmpty() && (to_select->isKindOf("EquipCard") || to_select->isKindOf("Peach")) && !Self->isJilei(to_select);
+    }
+
+    virtual const Card *viewAs(const Card *originalCard) const{
+        LuoxuanCard *luoxuan = new LuoxuanCard;
+        luoxuan->addSubcard(originalCard->getId());
+        luoxuan->setShowSkill(objectName());
+        return luoxuan;
+    }
+};
+
 
 
 void MoesenPackage::addGameGenerals()
@@ -780,11 +823,12 @@ void MoesenPackage::addGameGenerals()
     General *ayu = new General(this, "ayu", "wu", 3, false); // Game 016
 
     General *hayate = new General(this, "hayate", "wu", 3, false); // Game 017
-
-    General *komari = new General(this, "komari", "wu", 3, false); // Game 018
     */
+    General *komari = new General(this, "komari", "wu", 3, false); // Game 018
+    komari->addSkill(new Luoxuan);
 
    addMetaObject<HaixingCard>();
    addMetaObject<TaozuiCard>();
    addMetaObject<Key>();
+   addMetaObject<LuoxuanCard>();
 }

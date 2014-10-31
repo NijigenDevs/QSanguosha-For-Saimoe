@@ -49,4 +49,14 @@ public:
     virtual void takeEffect(ServerPlayer *target) const;
 };
 
+class LuoxuanCard : public SkillCard {
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE LuoxuanCard();
+
+    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+    virtual void onEffect(const CardEffectStruct &effect) const;
+};
+
 #endif
