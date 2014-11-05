@@ -40,7 +40,7 @@ sgs.ai_skill_use_func.ZhihengCard = function(card, use, self)
 			end
 		end
 		if #unpreferedCards > 0 then
-			use.card = sgs.Card_Parse("@ZhihengCard=" .. table.concat(zcard, "+") .. "&zhiheng")
+			use.card = sgs.Card_Parse("@ZhihengCard=" .. table.concat(unpreferedCards, "+") .. "&zhiheng")
 			return
 		end
 	end
@@ -1287,10 +1287,12 @@ sgs.ai_skill_use_func.TianyiCard = function(TYCard, use, self)
 	local zhugeliang = sgs.findPlayerByShownSkillName("kongcheng")
 
 	local slash = self:getCard("Slash")
-	local dummy_use = { isDummy = true, extra_target = 1, to = sgs.SPlayerList() }
+	local dummy_use = { isDummy = true, to = sgs.SPlayerList() }
+	self.player:setFlags("TianyiSuccess")
 	self.player:setFlags("slashNoDistanceLimit")
 	if slash then self:useBasicCard(slash, dummy_use) end
 	self.player:setFlags("-slashNoDistanceLimit")
+	self.player:setFlags("-TianyiSuccess")
 
 	sgs.ai_use_priority.TianyiCard = (slashcount >= 1 and dummy_use.card) and 7.2 or 1.2
 	if slashcount >= 1 and slash and dummy_use.card then
@@ -1435,6 +1437,7 @@ function sgs.ai_skill_invoke.buqu(self, data)
 end
 
 sgs.ai_skill_invoke.haoshi = function(self, data)
+	self.haoshi_target = nil
 	local extra = 0
 	local draw_skills = { ["yingzi"] = 1, ["luoyi"] = -1 }
 	for skill_name, n in ipairs(draw_skills) do
@@ -1466,7 +1469,7 @@ end
 
 sgs.ai_skill_use["@@haoshi!"] = function(self, prompt)
 	local target = self.haoshi_target
-	if not self.haoshi_target then
+	if not self.haoshi_target or self.haoshi_target:isDead() then
 		local otherPlayers = sgs.QList2Table(self.room:getOtherPlayers(self.player))
 		self:sort(otherPlayers, "handcard")
 		target = otherPlayers[1]
@@ -1602,7 +1605,7 @@ sgs.ai_skill_use_func.DimengCard = function(card,use,self)
 		end
 	end
 	if #mycards == 0 then return end
-	self:sortByKeepValue(mycards) --桃的keepValue是5，useValue是6；顺手牵羊的keepValue是1.9，useValue是9
+	self:sortByKeepValue(mycards)
 
 	self:sort(self.enemies,"handcard")
 	local friends = {}
@@ -1858,7 +1861,7 @@ end
 
 sgs.ai_skill_use_func.FenxunCard = function(card, use, self)
 	local shouldUse, slashCard = true
-	local dummy_use = { isDummy = true, extra_target = 1, to = sgs.SPlayerList() }
+	local dummy_use = { isDummy = true, to = sgs.SPlayerList() }
 	for _, slash in ipairs(self:getCards("Slash")) do
 		dummy_use.to = sgs.SPlayerList()
 		dummy_use.card = nil

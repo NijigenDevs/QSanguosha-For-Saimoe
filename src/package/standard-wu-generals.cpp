@@ -387,21 +387,9 @@ public:
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
         CardUseStruct use = data.value<CardUseStruct>();
         room->notifySkillInvoked(player, objectName());
-        LogMessage log;
-        if (use.from) {
-            log.type = "$CancelTarget";
-            log.from = use.from;
-        }
-        else {
-            log.type = "$CancelTargetNoUser";
-        }
-        log.to = use.to;
-        log.arg = use.card->objectName();
-        room->sendLog(log);
 
-        room->setEmotion(player, "cancel");
+        room->cancelTarget(use, player); // Room::cancelTarget(use, player);
 
-        use.to.removeOne(player);
         data = QVariant::fromValue(use);
         return false;
     }
@@ -655,10 +643,9 @@ public:
     virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer * &) const {
         if (player == NULL) return QStringList();
         DamageStruct damage = data.value<DamageStruct>();
-        if (player->isAlive() && damage.transfer && damage.transfer_reason == "tianxiang") {
+        if (player->isAlive() && damage.transfer && damage.transfer_reason == "tianxiang" && !damage.chain)
             player->drawCards(player->getLostHp());
-            player->removeMark("TianxiangTarget");
-        }
+
         return QStringList();
     }
 };

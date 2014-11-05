@@ -26,6 +26,7 @@
 #include "settings.h"
 #include "engine.h"
 #include "scenario.h"
+#include "socket.h"
 
 #include <QApplication>
 
@@ -81,7 +82,6 @@ void Server::processNewConnection(ClientSocket *socket) {
     QString address = socket->peerAddress();
     if (Config.ForbidSIMC) {
         if (addresses.contains(address)) {
-            addresses.append(address);
             socket->disconnectFromHost();
             emit server_message(tr("Forbid the connection of address %1").arg(address));
             return;
@@ -175,7 +175,6 @@ void Server::cleanup() {
     ClientSocket *socket = qobject_cast<ClientSocket *>(sender());
     if (Config.ForbidSIMC)
         addresses.removeOne(socket->peerAddress());
-
     socket->deleteLater();
 }
 

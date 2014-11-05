@@ -127,6 +127,10 @@ public:
     void showAllCards(ServerPlayer *player, ServerPlayer *to = NULL);
     void retrial(const Card *card, ServerPlayer *player, JudgeStruct *judge, const QString &skill_name, bool exchange = false); //retrial move only, dont really do the retrial
 
+    // these 2 functions puts here, for convenience
+    static void cancelTarget(CardUseStruct &use, const QString &name);
+    static void cancelTarget(CardUseStruct &use, ServerPlayer *player);
+
     // Ask a player to send a server request and returns the client response. Call is blocking until client
     // replies or server times out, whichever is earlier.
     // @param player
@@ -306,9 +310,9 @@ public:
     void obtainCard(ServerPlayer *target, int card_id, bool unhide = true);
     void obtainCard(ServerPlayer *target, const Card *card, const CardMoveReason &reason, bool unhide = true);
 
-    void throwCard(int card_id, ServerPlayer *who, ServerPlayer *thrower = NULL);
-    void throwCard(const Card *card, ServerPlayer *who, ServerPlayer *thrower = NULL);
-    void throwCard(const Card *card, const CardMoveReason &reason, ServerPlayer *who, ServerPlayer *thrower = NULL);
+    void throwCard(int card_id, ServerPlayer *who, ServerPlayer *thrower = NULL, const QString &skill_name = QString());
+    void throwCard(const Card *card, ServerPlayer *who, ServerPlayer *thrower = NULL, const QString &skill_name = QString());
+    void throwCard(const Card *card, const CardMoveReason &reason, ServerPlayer *who, ServerPlayer *thrower = NULL, const QString &skill_name = QString());
 
     void moveCardTo(const Card *card, ServerPlayer *dstPlayer, Player::Place dstPlace, bool forceMoveVisible = false);
     void moveCardTo(const Card *card, ServerPlayer *dstPlayer, Player::Place dstPlace, const CardMoveReason &reason,
@@ -319,7 +323,6 @@ public:
         const QString &pileName, const CardMoveReason &reason, bool forceMoveVisible = false);
     void moveCardsAtomic(QList<CardsMoveStruct> cards_move, bool forceMoveVisible);
     void moveCardsAtomic(CardsMoveStruct cards_move, bool forceMoveVisible);
-    void moveCardsToEndOfDrawpile(QList<int> card_ids);
     void moveCards(CardsMoveStruct cards_move, bool forceMoveVisible, bool ignoreChanges = true);
     void moveCards(QList<CardsMoveStruct> cards_moves, bool forceMoveVisible, bool ignoreChanges = true);
 
@@ -330,8 +333,7 @@ public:
     QString askForKingdom(ServerPlayer *player);
     bool askForSkillInvoke(ServerPlayer *player, const QString &skill_name, const QVariant &data = QVariant());
     QString askForChoice(ServerPlayer *player, const QString &skill_name, const QString &choices, const QVariant &data = QVariant());
-    bool askForDiscard(ServerPlayer *target, const QString &reason, int discard_num, int min_num,
-        bool optional = false, bool include_equip = false, const QString &prompt = QString());
+    bool askForDiscard(ServerPlayer *target, const QString &reason, int discard_num, int min_num, bool optional = false, bool include_equip = false, const QString &prompt = QString(), bool notify_skill = false);
     const Card *askForExchange(ServerPlayer *player, const QString &reason, int discard_num, bool include_equip = false,
         const QString &prompt = QString(), bool optional = false);
     bool askForNullification(const Card *trick, ServerPlayer *from, ServerPlayer *to, bool positive);

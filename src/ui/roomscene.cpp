@@ -71,17 +71,6 @@
 #include <QCoreApplication>
 #include <QInputDialog>
 #include <QScrollBar>
-#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
-#include <QQmlEngine>
-#include <QQmlContext>
-#include <QQmlComponent>
-#include <QQuickItem>
-#include <QQuickWindow>
-#else
-#include <QtDeclarative/QDeclarativeEngine>
-#include <QtDeclarative/QDeclarativeContext>
-#include <QtDeclarative/QDeclarativeComponent>
-#endif
 
 using namespace QSanProtocol;
 
@@ -397,24 +386,13 @@ RoomScene::RoomScene(QMainWindow *main_window)
 
     pindian_from_card = NULL;
     pindian_to_card = NULL;
-#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
+#ifndef Q_OS_WINRT
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
     _m_animationEngine = new QDeclarativeEngine(this);
     _m_animationContext = new QDeclarativeContext(_m_animationEngine->rootContext(), this);
-    _m_animationComponent = new QDeclarativeComponent(_m_animationEngine, QUrl::fromLocalFile("ui-script/animation-qt4.qml"), this);
-#else
-    _m_animationEngine = new QQmlEngine(this);
-    _m_animationContext = new QQmlContext(_m_animationEngine->rootContext(), this);
-    _m_animationComponent = new QQmlComponent(_m_animationEngine, QUrl::fromLocalFile("ui-script/animation.qml"), this);
-
-    m_animationWindow = new QQuickWindow;
-    m_animationWindow->setFlags(Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
-    m_animationWindow->setColor(Qt::transparent);
+    _m_animationComponent = new QDeclarativeComponent(_m_animationEngine, QUrl::fromLocalFile("ui-script/animation.qml"), this);
 #endif
-}
-
-RoomScene::~RoomScene()
-{
-    m_animationWindow->deleteLater();
+#endif
 }
 
 void RoomScene::handleGameEvent(const QVariant &args) {
@@ -533,21 +511,13 @@ void RoomScene::handleGameEvent(const QVariant &args) {
     }
     case S_GAME_EVENT_UPDATE_PRESHOW: {
         //Q_ASSERT(arg[1].isObject());
-        bool in_console_mode = true;
-        foreach(const ClientPlayer *player, ClientInstance->getPlayers()) {
-            if (player == Self) continue;
-            if (player->getState() != "robot") {
-                in_console_mode = false;
-                break;
-            }
-        }
         bool auto_preshow_available = Self->hasFlag("AutoPreshowAvailable");
         JsonObject preshow_map = arg[1].value<JsonObject>();
         QList<QString> skill_names = preshow_map.keys();
         foreach (const QString &skill, skill_names) {
             bool showed = preshow_map[skill].toBool();
 
-            if (in_console_mode && Config.EnableAutoPreshowInConsoleMode && auto_preshow_available){
+            if (Config.EnableAutoPreshow && auto_preshow_available){
                 const Skill *s = Sanguosha->getSkill(skill);
                 if (s != NULL && s->canPreshow())
                     ClientInstance->preshow(skill, true);
@@ -2431,9 +2401,9 @@ void RoomScene::updateStatus(Client::Status oldStatus, Client::Status newStatus)
             QRegExp rx("@@?([_A-Za-z]+)(\\d+)?!?");
             CardUseStruct::CardUseReason reason = CardUseStruct::CARD_USE_REASON_UNKNOWN;
             if ((newStatus & Client::ClientStatusBasicMask) == Client::Responding) {
-                if (newStatus == Client::RespondingUse)
+                if (newStatus == Client::RespondingUse) {
                     reason = CardUseStruct::CARD_USE_REASON_RESPONSE_USE;
-                else if (newStatus == Client::Responding || rx.exactMatch(pattern))
+                } else if (newStatus == Client::Responding || rx.exactMatch(pattern))
                     reason = CardUseStruct::CARD_USE_REASON_RESPONSE;
             } else if (newStatus == Client::Playing) {
                 reason = CardUseStruct::CARD_USE_REASON_PLAY;
@@ -2476,6 +2446,13 @@ void RoomScene::updateStatus(Client::Status oldStatus, Client::Status newStatus)
         case Client::AskForCardChosen: {
             playerCardBox->clear();
             break;
+        }
+        case Client::RespondingUse: {
+            QRegExp promptRegExp("@@?([_A-Za-z]+)");
+            QString prompt = Sanguosha->currentRoomState()->getCurrentCardResponsePrompt();
+            Sanguosha->currentRoomState()->setCurrentCardResponsePrompt(QString());
+            if (promptRegExp.exactMatch(prompt))
+                dashboard->highlightEquip(promptRegExp.capturedTexts().at(1), false);
         }
         default:
             break;
@@ -2539,6 +2516,12 @@ void RoomScene::updateStatus(Client::Status oldStatus, Client::Status newStatus)
                 response_skill->setRequest(Card::MethodUse);
             else
                 response_skill->setRequest(Card::MethodResponse);
+
+            QRegExp promptRegExp("@@?([_A-Za-z]+)");
+            QString prompt = Sanguosha->currentRoomState()->getCurrentCardResponsePrompt();
+            if (promptRegExp.exactMatch(prompt))
+                dashboard->highlightEquip(promptRegExp.capturedTexts().at(1), true);
+
             dashboard->startPending(response_skill);
             if (Config.EnableIntellectualSelection)
                 dashboard->selectOnlyCard();
@@ -2991,15 +2974,21 @@ void RoomScene::onGameOver() {
 
     Sanguosha->playSystemAudioEffect(win_effect);
 #endif
-    QDialog *dialog = new QDialog(main_window);
+    FlatDialog *dialog = new FlatDialog(main_window);
     dialog->resize(800, 600);
     dialog->setWindowTitle(victory ? tr("Victory") : tr("Failure"));
 
     QGroupBox *winner_box = new QGroupBox(tr("Winner(s)"));
     QGroupBox *loser_box = new QGroupBox(tr("Loser(s)"));
 
+    QString style = StyleHelper::styleSheetOfScrollBar();
+
     QTableWidget *winner_table = new QTableWidget;
+    winner_table->verticalScrollBar()->setStyleSheet(style);
+    winner_table->horizontalScrollBar()->setStyleSheet(style);
     QTableWidget *loser_table = new QTableWidget;
+    loser_table->verticalScrollBar()->setStyleSheet(style);
+    loser_table->horizontalScrollBar()->setStyleSheet(style);
 
     QVBoxLayout *winner_layout = new QVBoxLayout;
     winner_layout->addWidget(winner_table);
@@ -3009,10 +2998,9 @@ void RoomScene::onGameOver() {
     loser_layout->addWidget(loser_table);
     loser_box->setLayout(loser_layout);
 
-    QVBoxLayout *layout = new QVBoxLayout;
+    QVBoxLayout *layout = dialog->mainLayout();
     layout->addWidget(winner_box);
     layout->addWidget(loser_box);
-    dialog->setLayout(layout);
 
     QList<const ClientPlayer *> winner_list, loser_list;
     foreach(const ClientPlayer *player, ClientInstance->getPlayers()) {
@@ -3916,8 +3904,9 @@ void RoomScene::doLightboxAnimation(const QString &, const QStringList &args) {
             connect(pma, SIGNAL(finished()), this, SLOT(removeLightBox()));
         }
     }
+#ifndef Q_OS_WINRT
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
     else if (word.startsWith("skill=")) {
-        removeItem(lightbox);
         const QString hero = word.mid(6);
         const QString skill = args.value(1, QString());
 
@@ -3926,20 +3915,14 @@ void RoomScene::doLightboxAnimation(const QString &, const QStringList &args) {
         _m_animationContext->setContextProperty("tableWidth", m_tableCenterPos.x() * 2);
         _m_animationContext->setContextProperty("hero", hero);
         _m_animationContext->setContextProperty("skill", Sanguosha->translate(skill));
-#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
         QGraphicsObject *object = qobject_cast<QGraphicsObject *>(_m_animationComponent->create(_m_animationContext));
         connect(object, SIGNAL(animationCompleted()), object, SLOT(deleteLater()));
         addItem(object);
         bringToFront(object);
-#else
-        QQuickItem *object = qobject_cast<QQuickItem *>(_m_animationComponent->create(_m_animationContext));
-        //connect(object, SIGNAL(animationCompleted()), object, SLOT(deleteLater()));
-        m_animationWindow->setGeometry(main_window->geometry());
-        object->setParentItem(m_animationWindow->contentItem());
-        m_animationWindow->show();
-        connect(object, SIGNAL(animationCompleted()), m_animationWindow, SLOT(hide()));
+    }
 #endif
-    } else {
+#endif
+    else {
         QFont font = Config.BigFont;
         if (reset_size) font.setPixelSize(100);
         QGraphicsTextItem *line = addText(word, font);

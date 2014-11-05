@@ -52,8 +52,9 @@ config = {
 		"FormationEquip",
 		"MomentumEquip" ,
 		"StrategicAdvantage",
-		"Moesen",
+
 		"Standard",
+		"Moesen",
 		"Formation",
 		"Momentum",
 		"Test",
@@ -90,8 +91,6 @@ config = {
 		"离人泪026", --lrl026
 		"墨宣砚韵", --a late developer
 		"忧郁のlzxqqqq", --忧郁的月兔（lzxqqqq）
-		--"来一口-水饺",
-		--"甄钰月儿",
 		"卍brianのvong卍", --卍冰の羽卍
 		"五毛羽", --arrow羽
 		"大同人陈家祺" , --陈家祺大同中心
@@ -122,6 +121,14 @@ config = {
 		"良家大少", --祝家大少
 		"禽受张", --老张
 		"孝弯", --孝直
-		"鱼纸酱" --鱼
+		"鱼纸酱", --鱼
+		"凌乱_解锁", --铃兰_杰索
+		"凹凸", --ought~
+		"DJ ainomelody",
+		"shenglove82" ,
+		"1131561728" ,
+		"阿米拉嗪" ,
+		"teyteym" ,
+		"半圆"
 	},
 }

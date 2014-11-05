@@ -624,7 +624,7 @@ void Key::takeEffect(ServerPlayer *target) const{
 class Jiuzhu : public TriggerSkill {
 public:
     Jiuzhu() : TriggerSkill("jiuzhu") {
-        events << Dying << PreHpLost << BeforeCardsMove;
+        events << Dying << PreHpLost << CardsMoveOneTime;
     }
 
     virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data) const{
@@ -634,7 +634,7 @@ public:
             if (dying.who->containsTrick("keyCard")) return skill_list;
             QList<ServerPlayer *> rins = room->findPlayersBySkillName(objectName());
             foreach(ServerPlayer *rin, rins){
-                if (rin != NULL){
+                if (rin == player){
                     skill_list.insert(rin, QStringList(objectName()));
                 }
             }
@@ -647,7 +647,7 @@ public:
                     	skill_list.insert(rin, QStringList(objectName()));
                 }
         }
-        else if (event == BeforeCardsMove){
+        else if (event == CardsMoveOneTime){
             QList<ServerPlayer *> rins = room->findPlayersBySkillName(objectName());
             CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
             foreach(int id, move.card_ids){
@@ -682,7 +682,7 @@ public:
         return skill_list;
     }
 
-    virtual bool cost(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const{
+    virtual bool cost(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const{
         if (event == Dying){
             if (room->askForSkillInvoke(ask_who, objectName())) {
                 room->doAnimate(QSanProtocol::S_ANIMATE_INDICATE, ask_who->objectName(), player->objectName());
@@ -697,7 +697,7 @@ public:
                 return true;
             }
         }
-        else if (event == BeforeCardsMove){
+        else if (event == CardsMoveOneTime){
         	bool invoke = ask_who->hasShownSkill(this) ? true : room->askForSkillInvoke(ask_who, "jiuzhu_getCard");
             if (invoke){
                 return true;
@@ -741,7 +741,7 @@ public:
                 return true;
             return false;
         }
-        else if (event == BeforeCardsMove){
+        else if (event == CardsMoveOneTime){
             ask_who->drawCards(2);
             return false;
         }

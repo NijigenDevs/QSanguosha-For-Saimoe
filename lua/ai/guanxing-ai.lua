@@ -706,7 +706,6 @@ function SmartAI:getValuableCardForGuanxing(cards, up_cards)
 					end
 				end
 			end
-			if (self.player:hasWeapon("Blade") or self:getCardsNum("Blade") > 0) and getCardsNum("Jink", enemy, self.player) <= hit_num then return analeptic end
 			if self:hasCrossbowEffect(self.player) and hit_num >= 2 then return analeptic end
 		end
 	end
@@ -802,7 +801,8 @@ function SmartAI:getValuableCardForGuanxing(cards, up_cards)
 				self.enemies = new_enemies
 				local dummy_use = { isDummy = true }
 				self:useTrickCard(card_x, dummy_use)
-				if dummy_use.card then self:updatePlayers(false) return card end
+				self:updatePlayers(false)
+				if dummy_use.card then return card end
 			end
 		end
 	end

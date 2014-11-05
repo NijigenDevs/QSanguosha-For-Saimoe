@@ -97,6 +97,7 @@ end
 sgs.ai_skill_cardask["@multi-jink"] = sgs.ai_skill_cardask["@multi-jink-start"]
 
 sgs.ai_skill_invoke.wushuang = function(self, data)
+	if not self:willShowForAttack() then return false end 
 	local use = data:toCardUse()
 	if use.card then
 		if use.card:isKindOf("Duel") then
@@ -331,8 +332,9 @@ luanji_skill.getTurnUseCard = function(self)
 		self:sortByKeepValue(cards)
 		local useAll = false
 		for _, enemy in ipairs(self.enemies) do
-			if enemy:getHp() == 1 and not enemy:hasArmorEffect("Vine")  then
-			useAll = true
+			if enemy:getHp() == 1 and not enemy:hasArmorEffect("Vine") and not self:hasEightDiagramEffect(enemy) and self:damageIsEffective(enemy, nil, self.player)
+				and self:isWeak(enemy) and getCardsNum("Jink", enemy, self.player) + getCardsNum("Peach", enemy, self.player) + getCardsNum("Analeptic", enemy, self.player) == 0 then
+				useAll = true
 			end
 		end
 		for _, fcard in ipairs(cards) do
@@ -389,8 +391,6 @@ sgs.ai_skill_invoke.shuangxiong = function(self, data)
 	self:useTrickCard(duel, dummy_use)
 
 	if (self.player:getHandcardNum() >= 3 and dummy_use.card) then
-		self.player:setFlags("ai_shuangxiong")
-		sgs.ai_use_priority.Duel = 9.1
 		return true
 	end
 	return false
@@ -549,6 +549,22 @@ sgs.ai_skill_cardask["@luanwu-slash"] = function(self)
 end
 
 sgs.ai_skill_invoke.weimu = function(self, data)
+	if not self:willShowForDefence() then return false end 
+	local use = data:toCardUse()
+	if use.card:isKindOf("ImperialOrder") then
+		if sgs.GetConfig("RewardTheFirstShowingPlayer", true) then
+			local reward = true
+			for _, p in sgs.qlist(self.room:getAlivePlayers()) do
+				if p:hasShownOneGeneral() then
+					reward = false
+					break
+				end
+			end
+			if reward then return true end
+		else
+			return false
+		end
+	end
 	return true
 end
 
@@ -557,6 +573,7 @@ sgs.ai_skill_invoke.wansha = function(self, data)
 end
 
 sgs.ai_skill_invoke.mengjin = function(self, data)
+	if not self:willShowForAttack() then return false end
 	local effect = data:toSlashEffect()
 	if self:isEnemy(effect.to) then
 		if self:doNotDiscard(effect.to) then
@@ -572,6 +589,9 @@ end
 sgs.ai_skill_cardask["@guidao-card"]=function(self, data)
 	local judge = data:toJudge()
 	local all_cards = self.player:getCards("he")
+	for _, id in sgs.qlist(self.player:getPile("wooden_ox")) do
+		all_cards:prepend(sgs.Sanguosah:getCard(id))
+	end
 	if all_cards:isEmpty() then return "." end
 
 	local needTokeep = judge.card:getSuit() ~= sgs.Card_Spade
@@ -799,8 +819,8 @@ sgs.ai_skill_askforyiji.lirang = function(self, card_ids)
 	end
 	local id = card_ids[1]
 
-	local card, friend = self:getCardNeedPlayer(cards)
-	if card and friend and table.contains(self.friends_noself, friend) then return friend, card:getId() end
+	local card, friend = self:getCardNeedPlayer(cards, self.friends_noself)
+	if card and friend then return friend, card:getId() end
 	if #self.friends_noself > 0 then
 		self:sort(self.friends_noself, "handcard")
 		for _, afriend in ipairs(self.friends_noself) do

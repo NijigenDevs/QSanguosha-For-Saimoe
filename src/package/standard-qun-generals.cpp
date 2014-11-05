@@ -552,8 +552,8 @@ public:
         return QStringList(objectName());
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
-        if (player->hasShownSkill(this) || player->askForSkillInvoke(objectName())){
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        if (player->hasShownSkill(this) || player->askForSkillInvoke(objectName(), data)){
             room->broadcastSkillInvoke(objectName(), player);
             return true;
         }
@@ -563,21 +563,9 @@ public:
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
         CardUseStruct use = data.value<CardUseStruct>();
         room->notifySkillInvoked(player, objectName());
-        LogMessage log;
-        if (use.from) {
-            log.type = "$CancelTarget";
-            log.from = use.from;
-        }
-        else {
-            log.type = "$CancelTargetNoUser";
-        }
-        log.to << player;
-        log.arg = use.card->objectName();
-        room->sendLog(log);
+        
+        room->cancelTarget(use, player); // Room::cancelTarget(use, player);
 
-        room->setEmotion(player, "cancel");
-
-        use.to.removeOne(player);
         data = QVariant::fromValue(use);
         return false;
     }
@@ -751,12 +739,11 @@ public:
 
         if (caiwenji != NULL){
             caiwenji->tag["beige_data"] = data;
-            bool invoke = room->askForDiscard(caiwenji, objectName(), 1, 1, true, true, "@beige");
+            bool invoke = room->askForDiscard(caiwenji, objectName(), 1, 1, true, true, "@beige", true);
             caiwenji->tag.remove("beige_data");
 
             if (invoke){
                 room->doAnimate(QSanProtocol::S_ANIMATE_INDICATE, caiwenji->objectName(), data.value<DamageStruct>().to->objectName());
-                room->notifySkillInvoked(caiwenji, objectName());
                 room->broadcastSkillInvoke(objectName(), caiwenji);
                 return true;
             }
@@ -1397,16 +1384,16 @@ public:
     }
 
     void doHuoshui(Room *room, ServerPlayer *zoushi, bool set) const{
-        if (set && zoushi->tag["huoshui"].toBool() == false){
-            foreach(ServerPlayer *p, room->getOtherPlayers(zoushi)){
+        if (set && !zoushi->tag["huoshui"].toBool()) {
+            foreach(ServerPlayer *p, room->getOtherPlayers(zoushi))
                 room->setPlayerDisableShow(p, "hd", "huoshui");
-            }
+
             zoushi->tag["huoshui"] = true;
         }
-        else if (!set && zoushi->tag["huoshui"].toBool() == true) {
-            foreach(ServerPlayer *p, room->getOtherPlayers(zoushi)){
+        else if (!set && zoushi->tag["huoshui"].toBool()) {
+            foreach(ServerPlayer *p, room->getOtherPlayers(zoushi))
                 room->removePlayerDisableShow(p, "huoshui");
-            }
+
             zoushi->tag["huoshui"] = false;
         }
     }

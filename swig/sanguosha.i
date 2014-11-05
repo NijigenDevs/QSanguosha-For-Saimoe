@@ -351,6 +351,8 @@ public:
     Player *getLastAlive(int n = 1, bool ignoreRemoved = true) const;
 
     QList<const Player *> getFormation() const;
+
+    virtual QStringList getBigKingdoms(const char *reason, MaxCardsType::MaxCardsCount type = MaxCardsType::Min) const = 0;
 };
 
 %extend Player {
@@ -371,6 +373,7 @@ class ServerPlayer: public Player {
 public:
     explicit ServerPlayer(Room *room);
 
+    QString objectName() const;
     void kick();
     void unicast(const char *message);
     void drawCard(const Card *card);
@@ -477,6 +480,8 @@ public:
     bool inSiegeRelation(const ServerPlayer *skill_owner, const ServerPlayer *victim) const;
     bool inFormationRalation(ServerPlayer *teammate) const;
     void summonFriends(const HegemonyMode::ArrayType type);
+
+    virtual QStringList getBigKingdoms(const char *reason, MaxCardsType::MaxCardsCount type = MaxCardsType::Min) const;
 };
 
 %extend ServerPlayer {
@@ -501,6 +506,8 @@ public:
     virtual void addKnownHandCard(const Card *card);
     virtual bool isLastHandCard(const Card *card, bool contain = false) const;
     virtual void setMark(const char *mark, int value);
+
+    virtual QStringList getBigKingdoms(const char *reason, MaxCardsType::MaxCardsCount type = MaxCardsType::Min) const;
 };
 
 extern ClientPlayer *Self;
@@ -1435,9 +1442,9 @@ public:
     void obtainCard(ServerPlayer *target, int card_id, bool unhide = true);
     void obtainCard(ServerPlayer *target, const Card *card, const CardMoveReason &reason, bool unhide = true);
 
-    void throwCard(int card_id, ServerPlayer *who, ServerPlayer *thrower = NULL);
-    void throwCard(const Card *card, ServerPlayer *who, ServerPlayer *thrower = NULL);
-    void throwCard(const Card *card, const CardMoveReason &reason, ServerPlayer *who, ServerPlayer *thrower = NULL);
+    void throwCard(int card_id, ServerPlayer *who, ServerPlayer *thrower = NULL, const char *skill_name = "");
+    void throwCard(const Card *card, ServerPlayer *who, ServerPlayer *thrower = NULL, const char *skill_name = "");
+    void throwCard(const Card *card, const CardMoveReason &reason, ServerPlayer *who, ServerPlayer *thrower = NULL, const char *skill_name = "");
 
     void moveCardTo(const Card *card, ServerPlayer *dstPlayer, Player::Place dstPlace, bool forceMoveVisible = false);
     void moveCardTo(const Card *card, ServerPlayer *dstPlayer, Player::Place dstPlace, const CardMoveReason &reason,
@@ -1448,7 +1455,6 @@ public:
         const char *pileName, const CardMoveReason &reason, bool forceMoveVisible = false);
     void moveCardsAtomic(QList<CardsMoveStruct> cards_move, bool forceMoveVisible);
     void moveCardsAtomic(CardsMoveStruct cards_move, bool forceMoveVisible);
-    void moveCardsToEndOfDrawpile(QList<int> card_ids);
     void moveCards(CardsMoveStruct cards_move, bool forceMoveVisible, bool ignoreChanges = true);
     void moveCards(QList<CardsMoveStruct> cards_moves, bool forceMoveVisible, bool ignoreChanges = true);
 
@@ -1459,7 +1465,7 @@ public:
     QString askForKingdom(ServerPlayer *player);
     bool askForSkillInvoke(ServerPlayer *player, const char *skill_name, const QVariant &data = QVariant());
     QString askForChoice(ServerPlayer *player, const char *skill_name, const char *choices, const QVariant &data = QVariant());
-    bool askForDiscard(ServerPlayer *target, const char *reason, int discard_num, int min_num,bool optional = false, bool include_equip = false, const char *prompt = NULL);
+    bool askForDiscard(ServerPlayer *target, const char *reason, int discard_num, int min_num,bool optional = false, bool include_equip = false, const char *prompt = NULL, bool notify_skill = false);
     const Card *askForExchange(ServerPlayer *player, const char *reason, int discard_num, bool include_equip = false,
         const char *prompt = NULL, bool optional = false);
     bool askForNullification(const Card *trick, ServerPlayer *from, ServerPlayer *to, bool positive);
@@ -1494,6 +1500,10 @@ public:
     inline void resetCard(int cardId);
     void updateCardsOnLose(const CardsMoveStruct &move);
     void updateCardsOnGet(const CardsMoveStruct &move);
+
+    // these 2 functions puts here, for convenience
+    static void cancelTarget(CardUseStruct &use, const char *name);
+    static void cancelTarget(CardUseStruct &use, ServerPlayer *player);
 };
 
 %extend Room {
