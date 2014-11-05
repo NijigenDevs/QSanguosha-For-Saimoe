@@ -69,3 +69,4 @@ libGLESv2.dll
 /etc/customScenes/custom_scenario.txt
 /etc
 OGLdpf.log
+*.ffs_db
