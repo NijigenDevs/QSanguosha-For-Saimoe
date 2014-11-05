@@ -601,7 +601,7 @@ public:
     }
 };
 
-//jiuzhu by SE need DUBUG~~~~~
+//jiuzhu by SE
 
 Key::Key(Card::Suit suit, int number)
     : DelayedTrick(suit, number)
@@ -615,7 +615,7 @@ bool Key::targetFilter(const QList<const Player *> &targets, const Player *to_se
 
 void Key::takeEffect(ServerPlayer *target) const{
     target->clearHistory();
-#ifdef QT_DEBUG
+#ifndef QT_NO_DEBUG
     if (!target->getAI() && target->askForSkillInvoke("userdefine:cancelkeyCard")) return;
 #endif
 }
@@ -793,6 +793,146 @@ public:
 };
 
 
+class Liepo : public TriggerSkill {
+public:
+    Liepo() : TriggerSkill("liepo") {
+        events << TargetChosen << DamageCaused ;
+    }
+
+    virtual QStringList triggerable(TriggerEvent event, Room *, ServerPlayer *player, QVariant &data, ServerPlayer * &ask_who) const {
+    	if (event == TargetChosen){
+	        CardUseStruct use = data.value<CardUseStruct>();
+	        if (TriggerSkill::triggerable(use.from) && use.from->getPhase() == Player::Play && use.card != NULL && use.card->isKindOf("Slash") && use.to.contains(player)){
+	            if (!player->getJudgingArea().isEmpty()){
+	                ask_who = use.from;
+	                return QStringList(objectName());
+	            }
+	        }    		
+    	} else if (event == DamageCaused){
+    		DamageStruct damage = data.value<DamageStruct>();
+    		if (damage.from->hasFlag("liepo_select_2") && damage.to->hasFlag("liepo_change_damage_type")){
+    			return QStringList(objectName());
+    		}
+    	}
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent event, Room *, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const {
+    	if (event == TargetChosen){
+    		if (ask_who->askForSkillInvoke(objectName(), QVariant::fromValue(player))) {
+            	return true;
+        	}
+    	} else if (event == DamageCaused){
+    		// DamageBuff Sound
+    		return true;
+    	}
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const {
+    	if (event == TargetChosen) {
+	        CardUseStruct use = data.value<CardUseStruct>();
+	        ServerPlayer *nanoha = ask_who;
+
+	        QStringList choices;
+	        choices << "cant_use_jink";
+	        if (use.card->isKindOf("ThunderSlash") || use.card->isKindOf("FireSlash"))
+	        	choices << "change_damage_type";
+
+	        QString choice = room->askForChoice(nanoha,objectName(),choices.join("+"));
+
+	        if (choice == "cant_use_jink"){
+	        	QVariantList jink_list = nanoha->tag["Jink_" + use.card->toString()].toList();
+	        	doLiepo(player, use, jink_list);
+	        	nanoha->tag["Jink_" + use.card->toString()] = QVariant::fromValue(jink_list);
+	        } else if (choice == "change_damage_type") {
+	        	nanoha->setFlags("liepo_select_2");
+	        	player->setFlags("liepo_change_damage_type");
+	        }    		
+    	} else if (event == DamageCaused) {
+    		DamageStruct damage = data.value<DamageStruct>();
+            LogMessage log;
+            log.type = "#LiepoBuff";
+            log.from = damage.from;
+            log.to << damage.to;
+            log.arg = QString::number(++damage.damage);
+            room->sendLog(log);
+
+			damage.nature = DamageStruct::Normal;
+            data = QVariant::fromValue(damage);
+    	}
+        return false;
+    }
+
+private:
+    static void doLiepo(ServerPlayer *target, CardUseStruct use, QVariantList &jink_list) {
+        int index = use.to.indexOf(target);
+        LogMessage log;
+        log.type = "#NoJink";
+        log.from = target;
+        target->getRoom()->sendLog(log);
+        jink_list.replace(index, QVariant(0));
+    }
+};
+
+Lingdan::Lingdan(Card::Suit suit, int number)
+    : DelayedTrick(suit, number)
+{
+    setObjectName("lingdanCard");
+
+    judge.pattern = "BasicCard|.|2~9";
+    judge.good = true;
+    judge.reason = objectName();
+}
+
+bool Lingdan::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+    return targets.isEmpty() && !to_select->containsTrick(objectName()) && to_select != Self;
+}
+
+void Lingdan::takeEffect(ServerPlayer *target) const{
+    target->clearHistory();
+
+#ifndef QT_NO_DEBUG
+    if (!target->getAI() && target->askForSkillInvoke("userdefine:cancellingdanCard")) return;
+#endif
+
+    if (target->canDiscard(target, "he"))
+        target->getRoom()->askForDiscard(target, objectName(), 2, 2, false, true, "@Lingdan-discard");
+}
+
+ShenxingCard::ShenxingCard() {
+}
+
+bool ShenxingCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+	return targets.isEmpty() && !to_select->containsTrick(objectName()) && to_select != Self;
+}
+
+void ShenxingCard::onEffect(const CardEffectStruct &effect) const{
+    Lingdan *ld = new Lingdan(effect.card->getSuit(), effect.card->getNumber());
+    ld->addSubcard(effect.card);
+    ld->setSkillName("shenxing");
+    effect.from->getRoom()->useCard(CardUseStruct(ld, effect.from, effect.to));
+}
+
+class Shenxing : public OneCardViewAsSkill {
+public:
+    Shenxing() : OneCardViewAsSkill("shenxing") {
+        response_or_use = true;
+        filter_pattern = "BasicCard";
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return !player->isKongcheng() && !player->hasUsed("ShenxingCard");
+    }
+
+    virtual const Card *viewAs(const Card *originalCard) const{
+        ShenxingCard *card = new ShenxingCard;
+        card->addSubcard(originalCard);
+        card->setShowSkill(objectName());
+        return card;
+    }
+};
+
 
 void MoesenPackage::addGameGenerals()
 {
@@ -808,9 +948,15 @@ void MoesenPackage::addGameGenerals()
     General *t_rin = new General(this, "t_rin", "wu", 3, false); // Game 004
 
     General *altria = new General(this, "altria", "wu", 3, false); // Game 005
+	
+	*/
 
-    General *nanoha = new General(this, "nanoha", "wu", 3, false); // Game 006
+    General *nanoha = new General(this, "nanoha", "wu", 4, false); // Game 001 ps:Moe
+    nanoha->addSkill(new Liepo);
+    nanoha->addSkill(new Shenxing);
 
+
+    /*
     General *rika = new General(this, "rika", "wu", 3, false); // Game 007
 
     General *rena = new General(this, "rena", "wu", 3, false); // Game 008
@@ -848,5 +994,7 @@ void MoesenPackage::addGameGenerals()
    addMetaObject<HaixingCard>();
    addMetaObject<TaozuiCard>();
    addMetaObject<Key>();
+   addMetaObject<ShenxingCard>();
+   addMetaObject<Lingdan>();
    addMetaObject<LuoxuanCard>();
 }

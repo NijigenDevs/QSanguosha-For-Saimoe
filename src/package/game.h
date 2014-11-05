@@ -49,6 +49,16 @@ public:
     virtual void takeEffect(ServerPlayer *target) const;
 };
 
+class ShenxingCard : public SkillCard {
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE ShenxingCard();
+
+    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+    virtual void onEffect(const CardEffectStruct &effect) const;
+};
+
 class LuoxuanCard : public SkillCard {
     Q_OBJECT
 
@@ -57,6 +67,16 @@ public:
 
     virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
     virtual void onEffect(const CardEffectStruct &effect) const;
+};
+
+class Lingdan : public DelayedTrick {
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE Lingdan(Card::Suit suit, int number);
+
+    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+    virtual void takeEffect(ServerPlayer *target) const;
 };
 
 #endif
