@@ -836,7 +836,8 @@ public:
 
 	        QStringList choices;
 	        choices << "cant_use_jink";
-	        if (use.card->isKindOf("ThunderSlash") || use.card->isKindOf("FireSlash"))
+
+			if (use.card->isKindOf("ThunderSlash") || use.card->isKindOf("FireSlash"))
 	        	choices << "change_damage_type";
 
 	        QString choice = room->askForChoice(nanoha,objectName(),choices.join("+"));
@@ -901,6 +902,7 @@ void Lingdan::takeEffect(ServerPlayer *target) const{
 }
 
 ShenxingCard::ShenxingCard() {
+	will_throw = false;
 }
 
 bool ShenxingCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
@@ -933,6 +935,87 @@ public:
     }
 };
 
+class LeiguangVS : public OneCardViewAsSkill {
+public:
+    LeiguangVS() : OneCardViewAsSkill("leiguang") {
+        response_or_use = true;
+        filter_pattern = "%slash";
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return Slash::IsAvailable(player) ;
+    }
+
+    virtual bool isEnabledAtResponse(const Player *, const QString &) const{
+        return false;
+    }
+
+    virtual const Card *viewAs(const Card *originalCard) const{
+    	Card *acard = new ThunderSlash(originalCard->getSuit(), originalCard->getNumber());
+        acard->addSubcard(originalCard->getId());
+        acard->setSkillName("leiguang");
+        return acard;
+    }
+};
+
+class Leiguang : public TriggerSkill {
+public:
+    Leiguang() : TriggerSkill("leiguang") {
+        events << CardFinished;
+        view_as_skill = new LeiguangVS;
+    }
+
+    virtual bool canPreshow() const{
+        return false;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer * &) const{
+        if (!TriggerSkill::triggerable(player))
+            return QStringList();
+       	CardUseStruct use = data.value<CardUseStruct>();
+       	if (use.card->getSkillName() == "leiguang" && use.card->isKindOf("Slash") && use.from == player && use.to.length() == 1 && use.to.first()->isAlive())
+       		return QStringList(objectName());
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
+    	CardUseStruct use = data.value<CardUseStruct>();
+    	if (player->askForSkillInvoke(objectName(), QVariant::fromValue(use.to.first()))) {
+    		//Sound
+            return true;
+        }        
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+    	CardUseStruct use = data.value<CardUseStruct>();
+		if (use.to.first()->canDiscard(use.to.first(), "he") && room->askForDiscard(use.to.first(), objectName(), 1, 1, true, true, "@leiguang_effect")) {
+    		return false;
+    	} else if (use.m_addHistory){
+			room->addPlayerHistory(player, use.card->getClassName(), -1);
+			LogMessage log;
+            log.type = "#leiguang_more_slash";
+            log.from = player;
+            log.to << room->getAllPlayers(true);
+            room->sendLog(log);
+    	}
+        return false;
+    }
+};
+
+class Kongwu : public DistanceSkill {
+public:
+    Kongwu() : DistanceSkill("kongwu") {
+    }
+
+    virtual int getCorrect(const Player *from, const Player *to) const{
+        if (from->hasShownSkill(objectName()) && from->hasShownOneGeneral() && !to->hasShownAllGenerals())
+            return -1000;
+        else
+            return 0;
+    }
+};
+
 
 void MoesenPackage::addGameGenerals()
 {
@@ -960,9 +1043,14 @@ void MoesenPackage::addGameGenerals()
     General *rika = new General(this, "rika", "wu", 3, false); // Game 007
 
     General *rena = new General(this, "rena", "wu", 3, false); // Game 008
-
-    General *fate = new General(this, "fate", "wu", 3, false); // Game 009
     */
+
+
+    General *fate = new General(this, "fate", "wu", 4, false); // Game 009
+    fate->addSkill(new Leiguang);
+    fate->addSkill(new Kongwu);
+
+
     General *haruka = new General(this, "haruka", "wu", 4, false); // Game 010
     haruka->addSkill(new Yuanqi);
     haruka->addSkill(new Daihei);
