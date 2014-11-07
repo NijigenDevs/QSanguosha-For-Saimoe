@@ -2,6 +2,7 @@
 #include "skill.h"
 #include "standard-basics.h"
 #include "standard-tricks.h"
+#include "strategic-advantage.h"
 #include "engine.h"
 #include "client.h"
 
@@ -91,6 +92,86 @@ public:
     }
 };
 
+class Wucun : public TriggerSkill{
+public:
+    Wucun() : TriggerSkill("wucun"){
+        events << EventPhaseStart;
+        frequency = NotFrequent;
+    }
+
+    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent , Room *room, ServerPlayer *player, QVariant &) const{
+        QMap<ServerPlayer *, QStringList> skill_list;
+        if (player != NULL && player->getPhase() == Player::Start) {
+            QList<ServerPlayer *> akaris = room->findPlayersBySkillName(objectName());
+            foreach (ServerPlayer *akari, akaris){
+                LureTiger *luretiger = new LureTiger(Card::SuitToBeDecided , 0);
+                QList<const Player *> targets;
+                if ((!akari->willBeFriendWith(player)) && (!akari->isFriendWith(player)) && player->hasShownOneGeneral() && akari->getHandcardNum() <= akari->getHp() && room->alivePlayerCount() > 2 && luretiger->targetFilter(targets, akari , player) && !player->isProhibited(akari, luretiger, targets))
+                    skill_list.insert(akari, QStringList(objectName()));
+            }
+        }
+        return skill_list;
+    }
+
+    virtual bool cost(TriggerEvent , Room *room, ServerPlayer *, QVariant &data, ServerPlayer *ask_who) const{
+        if (ask_who->askForSkillInvoke(objectName(), data)) {
+            room->drawCards(ask_who, 1, objectName());
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent , Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const{
+        LureTiger *luretiger = new LureTiger(Card::SuitToBeDecided, 0);
+        luretiger->setSkillName(objectName());
+        QList<const Player *> targets;
+        if (luretiger->targetFilter(targets, ask_who, player) && !player->isProhibited(ask_who, luretiger, targets))
+            room->useCard(CardUseStruct(luretiger, player , ask_who));
+        return false;
+    }
+};
+
+class Kongni : public TriggerSkill {
+public:
+    Kongni() : TriggerSkill("kongni") {
+        events << SlashEffected;
+        frequency = Compulsory;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (!TriggerSkill::triggerable(player)) return QStringList();
+        if (player->getEquips().length() > 0) return QStringList();
+        SlashEffectStruct effect = data.value<SlashEffectStruct>();
+        if (effect.slash->isBlack()) return QStringList(objectName());
+
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        bool invoke = player->hasShownSkill(this) ? true : player->askForSkillInvoke(objectName(), data);
+        if (invoke) {
+            if (player->hasShownSkill(this)) {
+                SlashEffectStruct effect = data.value<SlashEffectStruct>();
+                LogMessage log;
+                log.type = "#SkillNullify";
+                log.from = player;
+                log.arg = objectName();
+                log.arg2 = effect.slash->objectName();
+                room->sendLog(log);
+            }
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *, ServerPlayer *, QVariant &dat, ServerPlayer *) const{
+        return true;
+    }
+};
+
 void MoesenPackage::addComicGenerals(){
 
 
@@ -98,6 +179,10 @@ void MoesenPackage::addComicGenerals(){
     hinagiku->addSkill(new Jiandao);
     hinagiku->addSkill(new JiandaoRange);
     insertRelatedSkills("jiandao", "#jiandao-range");
+
+    General *akari = new General(this, "akari", "shu", 3, false); // Comic 007
+    akari->addSkill(new Wucun);
+    akari->addSkill(new Kongni);
 
     /*
 
@@ -110,8 +195,6 @@ void MoesenPackage::addComicGenerals(){
     General *shinku = new General(this, "shinku", "shu", 3, false); // Comic 005
 
     General *t_kyouko = new General(this, "t_kyouko", "shu", 3, false); // Comic 006
-
-    General *akari = new General(this, "akari", "shu", 3, false); // Comic 007
 
     General *konata = new General(this, "konata", "shu", 3, false); // Comic 008
 

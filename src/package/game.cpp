@@ -365,7 +365,7 @@ public:
 
     virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *haruka, QVariant &, ServerPlayer *) const{
         if (triggerEvent == EventPhaseStart){
-            room->drawCards(haruka,3);
+            room->drawCards(haruka,3); // Maybe drawing 2 is enough
             haruka->turnOver();
         }
         return false;
@@ -802,7 +802,7 @@ public:
     virtual QStringList triggerable(TriggerEvent event, Room *, ServerPlayer *player, QVariant &data, ServerPlayer * &ask_who) const {
     	if (event == TargetChosen){
 	        CardUseStruct use = data.value<CardUseStruct>();
-	        if (TriggerSkill::triggerable(use.from) && use.from->getPhase() == Player::Play && use.card != NULL && use.card->isKindOf("Slash") && use.to.contains(player)){
+	        if (TriggerSkill::triggerable(use.from) && use.card != NULL && use.card->isKindOf("Slash") && use.to.contains(player)){
 	            if (!player->getJudgingArea().isEmpty()){
 	                ask_who = use.from;
 	                return QStringList(objectName());
@@ -1081,8 +1081,8 @@ void MoesenPackage::addGameGenerals()
 
    addMetaObject<HaixingCard>();
    addMetaObject<TaozuiCard>();
-   addMetaObject<Key>();
    addMetaObject<ShenxingCard>();
+   addMetaObject<Key>();
    addMetaObject<Lingdan>();
    addMetaObject<LuoxuanCard>();
 }

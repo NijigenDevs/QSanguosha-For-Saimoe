@@ -146,7 +146,7 @@ public:
         global = true;
     }
 
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer * &) const {
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer * &) const {
         if (triggerEvent == PreDamageDone) {
             DamageStruct damage = data.value<DamageStruct>();
             if (damage.card && damage.card->getSkillName() == "yingqiang" && damage.from)
@@ -525,7 +525,7 @@ public:
         }
         return skill_list;
     }
-     virtual bool cost(TriggerEvent , Room *room, ServerPlayer *, QVariant &data, ServerPlayer *ask_who) const{
+    virtual bool cost(TriggerEvent , Room *room, ServerPlayer *, QVariant &data, ServerPlayer *ask_who) const{
         bool invoke = ask_who->askForSkillInvoke(objectName(), data);
         int need_num = 2;
         if (!ask_who->hasSkill("shiting")) 
@@ -576,7 +576,7 @@ public:
     }
 
     virtual bool effect(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *) const {
-		ServerPlayer *target = player->tag["Quanmian"].value<ServerPlayer*>();
+        ServerPlayer *target = player->tag["Quanmian"].value<ServerPlayer*>();
         if (target)
             target->drawCards(1);
         return false;
@@ -1000,11 +1000,11 @@ bool XiehangCard::targetFilter(const QList<const Player *> &targets, const Playe
 void XiehangCard::use(Room *room, ServerPlayer *asuka, QList<ServerPlayer *> &targets) const{
     ServerPlayer *target = targets.first();
     room->broadcastSkillInvoke("xiehang");
-	PindianStruct pindian = PindianStruct();
-	pindian.from = asuka;
-	pindian.to = target;
-	pindian.reason = "xiehang_pindian";
-	asuka->pindian(&pindian);
+    PindianStruct pindian = PindianStruct();
+    pindian.from = asuka;
+    pindian.to = target;
+    pindian.reason = "xiehang_pindian";
+    asuka->pindian(&pindian);
 }
 
 class Xiehang: public ZeroCardViewAsSkill {
@@ -1062,7 +1062,7 @@ public:
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
         if (triggerEvent == Pindian){
-			PindianStruct* pindian = data.value<PindianStruct*>();
+            PindianStruct* pindian = data.value<PindianStruct*>();
             if (pindian->reason != "xiehang_pindian")
                 return QStringList();
             return QStringList(objectName());
@@ -1084,7 +1084,7 @@ public:
 
     virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer * /* = NULL */) const{
         if (triggerEvent == Pindian){
-			PindianStruct* pindian = data.value<PindianStruct*>();
+            PindianStruct* pindian = data.value<PindianStruct*>();
             ServerPlayer *winner = pindian->to;
             if (pindian->isSuccess()) {
                 winner = pindian->from;
@@ -1100,7 +1100,7 @@ public:
 
     virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer * player, QVariant &data, ServerPlayer *) const{
         if (triggerEvent == Pindian){
-			PindianStruct* pindian = data.value<PindianStruct*>();
+            PindianStruct* pindian = data.value<PindianStruct*>();
                 //broadcast
             QList<int> cardids;
             cardids.append(pindian->from_card->getEffectiveId());
@@ -1401,11 +1401,9 @@ public:
             CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
             if (nico->getPhase() == Player::NotActive || move.to_place != Player::DiscardPile)
                 return QStringList();
-            foreach (int id, move.card_ids){
                 //nico->gainMark("lvdong_cards");//for debug--BUG:when yingan used, the skill will be triggered 1 more time.
-                nico->setMark("@lvdong_cards", nico->getMark("@lvdong_cards") + 1);
-                return QStringList();
-            }
+            nico->setMark("@lvdong_cards", nico->getMark("@lvdong_cards") + move.card_ids.length());
+            return QStringList();
         }else{
             if (nico->getPhase() == Player::Finish){
                 if (nico->getMark("@lvdong_cards") < 5){
@@ -1917,55 +1915,55 @@ public:
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer * &) const {
         if (!TriggerSkill::triggerable(player)) return QStringList();
-		
-		if ( player->getPhase() == Player::Play && ((triggerEvent == EventPhaseStart && (player->getHandcardNum() > 0)) || (triggerEvent == EventPhaseEnd && (player->hasFlag("huixin_use")) )) ) 
-			return QStringList(objectName());
+        
+        if ( player->getPhase() == Player::Play && ((triggerEvent == EventPhaseStart && (player->getHandcardNum() > 0)) || (triggerEvent == EventPhaseEnd && (player->hasFlag("huixin_use")) )) ) 
+            return QStringList(objectName());
         return QStringList();
     }
 
     virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
         if (triggerEvent == EventPhaseStart){
-			ServerPlayer *target = room->askForPlayerChosen(player, room->getOtherPlayers(player), objectName() ,"@huixin_choose", true, true);
-			if (target) { 
+            ServerPlayer *target = room->askForPlayerChosen(player, room->getOtherPlayers(player), objectName() ,"@huixin_choose", true, true);
+            if (target) { 
                 player->setFlags("huixin_use");
-				target->setFlags("huixin_tar");
-				return true;
-			}
-		} else if (triggerEvent == EventPhaseEnd)
-			return true;
+                target->setFlags("huixin_tar");
+                return true;
+            }
+        } else if (triggerEvent == EventPhaseEnd)
+            return true;
         return false;
     }
 
     virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
-		if (triggerEvent == EventPhaseStart) {
-			ServerPlayer *target = NULL ;
-			foreach (ServerPlayer *tar, room->getOtherPlayers(player)) {
-				if (tar->hasFlag("huixin_tar")){
-					target = tar;
+        if (triggerEvent == EventPhaseStart) {
+            ServerPlayer *target = NULL ;
+            foreach (ServerPlayer *tar, room->getOtherPlayers(player)) {
+                if (tar->hasFlag("huixin_tar")){
+                    target = tar;
                     break;
                 }
-			}
+            }
             int card_id = room->askForCardChosen(target,player,"h",objectName());
             const Card * card = Sanguosha->getEngineCard(card_id);
             if (card) {
-			    target->obtainCard( card ,false);
-				room->damage(DamageStruct(objectName(), player, target));
+                target->obtainCard( card ,false);
+                room->damage(DamageStruct(objectName(), player, target));
             }
-		} else if (triggerEvent == EventPhaseEnd) {
-			player->drawCards(1);
-			ServerPlayer *target = NULL ;
-			foreach (ServerPlayer *tar, room->getAlivePlayers()) {
-				if (tar->hasFlag("huixin_tar"))
-					target = tar ;
-			}
-			if (target) {
+        } else if (triggerEvent == EventPhaseEnd) {
+            player->drawCards(1);
+            ServerPlayer *target = NULL ;
+            foreach (ServerPlayer *tar, room->getAlivePlayers()) {
+                if (tar->hasFlag("huixin_tar"))
+                    target = tar ;
+            }
+            if (target) {
                 target->setFlags("-huixin_tar");
                 player->setFlags("-huixin_use");
-			    RecoverStruct recover;
-				recover.who = player;
-				room->recover(target , recover);
-			}
-		}
+                RecoverStruct recover;
+                recover.who = player;
+                room->recover(target , recover);
+            }
+        }
         return false;
     }
 };
@@ -2043,7 +2041,7 @@ public:
 
 class WuxinAya : public TriggerSkill {
 public:
-	WuxinAya() : TriggerSkill("wuxinAya") {//complicated with the other official skill.
+    WuxinAya() : TriggerSkill("wuxinAya") {//complicated with the other official skill.
         frequency = Limited;
         events << DamageInflicted << GameStart;
     }
@@ -2135,7 +2133,7 @@ void MoesenPackage::addAnimationGenerals()
 
 
     General *rei = new General(this, "rei", "wei", 3, false); // Animation 010
-	rei->addSkill(new WuxinAya);
+    rei->addSkill(new WuxinAya);
     rei->addSkill(new Chidun);
 
     General *asuka = new General(this, "asuka", "wei", 3, false); // Animation 011
