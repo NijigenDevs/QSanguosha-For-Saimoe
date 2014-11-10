@@ -424,15 +424,6 @@ public:
     }
 };
 
-Mashu::Mashu(const QString &owner) : DistanceSkill("mashu_" + owner) {
-}
-
-int Mashu::getCorrect(const Player *from, const Player *) const{
-    if (from->hasSkill(objectName()) && from->hasShownSkill(this))
-        return -1;
-    else
-        return 0;
-}
 
 class Tieqi : public TriggerSkill {
 public:

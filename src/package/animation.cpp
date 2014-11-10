@@ -1662,20 +1662,17 @@ public:
 };
 
 //qishu by SE
-class Qishu: public DistanceSkill {
-public:
-    Qishu(): DistanceSkill("qishu") {
-    }
 
-    virtual int getCorrect(const Player *from, const Player *to) const{
-        if (from->hasSkill(objectName()))
-            return -1;
-        else if (to->hasSkill(objectName()))
-            return 1;
-        else
-            return 0;
-    }
-};
+
+Mashu::Mashu(const QString &owner) : DistanceSkill("mashu_" + owner) {
+}
+
+int Mashu::getCorrect(const Player *from, const Player *) const{
+    if (from->hasSkill(objectName()) && from->hasShownSkill(this))
+        return -1;
+    else
+        return 0;
+}
 
 //tengyue by SE
 class TengyueTrigger: public TriggerSkill {
@@ -2160,7 +2157,7 @@ void MoesenPackage::addAnimationGenerals()
     lacus->addSkill(new Pinghe);
 
     General *sawa = new General(this, "sawa", "wei", 4, false); // Animation 016
-    sawa->addSkill(new Qishu);
+    sawa->addSkill(new Mashu("sawa"));
     sawa->addSkill(new Tengyue);
     sawa->addSkill(new TengyueTrigger);
     sawa->addSkill(new TengyueTargetMod);

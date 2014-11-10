@@ -101,7 +101,7 @@ public:
 
     virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent , Room *room, ServerPlayer *player, QVariant &) const{
         QMap<ServerPlayer *, QStringList> skill_list;
-        if (player != NULL && player->getPhase() == Player::Start) {
+        if (player != NULL && player->getPhase() == Player::Start){
             QList<ServerPlayer *> akaris = room->findPlayersBySkillName(objectName());
             foreach (ServerPlayer *akari, akaris){
                 LureTiger *luretiger = new LureTiger(Card::SuitToBeDecided , 0);

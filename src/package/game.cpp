@@ -859,6 +859,9 @@ public:
             log.arg = QString::number(++damage.damage);
             room->sendLog(log);
 
+            damage.from->setFlags("-liepo_select_2");
+            damage.to->setFlags("-liepo_change_damage_type");
+
 			damage.nature = DamageStruct::Normal;
             data = QVariant::fromValue(damage);
     	}
@@ -1015,6 +1018,7 @@ public:
             return 0;
     }
 };
+
 
 
 void MoesenPackage::addGameGenerals()
