@@ -361,7 +361,6 @@ kurou_skill.getTurnUseCard = function(self, inclusive)
 end
 
 sgs.ai_skill_use_func.KurouCard = function(card, use, self)
-	if not use.isDummy then self:speak("kurou") end
 	use.card = card
 end
 
@@ -370,7 +369,7 @@ sgs.ai_use_priority.KurouCard = 6.8
 
 sgs.ai_skill_invoke.yingzi = function(self, data)
 
-	if not self:willShowForAttack() then
+	if not self:willShowForAttack() and not self:willShowForDefence() then
 		return false
 	end
 
@@ -389,7 +388,7 @@ sgs.ai_skill_invoke.yingzi = function(self, data)
 					target = p
 				end
 			end
-			if target and self:isFriend(target) then return true end
+			if target and not self:isFriend(target) and num + count == 6 then return false end
 		end
 	end
 	return true
@@ -505,9 +504,9 @@ duoshi_skill.getTurnUseCard = function(self, inclusive)
 			local inAttackRange = self.player:distanceTo(enemy) == 1 or self.player:distanceTo(enemy) == 2
 									and self:getCardsNum("OffensiveHorse") > 0 and not self.player:getOffensiveHorse()
 			if inAttackRange  and sgs.isGoodTarget(enemy, self.enemies, self) then
-				local slashs = self:getCards("Slash")
+				local slashes = self:getCards("Slash")
 				local slash_count = 0
-				for _, slash in ipairs(slashs) do
+				for _, slash in ipairs(slashes) do
 					if not self:slashProhibit(slash, enemy) and self:slashIsEffective(slash, enemy) then
 						slash_count = slash_count + 1
 					end
@@ -637,6 +636,12 @@ sgs.ai_suit_priority.guose= "club|spade|heart|diamond"
 
 
 sgs.ai_skill_use["@@liuli"] = function(self, prompt, method)
+	
+	if not (self:willShowForDefence() and self:getCardsNum("Jink") > 1) 
+		or not  (self:willShowForMasochism() and self:getCardsNum("Jink") == 0) then 
+			return "."
+	end 
+	
 	local others = self.room:getOtherPlayers(self.player)
 	others = sgs.QList2Table(others)
 	local source
@@ -729,7 +734,7 @@ sgs.ai_skill_use["@@liuli"] = function(self, prompt, method)
 							local ret = doLiuli(player)
 							if ret ~= "." then liuli[3] = ret end
 						elseif not self:hasHeavySlashDamage(source, slash, player) then
-							if self:getDamagedEffects(player, source, true) or self:needToLoseHp(player, source, true) then
+							if self:getDamagedEffects(player, source, true) or self:needToLoseHp(player, source, true, true) then
 								local ret = doLiuli(player)
 								if ret ~= "." then liuli[4] = ret end
 							end
@@ -804,7 +809,7 @@ function SmartAI:getWoundedFriend(maleOnly)
 
 	local cmp = function (a ,b)
 		if getCmpHp(a) == getCmpHp(b) then
-			return sgs.getDefenseSlash(a) < sgs.getDefenseSlash(b)
+			return sgs.getDefenseSlash(a, self) < sgs.getDefenseSlash(b, self)
 		else
 			return getCmpHp(a) < getCmpHp(b)
 		end
@@ -914,6 +919,13 @@ sgs.ai_card_intention.JieyinCard = function(self, card, from, tos)
 end
 
 sgs.dynamic_value.benefit.JieyinCard = true
+
+sgs.ai_skill_invoke.xiaoji = function(self, data)
+	if not (self:willShowForAttack() or self:willShowForDefence()) then
+		return false
+	end
+	return true
+end
 
 sgs.xiaoji_keep_value = {
 	Weapon = 4.9,
@@ -1112,6 +1124,7 @@ sgs.ai_choicemade_filter.skillChoice.yinghun = function(self, player, promptlist
 end
 
 sgs.ai_skill_use["@@tianxiang"] = function(self, data, method)
+	if not self:willShowForMasochism() then return "." end 
 	if not method then method = sgs.Card_MethodDiscard end
 	local friend_lost_hp = 10
 	local friend_hp = 0
@@ -1450,6 +1463,9 @@ sgs.ai_skill_invoke.haoshi = function(self, data)
 			end
 		end
 	end
+	if self.player:hasTreasure("JadeSeal") then
+		extra = extra + 1
+	end
 	if self.player:getHandcardNum() + extra <= 1 then return true end
 	if not self:willShowForDefence() and not self:willShowForAttack() then return false end
 
@@ -1459,11 +1475,18 @@ sgs.ai_skill_invoke.haoshi = function(self, data)
 
 	self:sort(self.friends_noself)
 	for _, friend in ipairs(self.friends_noself) do
-		if friend:getHandcardNum() == leastNum then
-			self.haoshi_target = friend
-			return true
+		if friend:getHandcardNum() == leastNum and friend:isAlive() and self:isFriendWith(friend) then
+			self.haoshi_target = friend	
 		end
 	end
+	if not self.haoshi_target then 
+		for _, friend in ipairs(self.friends_noself) do
+			if friend:getHandcardNum() == leastNum and friend:isAlive() then
+				self.haoshi_target = friend	
+			end
+		end
+	end	
+	if self.haoshi_target then return true end
 	return false
 end
 

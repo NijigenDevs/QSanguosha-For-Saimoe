@@ -447,6 +447,8 @@ bool GameRule::effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *playe
                     foreach(ServerPlayer *p, room->getAllPlayers())
                         thread->trigger(TargetConfirmed, room, p, data);
                 }
+                card_use = data.value<CardUseStruct>();
+                room->setTag("CardUseNullifiedList", QVariant::fromValue(card_use.nullified_list));
                 card_use.card->use(room, card_use.from, card_use.to);
                 if (!jink_list_backup.isEmpty())
                     card_use.from->tag["Jink_" + card_use.card->toString()] = QVariant::fromValue(jink_list_backup);
@@ -622,6 +624,8 @@ bool GameRule::effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *playe
                         DamageStruct chain_damage = damage;
                         chain_damage.to = chained_player;
                         chain_damage.chain = true;
+                        chain_damage.transfer = false;
+                        chain_damage.transfer_reason = QString();
 
                         room->damage(chain_damage);
                     }
@@ -638,7 +642,15 @@ bool GameRule::effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *playe
     case CardEffected: {
         if (data.canConvert<CardEffectStruct>()) {
             CardEffectStruct effect = data.value<CardEffectStruct>();
-            if (effect.card->getTypeId() == Card::TypeTrick && room->isCanceled(effect)) {
+            if (!effect.card->isKindOf("Slash") && effect.nullified) {
+                LogMessage log;
+                log.type = "#CardNullified";
+                log.from = effect.to;
+                log.arg = effect.card->objectName();
+                room->sendLog(log);
+
+                return true;
+            } else if (effect.card->getTypeId() == Card::TypeTrick && room->isCanceled(effect)) {
                 effect.to->setFlags("Global_NonSkillNullify");
                 return true;
             }
@@ -650,8 +662,16 @@ bool GameRule::effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *playe
     }
     case SlashEffected: {
         SlashEffectStruct effect = data.value<SlashEffectStruct>();
+        if (effect.nullified) {
+            LogMessage log;
+            log.type = "#CardNullified";
+            log.from = effect.to;
+            log.arg = effect.slash->objectName();
+            room->sendLog(log);
 
-        QVariant data = QVariant::fromValue(effect);
+            return true;
+        }
+
         if (effect.jink_num > 0)
             room->getThread()->trigger(SlashProceed, room, effect.from, data);
         else
@@ -724,11 +744,11 @@ bool GameRule::effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *playe
             rewardAndPunish(killer, player);
 
         if (player->getGeneral()->isLord() && player == data.value<DeathStruct>().who) {
-            foreach(ServerPlayer *p, room->getOtherPlayers(player, true)){
-                if (p->getKingdom() == player->getKingdom()){
-                    if (p->hasShownOneGeneral())
+            foreach(ServerPlayer *p, room->getOtherPlayers(player, true)) {
+                if (p->getKingdom() == player->getKingdom()) {
+                    if (p->hasShownOneGeneral()) {
                         room->setPlayerProperty(p, "role", "careerist");
-                    else {
+                    } else {
                         p->setRole("careerist");
                         room->notifyProperty(p, p, "role");
                     }

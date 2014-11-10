@@ -1019,7 +1019,88 @@ public:
     }
 };
 
+class Chaidao : public TriggerSkill {
+public:
+    Chaidao() : TriggerSkill("chaidao") {
+        events << DamageCaused << DamageInflicted;
+    }
 
+    virtual QStringList triggerable(TriggerEvent event, Room *, ServerPlayer *player, QVariant &data, ServerPlayer * &) const{
+        if (!TriggerSkill::triggerable(player))
+            return QStringList();
+       	DamageStruct damage = data.value<DamageStruct>();
+       	Collateral *collateral = new Collateral(Card::SuitToBeDecided, 0);
+       	QList<const Player *> targets;
+       	if (player->getWeapon() && ((event == DamageCaused && player->canDiscard(player, player->getWeapon()->getEffectiveId()) && damage.card->isKindOf("Slash")) || (event == DamageInflicted && damage.from != player && collateral
+       	->targetFilter(targets, player,damage.from) && (!damage.from->isProhibited(player, collateral, targets))))) {
+       		return QStringList(objectName());
+       	}
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
+    	if (event == DamageCaused && room->askForCard(player, "Weapon|.|.|equipped", "@chaidao_add_damage" , data, Card::MethodDiscard, NULL, false)){
+    		//sound 1
+    		return true;
+    	}
+    	if (event == DamageInflicted && room->askForSkillInvoke(player,objectName(),data)){
+    		//sound 2
+    		return true;
+    	}
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+    	DamageStruct damage = data.value<DamageStruct>();
+    	if (event == DamageCaused){
+            LogMessage log;
+            log.type = "#ChaidaoBuff";
+            log.from = damage.from;
+            log.to << damage.to;
+            log.arg = QString::number(++damage.damage);
+            room->sendLog(log);
+
+            data = QVariant::fromValue(damage);
+    	} else {
+    	    Collateral *collateral = new Collateral(Card::SuitToBeDecided, 0);
+			QList<const Player *> empty_targets;
+			QList<ServerPlayer *> can_slash_targets;
+    	    QList<ServerPlayer *> targets;
+    	    Slash *slash = new Slash(Card::SuitToBeDecided,  0);
+
+    	    targets << player;
+
+			foreach(ServerPlayer *p , room->getOtherPlayers(player))
+				if ((slash->targetFilter(empty_targets, p,player)) && (!player->isProhibited(p , slash, empty_targets)))
+					can_slash_targets << p;
+    	    
+    	    ServerPlayer *victim = room->askForPlayerChosen(damage.from , can_slash_targets , objectName() , "@chaidao_choose" , false , true );
+    	    if (victim != NULL) 
+    	    	targets << victim ;
+
+    	    if (targets.length() != 2)
+    	    	return false;
+
+	        if (room->useCard(CardUseStruct(collateral, damage.from , targets))){
+		    	LogMessage log;
+		        log.type = "#Breastplate";
+		        log.from = player;
+		        if (damage.from)
+		            log.to << damage.from;
+		        log.arg = QString::number(damage.damage);
+		        if (damage.nature == DamageStruct::Normal)
+		            log.arg2 = "normal_nature";
+		        else if (damage.nature == DamageStruct::Fire)
+		            log.arg2 = "fire_nature";
+		        else if (damage.nature == DamageStruct::Thunder)
+		            log.arg2 = "thunder_nature";
+		        room->sendLog(log);	           
+		       	return true;	
+	        }
+    	}
+        return false;
+    }
+};
 
 void MoesenPackage::addGameGenerals()
 {
@@ -1046,9 +1127,10 @@ void MoesenPackage::addGameGenerals()
     /*
     General *rika = new General(this, "rika", "wu", 3, false); // Game 007
 
-    General *rena = new General(this, "rena", "wu", 3, false); // Game 008
     */
 
+    General *rena = new General(this, "rena", "wu", 4, false); // Game 008
+    rena->addSkill(new Chaidao);
 
     General *fate = new General(this, "fate", "wu", 4, false); // Game 009
     fate->addSkill(new Leiguang);

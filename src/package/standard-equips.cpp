@@ -49,7 +49,7 @@ public:
         foreach(ServerPlayer *to, use.to) {
             if (((use.from->isMale() && to->isFemale()) || (use.from->isFemale() && to->isMale()))
                 && use.card->isKindOf("Slash")) {
-                if (use.from->askForSkillInvoke(objectName())) {
+                if (use.from->askForSkillInvoke(this)) {
                     room->setEmotion(use.from, "weapon/double_sword");
 
                     bool draw_card = false;
@@ -216,7 +216,7 @@ public:
                 return false;
 
             if (player == NULL) return false;
-            if (!player->askForSkillInvoke(objectName(), data))
+            if (!player->askForSkillInvoke(this, data))
                 return false;
 
             room->setEmotion(player, "weapon/kylin_bow");
@@ -254,7 +254,7 @@ public:
     }
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
-        if (room->askForSkillInvoke(player, objectName())) {
+        if (player->askForSkillInvoke(this)) {
             if (player->hasArmorEffect("bazhen")) {
                 LogMessage log;
                 log.type = "#InvokeSkill";
@@ -321,7 +321,7 @@ public:
         if (damage.card && damage.card->isKindOf("Slash")
             && damage.to->getMark("Equips_of_Others_Nullified_to_You") == 0
             && !damage.to->isNude() && damage.by_user
-            && !damage.chain && !damage.transfer && player->askForSkillInvoke("IceSword", data)) {
+            && !damage.chain && !damage.transfer && player->askForSkillInvoke(this, data)) {
             room->setEmotion(player, "weapon/ice_sword");
             if (damage.from->canDiscard(damage.to, "he")) {
                 int card_id = room->askForCardChosen(player, damage.to, "he", "IceSword", false, Card::MethodDiscard);
@@ -505,13 +505,11 @@ public:
             SlashEffectStruct effect = data.value<SlashEffectStruct>();
             if (effect.nature == DamageStruct::Normal)
                 return QStringList(objectName());
-        }
-        else if (triggerEvent == CardEffected) {
+        } else if (triggerEvent == CardEffected) {
             CardEffectStruct effect = data.value<CardEffectStruct>();
             if (effect.card->isKindOf("SavageAssault") || effect.card->isKindOf("ArcheryAttack"))
                 return QStringList(objectName());
-        }
-        else if (triggerEvent == DamageInflicted) {
+        } else if (triggerEvent == DamageInflicted) {
             DamageStruct damage = data.value<DamageStruct>();
             if (damage.nature == DamageStruct::Fire)
                 return QStringList(objectName());

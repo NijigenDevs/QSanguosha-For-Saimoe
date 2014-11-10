@@ -101,7 +101,7 @@ public:
 
     virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent , Room *room, ServerPlayer *player, QVariant &) const{
         QMap<ServerPlayer *, QStringList> skill_list;
-        if (player != NULL && player->getPhase() == Player::Start){
+        if (player != NULL && player->getPhase() == Player::Start) {
             QList<ServerPlayer *> akaris = room->findPlayersBySkillName(objectName());
             foreach (ServerPlayer *akari, akaris){
                 LureTiger *luretiger = new LureTiger(Card::SuitToBeDecided , 0);
@@ -167,7 +167,7 @@ public:
         return false;
     }
 
-    virtual bool effect(TriggerEvent, Room *, ServerPlayer *, QVariant &dat, ServerPlayer *) const{
+    virtual bool effect(TriggerEvent, Room *, ServerPlayer *, QVariant &, ServerPlayer *) const{
         return true;
     }
 };

@@ -376,9 +376,10 @@ void Room::killPlayer(ServerPlayer *victim, DamageStruct *reason) {
 
     thread->trigger(GameOverJudge, this, victim, data);
 
-    foreach(ServerPlayer *p, players_with_victim)
+    foreach(ServerPlayer *p, players_with_victim) {
         if (p->isAlive() || p == victim)
             thread->trigger(Death, this, p, data);
+    }
 
     doNotify(victim, S_COMMAND_SET_DASHBOARD_SHADOW, victim->objectName());
 
@@ -1400,6 +1401,23 @@ const Card *Room::askForCard(ServerPlayer *player, const QString &pattern, const
             if (!_skill_name.isEmpty())
                 notifySkillInvoked(player, _skill_name);
         }
+    }
+
+    bool isHandcard = true;
+    if (card) {
+        QList<int> ids;
+        if (!card->isVirtualCard()) ids << card->getEffectiveId();
+        else ids = card->getSubcards();
+        if (!ids.isEmpty()) {
+            foreach (int id, ids) {
+                if (getCardOwner(id) != player || getCardPlace(id) != Player::PlaceHand) {
+                    isHandcard = false;
+                    break;
+                }
+            }
+        } else {
+            isHandcard = false;
+        }
 
         QVariant decisionData = QVariant::fromValue(QString("cardResponded:%1:%2:_%3_").arg(pattern).arg(prompt).arg(card->toString()));
         thread->trigger(ChoiceMade, this, player, decisionData);
@@ -1425,11 +1443,11 @@ const Card *Room::askForCard(ServerPlayer *player, const QString &pattern, const
                 player->showGeneral(player->inHeadSkills(skill_name));
         } else if (method == Card::MethodDiscard) {
             CardMoveReason reason(CardMoveReason::S_REASON_THROW, player->objectName());
-            moveCardTo(card, NULL, Player::PlaceTable, reason, true);
+            moveCardTo(card, player, NULL, Player::PlaceTable, reason, true);
             QList<int> table_cardids = getCardIdsOnTable(card);
             if (!table_cardids.isEmpty()) {
                 DummyCard dummy(table_cardids);
-                moveCardTo(&dummy, NULL, Player::DiscardPile, reason, true);
+                moveCardTo(&dummy, player, NULL, Player::DiscardPile, reason, true);
             }
         } else if (method != Card::MethodNone && !isRetrial) {
             QList<int> card_ids;
@@ -1458,6 +1476,7 @@ const Card *Room::askForCard(ServerPlayer *player, const QString &pattern, const
                 && player->hasSkill(card->getSkillName()))
                 notifySkillInvoked(player, card->getSkillName());
             CardResponseStruct resp(card, to, method == Card::MethodUse);
+            resp.m_isHandcard = isHandcard;
             QVariant data = QVariant::fromValue(resp);
             thread->trigger(CardResponded, this, player, data);
             if (method == Card::MethodUse) {
@@ -2958,7 +2977,21 @@ void Room::processClientReply(ServerPlayer *player, const Packet &packet) {
 bool Room::useCard(const CardUseStruct &use, bool add_history) {
     CardUseStruct card_use = use;
     card_use.m_addHistory = false;
+    card_use.m_isHandcard = true;
     const Card *card = card_use.card;
+    QList<int> ids;
+    if (!card->isVirtualCard()) ids << card->getEffectiveId();
+    else ids = card->getSubcards();
+    if (!ids.isEmpty()) {
+        foreach (int id, ids) {
+            if (getCardOwner(id) != use.from || getCardPlace(id) != Player::PlaceHand) {
+                card_use.m_isHandcard = false;
+                break;
+            }
+        }
+    } else {
+        card_use.m_isHandcard = false;
+    }
 
     if (card_use.from->isCardLimited(card, card->getHandlingMethod())
         && (!card->canRecast() || card_use.from->isCardLimited(card, Card::MethodRecast)))
@@ -3184,11 +3217,12 @@ void Room::recover(ServerPlayer *player, const RecoverStruct &recover, bool set_
     thread->trigger(HpRecover, this, player, data);
 }
 
-bool Room::cardEffect(const Card *card, ServerPlayer *from, ServerPlayer *to) {
+bool Room::cardEffect(const Card *card, ServerPlayer *from, ServerPlayer *to, bool multiple) {
     CardEffectStruct effect;
     effect.card = card;
     effect.from = from;
     effect.to = to;
+    effect.multiple = multiple;
 
     return cardEffect(effect);
 }
@@ -3202,8 +3236,7 @@ bool Room::cardEffect(const CardEffectStruct &effect) {
         // Make sure that effectiveness of Slash isn't judged here!
         if (!thread->trigger(CardEffected, this, effect.to, data)) {
             cancel = true;
-        }
-        else {
+        } else {
             if (!effect.to->hasFlag("Global_NonSkillNullify"))
                 ;//setEmotion(effect.to, "skill_nullify");
             else
@@ -3594,7 +3627,6 @@ void Room::throwCard(const Card *card, const CardMoveReason &reason, ServerPlaye
     log.card_str = IntList2StringList(to_discard).join("+");
     sendLog(log);
 
-    QList<CardsMoveStruct> moves;
     if (who) { // player's card cannot enter discard_pile directly
         CardsMoveStruct move(to_discard, who, NULL, Player::PlaceUnknown, Player::PlaceTable, reason);
         moveCardsAtomic(move, true);
@@ -4998,38 +5030,40 @@ void Room::askForGuanxing(ServerPlayer *zhuge, const QList<int> &cards, Guanxing
 
             QList<int> to_move = cards;
 
-            JsonArray movearg_base;
-            movearg_base << S_GUANXING_MOVE;
+            if (to_move != realtopcards) {
+                JsonArray movearg_base;
+                movearg_base << S_GUANXING_MOVE;
 
-            if (guanxing_type == GuanxingBothSides && !realbottomcards.isEmpty()) {
-                for (int i = 0; i < realbottomcards.length(); ++i) {
-                    int id = realbottomcards.at(i);
+                if (guanxing_type == GuanxingBothSides && !realbottomcards.isEmpty()) {
+                    for (int i = 0; i < realbottomcards.length(); ++i) {
+                        int id = realbottomcards.at(i);
+                        int pos = to_move.indexOf(id);
+                        to_move.removeOne(id);
+                        JsonArray movearg = movearg_base;
+                        movearg << pos + 1 << -i - 1;
+                        doBroadcastNotify(S_COMMAND_MIRROR_GUANXING_STEP, movearg, isTrustAI ? NULL : zhuge);
+                        thread->delay();
+                    }
+                }
+
+                for (int i = 0; i < realtopcards.length() - 1; ++i) {
+                    int id = realtopcards.at(i);
                     int pos = to_move.indexOf(id);
+
+                    if (pos == i)
+                        continue;
+
                     to_move.removeOne(id);
+                    to_move.insert(i, id);
                     JsonArray movearg = movearg_base;
-                    movearg << pos + 1 << -i - 1;
+                    movearg << pos + 1 << i + 1;
                     doBroadcastNotify(S_COMMAND_MIRROR_GUANXING_STEP, movearg, isTrustAI ? NULL : zhuge);
                     thread->delay();
                 }
-            }
 
-            for (int i = 0; i < realtopcards.length() - 1; ++i) {
-                int id = realtopcards.at(i);
-                int pos = to_move.indexOf(id);
-
-                if (pos == i)
-                    continue;
-
-                to_move.removeOne(id);
-                to_move.insert(i, id);
-                JsonArray movearg = movearg_base;
-                movearg << pos + 1 << i + 1;
-                doBroadcastNotify(S_COMMAND_MIRROR_GUANXING_STEP, movearg, isTrustAI ? NULL : zhuge);
+                thread->delay();
                 thread->delay();
             }
-
-            thread->delay();
-            thread->delay();
 
             if (isTrustAI) {
                 JsonArray stepArgs;
@@ -5686,6 +5720,7 @@ void Room::retrial(const Card *card, ServerPlayer *player, JudgeStruct *judge, c
     if (card == NULL) return;
 
     bool triggerResponded = getCardOwner(card->getEffectiveId()) == player;
+    bool isHandcard = (triggerResponded && getCardPlace(card->getEffectiveId()) == Player::PlaceHand);
 
     const Card *oldJudge = judge->card;
     judge->card = Sanguosha->getCard(card->getEffectiveId());
@@ -5721,6 +5756,8 @@ void Room::retrial(const Card *card, ServerPlayer *player, JudgeStruct *judge, c
 
     if (triggerResponded) {
         CardResponseStruct resp(card, judge->who);
+        resp.m_isHandcard = isHandcard;
+        resp.m_isRetrial = true;
         QVariant data = QVariant::fromValue(resp);
         thread->trigger(CardResponded, this, player, data);
     }
@@ -5870,13 +5907,15 @@ void Room::sortByActionOrder(QList<ServerPlayer *> &players) {
         qSort(players.begin(), players.end(), ServerPlayer::CompareByActionOrder);
 }
 
-void Room::cancelTarget(CardUseStruct &use, const QString &name) {
+void Room::cancelTarget(CardUseStruct &use, const QString &name)
+{
     if (use.to.isEmpty())
         return;
     cancelTarget(use, use.to.first()->getRoom()->findPlayer(name)); // use.from can be NULL, but use.to must not have a value that is NULL
 }
 
-void Room::cancelTarget(CardUseStruct &use, ServerPlayer *player) {
+void Room::cancelTarget(CardUseStruct &use, ServerPlayer *player)
+{
     if (player == NULL)
         return;
 
@@ -5885,8 +5924,7 @@ void Room::cancelTarget(CardUseStruct &use, ServerPlayer *player) {
     if (use.from) {
         log.type = "$CancelTarget";
         log.from = use.from;
-    }
-    else {
+    } else {
         log.type = "$CancelTargetNoUser";
     }
     log.to << player;
@@ -5897,17 +5935,6 @@ void Room::cancelTarget(CardUseStruct &use, ServerPlayer *player) {
 
     use.to.removeOne(player);
 
-    if (use.card != NULL && use.card->isKindOf("Slash")) {
-        player->removeQinggangTag(use.card);
-
-        QStringList blade_use = player->property("blade_use").toStringList();
-
-        if (blade_use.contains(use.card->toString())) {
-            blade_use.removeOne(use.card->toString());
-            room->setPlayerProperty(player, "blade_use", blade_use);
-
-            if (blade_use.isEmpty())
-                room->removePlayerDisableShow(player, "Blade");
-        }
-    }
+    if (use.card != NULL && use.card->isKindOf("Slash"))
+        player->slashSettlementFinished(use.card);
 }

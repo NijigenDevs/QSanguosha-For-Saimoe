@@ -105,15 +105,6 @@ public:
             parent->mouseReleaseEvent(event);
         QGraphicsView::mouseReleaseEvent(event);
     }
-
-#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-    virtual void mouseDoubleClickEvent(QMouseEvent *event) {
-        MainWindow *parent = qobject_cast<MainWindow *>(parentWidget());
-        if (parent)
-            parent->mouseDoubleClickEvent(event);
-        QGraphicsView::mouseDoubleClickEvent(event);
-    }
-#endif
 #endif
 
     virtual void resizeEvent(QResizeEvent *event) {
@@ -396,10 +387,6 @@ void MainWindow::changeEvent(QEvent *event)
     if (event->type() == QEvent::WindowStateChange) {
         repaintButtons();
         roundCorners();
-#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-        if (view && view->viewport())
-            view->viewport()->repaint();
-#endif
     }
     QMainWindow::changeEvent(event);
 }
@@ -649,11 +636,7 @@ void MainWindow::startConnection() {
 }
 
 void MainWindow::on_actionReplay_triggered() {
-#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-    QString location = QDesktopServices::storageLocation(QDesktopServices::HomeLocation);
-#else
     QString location = QStandardPaths::writableLocation(QStandardPaths::HomeLocation);
-#endif
     QString last_dir = Config.value("LastReplayDir").toString();
     if (!last_dir.isEmpty())
         location = last_dir;
@@ -863,7 +846,7 @@ void MainWindow::on_actionAbout_triggered() {
         const char *time = __TIME__;
         content.append(tr("Compilation time: %1 %2 <br/>").arg(date).arg(time));
 
-        QString project_url = "https://github.com/QSanguosha-Rara/QSanguosha-For-Hegemony";
+        QString project_url = "https://github.com/QSanguosha/QSanguosha-For-Hegemony";
         content.append(tr("Source code: <a href='%1' style = \"color:#0072c1; \">%1</a> <br/>").arg(project_url));
 
         QString forum_url = "http://qsanguosha.org";
@@ -1058,11 +1041,7 @@ void MainWindow::on_actionReplay_file_convert_triggered() {
 }
 
 void MainWindow::on_actionRecord_analysis_triggered() {
-#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-    QString location = QDesktopServices::storageLocation(QDesktopServices::HomeLocation);
-#else
     QString location = QStandardPaths::writableLocation(QStandardPaths::HomeLocation);
-#endif
     QString last_dir = Config.value("LastReplayDir").toString();
     if (!last_dir.isEmpty())
         location = last_dir;

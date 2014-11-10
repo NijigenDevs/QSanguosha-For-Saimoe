@@ -53,8 +53,8 @@ config = {
 		"MomentumEquip" ,
 		"StrategicAdvantage",
 
-		"Standard",
 		"Moesen",
+		"Standard",
 		"Formation",
 		"Momentum",
 		"Test",

@@ -2,6 +2,7 @@
 #include "skill.h"
 #include "standard-basics.h"
 #include "standard-tricks.h"
+#include "standard-shu-generals.h"
 #include "engine.h"
 #include "client.h"
 //this file is the general skills for animation.
@@ -1662,17 +1663,6 @@ public:
 };
 
 //qishu by SE
-
-
-Mashu::Mashu(const QString &owner) : DistanceSkill("mashu_" + owner) {
-}
-
-int Mashu::getCorrect(const Player *from, const Player *) const{
-    if (from->hasSkill(objectName()) && from->hasShownSkill(this))
-        return -1;
-    else
-        return 0;
-}
 
 //tengyue by SE
 class TengyueTrigger: public TriggerSkill {

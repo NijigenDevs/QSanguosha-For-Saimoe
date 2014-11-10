@@ -18,8 +18,18 @@
   QSanguosha-Rara
 *********************************************************************]]
 
-sgs.ai_skill_invoke.tuntian = true
-sgs.ai_skill_invoke._tuntian = true
+sgs.ai_skill_invoke.tuntian = function(self, data)
+	if not (self:willShowForAttack() or self:willShowForDefence()) then
+		return false
+	end
+	return true
+end
+sgs.ai_skill_invoke._tuntian = function(self, data)
+	if not (self:willShowForAttack() or self:willShowForDefence()) then
+		return false
+	end
+	return true
+end
 
 local jixi_skill = {}
 jixi_skill.name = "jixi"
@@ -206,7 +216,7 @@ function SmartAI:isTiaoxinTarget(enemy)
 	if sgs.card_lack[enemy:objectName()]["Slash"] == 1
 		or self:needLeiji(self.player, enemy)
 		or self:getDamagedEffects(self.player, enemy, true)
-		or self:needToLoseHp(self.player, enemy, true)
+		or self:needToLoseHp(self.player, enemy, true, true)
 		then return true end
 	return false
 end
@@ -252,7 +262,9 @@ end
 
 sgs.ai_skill_cardask["@tiaoxin-slash"] = function(self, data, pattern, target)
 	if target then
-		for _, slash in ipairs(self:getCards("Slash")) do
+		local cards = self:getCards("Slash")
+		self:sortByUseValue(cards)
+		for _, slash in ipairs(cards) do
 			if self:isFriend(target) and self:slashIsEffective(slash, target) then
 				if self:needLeiji(target, self.player) then return slash:toString() end
 				if self:getDamagedEffects(target, self.player) then return slash:toString() end
@@ -263,7 +275,7 @@ sgs.ai_skill_cardask["@tiaoxin-slash"] = function(self, data, pattern, target)
 					return slash:toString()
 			end
 		end
-		for _, slash in ipairs(self:getCards("Slash")) do
+		for _, slash in ipairs(cards) do
 			if not self:isFriend(target) then
 				if not self:needLeiji(target, self.player) and not self:getDamagedEffects(target, self.player, true) then return slash:toString() end
 				if not self:slashIsEffective(slash, target) then return slash:toString() end
@@ -320,7 +332,12 @@ sgs.ai_use_value.ShangyiCard = 4
 sgs.ai_use_priority.ShangyiCard = 9
 sgs.ai_card_intention.ShangyiCard = 50
 
-sgs.ai_skill_invoke.yicheng = true
+sgs.ai_skill_invoke.yicheng = function(self, data)
+	if not self:willShowForDefence() then
+		return false
+	end
+	return true
+end
 
 sgs.ai_skill_discard.yicheng = function(self, discard_num, min_num, optional, include_equip)
 	if self.player:hasSkill("hongyan") then
@@ -374,7 +391,12 @@ sgs.ai_skill_discard.yicheng = function(self, discard_num, min_num, optional, in
 	return self:askForDiscard("dummyreason", 1, 1, false, true)
 end
 
-sgs.ai_skill_invoke.qianhuan = true
+sgs.ai_skill_invoke.qianhuan = function(self, data)
+	if not (self:willShowForAttack() or self:willShowForDefence() or self:willShowForMasochism() ) then
+		return false
+	end
+	return true
+end
 
 local invoke_qianhuan = function(self, use)
 	if (use.from and self:isFriend(use.from)) then return false end
@@ -384,7 +406,18 @@ local invoke_qianhuan = function(self, use)
 	local to = use.to:first()
 	if use.card:isKindOf("Slash") and not self:slashIsEffective(use.card, to, use.from) then return end
 	if use.card:isKindOf("TrickCard") and not self:hasTrickEffective(use.card, to, use.from) then return end
-	if (self.player:getPile("sorcery"):length() == 1) and not (use.card:isKindOf("Slash") or use.card:isKindOf("duel") or use.card:isKindOf("FireAttack")) then return false end
+	if self.player:getPile("sorcery"):length() == 1 then
+		if use.card:isKindOf("Slash") or use.card:isKindOf("Duel") or use.card:isKindOf("FireAttack") or use.card:isKindOf("BurningCamps")
+			or use.card:isKindOf("ArcheryAttack") or use.card:isKindOf("Drowning") or use.card:isKindOf("SavageAssault") then
+			return true
+		end
+		if use.card:isKindOf("KnownBoth") or use.card:isKindOf("Dismantlement") or use.card:isKindOf("Indulgence") then
+			--@todo
+			return false
+		end
+		self.room:writeToConsole("invoke_qianhuan ? " .. use.card:getClassName())
+		return false
+	end
 	if to and to:objectName() == self.player:objectName() then
 		return not (use.from and (use.from:objectName() == to:objectName()
 									or (use.card:isKindOf("Slash") and self:isPriorFriendOfSlash(self.player, use.card, use.from))))

@@ -203,6 +203,11 @@ bool ServerPlayer::askForSkillInvoke(const QString &skill_name, const QVariant &
     return room->askForSkillInvoke(this, skill_name, data);
 }
 
+bool ServerPlayer::askForSkillInvoke(const Skill *skill, const QVariant &data) {
+    Q_ASSERT(skill != NULL);
+    return room->askForSkillInvoke(this, skill->objectName(), data);
+}
+
 QList<int> ServerPlayer::forceToDiscard(int discard_num, bool include_equip, bool is_discard) {
     QList<int> to_discard;
 
@@ -253,11 +258,9 @@ int ServerPlayer::getPlayerNumWithSameKingdom(const QString &reason, const QStri
     foreach (ServerPlayer *p, players) {
         if (!p->hasShownOneGeneral())
             continue;
-        if (to_calculate == "careerist") {
-            if (p->getRole() == "careerist") {
-                ++num;
-                break;    // careerist always alone.
-            }
+        if (p->getRole() == "careerist") { // if player is careerist, DO NOT COUNT AS SOME KINGDOM!!!!!
+            if (to_calculate == "careerist")
+                num = 1;
             continue;
         }
         if (p->getKingdom() == to_calculate)
@@ -1863,16 +1866,9 @@ QStringList ServerPlayer::getBigKingdoms(const QString &reason, MaxCardsType::Ma
     // if there is someone has JadeSeal, needn't trigger event because of the fucking effect of JadeSeal
     QMap<QString, int> kingdom_map;
     QStringList kingdoms = Sanguosha->getKingdoms();
-    kingdoms << "careerist";
     foreach (QString kingdom, kingdoms) {
         if (kingdom == "god") continue;
         kingdom_map.insert(kingdom, getPlayerNumWithSameKingdom(reason, kingdom, type));
-    }
-    foreach (ServerPlayer *p, room->getAlivePlayers()) {
-        if (!p->hasShownOneGeneral()) {
-            kingdom_map.insert("anjiang", 1);
-            break;
-        }
     }
     QStringList big_kingdoms;
     foreach (QString key, kingdom_map.keys()) {
@@ -1902,7 +1898,8 @@ QStringList ServerPlayer::getBigKingdoms(const QString &reason, MaxCardsType::Ma
     return big_kingdoms;
 }
 
-void ServerPlayer::changeToLord() {
+void ServerPlayer::changeToLord()
+{
     foreach(QString skill_name, head_skills.keys()) {
         Player::loseSkill(skill_name);
         JsonArray arg_loseskill;
@@ -1959,7 +1956,21 @@ void ServerPlayer::changeToLord() {
             room->doNotify(this, S_COMMAND_SET_MARK, arg);
         }
     }
+}
 
+void ServerPlayer::slashSettlementFinished(const Card *slash)
+{
+    removeQinggangTag(slash);
+
+    QStringList blade_use = property("blade_use").toStringList();
+
+    if (blade_use.contains(slash->toString())) {
+        blade_use.removeOne(slash->toString());
+        room->setPlayerProperty(this, "blade_use", blade_use);
+
+        if (blade_use.isEmpty())
+            room->removePlayerDisableShow(this, "Blade");
+    }
 }
 
 #ifndef QT_NO_DEBUG

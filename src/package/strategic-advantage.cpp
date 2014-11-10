@@ -244,7 +244,7 @@ public:
     }
 
     virtual bool cost(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *) const{
-        return player->askForSkillInvoke(objectName());
+        return player->askForSkillInvoke(this);
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
@@ -634,11 +634,15 @@ bool LureTiger::targetFilter(const QList<const Player *> &targets, const Player 
 }
 
 void LureTiger::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
+    QStringList nullified_list = room->getTag("CardUseNullifiedList").toStringList();
+    bool all_nullified = nullified_list.contains("_ALL_TARGETS");
     foreach(ServerPlayer *target, targets) {
         CardEffectStruct effect;
         effect.card = this;
         effect.from = source;
         effect.to = target;
+        effect.multiple = (targets.length() > 1);
+        effect.nullified = (all_nullified || nullified_list.contains(target->objectName()));
 
         room->cardEffect(effect);
     }
@@ -954,11 +958,15 @@ void AllianceFeast::onUse(Room *room, const CardUseStruct &card_use) const{
 }
 
 void AllianceFeast::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
+    QStringList nullified_list = room->getTag("CardUseNullifiedList").toStringList();
+    bool all_nullified = nullified_list.contains("_ALL_TARGETS");
     foreach(ServerPlayer *target, targets) {
         CardEffectStruct effect;
         effect.card = this;
         effect.from = source;
         effect.to = target;
+        effect.multiple = (targets.length() > 1);
+        effect.nullified = (all_nullified || nullified_list.contains(target->objectName()));
 
         if (target == source) {
             int n = 0;
@@ -1034,10 +1042,10 @@ bool ThreatenEmperor::isAvailable(const Player *player) const{
     if (invoke) {
         if (big_kingdoms.length() == 1 && big_kingdoms.first().startsWith("sgs")) // for JadeSeal
             invoke = big_kingdoms.contains(player->objectName());
-        else {
-            QString kingdom = player->getRole() == "careerist" ? "careerist" : player->getKingdom();
-            invoke = big_kingdoms.contains(kingdom);
-        }
+        else if (player->getRole() == "careerist")
+            invoke = false;
+        else
+            invoke = big_kingdoms.contains(player->getKingdom());
     }
     return invoke && !player->isProhibited(player, this) && TrickCard::isAvailable(player);
 }
@@ -1051,7 +1059,7 @@ void ThreatenEmperor::onEffect(const CardEffectStruct &effect) const{
 class ThreatenEmperorSkill : public TriggerSkill {
 public:
     ThreatenEmperorSkill() : TriggerSkill("threaten_emperor") {
-        events << EventPhaseStart;
+        events << EventPhaseChanging;
         global = true;
     }
 
@@ -1059,9 +1067,10 @@ public:
         return 1;
     }
 
-    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const{
+    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent, Room *room, ServerPlayer *, QVariant &data) const{
         QMap<ServerPlayer *, QStringList> list;
-        if (player->getPhase() != Player::NotActive)
+        PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+        if (change.to != Player::NotActive)
             return list;
         foreach (ServerPlayer *p, room->getAllPlayers())
             if (p->getMark("ThreatenEmperorExtraTurn") > 0)
