@@ -957,6 +957,7 @@ public:
     	Card *acard = new ThunderSlash(originalCard->getSuit(), originalCard->getNumber());
         acard->addSubcard(originalCard->getId());
         acard->setSkillName("leiguang");
+        acard->setShowSkill("leiguang");
         return acard;
     }
 };
@@ -976,7 +977,8 @@ public:
         if (!TriggerSkill::triggerable(player))
             return QStringList();
        	CardUseStruct use = data.value<CardUseStruct>();
-       	if (use.card->getSkillName() == "leiguang" && use.card->isKindOf("Slash") && use.from == player && use.to.length() == 1 && use.to.first()->isAlive())
+       	if (use.card->getSkillName() == "leiguang" && use.card->isKindOf("Slash") 
+       		&& use.from == player && use.to.length() == 1 && use.to.first()->isAlive())
        		return QStringList(objectName());
         return QStringList();
     }
@@ -1031,8 +1033,10 @@ public:
        	DamageStruct damage = data.value<DamageStruct>();
        	Collateral *collateral = new Collateral(Card::SuitToBeDecided, 0);
        	QList<const Player *> targets;
-       	if (player->getWeapon() && ((event == DamageCaused && player->canDiscard(player, player->getWeapon()->getEffectiveId()) && damage.card->isKindOf("Slash")) || (event == DamageInflicted && damage.from != player && collateral
-       	->targetFilter(targets, player,damage.from) && (!damage.from->isProhibited(player, collateral, targets))))) {
+       	if (player->getWeapon() && 
+       		((event == DamageCaused && player->canDiscard(player, player->getWeapon()->getEffectiveId()) && damage.card->isKindOf("Slash")) ||
+       		(event == DamageInflicted && damage.from != player && collateral->targetFilter(targets, player,damage.from) && 
+       		(!damage.from->isProhibited(player, collateral, targets))))) {
        		return QStringList(objectName());
        	}
         return QStringList();
@@ -1102,6 +1106,137 @@ public:
     }
 };
 
+class Canshi : public TriggerSkill {
+public:
+    Canshi() : TriggerSkill("canshi") {
+        events << Damaged << FinishJudge;
+    }
+
+    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+        QMap<ServerPlayer *, QStringList> skill_list;
+        if (player == NULL) return skill_list;
+        if (triggerEvent == Damaged) {
+            DamageStruct damage = data.value<DamageStruct>();
+            if (damage.card == NULL || !damage.card->isKindOf("Slash") || damage.to->isDead())
+                return skill_list;
+
+            QList<ServerPlayer *> rins = room->findPlayersBySkillName(objectName());
+            foreach(ServerPlayer *rin, rins)
+                if (rin->canDiscard(rin, "he"))
+                    skill_list.insert(rin, QStringList(objectName()));
+            return skill_list;
+        }
+        else {
+            JudgeStruct *judge = data.value<JudgeStruct *>();
+            if (judge->reason != objectName()) return skill_list;
+            judge->pattern = QString::number(int(judge->card->getSuit()));
+			if (judge->reason == objectName() && room->getCardPlace(judge->card->getEffectiveId()) == Player::PlaceJudge && judge->who->getPile("gem").length() < 10)
+				judge->who->addToPile("gem", judge->card);
+            return skill_list;
+        }
+        return skill_list;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *ask_who) const{
+        ServerPlayer *rin = ask_who;
+
+        if (rin != NULL){
+            rin->tag["canshi_data"] = data;
+            bool invoke = room->askForDiscard(rin, objectName(), 1, 1, true, true, "@canshi", true);
+            rin->tag.remove("canshi_data");
+
+            if (invoke){
+                room->doAnimate(QSanProtocol::S_ANIMATE_INDICATE, rin->objectName(), data.value<DamageStruct>().to->objectName());
+                room->broadcastSkillInvoke(objectName(), rin);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const{
+        ServerPlayer *rin = ask_who;
+        if (rin == NULL) return false;
+        DamageStruct damage = data.value<DamageStruct>();
+
+        JudgeStruct judge;
+        judge.good = true;
+        judge.play_animation = false;
+        judge.who = rin;
+        judge.reason = objectName();
+
+        room->judge(judge);
+
+        Card::Suit suit = (Card::Suit)(judge.pattern.toInt());
+        switch (suit) {
+        case Card::Heart: {
+            RecoverStruct recover;
+            recover.who = rin;
+            room->recover(player, recover);
+
+            break;
+        }
+        case Card::Diamond: {
+            player->drawCards(2);
+            break;
+        }
+        case Card::Club: {
+            if (damage.from && damage.from->isAlive())
+                room->askForDiscard(damage.from, "canshi_discard", 2, 2, false, true);
+
+            break;
+        }
+        case Card::Spade: {
+            if (damage.from && damage.from->isAlive())
+                damage.from->turnOver();
+
+            break;
+        }
+        default:
+            break;
+        }
+
+        return false;
+    }
+};
+
+class Modan : public ViewAsSkill {
+public:
+    Modan() : ViewAsSkill("modan") {
+        expand_pile = "gem";
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return !player->getPile("gem").isEmpty() ;
+    }
+
+    virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const{
+		ExpPattern pattern(".|.|.|gem");
+		if (!pattern.match(Self, to_select))
+			return false;
+
+	    foreach (const Card *gem, selected)
+	        if (to_select->getSuit() == gem->getSuit())
+	            return false;
+
+    	if (selected.length() >= 4)
+	        return false;
+	    return true;
+    }
+
+    virtual const Card *viewAs(const QList<const Card *> &cards) const{
+        if (cards.length() == 4) {
+            ArcheryAttack *aa = new ArcheryAttack(Card::SuitToBeDecided, 0);
+            aa->addSubcards(cards);
+            aa->setSkillName("modan");
+            aa->setShowSkill("modan");
+            return aa;
+        }
+        else
+            return NULL;
+    }
+};
+
 void MoesenPackage::addGameGenerals()
 {
     /*General *nagisa = new General(this, "nagisa", "wu", 3, false); // Game 001
@@ -1113,11 +1248,15 @@ void MoesenPackage::addGameGenerals()
     /*
     General *tomoyo = new General(this, "tomoyo", "wu", 3, false); // Game 003
 
-    General *t_rin = new General(this, "t_rin", "wu", 3, false); // Game 004
+
 
     General *altria = new General(this, "altria", "wu", 3, false); // Game 005
 	
 	*/
+
+    General *t_rin = new General(this, "t_rin", "wu", 3, false); // Game 004
+    t_rin->addSkill(new Canshi);
+    t_rin->addSkill(new Modan);
 
     General *nanoha = new General(this, "nanoha", "wu", 4, false); // Game 001 ps:Moe
     nanoha->addSkill(new Liepo);
