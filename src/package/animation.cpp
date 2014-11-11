@@ -872,7 +872,7 @@ public:
         }
         else if (triggerEvent == Damage){
             DamageStruct damage = data.value<DamageStruct>();
-            if (damage.card && damage.card->getSkillName() == "yinren" && damage.from && damage.from->isAlive() && damage.to->canDiscard(damage.from, "h")){
+            if (damage.card && damage.card->getSkillName() == "yinren" && damage.from && damage.from->isAlive() && damage.to->isAlive() && damage.to->canDiscard(damage.from, "h")){
                 ask_who = damage.to;
                 return QStringList(objectName());
             }
@@ -927,7 +927,7 @@ public:
             }
         }
         else {
-            if (ask_who){
+            if (ask_who  ){
                 DamageStruct damage = data.value<DamageStruct>();
                 int id = room->askForCardChosen(ask_who, damage.from, "h", objectName(), false, Card::MethodDiscard);
                 room->throwCard(id, damage.from, ask_who);
