@@ -416,7 +416,7 @@ public:
         }
         else {
             DamageStruct damage = data.value<DamageStruct>();
-            if (damage.card->getSkillName() == "wuwei") {
+            if (damage.card && damage.card->getSkillName() == "wuwei") {
                 return QStringList(objectName());
             }
         }
