@@ -1113,7 +1113,7 @@ public:
         return pattern == "@@xiehang";
     }
 
-    virtual bool isEnabledAtPlay(const Player *player) const{
+    virtual bool isEnabledAtPlay(const Player *) const{
         return false;
     }
 
