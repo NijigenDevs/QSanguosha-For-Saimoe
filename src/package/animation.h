@@ -32,13 +32,16 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
-class XiehangUseCard: public SkillCard {
+class XiehangUseCard : public SkillCard {
     Q_OBJECT
 
 public:
     Q_INVOKABLE XiehangUseCard();
+
     virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
-    virtual const Card *validate(CardUseStruct &use) const;
+    virtual bool targetFixed() const;
+    virtual bool targetsFeasible(const QList<const Player *> &targets, const Player *Self) const;
+    virtual const Card *validate(CardUseStruct &cardUse) const;
 };
 
 class BajianCard: public SkillCard {

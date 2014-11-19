@@ -992,21 +992,94 @@ public:
 //xiehang by SE    NEED DEBUG
 
 XiehangCard::XiehangCard() {
+    
 }
 
-bool XiehangCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *) const{
-    return targets.isEmpty() && !to_select->isKongcheng();
+bool XiehangCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+    return targets.isEmpty() && !to_select->isKongcheng() && to_select->objectName() != Self->objectName();
 }
 
 void XiehangCard::use(Room *room, ServerPlayer *asuka, QList<ServerPlayer *> &targets) const{
     ServerPlayer *target = targets.first();
     room->broadcastSkillInvoke("xiehang");
-    PindianStruct pindian = PindianStruct();
-    pindian.from = asuka;
-    pindian.to = target;
-    pindian.reason = "xiehang_pindian";
-    asuka->pindian(&pindian);
+    PindianStruct *pindian = asuka->pindianSelect(target, "xiehang");
+    //get the ids before pindian
+    QList<int> cardids;
+    cardids.append(pindian->from_card->getEffectiveId());
+    cardids.append(pindian->to_card->getEffectiveId());
+
+    bool win = asuka->pindian(pindian);
+    ServerPlayer *user = asuka;
+    if (!win){
+        if (!target->hasSkill("xiehangAnother"))
+            room->acquireSkill(target, "xiehangAnother");
+        user = target;
+    }
+    if (!user->hasSkill("xiehang-viewas")){
+        room->acquireSkill(user, "xiehang-viewas");
+    }
+    
+    
+    room->fillAG(cardids, user);
+    int id = room->askForAG(user, cardids, false, objectName());
+    room->clearAG(user);
+    if (id == -1)
+        return;
+    user->loseAllMarks("xiehangCardId");
+    user->gainMark("xiehangCardId", id);
+    Card * card = Sanguosha->getCard(id);
+    bool trigger = false;
+    if (card->isKindOf("Slash")){
+        trigger = user->canSlashWithoutCrossbow();
+    }
+    else if (card->isKindOf("Peach")){
+        trigger = user->isWounded();
+    }
+    else if (card->isKindOf("Analeptic") || card->isKindOf("TrickCard") || card->isKindOf("EquipCard")){
+        trigger = true;
+    }
+    if (!trigger) return;
+    room->askForUseCard(user, "@@xiehang", objectName());
 }
+
+XiehangUseCard::XiehangUseCard() {
+}
+
+bool XiehangUseCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+    Card* card = Sanguosha->getCard(Self->getMark("xiehangCardId"));
+    return card && card->targetFilter(targets, to_select, Self) && !Self->isProhibited(to_select, card, targets);
+}
+
+bool XiehangUseCard::targetFixed() const{
+    Card* card = Sanguosha->getCard(Self->getMark("xiehangCardId"));
+    return card && card->targetFixed();
+}
+
+bool XiehangUseCard::targetsFeasible(const QList<const Player *> &targets, const Player *Self) const{
+    Card* card = Sanguosha->getCard(Self->getMark("xiehangCardId"));
+    return card && card->targetsFeasible(targets, Self);
+}
+
+const Card * XiehangUseCard::validate(CardUseStruct &cardUse) const{
+    Card* card = Sanguosha->getCard(Self->getMark("xiehangCardId"));
+    //Card *new_card = Sanguosha->cloneCard(card);
+    //new_card->setSkillName("xiehang");
+    //new_card->addSubcard(card);
+    bool ok = true;
+    foreach(ServerPlayer *p, cardUse.to){
+        if (cardUse.from->isProhibited(p, card)){
+            ok = false;
+            break;
+        }
+    }
+    ok = ok && card->isAvailable(cardUse.from);
+    //card->deleteLater();
+    if (!ok) return NULL;
+    return card;
+
+}
+
+
 
 class Xiehang: public ZeroCardViewAsSkill {
 public:
@@ -1017,111 +1090,43 @@ public:
         return !player->isKongcheng();
     }
 
+    virtual bool isEnabledAtResponse(const Player *, const QString &pattern) const{
+        return pattern =="@@xiehang";
+    }
+
     virtual const Card *viewAs() const{
+        if (Sanguosha->currentRoomState()->getCurrentCardUsePattern() == "@@xiehang") {
+            return new XiehangUseCard;
+        }
         XiehangCard *card = new XiehangCard;
         card->setShowSkill(objectName());
         return card;
     }
 };
 
-XiehangUseCard::XiehangUseCard() {
-}
-
-bool XiehangUseCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
-    Card *card = Sanguosha->getCard(Self->getMark("Xiehang_id"));
-    card->setSkillName("xiehang");
-    return card->targetFilter(targets, to_select, Self);
-}
-
-const Card *XiehangUseCard::validate(CardUseStruct &use) const{
-    use.from->getRoom()->broadcastSkillInvoke(objectName());
-    Card *card = Sanguosha->getCard(getSubcards().first());
-    card->setSkillName("xiehang");
-    return card;
-}
-
-class XiehangViewAsSkill: public ZeroCardViewAsSkill {
+class XiehangAnother : public ZeroCardViewAsSkill {
 public:
-    XiehangViewAsSkill(): ZeroCardViewAsSkill("xiehang-trigger") {
-        response_pattern = "@@xiehang";
+    XiehangAnother() : ZeroCardViewAsSkill("xiehangAnother") {
+    }
+
+    virtual bool isEnabledAtResponse(const Player *, const QString &pattern) const{
+        return pattern == "@@xiehang";
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return false;
     }
 
     virtual const Card *viewAs() const{
-        XiehangUseCard *card = new XiehangUseCard;
-        card->setShowSkill(objectName());
-        return card;
+        if (Sanguosha->currentRoomState()->getCurrentCardUsePattern() == "@@xiehang") {
+            return new XiehangUseCard;
+        }
+        return NULL;
     }
 };
 
 
-class XiehangTrigger: public TriggerSkill {
-public:
-    XiehangTrigger(): TriggerSkill("xiehang-trigger") {
-        events << Pindian << GeneralShown << Death;
-        view_as_skill = new XiehangViewAsSkill;
-    }
 
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
-        if (triggerEvent == Pindian){
-            PindianStruct* pindian = data.value<PindianStruct*>();
-            if (pindian->reason != "xiehang_pindian")
-                return QStringList();
-            return QStringList(objectName());
-        }else if(triggerEvent == GeneralShown){
-            foreach (ServerPlayer *player, room->getAllPlayers()){
-                if (!player->hasSkill(objectName())){
-                    player->acquireSkill(objectName());
-                }
-            }
-        }else if(triggerEvent == Death){
-            foreach (ServerPlayer *player, room->getOtherPlayers(player)){
-                if (player->hasSkill(objectName())){
-                    room->detachSkillFromPlayer(player, objectName());
-                }
-            }
-        }
-        return QStringList();
-    }
-
-    virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer * /* = NULL */) const{
-        if (triggerEvent == Pindian){
-            PindianStruct* pindian = data.value<PindianStruct*>();
-            ServerPlayer *winner = pindian->to;
-            if (pindian->isSuccess()) {
-                winner = pindian->from;
-            }
-            if (player->objectName() == winner->objectName() && winner->askForSkillInvoke(objectName(), data)){
-                room->broadcastSkillInvoke(objectName());
-                return true;
-            }
-            return false;
-        }
-        return false;
-    }
-
-    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer * player, QVariant &data, ServerPlayer *) const{
-        if (triggerEvent == Pindian){
-            PindianStruct* pindian = data.value<PindianStruct*>();
-                //broadcast
-            QList<int> cardids;
-            cardids.append(pindian->from_card->getEffectiveId());
-            cardids.append(pindian->to_card->getEffectiveId());
-            room->fillAG(cardids, player);
-            int id = room->askForAG(player, cardids, false, "xiehang");
-            room->clearAG(player);
-            if (id <= 0)
-                return false;
-            if (!player->hasSkill("xiehang-trigger")){
-                room->acquireSkill(player, "xiehang-trigger");
-            }
-            player->setMark("Xiehang_id", id);
-            room->askForUseCard(player, "@@xiehang", "@xiehang-vs");
-            player->setMark("Xiehang_id", 0);
-            return false;
-        }
-        return false;
-    }
-};
 
 //powei by SE
 class Powei: public TriggerSkill {
@@ -2124,9 +2129,9 @@ void MoesenPackage::addAnimationGenerals()
     rei->addSkill(new Chidun);
 
     General *asuka = new General(this, "asuka", "wei", 3, false); // Animation 011
-    asuka->addSkill(new XiehangTrigger);
     asuka->addSkill(new Xiehang);
-    related_skills.insertMulti("xiehang", "xiehang-trigger");
+    skills << new XiehangAnother;
+    related_skills.insertMulti("Xiehang", "XiehangAnother");
     asuka->addSkill(new Powei);
 
     General *inori = new General(this, "inori", "wei", 3, false); // Animation 012
