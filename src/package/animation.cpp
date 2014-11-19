@@ -125,7 +125,7 @@ public:
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{
-        return !player->isKongcheng() && Slash::IsAvailable(player);
+        return !player->isKongcheng() && Slash::IsAvailable(player) && !player->hasUsed(objectName());
     }
 
     virtual const Card *viewAs(const QList<const Card *> &cards) const{
@@ -1030,7 +1030,7 @@ void XiehangCard::use(Room *room, ServerPlayer *asuka, QList<ServerPlayer *> &ta
     Card * card = Sanguosha->getCard(id);
     bool trigger = false;
     if (card->isKindOf("Slash")){
-        trigger = user->canSlashWithoutCrossbow();
+        trigger = true;
     }
     else if (card->isKindOf("Peach")){
         trigger = user->isWounded();
