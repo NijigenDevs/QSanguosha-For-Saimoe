@@ -56,6 +56,11 @@ SOURCES += \
     src/package/formation.cpp \
     src/package/jiange-defense.cpp \
     src/package/momentum.cpp \
+    src/package/moesen-package.cpp \
+    src/package/animation.cpp \
+    src/package/comic.cpp \
+    src/package/novel.cpp \
+    src/package/game.cpp \
     src/package/standard.cpp \
     src/package/standard-basics.cpp \
     src/package/standard-equips.cpp \
@@ -165,6 +170,11 @@ HEADERS += \
     src/package/jiange-defense.h \
     src/package/momentum.h \
     src/package/package.h \
+    src/package/moesen-package.h \
+    src/package/animation.h \
+    src/package/comic.h \
+    src/package/novel.h \
+    src/package/game.h \
     src/package/standard.h \
     src/package/standard-basics.h \
     src/package/standard-equips.h \
