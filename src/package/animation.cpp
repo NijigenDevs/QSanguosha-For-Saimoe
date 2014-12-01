@@ -548,74 +548,87 @@ public:
 };
 
 //quanmian, miaolv -SE
-class Quanmian: public TriggerSkill {
-public:
-    Quanmian(): TriggerSkill("quanmian") {
-        events << CardUsed;
-        frequency = Frequent;
-    }
-
-    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer * &) const {
-        if (!TriggerSkill::triggerable(player))
-            return QStringList();
-
-        CardUseStruct use = data.value<CardUseStruct>();
-        if (use.card->isKindOf("EquipCard"))
-            return QStringList(objectName());
-        return QStringList();
-    }
-
-    virtual bool cost(TriggerEvent , Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const  {
-        ServerPlayer *target = room->askForPlayerChosen(player, room->getAlivePlayers(), objectName() ,"@quanmian_draw", true, true);
-        if (target) {
-            room->broadcastSkillInvoke(objectName());
-            player->tag["Quanmian"] = QVariant::fromValue(target);
-            return true;
-        }
-        player->tag.remove("Quanmian");
-        return false;
-    }
-
-    virtual bool effect(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *) const {
-        ServerPlayer *target = player->tag["Quanmian"].value<ServerPlayer*>();
-        if (target)
-            target->drawCards(1);
-        return false;
-    }
-};
-
-MiaolvCard::MiaolvCard() {
+QuanmianCard::QuanmianCard() {
 }
 
-bool MiaolvCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *) const{
+bool QuanmianCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *) const{
     return targets.isEmpty() && to_select->hasEquip();
 }
 
-void MiaolvCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
+void QuanmianCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
     ServerPlayer *yui = targets.first();
-    int cardid = room->askForCardChosen(source, yui, "e", "miaolv");
-    room->broadcastSkillInvoke("miaolv");
+    int cardid = room->askForCardChosen(source, yui, "e", "quanmian");
+    room->broadcastSkillInvoke("quanmian");
     yui->obtainCard(Sanguosha->getCard(cardid));
     if (yui != source)
         source->drawCards(1);
 }
 
 
-class Miaolv: public ZeroCardViewAsSkill {
+class Quanmian: public ZeroCardViewAsSkill {
 public:
-    Miaolv(): ZeroCardViewAsSkill("miaolv") {
+    Quanmian(): ZeroCardViewAsSkill("quanmian") {
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{
-        return !player->hasUsed("MiaolvCard");
+        return !player->hasUsed("QuanmianCard");
     }
 
     virtual const Card *viewAs() const{
-        MiaolvCard *card = new MiaolvCard;
+        QuanmianCard *card = new QuanmianCard;
         card->setShowSkill(objectName());
         return card;
     }
 };
+
+MiaolvCard::MiaolvCard() {
+	target_fixed = true;
+    mute = true;
+}
+
+void MiaolvCard::onUse(Room *room, const CardUseStruct &card_use) const{
+	CardUseStruct new_use = card_use;
+    foreach(ServerPlayer *p, room->getAlivePlayers()){
+    	if (p->getHp() == card_use.card->getSubcards().length()){
+    		new_use.to << p;
+    	}
+    }
+	Card::onUse(room, new_use);
+}
+
+void MiaolvCard::onEffect(const CardEffectStruct &effect) const{
+    Room *room = effect.to->getRoom();
+    RecoverStruct recover;
+    recover.who = effect.from;
+    room->recover(effect.to, recover);
+}
+
+
+class Miaolv: public ViewAsSkill {
+public:
+    Miaolv(): ViewAsSkill("miaolv") {
+    	response_or_use = true;
+    }
+
+    virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const{
+		return true;
+	}
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+		return player->getCardCount(true) > 0;
+    }
+
+    virtual const Card *viewAs(const QList<const Card *> &cards) const{
+    	if (cards.length() > 0) {
+	        MiaolvCard *card = new MiaolvCard;
+	        card->addSubcards(cards);
+	        card->setShowSkill(objectName());
+	        return card;    		
+    	}
+    	return NULL;
+    }
+};
+
 
 // yinzhuang, xiuse -SE, slob
 class Yinzhuang: public TriggerSkill {
@@ -727,20 +740,8 @@ public:
         return false;
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *mio, QVariant &, ServerPlayer *) const{
-        Slash *slash = new Slash(Card::NoSuit, 0);
-        slash->setSkillName("_"+objectName());
-        QList<ServerPlayer *> targets;
-        foreach (ServerPlayer *p, room->getAllPlayers())
-            if (mio->canSlash(p, slash, false))
-                targets << p;
-        if (!targets.isEmpty()) {
-            room->setTag("YinzhuangCard", -1);
-            ServerPlayer *target = room->askForPlayerChosen(mio, targets, "yinzhuang", "@yinzhuang_slash");
-            room->removeTag("YinzhuangCard");
-            room->useCard(CardUseStruct(slash, mio, target), false);
-        }
-
+    virtual bool effect(TriggerEvent, Room *, ServerPlayer *mio, QVariant &, ServerPlayer *) const{
+        mio->drawCards(1);
         return false;
     }
 };
@@ -772,9 +773,13 @@ public:
         return false;
     }
 
-    virtual bool effect(TriggerEvent, Room *, ServerPlayer *mio, QVariant &, ServerPlayer *) const{
-        mio->drawCards(1);
-        return false;
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *mio, QVariant &, ServerPlayer *) const{
+    	if (mio->isWounded()) {
+	    	RecoverStruct recover;
+	        recover.who = mio;
+	        room->recover(mio, recover);
+    	}
+		return false;
     }
 };
 
@@ -790,7 +795,8 @@ public:
         ServerPlayer *current = room->getCurrent();
         if (!current || current->isDead() || current->getPhase() == Player::NotActive) return QStringList();
         CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-        if (move.to == mio && move.to_place == Player::PlaceHand && !current->hasFlag("xiuse_used")) {
+        if (move.from == mio && (move.from_places.contains(Player::PlaceHand) || move.from_places.contains(Player::PlaceEquip)) 
+        	&& !(move.to == mio && (move.to_place == Player::PlaceHand || move.to_place == Player::PlaceEquip)) && !current->hasFlag("xiuse_used")) {
             return QStringList(objectName());
         }
         return QStringList();
@@ -2187,6 +2193,7 @@ void MoesenPackage::addAnimationGenerals()
 
     addMetaObject<WuweiCard>();
     addMetaObject<MiaolvCard>();
+    addMetaObject<QuanmianCard>();
     addMetaObject<MengyinCard>();
     addMetaObject<BajianCard>();
     addMetaObject<XiehangCard>();
