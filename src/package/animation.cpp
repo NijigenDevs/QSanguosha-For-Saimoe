@@ -1045,7 +1045,6 @@ void XiehangCard::use(Room *room, ServerPlayer *asuka, QList<ServerPlayer *> &ta
     room->clearAG(user);
     if (id == -1)
         return;
-    user->setMark("xiehangCardId", 0);
     user->setMark("xiehangCardId", id);
     Card * card = Sanguosha->getCard(id);
     bool trigger = false;
