@@ -828,7 +828,7 @@ public:
 
         QList<ServerPlayer *> yuis = room->findPlayersBySkillName(objectName());
         foreach (ServerPlayer *yui, yuis) {
-            if (yui->isFriendWith(use.from) || !use.from->hasShownOneGeneral())
+            if (yui->isFriendWith(use.from) || yui->willBeFriendWith(use.from))
                 skill_list.insert(yui, QStringList(objectName()));
         }
         return skill_list;
@@ -843,15 +843,35 @@ public:
         return false;
     }
 
-    virtual bool effect(TriggerEvent , Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const {
+    virtual bool effect(TriggerEvent , Room *room, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const {
         ask_who->drawCards(1);
-        player->askForGeneralShow(true);
+   		QStringList big_kingdoms = ask_who->getBigKingdoms(objectName(), MaxCardsType::Normal);
+	    QList<ServerPlayer *> bigs, smalls;
+	    foreach (ServerPlayer *p, room->getAllPlayers()) {
+	        QString kingdom = p->objectName();
+	        if (big_kingdoms.length() == 1 && big_kingdoms.first().startsWith("sgs")) { // for JadeSeal
+	            if (big_kingdoms.contains(kingdom))
+	                bigs << p;
+	            else
+	                smalls << p;
+	        } else {
+	            if (!p->hasShownOneGeneral()) {
+	                smalls << p;
+	                continue;
+	            }
+	            if (p->getRole() == "careerist")
+	                kingdom = "careerist";
+	            else
+	                kingdom = p->getKingdom();
+	            if (big_kingdoms.contains(kingdom))
+	                bigs << p;
+	            else
+	                smalls << p;
+	        }
+	    }
+	    if ((!smalls.contains(ask_who)) && ask_who->canDiscard(ask_who, "he"))
+	    	room->askForDiscard(ask_who, objectName(), 1, 1, false, true, "@yingan_friend");
 
-        if (player->hasShownOneGeneral() && ask_who->hasShownOneGeneral() && !player->isFriendWith(ask_who))
-            room->askForDiscard(ask_who, objectName(), 2, 2, false, true, "@yingan_enemy");
-        else if (player->isFriendWith(ask_who) && ask_who->getHandcardNum() > ask_who->getMaxHp()) {
-            room->askForDiscard(ask_who, objectName(), 1, 1, false, true, "@yingan_friend");
-        }
         return false;
     }
 };
@@ -1025,8 +1045,8 @@ void XiehangCard::use(Room *room, ServerPlayer *asuka, QList<ServerPlayer *> &ta
     room->clearAG(user);
     if (id == -1)
         return;
-    user->loseAllMarks("xiehangCardId");
-    user->gainMark("xiehangCardId", id);
+    user->setMark("xiehangCardId", 0);
+    user->setMark("xiehangCardId", id);
     Card * card = Sanguosha->getCard(id);
     bool trigger = false;
     if (card->isKindOf("Slash")){
