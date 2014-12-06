@@ -117,7 +117,7 @@ Engine::Engine()
 
     BanPair::loadBanPairs();
 
-    connect(qApp, SIGNAL(aboutToQuit()), this, SLOT(deleteLater()));
+    connect(qApp, &QApplication::aboutToQuit, this, &Engine::deleteLater);
 
     foreach (const Skill *skill, skills) {
         Skill *mutable_skill = const_cast<Skill *>(skill);
@@ -577,7 +577,7 @@ SkillCard *Engine::cloneSkillCard(const QString &name) const{
 }
 
 QSanVersionNumber Engine::getVersionNumber() const{
-    return QSanVersionNumber(0, 8, 0, QSanVersionNumber::beta, 2);
+    return QSanVersionNumber(0, 8, 0, QSanVersionNumber::beta, 3);
 }
 
 QString Engine::getVersion() const{

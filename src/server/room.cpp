@@ -32,6 +32,7 @@
 #include "generalselector.h"
 #include "json.h"
 #include "clientstruct.h"
+#include "roomthread.h"
 
 #include <lua.hpp>
 #include <QStringList>
@@ -939,8 +940,7 @@ bool Room::notifyMoveFocus(const QList<ServerPlayer *> &focuses, const Countdown
             players << focuses.at(i)->objectName();
         }
         arg << QVariant(players);
-    }
-    else {
+    } else {
         arg << QSanProtocol::S_ALL_ALIVE_PLAYERS;
     }
     //============================================
@@ -1148,10 +1148,9 @@ bool Room::_askForNullification(const Card *trick, ServerPlayer *from, ServerPla
     ServerPlayer *repliedPlayer = NULL;
     time_t timeOut = ServerInfo.getCommandTimeout(S_COMMAND_NULLIFICATION, S_SERVER_INSTANCE);
     if (!validHumanPlayers.isEmpty()) {
-        if (trick->isKindOf("AOE") || trick->isKindOf("GlobalEffect")) {
-            foreach(ServerPlayer *p, validHumanPlayers)
-                doNotify(p, S_COMMAND_NULLIFICATION_ASKED, trick->objectName());
-        }
+        foreach(ServerPlayer *p, validHumanPlayers)
+            doNotify(p, S_COMMAND_NULLIFICATION_ASKED, trick->objectName());
+
         repliedPlayer = doBroadcastRaceRequest(validHumanPlayers, S_COMMAND_NULLIFICATION,
             timeOut, &Room::verifyNullificationResponse);
     }
@@ -1957,9 +1956,9 @@ ServerPlayer *Room::addSocket(ClientSocket *socket) {
     player->setSocket(socket);
     m_players << player;
 
-    connect(player, SIGNAL(disconnected()), this, SLOT(reportDisconnection()));
-    connect(player, SIGNAL(roomPacketReceived(QSanProtocol::Packet)), this, SLOT(processClientPacket(QSanProtocol::Packet)));
-    connect(player, SIGNAL(invalidPacketReceived(QByteArray)), this, SLOT(reportInvalidPacket(QByteArray)));
+    connect(player, &ServerPlayer::disconnected, this, &Room::reportDisconnection);
+    connect(player, &ServerPlayer::roomPacketReceived, this, &Room::processClientPacket);
+    connect(player, &ServerPlayer::invalidPacketReceived, this, &Room::reportInvalidPacket);
 
     return player;
 }
@@ -2442,7 +2441,12 @@ void Room::addRobotCommand(ServerPlayer *player, const QVariant &) {
     const QString robot_avatar = Sanguosha->getRandomGeneralName();
     signup(robot, robot_name, robot_avatar, true);
 
-    QString greeting = tr("Hello, I'm a robot");
+    QString greeting;
+    QDate date = QDate::currentDate();
+    if (date.month() == 11 && date.day() == 30)
+        greeting = tr("Happy Birthday to Rara!");
+    else
+        greeting = tr("Hello, I'm a robot");
     speakCommand(robot, greeting);
 
     broadcastProperty(robot, "state");
@@ -2595,6 +2599,8 @@ void Room::chooseGenerals() {
             }
         }
     }
+
+    m_generalSelector->resetValues();
 
     foreach(ServerPlayer *player, m_players) {
         QStringList names;
@@ -3372,7 +3378,7 @@ ServerPlayer *Room::getFront(ServerPlayer *a, ServerPlayer *b) const{
     if (starter == NULL)
         starter = m_players.first();
     bool loop = false;
-    for (ServerPlayer *p = starter; p != starter || !loop; p = qobject_cast<ServerPlayer *>(p->getNext())) {
+    for (ServerPlayer *p = starter; p != starter || !loop; p = qobject_cast<ServerPlayer *>(p->getNext(false))) {
         loop = true;
         if (p == a)
             return a;
@@ -3516,7 +3522,7 @@ void Room::startGame() {
     _m_roomState.reset();
 
     thread = new RoomThread(this);
-    connect(thread, SIGNAL(started()), this, SIGNAL(game_start()));
+    connect(thread, &RoomThread::started, this, &Room::game_start);
 
     if (!_virtual) thread->start();
 }
@@ -5148,6 +5154,9 @@ void Room::askForGuanxing(ServerPlayer *zhuge, const QList<int> &cards, Guanxing
         m_drawPile->append(i.next());
 
     doBroadcastNotify(S_COMMAND_UPDATE_PILE, QVariant(m_drawPile->length()));
+
+    QVariant decisionData = QVariant::fromValue("guanxingViewCards:" + zhuge->objectName() + ":" + IntList2StringList(top_cards).join("+") + ":" + IntList2StringList(bottom_cards).join("+"));
+    thread->trigger(ChoiceMade, this, zhuge, decisionData);
 }
 
 int Room::doGongxin(ServerPlayer *shenlvmeng, ServerPlayer *target, QList<int> enabled_ids, const QString &skill_name) {

@@ -23,6 +23,7 @@
 #include "standard-tricks.h"
 #include "engine.h"
 #include "client.h"
+#include "roomthread.h"
 
 Blade::Blade(Card::Suit suit, int number)
     : Weapon(suit, number, 3)
@@ -104,8 +105,12 @@ const Card *HalberdCard::validate(CardUseStruct &card_use) const{
     Room *room = player->getRoom();
     room->setPlayerFlag(player, "HalberdUse");
     room->setPlayerFlag(player, "HalberdSlashFilter");
+    if (player->getWeapon() != NULL)
+        room->setCardFlag(player->getWeapon()->getId(), "using");
     bool use = room->askForUseCard(player, "slash", "@Halberd");
     if (!use) {
+        if (player->getWeapon() != NULL)
+            room->setCardFlag(player->getWeapon()->getId(), "-using");
         room->setPlayerFlag(player, "Global_HalberdFailed");
         room->setPlayerFlag(player, "-HalberdUse");
         room->setPlayerFlag(player, "-HalberdSlashFilter");
@@ -118,8 +123,12 @@ const Card *HalberdCard::validateInResponse(ServerPlayer *player) const{
     Room *room = player->getRoom();
     room->setPlayerFlag(player, "HalberdUse");
     room->setPlayerFlag(player, "HalberdSlashFilter");
+    if (player->getWeapon() != NULL)
+        room->setCardFlag(player->getWeapon()->getId(), "using");
     bool use = room->askForUseCard(player, "slash", "@Halberd");
     if (!use) {
+        if (player->getWeapon() != NULL)
+            room->setCardFlag(player->getWeapon()->getId(), "-using");
         room->setPlayerFlag(player, "Global_HalberdFailed");
         room->setPlayerFlag(player, "-HalberdUse");
         room->setPlayerFlag(player, "-HalberdSlashFilter");
@@ -539,6 +548,11 @@ QStringList Drowning::checkTargetModSkillShow(const CardUseStruct &use) const{
         QList<const TargetModSkill *> tarmods_copy = tarmods;
 
         foreach(const TargetModSkill *tarmod, tarmods_copy){
+            if (tarmod->getExtraTargetNum(from, this) == 0) {
+                tarmods.removeOne(tarmod);
+                continue;
+            }
+
             const Skill *main_skill = Sanguosha->getMainSkill(tarmod->objectName());
             if (from->hasShownSkill(main_skill)){
                 tarmods.removeOne(tarmod);
@@ -686,6 +700,11 @@ QStringList LureTiger::checkTargetModSkillShow(const CardUseStruct &use) const{
         QList<const TargetModSkill *> tarmods_copy = tarmods;
 
         foreach(const TargetModSkill *tarmod, tarmods_copy){
+            if (tarmod->getExtraTargetNum(from, this) == 0) {
+                tarmods.removeOne(tarmod);
+                continue;
+            }
+
             const Skill *main_skill = Sanguosha->getMainSkill(tarmod->objectName());
             if (from->hasShownSkill(main_skill)){
                 tarmods.removeOne(tarmod);

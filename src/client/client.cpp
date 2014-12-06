@@ -143,8 +143,8 @@ Client::Client(QObject *parent, const QString &filename)
     Self = new ClientPlayer(this);
     Self->setScreenName(Config.UserName);
     Self->setProperty("avatar", Config.UserAvatar);
-    connect(Self, SIGNAL(phase_changed()), this, SLOT(alertFocus()));
-    connect(Self, SIGNAL(role_changed(QString)), this, SLOT(notifyRoleChange(QString)));
+    connect(Self, &ClientPlayer::phase_changed, this, &Client::alertFocus);
+    connect(Self, &ClientPlayer::role_changed, this, &Client::notifyRoleChange);
 
     players << Self;
 
@@ -153,17 +153,16 @@ Client::Client(QObject *parent, const QString &filename)
         recorder = NULL;
 
         replayer = new Replayer(this, filename);
-        connect(replayer, SIGNAL(command_parsed(QByteArray)), this, SLOT(processServerPacket(QByteArray)));
-    }
-    else {
+        connect(replayer, &Replayer::command_parsed, this, &Client::processServerPacket);
+    } else {
         socket = new NativeClientSocket;
         socket->setParent(this);
 
         recorder = new Recorder(this);
 
-        connect(socket, SIGNAL(message_got(QByteArray)), recorder, SLOT(recordLine(QByteArray)));
-        connect(socket, SIGNAL(message_got(QByteArray)), this, SLOT(processServerPacket(QByteArray)));
-        connect(socket, SIGNAL(error_message(QString)), this, SIGNAL(error_message(QString)));
+        connect(socket, &NativeClientSocket::message_got, recorder, &Recorder::recordLine);
+        connect(socket, &NativeClientSocket::message_got, this, &Client::processServerPacket);
+        connect(socket, &NativeClientSocket::error_message, this, &Client::error_message);
         socket->connectToHost();
 
         replayer = NULL;
@@ -769,12 +768,10 @@ void Client::setNullification(const QVariant &str) {
     QString astr = str.toString();
     if (astr != ".") {
         if (m_noNullificationTrickName == ".") {
-            m_noNullificationThisTime = false;
             m_noNullificationTrickName = astr;
             emit nullification_asked(true);
         }
-    }
-    else {
+    } else {
         m_noNullificationThisTime = false;
         m_noNullificationTrickName = ".";
         emit nullification_asked(false);
@@ -1039,10 +1036,8 @@ void Client::askForNullification(const QVariant &arg) {
         }
     }
     if (m_noNullificationThisTime && m_noNullificationTrickName == trick_name) {
-        if (trick_card->isKindOf("AOE") || trick_card->isKindOf("GlobalEffect")) {
-            onPlayerResponseCard(NULL);
-            return;
-        }
+        onPlayerResponseCard(NULL);
+        return;
     }
 
     if (source == NULL) {

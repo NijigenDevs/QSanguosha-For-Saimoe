@@ -25,6 +25,7 @@
 #include "client.h"
 #include "engine.h"
 #include "util.h"
+#include "roomthread.h"
 
 RendeCard::RendeCard() {
     will_throw = false;
@@ -147,6 +148,67 @@ public:
     PaoxiaoArmorNullificaion() : TriggerSkill("#paoxiao-null"){
         events << TargetChosen;
         frequency = Compulsory;
+        global = true;
+    }
+
+    virtual bool canPreshow() const {
+        return false;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer * &ask_who) const{
+        if (!(player != NULL && player->isAlive()))
+            return QStringList();
+
+        CardUseStruct use = data.value<CardUseStruct>();
+        if (use.from != NULL && use.from->isAlive() && use.from->hasSkill("paoxiao")) {
+            if (use.card != NULL && use.card->isKindOf("Slash") && use.to.contains(player)) {
+                ServerPlayer *lord = room->getLord(use.from->getKingdom());
+                if (lord != NULL && lord->hasLordSkill("shouyue") && lord->hasShownGeneral1()) {
+                    ask_who = use.from;
+                    return QStringList(objectName());
+                }
+            }
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const{
+        if (ask_who != NULL) {
+            if (ask_who->hasShownSkill("paoxiao"))
+                return true;
+            else {
+                ask_who->tag["paoxiao_use"] = data;
+                bool invoke = ask_who->askForSkillInvoke("paoxiao", "armor_nullify:" + player->objectName());
+                ask_who->tag.remove("paoxiao_use");
+                if (invoke){
+                    ask_who->showGeneral(ask_who->inHeadSkills("paoxiao"));
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const{
+        ServerPlayer *lord = room->getLord(ask_who->getKingdom());
+        room->notifySkillInvoked(lord, "shouyue");
+        CardUseStruct use = data.value<CardUseStruct>();
+        player->addQinggangTag(use.card);
+        return false;
+    }
+};
+
+/*
+class PaoxiaoArmorNullificaion : public TriggerSkill{
+public:
+    PaoxiaoArmorNullificaion() : TriggerSkill("#paoxiao-null"){
+        events << TargetChosen;
+        frequency = Compulsory;
+        global = true;
+    }
+
+    virtual bool canPreshow() const {
+        return false;
     }
 
     virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer * &) const{
@@ -187,6 +249,7 @@ public:
         return false;
     }
 };
+*/
 
 class Guanxing : public PhaseChangeSkill {
 public:
@@ -465,7 +528,7 @@ public:
 
         doTieqi(player, machao, use, jink_list);
 
-        machao->tag["Jink_" + use.card->toString()] = QVariant::fromValue(jink_list);
+        machao->tag["Jink_" + use.card->toString()] = jink_list;
         return false;
     }
 
@@ -503,7 +566,7 @@ private:
             log.from = target;
             room->sendLog(log);
 
-            jink_list.replace(index, QVariant(0));
+            jink_list[index] = 0;
             room->broadcastSkillInvoke("tieqi", 2, source);
         }
     }
@@ -592,7 +655,7 @@ public:
 
         doLiegong(player, use, jink_list);
 
-        huangzhong->tag["Jink_" + use.card->toString()] = QVariant::fromValue(jink_list);
+        huangzhong->tag["Jink_" + use.card->toString()] = jink_list;
         return false;
     }
 
@@ -603,7 +666,7 @@ private:
         log.type = "#NoJink";
         log.from = target;
         target->getRoom()->sendLog(log);
-        jink_list.replace(index, QVariant(0));
+        jink_list[index] = 0;
     }
 };
 
@@ -884,12 +947,18 @@ public:
         frequency = Compulsory;
     }
 
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer * &ask_who) const{
         if (player == NULL) return QStringList();
-        if (triggerEvent == TargetChosen && TriggerSkill::triggerable(player)) {
+        if (triggerEvent == TargetChosen) {
             CardUseStruct use = data.value<CardUseStruct>();
-            if (use.card->isKindOf("SavageAssault") && use.from != player)
-                return QStringList(objectName());
+            // according to Banyuan, Huoshou can only be showed when the first player in use.to is chosen to be the target
+            if (use.card->isKindOf("SavageAssault") && player == use.to.first()) {
+                ServerPlayer *menghuo = room->findPlayerBySkillName(objectName());
+                if (TriggerSkill::triggerable(menghuo)) {
+                    ask_who = menghuo;
+                    return QStringList(objectName());
+                }
+            }
         }
         else if (triggerEvent == ConfirmDamage && !room->getTag("HuoshouSource").isNull()) {
             DamageStruct damage = data.value<DamageStruct>();
@@ -908,19 +977,19 @@ public:
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
-        bool invoke = player->hasShownSkill(this) ? true : player->askForSkillInvoke(this);
-        if (invoke){
-            room->broadcastSkillInvoke(objectName(), 2, player);
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const{
+        bool invoke = ask_who->hasShownSkill(this) ? true : ask_who->askForSkillInvoke(this);
+        if (invoke) {
+            room->broadcastSkillInvoke(objectName(), 2, ask_who);
             return true;
         }
 
         return false;
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
-        room->notifySkillInvoked(player, objectName());
-        room->setTag("HuoshouSource", QVariant::fromValue(player));
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const{
+        room->notifySkillInvoked(ask_who, objectName());
+        room->setTag("HuoshouSource", QVariant::fromValue(ask_who));
 
         return false;
     }

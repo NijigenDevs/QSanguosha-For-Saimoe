@@ -126,7 +126,7 @@ function SmartAI:useCardDrowning(card, use)
 	for _, enemy in ipairs(self.enemies) do
 		if card:targetFilter(players, enemy, self.player) and not players:contains(enemy) and enemy:hasEquip()
 			and self:hasTrickEffective(card, enemy) and self:damageIsEffective(enemy, sgs.DamageStruct_Thunder, self.player) and self:canAttack(enemy)
-			and not self:getDamagedEffects(enemy, self.player) and not self:needToLoseHp(enemy, self.player)
+			and not self:getDamagedEffects(enemy, self.player) and not self:needToLoseHp(enemy, self.player) and not self:needToThrowArmor(enemy)
 			and not (enemy:hasArmorEffect("PeaceSpell") and (enemy:getHp() > 1 or self:needToLoseHp(enemy, self.player)))
 			and not (enemy:hasArmorEffect("Breastplate") and enemy:getHp() == 1) then
 			players:append(enemy)
@@ -217,14 +217,13 @@ function SmartAI:useCardBurningCamps(card, use)
 
 	local player = self.room:nextPlayer(self.player)
 	if self:isFriendWith(player) then return end
-	
+
 	local players = player:getFormation()
 	if players:isEmpty() then return end
 	local shouldUse
 	for i = 0 , players:length() - 1 do
 		player = findPlayerByObjectName(players:at(i):objectName())
 		if not self:hasTrickEffective(card, player, self.player) then
-			if i == 0 then return end
 			continue
 		end
 		local damage = {}
@@ -240,8 +239,6 @@ function SmartAI:useCardBurningCamps(card, use)
 			else
 				return
 			end
-		elseif i == 0 then
-			return
 		end
 	end
 	if shouldUse then
@@ -545,10 +542,10 @@ function SmartAI:useCardFightTogether(card, use)
 				if v_big > v_small and v_big > 0 then self.FightTogether_choice = "big"
 				elseif v_small > v_big and v_small > 0 then self.FightTogether_choice = "small"
 				elseif v_big == v_small and v_big > 0 then
-					if #bigs > #smalls then return "big"
-					elseif #bigs < #smalls then return "small"
+					if #bigs > #smalls then self.FightTogether_choice = "big"
+					elseif #bigs < #smalls then self.FightTogether_choice = "small"
 					else
-						return math.random(1, 2) == 1 and "big" or "small"
+						self.FightTogether_choice = math.random(1, 2) == 1 and "big" or "small"
 					end
 				end
 			end
@@ -621,10 +618,29 @@ function SmartAI:useCardAllianceFeast(card, use)
 			return v1 > v2
 		end
 		table.sort(targets, cmp_k)
-		if isEnemy then targets = sgs.reverse(targets) end
-		use.card = card
-		if use.to then use.to:append(targets[1]) end
-		return
+		local target = targets[1]
+		if isEnemy then
+			target = nil
+			targets = sgs.reverse(targets)
+			for _, t in ipairs(targets) do
+				local v = 0
+				for _, p in sgs.qlist(self.room:getOtherPlayers(self.player)) do
+					if p:isFriendWith(t) then
+						if p:isWounded() then
+							v = v - 2
+						else
+							v = v + 1
+						end
+					end
+				end
+				if v > 0 then target = t break end
+			end
+		end
+		if target then
+			use.card = card
+			if use.to then use.to:append(target) end
+			return
+		end
 	end
 end
 
@@ -640,6 +656,17 @@ sgs.ai_use_priority.AllianceFeast = 8.8
 sgs.ai_keep_value.AllianceFeast = 3.26
 
 sgs.ai_nullification.AllianceFeast = function(self, card, from, to, positive)
+	if positive then
+		if self:isEnemy(to) then
+			if to:objectName() ~= from:objectName() and (to:isWounded() or not to:faceUp()) then return true end
+			if to:objectName() == from:objectName() and to:getMark("alliance_feast") >= 2 then return true end
+		end
+	else
+		if self:isFriend(to) then
+			if to:objectName() ~= from:objectName() and (to:isWounded() or not to:faceUp()) then return true end
+			if to:objectName() == from:objectName() and to:getMark("alliance_feast") >= 2 then return true end
+		end
+	end
 	return
 end
 
@@ -667,6 +694,11 @@ sgs.ai_skill_cardask["@threaten_emperor"] = function(self)
 	if self.player:isNude() then return "." end
 	local cards = sgs.QList2Table(self.player:getCards("he"))
 	self:sortByKeepValue(cards)
+	for _, card in ipairs(cards) do
+		if not card:isKindOf("JadeSeal") then
+			return card:getEffectiveId()
+		end
+	end
 	return cards[1]:getEffectiveId()
 end
 
@@ -687,20 +719,29 @@ sgs.ai_skill_cardask["@imperial_order-equip"] = function(self)
 	if self:needToThrowArmor() then
 		return self.player:getArmor():getEffectiveId()
 	end
-	if not self:willShowForAttack() then 
+	local discard
+	local kingdom = self:evaluateKingdom(self.player)
+	if kingdom == "unknown" then discard = true
+	else
+		kingdom = kingdom:split("?")
+		discard = #kingdom / #sgs.KingdomsTable >= 0.5
+	end
+	if self.player:getPhase() == sgs.Player_NotActive and discard then
 		local cards = self.player:getCards("he")
 		local cards = sgs.QList2Table(self.player:getCards("he"))
 			for _, card in ipairs(cards) do
-				if (card:isKindOf("Weapon") and self.player:getHandcardNum() < 3) or card:isKindOf("OffensiveHorse")
-					or self:getSameEquip(card, self.player) then
-					return card:getEffectiveId() 
+				if not self:willShowForAttack() and ((card:isKindOf("Weapon") and self.player:getHandcardNum() < 3) or card:isKindOf("OffensiveHorse")) then
+					return card:getEffectiveId()
+				elseif not self:willShowForDefence() and ((card:isKindOf("Armor") and self.player:getHp() > 1) or card:isKindOf("DefensiveHorse")) then
+					return card:getEffectiveId()
 				end
 			end
-	end		
+	end
 	return "."
 end
 
 sgs.ai_skill_choice.imperial_order = function(self)
+	if self.player:getPhase() ~= sgs.Player_NotActive then return "show" end
 	if self:needToLoseHp() then return "losehp" end
 	if not self.player:isWounded() and self.player:getCards("he"):length() > 6 then return "losehp" end
 	return "show"
@@ -816,7 +857,7 @@ sgs.ai_skill_cardask["@Halberd"] = function(self)
 			end
 		end
 		self:useCardSlash(slash, use)
-		if not use.card then return "." end
+		if not use.card or not use.card:isKindOf("Slash") then return "." end
 		local targets = {}
 		for _, p in sgs.qlist(use.to) do
 			table.insert(targets, p:objectName())
@@ -830,6 +871,7 @@ function sgs.ai_weapon_value.Halberd(self, enemy, player)
 	return 2.1
 end
 
+--WoodenOx
 local wooden_ox_skill = {}
 wooden_ox_skill.name = "WoodenOx"
 table.insert(sgs.ai_skills, wooden_ox_skill)
@@ -844,6 +886,7 @@ wooden_ox_skill.getTurnUseCard = function(self)
 		return sgs.Card_Parse("@WoodenOxCard=" .. card:getEffectiveId())
 	end
 	if self:getOverflow() > 0 or (self:needKongcheng() and #cards == 1) then
+		self.wooden_ox_assist = nil
 		return sgs.Card_Parse("@WoodenOxCard=" .. cards[1]:getEffectiveId())
 	end
 end

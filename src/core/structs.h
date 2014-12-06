@@ -562,7 +562,22 @@ enum TriggerEvent {
     GeneralHidden, // For Official Hegemony mode
     GeneralRemoved, // For Official Hegemony mode
 
+    DFDebut, // for Dragon Phoenix Debut
+
     NumOfEvents
+};
+
+struct LogMessage {
+    LogMessage();
+    QString toString() const;
+    QVariant toVariant() const;
+
+    QString type;
+    ServerPlayer *from;
+    QList<ServerPlayer *> to;
+    QString card_str;
+    QString arg;
+    QString arg2;
 };
 
 Q_DECLARE_METATYPE(DamageStruct)

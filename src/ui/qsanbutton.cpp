@@ -33,7 +33,7 @@
 
 QSanButton::QSanButton(QGraphicsItem *parent)
     : QGraphicsObject(parent), _m_state(S_STATE_UP), _m_style(S_STYLE_PUSH),
-    _m_mouseEntered(false), multi_state(false), first_state(true)
+    _m_mouseEntered(false), multi_state(false), m_isFirstState(true)
 {
     setSize(QSize(0, 0));
     setAcceptHoverEvents(true);
@@ -43,7 +43,7 @@ QSanButton::QSanButton(QGraphicsItem *parent)
 QSanButton::QSanButton(const QString &groupName, const QString &buttonName, QGraphicsItem *parent, const bool &multi_state)
     : QGraphicsObject(parent), _m_state(S_STATE_UP), _m_style(S_STYLE_PUSH),
     _m_groupName(groupName), _m_buttonName(buttonName), _m_mouseEntered(false),
-    multi_state(multi_state), first_state(true)
+    multi_state(multi_state), m_isFirstState(true)
 {
     const int state_count = multi_state ? (int)S_NUM_BUTTON_STATES * 2 : (int)S_NUM_BUTTON_STATES;
     for (int i = 0; i < state_count; i++) {
@@ -66,7 +66,7 @@ QRectF QSanButton::boundingRect() const{
 }
 
 void QSanButton::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) {
-    painter->drawPixmap(0, 0, _m_bgPixmap[(int)_m_state + (first_state ? 0 : S_NUM_BUTTON_STATES)]);
+    painter->drawPixmap(0, 0, _m_bgPixmap[(int)_m_state + (m_isFirstState ? 0 : S_NUM_BUTTON_STATES)]);
 }
 
 void QSanButton::setSize(QSize newSize) {
@@ -179,7 +179,7 @@ void QSanButton::_onMouseClick(bool inside) {
         if (skill->canPreshow() && !Self->hasShownSkill(skill)) changeState = false;
     }
     if (multi_state && inside)
-        first_state = !first_state;
+        m_isFirstState = !m_isFirstState;
     if (_m_style == S_STYLE_PUSH && changeState)
         setState(S_STATE_UP);
     else if (_m_style == S_STYLE_TOGGLE) {
@@ -214,6 +214,14 @@ bool QSanButton::isDown() {
     return (_m_state == S_STATE_DOWN);
 }
 
+void QSanButton::setFirstState(bool isFirstState)
+{
+    if (m_isFirstState != isFirstState) {
+        m_isFirstState = isFirstState;
+        update();
+    }
+}
+
 QSanSkillButton::QSanSkillButton(QGraphicsItem *parent)
     : QSanButton(parent)
 {
@@ -222,7 +230,7 @@ QSanSkillButton::QSanSkillButton(QGraphicsItem *parent)
     _m_emitDeactivateSignal = false;
     _m_skill = NULL;
     _m_viewAsSkill = NULL;
-    connect(this, SIGNAL(clicked()), this, SLOT(onMouseClick()));
+    connect(this, &QSanSkillButton::clicked, this, &QSanSkillButton::onMouseClick);
     _m_skill = NULL;
 }
 
@@ -375,8 +383,8 @@ QSanSkillButton *QSanInvokeSkillDock::addSkillButtonByName(const QString &skillN
 
     const Skill *skill = Sanguosha->getSkill(skillName);
     button->setSkill(skill);
-    connect(button, SIGNAL(skill_activated(const Skill *)), this, SIGNAL(skill_activated(const Skill *)));
-    connect(button, SIGNAL(skill_deactivated(const Skill *)), this, SIGNAL(skill_deactivated(const Skill *)));
+    connect(button, (void (QSanInvokeSkillButton::*)(const Skill *))(&QSanInvokeSkillButton::skill_activated), this, &QSanInvokeSkillDock::skill_activated);
+    connect(button, (void (QSanInvokeSkillButton::*)(const Skill *))(&QSanInvokeSkillButton::skill_deactivated), this, &QSanInvokeSkillDock::skill_deactivated);
     _m_buttons.append(button);
     update();
     return button;

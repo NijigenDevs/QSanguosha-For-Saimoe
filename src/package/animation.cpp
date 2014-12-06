@@ -5,6 +5,7 @@
 #include "standard-shu-generals.h"
 #include "engine.h"
 #include "client.h"
+#include "roomthread.h"
 //this file is the general skills for animation.
 
 //mami    lieqiang, molu -SE
@@ -700,16 +701,7 @@ public:
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *mio, QVariant &, ServerPlayer *) const{
-        int cardid = room->drawCard();
-        CardsMoveStruct move(cardid, NULL, Player::PlaceTable,
-                             CardMoveReason(CardMoveReason::S_REASON_TURNOVER, mio->objectName(), "yinzhuang", QString()));
-        room->moveCardsAtomic(move, true);
-        room->setTag("YinzhuangCard", cardid);
-        ServerPlayer *target = room->askForPlayerChosen(mio, room->getAlivePlayers(), "yinzhuang", "@yinzhuang_give");
-        room->removeTag("YinzhuangCard");
-        CardMoveReason reason(CardMoveReason::S_REASON_GOTBACK, mio->objectName(), target->objectName(), "yinzhuang", QString());
-        room->obtainCard(target, Sanguosha->getCard(cardid), reason);
-
+		room->drawCards(mio, 1);
         return false;
     }
 };
@@ -740,8 +732,23 @@ public:
         return false;
     }
 
-    virtual bool effect(TriggerEvent, Room *, ServerPlayer *mio, QVariant &, ServerPlayer *) const{
-        mio->drawCards(1);
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *mio, QVariant &, ServerPlayer *) const{
+        Slash *slash = new Slash(Card::NoSuit, 0);
+        slash->setSkillName("_yinzhuang");
+        QList<ServerPlayer *> can_slashers;
+        foreach (ServerPlayer *p, room->getOtherPlayers(mio)){
+            if (mio->canSlash(p, slash, false)){
+                can_slashers << p;
+            }
+        }
+        if (can_slashers.isEmpty()){
+            delete slash;
+            //log
+            return false;
+        }
+        ServerPlayer *slasher = room->askForPlayerChosen(mio, can_slashers, objectName(), "@yinzhuang-slash");
+        room->broadcastSkillInvoke(objectName());
+        room->useCard(CardUseStruct(slash, mio, slasher));
         return false;
     }
 };

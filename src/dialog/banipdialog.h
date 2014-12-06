@@ -44,14 +44,15 @@ private:
     void loadBannedList();
 
 private slots:
+    void addPlayer(ServerPlayer *player);
+    void removePlayer();
+
     void insertClicked();
     void removeClicked();
     void kickClicked();
 
     void save();
 
-    void addPlayer(ServerPlayer *player);
-    void removePlayer();
 };
 
 #endif // BANIPDIALOG_H

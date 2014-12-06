@@ -923,18 +923,6 @@
     <ClCompile Include="Release\moc_serverdialog.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\package\animation.cpp">
-      <Filter>package</Filter>
-    </ClCompile>
-    <ClCompile Include="Debug\moc_animation.cpp">
-      <Filter>Generated Files\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="Release\moc_animation.cpp">
-      <Filter>Generated Files\Release</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\package\comic.cpp">
-      <Filter>package</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\package\game.cpp">
       <Filter>package</Filter>
     </ClCompile>
@@ -961,6 +949,18 @@
     </ClCompile>
     <ClCompile Include="Release\moc_novel.cpp">
       <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\package\animation.cpp">
+      <Filter>package</Filter>
+    </ClCompile>
+    <ClCompile Include="Debug\moc_animation.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="Release\moc_animation.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\package\comic.cpp">
+      <Filter>package</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1252,9 +1252,6 @@
     <CustomBuild Include="..\..\src\dialog\serverdialog.h">
       <Filter>dialog</Filter>
     </CustomBuild>
-    <CustomBuild Include="..\..\src\package\animation.h">
-      <Filter>package</Filter>
-    </CustomBuild>
     <CustomBuild Include="..\..\src\package\game.h">
       <Filter>package</Filter>
     </CustomBuild>
@@ -1262,6 +1259,9 @@
       <Filter>package</Filter>
     </CustomBuild>
     <CustomBuild Include="..\..\src\package\novel.h">
+      <Filter>package</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\src\package\animation.h">
       <Filter>package</Filter>
     </CustomBuild>
   </ItemGroup>

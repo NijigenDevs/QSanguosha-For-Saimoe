@@ -210,7 +210,7 @@ sgs.huyuan_keep_value = {
 
 function SmartAI:isTiaoxinTarget(enemy)
 	if not enemy then self.room:writeToConsole(debug.traceback()) return end
-	if getCardsNum("Slash", enemy) < 1 and self.player:getHp() > 1 and not self:canHit(self.player, enemy)
+	if getCardsNum("Slash", enemy, self.player) < 1 and self.player:getHp() > 1 and not self:canHit(self.player, enemy)
 		and not (enemy:hasWeapon("DoubleSword") and self.player:getGender() ~= enemy:getGender())
 		then return true end
 	if sgs.card_lack[enemy:objectName()]["Slash"] == 1
@@ -218,6 +218,8 @@ function SmartAI:isTiaoxinTarget(enemy)
 		or self:getDamagedEffects(self.player, enemy, true)
 		or self:needToLoseHp(self.player, enemy, true, true)
 		then return true end
+	if self.player:hasSkill("xiangle") and (enemy:getHandcardNum() < 2 or getKnownCard(enemy, self.player, "BasicCard") < 2
+												and enemy:getHandcardNum() - getKnownNum(enemy, self.player) < 2) then return true end
 	return false
 end
 
@@ -296,6 +298,7 @@ sgs.ai_skill_invoke.shoucheng = function(self, data)
 			return true
 		end
 	end
+	return false
 end
 
 local shangyi_skill = {}
@@ -303,6 +306,7 @@ shangyi_skill.name = "shangyi"
 table.insert(sgs.ai_skills, shangyi_skill)
 shangyi_skill.getTurnUseCard = function(self)
 	if self.player:hasUsed("ShangyiCard") then return end
+	if self.player:isKongcheng() then return end
 	if not self:willShowForAttack() then return end
 	local card_str = ("@ShangyiCard=.&shangyi")
 	local shangyi_card = sgs.Card_Parse(card_str)
@@ -411,7 +415,7 @@ local invoke_qianhuan = function(self, use)
 			or use.card:isKindOf("ArcheryAttack") or use.card:isKindOf("Drowning") or use.card:isKindOf("SavageAssault") then
 			return true
 		end
-		if use.card:isKindOf("KnownBoth") or use.card:isKindOf("Dismantlement") or use.card:isKindOf("Indulgence") then
+		if use.card:isKindOf("KnownBoth") or use.card:isKindOf("Dismantlement") or use.card:isKindOf("Indulgence") or use.card:isKindOf("SupplyShortage") then
 			--@todo
 			return false
 		end

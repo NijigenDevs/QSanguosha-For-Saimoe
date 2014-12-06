@@ -25,6 +25,7 @@
 #include "engine.h"
 #include "settings.h"
 #include "json.h"
+#include "roomthread.h"
 
 #include <QTime>
 
@@ -469,10 +470,8 @@ bool GameRule::effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *playe
         if (use.card->isNDTrick())
             room->removeTag(use.card->toString() + "HegNullificationTargets");
 
-        if (use.card->isKindOf("AOE") || use.card->isKindOf("GlobalEffect")) {
-            foreach(ServerPlayer *p, room->getAlivePlayers())
-                room->doNotify(p, QSanProtocol::S_COMMAND_NULLIFICATION_ASKED, QString("."));
-        }
+        foreach(ServerPlayer *p, room->getAlivePlayers())
+            room->doNotify(p, QSanProtocol::S_COMMAND_NULLIFICATION_ASKED, QString("."));
         if (use.card->isKindOf("Slash"))
             use.from->tag.remove("Jink_" + use.card->toString());
 
@@ -635,6 +634,7 @@ bool GameRule::effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *playe
         foreach(ServerPlayer *p, room->getAllPlayers()) {
             if (p->hasFlag("Global_DFDebut")) {
                 p->setFlags("-Global_DFDebut");
+                room->getThread()->trigger(DFDebut, room, p);
             }
         }
         break;

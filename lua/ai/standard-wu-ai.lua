@@ -326,6 +326,19 @@ kurou_skill.getTurnUseCard = function(self, inclusive)
 		return kuroucard
 	end
 
+	if type(self.kept) == "table" and #self.kept > 0 then
+		local hcards = sgs.QList2Table(self.player:getHandcards())
+		for _, c in ipairs(self.kept) do
+			hcards = self:resetCards(hcards, c)
+		end
+		for _, c in ipairs(self.kept) do
+			if isCard("Peach", c, self.player) or isCard("Analeptic", c, self.player) then
+				sgs.ai_use_priority.KurouCard = 0
+				return kuroucard
+			end
+		end
+	end
+
 	--Suicide by Kurou
 	local nextplayer = self.player:getNextAlive()
 	if self.player:getHp() == 1 and self:getCardsNum("Armor") == 0 and self:getCardsNum("Jink") == 0 and self:getKingdomCount() > 1 then
@@ -424,8 +437,7 @@ sgs.ai_skill_use_func.FanjianCard = function(fjCard, use, self)
 	for _, enemy in ipairs(self.enemies) do
 		local visible = 0
 		for _, card in ipairs(cards) do
-			local flag = string.format("%s_%s_%s", "visible", enemy:objectName(), self.player:objectName())
-			if card:hasFlag("visible") or card:hasFlag(flag) then visible = visible + 1 end
+			if sgs.cardIsVisible(card, enemy, self.player) then visible = visible + 1 end
 		end
 		if visible > 0 and (#cards <= 2 or suits_num <= 2) then continue end
 		if self:canAttack(enemy) and not enemy:hasShownSkills("qingnang|jijiu|tianxiang") then
@@ -445,8 +457,7 @@ function sgs.ai_skill_suit.fanjian(self)
 	local suits = {}
 	local maxnum, maxsuit = 0
 	for _, c in sgs.qlist(tg:getHandcards()) do
-		local flag = string.format("%s_%s_%s", "visible", self.player:objectName(), tg:objectName())
-		if c:hasFlag(flag) or c:hasFlag("visible") then
+		if sgs.cardIsVisible(c, tg, self.player) then
 			if not suits[c:getSuitString()] then suits[c:getSuitString()] = 1 else suits[c:getSuitString()] = suits[c:getSuitString()] + 1 end
 			if suits[c:getSuitString()] > maxnum then
 				maxnum = suits[c:getSuitString()]
@@ -636,12 +647,6 @@ sgs.ai_suit_priority.guose= "club|spade|heart|diamond"
 
 
 sgs.ai_skill_use["@@liuli"] = function(self, prompt, method)
-	
-	if not (self:willShowForDefence() and self:getCardsNum("Jink") > 1) 
-		or not  (self:willShowForMasochism() and self:getCardsNum("Jink") == 0) then 
-			return "."
-	end 
-	
 	local others = self.room:getOtherPlayers(self.player)
 	others = sgs.QList2Table(others)
 	local source
@@ -653,6 +658,11 @@ sgs.ai_skill_use["@@liuli"] = function(self, prompt, method)
 	end
 	local slash = self.player:getTag("liuli-card"):toCard()
 	local nature = sgs.Slash_Natures[slash:getClassName()]
+
+	if ((not self:willShowForDefence() and self:getCardsNum("Jink") > 1) or (not self:willShowForMasochism() and self:getCardsNum("Jink") == 0))
+		and source:getMark("drank") == 0 then
+			return "."
+	end
 
 	local doLiuli = function(who)
 		if not self:isFriend(who) and who:hasShownSkill("leiji")
@@ -1068,6 +1078,13 @@ sgs.ai_skill_playerchosen.yinghun = function(self, targets)
 		if self.yinghun then self.yinghunchoice = "dxt1" end
 	end
 	if not self.yinghun and x > 1 and #self.enemies > 0 then
+		for _, enemy in ipairs(self.enemies) do
+			if enemy:getCards("he"):length() <= n and (self:getDangerousCard(enemy) or self:getValuableCard(enemy))
+				and not self:doNotDiscard(enemy, "nil", true, n) then
+				self.yinghunchoice = "d1tx"
+				return enemy
+			end
+		end
 		self:sort(self.enemies, "handcard")
 		for _, enemy in ipairs(self.enemies) do
 			if enemy:getCards("he"):length() >= n
@@ -1124,7 +1141,6 @@ sgs.ai_choicemade_filter.skillChoice.yinghun = function(self, player, promptlist
 end
 
 sgs.ai_skill_use["@@tianxiang"] = function(self, data, method)
-	if not self:willShowForMasochism() then return "." end 
 	if not method then method = sgs.Card_MethodDiscard end
 	local friend_lost_hp = 10
 	local friend_hp = 0
@@ -1140,6 +1156,7 @@ sgs.ai_skill_use["@@tianxiang"] = function(self, data, method)
 	end
 
 	if not dmg then self.room:writeToConsole(debug.traceback()) return "." end
+	if not self:willShowForMasochism() and not dmg.damage > 1 then return "." end
 
 	local cards = self.player:getCards("h")
 	cards = sgs.QList2Table(cards)
@@ -1413,8 +1430,7 @@ sgs.ai_cardneed.tianyi = function(to, card, self)
 	local cards = to:getHandcards()
 	local has_big = false
 	for _, c in sgs.qlist(cards) do
-		local flag = string.format("%s_%s_%s", "visible", self.room:getCurrent():objectName(), to:objectName())
-		if c:hasFlag("visible") or c:hasFlag(flag) then
+		if sgs.cardIsVisible(c, to, self.player) then
 			if c:getNumber() > 10 then
 				has_big = true
 				break
@@ -1476,16 +1492,16 @@ sgs.ai_skill_invoke.haoshi = function(self, data)
 	self:sort(self.friends_noself)
 	for _, friend in ipairs(self.friends_noself) do
 		if friend:getHandcardNum() == leastNum and friend:isAlive() and self:isFriendWith(friend) then
-			self.haoshi_target = friend	
+			self.haoshi_target = friend
 		end
 	end
-	if not self.haoshi_target then 
+	if not self.haoshi_target then
 		for _, friend in ipairs(self.friends_noself) do
 			if friend:getHandcardNum() == leastNum and friend:isAlive() then
-				self.haoshi_target = friend	
+				self.haoshi_target = friend
 			end
 		end
-	end	
+	end
 	if self.haoshi_target then return true end
 	return false
 end
@@ -1753,7 +1769,7 @@ sgs.ai_skill_use_func.ZhijianCard = function(card, use, self)
 end
 
 sgs.ai_card_intention.ZhijianCard = -80
-sgs.ai_use_priority.ZhijianCard = sgs.ai_use_priority.RendeCard + 0.1  -- 刘备二张双将的话，优先直谏
+sgs.ai_use_priority.ZhijianCard = sgs.ai_use_priority.RendeCard + 0.1
 sgs.ai_cardneed.zhijian = sgs.ai_cardneed.equip
 
 sgs.ai_skill_invoke.guzheng = function(self, data)

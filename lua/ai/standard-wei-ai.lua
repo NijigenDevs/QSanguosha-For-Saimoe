@@ -283,9 +283,8 @@ function SmartAI:findTuxiTarget()
 		if zhugeliang:getHp() <= 2 then
 			if add_player(zhugeliang, 1) == 2 then return targets end
 		else
-			local flag = string.format("%s_%s_%s","visible",self.player:objectName(),zhugeliang:objectName())
 			local cards = sgs.QList2Table(zhugeliang:getHandcards())
-			if #cards == 1 and (cards[1]:hasFlag("visible") or cards[1]:hasFlag(flag)) then
+			if #cards == 1 and sgs.cardIsVisible(cards[1], zhugeliang, self.player) then
 				if cards[1]:isKindOf("TrickCard") or cards[1]:isKindOf("Slash") or cards[1]:isKindOf("EquipCard") then
 					if add_player(zhugeliang, 1) == 2 then return targets end
 				end
@@ -295,9 +294,8 @@ function SmartAI:findTuxiTarget()
 
 	for _, enemy in ipairs(self.enemies) do
 		local cards = sgs.QList2Table(enemy:getHandcards())
-		local flag = string.format("%s_%s_%s", "visible", self.player:objectName(), enemy:objectName())
 		for _, card in ipairs(cards) do
-			if (card:hasFlag("visible") or card:hasFlag(flag)) and (card:isKindOf("Peach") or card:isKindOf("Nullification") or card:isKindOf("Analeptic") ) then
+			if sgs.cardIsVisible(card, enemy, self.player) and (card:isKindOf("Peach") or card:isKindOf("Nullification") or card:isKindOf("Analeptic") ) then
 				if add_player(enemy) == 2  then return targets end
 			end
 		end
@@ -364,7 +362,7 @@ sgs.ai_skill_invoke.luoyi = function(self,data)
 		end
 		if card:isKindOf("Duel") then
 			for _, enemy in ipairs(self.enemies) do
-				if self:getCardsNum("Slash") >= getCardsNum("Slash", enemy) and sgs.isGoodTarget(enemy, self.enemies, self)
+				if self:getCardsNum("Slash") >= getCardsNum("Slash", enemy, self.player) and sgs.isGoodTarget(enemy, self.enemies, self)
 				and not enemy:hasArmorEffect("SilverLion")
 				and self:objectiveLevel(enemy) > 3 and self:damageIsEffective(enemy) then
 					dueltarget = dueltarget + 1
@@ -387,8 +385,7 @@ function sgs.ai_cardneed.luoyi(to, card, self)
 	local cards = to:getHandcards()
 	local need_slash = true
 	for _, c in sgs.qlist(cards) do
-		local flag = string.format("%s_%s_%s","visible",self.room:getCurrent():objectName(),to:objectName())
-		if c:hasFlag("visible") or c:hasFlag(flag) then
+		if sgs.cardIsVisible(c, to, self.player) then
 			if isCard("Slash", c, to) then
 				need_slash = false
 				break
@@ -669,7 +666,7 @@ local function card_for_qiaobian(self, who, return_prompt)
 			for _, judge in sgs.qlist(judges) do
 				card = sgs.Sanguosha:getCard(judge:getEffectiveId())
 				for _, enemy in ipairs(self.enemies) do
-					if not enemy:containsTrick(judge:objectName()) --[[and not sgs.Sanguosha:isProhibited(self.player, enemy, judge)]] then
+					if not enemy:containsTrick(judge:objectName()) and self:hasTrickEffective(judge, enemy, self.player) then
 						target = enemy
 						break
 					end
@@ -1241,14 +1238,6 @@ sgs.ai_skill_playerchosen.fangzhu = function(self, targets)
 					end
 				end
 			end
-			if not target then
-				for _, enemy in ipairs(self.enemies) do
-					if enemy:getPhase() == sgs.Player_NotActive then
-						target = enemy
-						break
-					end
-				end
-			end
 		end
 	end
 	return target
@@ -1321,7 +1310,7 @@ sgs.ai_skill_cardask["@xiaoguo"] = function(self, data)
 	elseif self:isEnemy(currentplayer) then
 		if not self:damageIsEffective(currentplayer) then return "." end
 		if self:getDamagedEffects(currentplayer) or self:needToLoseHp(currentplayer, self.player) then return "." end
-		if self:needToThrowArmor() then return "." end
+		if self:needToThrowArmor(currentplayer) then return "." end
 		if currentplayer:getHp() > 2 and (currentplayer:getHandcardNum() > 2 or currentplayer:getCards("e"):length() > 1)then return "." end
 		if currentplayer:getHp() > 1 and (currentplayer:getHandcardNum() > 3 or currentplayer:getCards("e"):length() > 2)then return "." end
 		if currentplayer:hasShownSkills(sgs.lose_equip_skill) and currentplayer:getCards("e"):length() > 0 then return "." end

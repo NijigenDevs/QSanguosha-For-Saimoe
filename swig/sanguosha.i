@@ -27,6 +27,7 @@
 #include "client.h"
 #include "namespace.h"
 #include "standard.h"
+#include "roomthread.h"
 
 #include <QDir>
 
@@ -883,6 +884,8 @@ enum TriggerEvent {
     GeneralShown, // For Official Hegemony mode
     GeneralHidden, // For Official Hegemony mode
     GeneralRemoved, // For Official Hegemony mode
+
+    DFDebut,
 
     NumOfEvents
 };
