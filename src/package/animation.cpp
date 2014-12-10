@@ -434,116 +434,151 @@ public:
     }
 };
 
-//shiting -SE
-class Shiting: public TriggerSkill {
+#include <gamerule.h>
+//shiting -AK
+class Shiting: public TriggerSkill{
 public:
-    Shiting(): TriggerSkill("shiting") {
-        events << CardUsed << DamageCaused << CardsMoveOneTime << Damaged;
-    }
+	Shiting():  TriggerSkill("shiting"){
+		events << TargetConfirmed << CardUsed << CardFinished << Death;
+	}
 
-    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *, QVariant &data) const{
-        QMap<ServerPlayer *, QStringList> skill_list;
-        if (triggerEvent == CardUsed){
-            CardUseStruct use = data.value<CardUseStruct>();
-            if (!use.card || !use.card->isKindOf("BasicCard"))
-                return skill_list;
+	virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data) const{
+		QMap<ServerPlayer *, QStringList> skill_list;
+		if (event == TargetConfirmed){
+			CardUseStruct use = data.value<CardUseStruct>();
+			if (!(use.to.length() == 1 && player == use.to.first())) return skill_list;
+			QList<ServerPlayer *> homuras = room->findPlayersBySkillName(objectName());
+			foreach(ServerPlayer *homura, homuras)
+				if (use.card && use.card->isKindOf("Slash") && homura->canDiscard(homura, "h") &&
+					(homura->isFriendWith(use.to.first()) || homura->willBeFriendWith(use.to.first())))
+					skill_list.insert(homura, QStringList(objectName()));
+		}
+		else if (event == CardUsed){
+			CardUseStruct use = data.value<CardUseStruct>();
+			QList<ServerPlayer *> homuras = room->findPlayersBySkillName(objectName());
+			foreach(ServerPlayer *homura, homuras){
+				if (homura == use.from && use.card && homura->hasFlag("shiting_use") && use.to.length() > 0 && (!use.card->isKindOf("SkillCard")) && (!use.card->isKindOf("TransferCard")) && (!use.to.contains(homura))){
+					QVariantList shiting_list = homura->tag["shiting_list"].toList();
+					shiting_list << data;
+					homura->tag["shiting_list"] =  shiting_list;
+					use.card->setFlags("cardNotTriggerCardFinished");
+					skill_list.insert(homura, QStringList(objectName()));
+				}
+			}
 
-            QList<ServerPlayer *> homuras = room->findPlayersBySkillName(objectName());
-            foreach (ServerPlayer *homura, homuras) {
-                skill_list.insert(homura, QStringList(objectName()));
-            }
-            return skill_list;
-        }else if(triggerEvent == DamageCaused){
-            DamageStruct damage = data.value<DamageStruct>();
-            if (!damage.to || !damage.card || !damage.card->isKindOf("TrickCard"))
-                return skill_list;
-            QList<ServerPlayer *> homuras = room->findPlayersBySkillName(objectName());
-            foreach (ServerPlayer *homura, homuras) {
-                skill_list.insert(homura, QStringList(objectName()));
-            }
-            return skill_list;
-        }else if(triggerEvent == CardsMoveOneTime){
-            QList<ServerPlayer *> homuras = room->findPlayersBySkillName(objectName());
-            CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-            if (move.to_place != Player::PlaceEquip || homuras.length() == 0) return skill_list;
-            foreach (ServerPlayer *homura, homuras){
-                if (homura->objectName() == move.to->objectName() && homura->getEquips().length() > 1){
-                    room->detachSkillFromPlayer(homura, "shiting");
-                }
-            }
-        }else if(triggerEvent == Damaged){
-             DamageStruct damage = data.value<DamageStruct>();
-             QList<ServerPlayer *> homuras = room->findPlayersBySkillName(objectName());
-             if (homuras.contains(damage.to)){
-                  foreach (ServerPlayer *homura, homuras){
-                      if (homura == damage.to){
-                          room->detachSkillFromPlayer(homura, "shiting");
-                      }
-                  }
-             }
-        }
-        return skill_list;
-    }
-     virtual bool cost(TriggerEvent , Room *room, ServerPlayer *, QVariant &data, ServerPlayer *ask_who) const{
-        bool invoke = ask_who->askForSkillInvoke(objectName(), data);
-        if (invoke) {
-            room->broadcastSkillInvoke(objectName());
-            return true;
-        }
-        return false;
-    }
-    virtual bool effect(TriggerEvent , Room *room, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const{
-        room->notifySkillInvoked(ask_who, objectName());
-        //log
-        ask_who->gainMark("@shiting_use");
-        if (ask_who->getMark("@shiting_use") >= 10){
-            ask_who->setMark("@shiting_use", 0);
-            room->detachSkillFromPlayer(ask_who, "shiting");
-        }
-        return true;
-    }
+		}
+		else if (event == CardFinished){
+			CardUseStruct use = data.value<CardUseStruct>();
+
+			QList<ServerPlayer *> homuras = room->findPlayersBySkillName(objectName());
+			foreach(ServerPlayer *homura, homuras){
+				if (use.card && use.card->hasFlag("shiting_slash") && homura->tag["shiting_list"].toList().length() > 0)
+					skill_list.insert(homura, QStringList(objectName()));
+			}
+		}
+		else {
+			DeathStruct death = data.value<DeathStruct>();
+			if (death.who->hasShownSkill(this))
+				death.who->tag["shiting_slash"] = QVariant();
+		}
+		return skill_list;			
+	}
+
+
+	virtual bool cost(TriggerEvent event, Room *room, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const{
+		if (event == TargetConfirmed){
+			if (room->askForSkillInvoke(ask_who, objectName())){
+				ask_who->throwAllHandCards();
+				// sounds
+				return true;
+			}
+		}else {
+			return true;
+		}
+		return false;
+	}
+
+	virtual bool effect(TriggerEvent event, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *ask_who) const{
+		if (event == TargetConfirmed){
+			CardUseStruct use = data.value<CardUseStruct>();
+
+			use.card->setFlags("shiting_slash");
+			ask_who->setFlags("shiting_use");
+			ServerPlayer *current = room->getCurrent();
+			try {
+				room->setCurrent(ask_who);
+				room->getThread()->trigger(TurnStart, room, ask_who);
+				room->setCurrent(current);
+			}
+			catch (TriggerEvent triggerEvent) {
+				if (triggerEvent == TurnBroken) {
+					if (ask_who->getPhase() != Player::NotActive) {
+						const GameRule *game_rule = NULL;
+						game_rule = qobject_cast<const GameRule *>(Sanguosha->getTriggerSkill("game_rule"));
+						if (game_rule)
+							room->getThread()->trigger(EventPhaseEnd, room, ask_who, QVariant());
+						ask_who->changePhase(ask_who->getPhase(), Player::NotActive);
+					}
+					room->setCurrent(current);
+				}
+				throw triggerEvent;
+			}
+		}else if (event == CardUsed){
+			return true;
+		}else if (event == CardFinished){
+			QList<const CardUseStruct> use_list;
+			QVariantList shiting_list = ask_who->tag["shiting_list"].toList();
+
+			ask_who->setFlags("-shiting_use");
+			foreach (QVariant v_use, shiting_list){
+				CardUseStruct use = v_use.value<CardUseStruct>();
+				if (use.card && use.from && use.from->isAlive())
+					room->useCard(use);
+			}
+			ask_who->tag["shiting_list"] = QVariant();
+		}
+		return false;
+	}
 };
 
 //shizhi -SE
 class Shizhi: public TriggerSkill {
 public:
     Shizhi(): TriggerSkill("shizhi") {
-        events << EventPhaseStart;
+        events << PreDamageDone << CardFinished;
+		frequency = Frequent;
     }
 
-    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent , Room *room, ServerPlayer *player, QVariant &) const{
+    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent event, Room *room, ServerPlayer *, QVariant &data) const{
         QMap<ServerPlayer *, QStringList> skill_list;
-        if (player != NULL && player->getPhase() == Player::Start) {
-            QList<ServerPlayer *> homuras = room->findPlayersBySkillName(objectName());
-            foreach (ServerPlayer *homura, homuras){
-                if (player == homura) 
-                    homura->loseAllMarks("@shizhi_used");
-                int need_num = 2;
-                if (!homura->hasSkill("shiting")) 
-                    need_num = 1;
-                if (homura->getMark("@shizhi_used") < need_num && homura->getHandcardNum() + homura->getEquips().length() >= need_num)
-                    skill_list.insert(homura, QStringList(objectName()));
-            }
-        }
+		if (event == PreDamageDone) {
+			DamageStruct damage = data.value<DamageStruct>();
+			QList<ServerPlayer *> homuras = room->findPlayersBySkillName(objectName());
+			foreach(ServerPlayer *homura, homuras) {
+				if (damage.card && damage.card->isKindOf("Slash") && damage.from == homura){
+					homura->setFlags("slash_damaged");
+				}
+			}
+		}
+		else{
+			CardUseStruct use = data.value<CardUseStruct>();
+			QList<ServerPlayer *> homuras = room->findPlayersBySkillName(objectName());
+			foreach (ServerPlayer *homura, homuras)
+			if ((!use.from->hasFlag("slash_damaged")) && use.from == homura && use.card->isKindOf("Slash")) 
+				skill_list.insert(homura, QStringList(objectName()));
+		}
         return skill_list;
     }
-    virtual bool cost(TriggerEvent , Room *room, ServerPlayer *, QVariant &data, ServerPlayer *ask_who) const{
-        bool invoke = ask_who->askForSkillInvoke(objectName(), data);
-        int need_num = 2;
-        if (!ask_who->hasSkill("shiting")) 
-            need_num = 1;
-        if (invoke && room->askForDiscard(ask_who, "shizhi", need_num, need_num, true, true, QString())) {
-            room->broadcastSkillInvoke(objectName());
-            return true;
-        }
+    virtual bool cost(TriggerEvent , Room *room, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const{
+		if (room->askForSkillInvoke(ask_who, objectName())){
+			//TODO Sound of Shizhi
+			ask_who->setFlags("-slash_damaged");
+			return true;
+		}
         return false;
     }
-    virtual bool effect(TriggerEvent , Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const{
-        room->notifySkillInvoked(ask_who, objectName());
-        //log
-        room->askForGuanxing(ask_who, room->getNCards(5));
-        if (player != ask_who)
-            ask_who->gainMark("@shizhi_used");
+    virtual bool effect(TriggerEvent , Room *, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const{
+		ask_who->drawCards(1);
         return false;
     }
 };
@@ -611,7 +646,7 @@ public:
     	response_or_use = true;
     }
 
-    virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const{
+    virtual bool viewFilter(const QList<const Card *> &, const Card *) const{
 		return true;
 	}
 
@@ -1792,7 +1827,7 @@ public:
                 if (card->isKindOf("Weapon"))
                     list.append("Weapon");
                 if (card->isKindOf("Armor"))
-                    list.append("Armor");
+                    list.append( "Armor");
                 if (card->isKindOf("OffensiveHorse"))
                     list.append("OffensiveHorse");
                 if (card->isKindOf("DefensiveHorse"))
