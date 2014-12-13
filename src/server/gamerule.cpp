@@ -231,10 +231,19 @@ void GameRule::onPhaseProceed(ServerPlayer *player) const{
         break;
     }
     case Player::Discard: {
+		QVariant d_num;
         int discard_num = player->getHandcardNum() - player->getMaxCards(MaxCardsType::Normal);
-        if (discard_num > 0)
-            if (!room->askForDiscard(player, "gamerule", discard_num, discard_num))
-                break;
+		d_num = discard_num;
+		Q_ASSERT(room->getThread() != NULL);
+		room->getThread()->trigger(DiscardNCards, room, player, d_num);
+		discard_num = d_num.toInt();
+		if (discard_num > 0){
+			if (!room->askForDiscard(player, "gamerule", discard_num, discard_num)){
+				d_num = discard_num;
+				room->getThread()->trigger(AfterDiscardNCards, room, player, d_num);
+				break;
+			}
+		}
         break;
     }
     case Player::Finish: {
