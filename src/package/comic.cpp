@@ -208,7 +208,7 @@ public:
 		return false;
 	}
 
-	virtual bool effect(TriggerEvent event, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+	virtual bool effect(TriggerEvent , Room *, ServerPlayer *, QVariant &data, ServerPlayer *) const{
 		data = data.toInt() + 1;
 		return false;
 	}
@@ -273,6 +273,111 @@ public:
 	}
 };
 
+class Mizou : public TriggerSkill{
+public: 
+	Mizou() : TriggerSkill("mizou"){
+		events << DamageCaused << DamageInflicted;
+		frequency = NotFrequent;
+	}
+
+	virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer* &) const{
+		if (!TriggerSkill::triggerable(player)) return QStringList();
+		if (player->canDiscard(player, "he"))
+			return QStringList(objectName());
+		return QStringList();
+	}
+
+	virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+		if (room->askForCard(player, ".", "@mizou_discard", QVariant(), objectName())) {
+			room->broadcastSkillInvoke(objectName());
+			return true;
+		}
+		return false;
+	}
+
+	virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+		DamageStruct damage = data.value<DamageStruct>();
+
+		JudgeStruct judge;
+		judge.good = true;
+		judge.pattern = ".|red";
+		judge.play_animation = false;
+		judge.who = player;
+		judge.reason = objectName();
+		judge.time_consuming = true;
+
+		room->judge(judge);
+
+		if (judge.isGood()){
+			if (damage.from && damage.from->isAlive())
+				damage.from->drawCards(1);
+			return true;
+		}
+
+		return false;
+	}
+};
+
+class Wushu : public TriggerSkill{
+public:
+	Wushu() : TriggerSkill("wushu"){
+		events << BeforeCardsMove;
+		frequency = Frequent;
+	}
+
+	virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+		if (!TriggerSkill::triggerable(player)) return QStringList();
+		CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+		if (move.from != player) return QStringList();
+		if (move.to_place == Player::Discard && move.reason.m_reason == CardMoveReason::S_REASON_JUDGEDONE){
+			QList<int> ids;
+			int i = 0;
+			foreach(int id, move.card_ids){
+				if (Sanguosha->getCard(id)->getColor() == Card::Black && move.from_places[i] == Player::PlaceJudge)
+					ids << id;
+				i++;
+			}
+			if (!ids.isEmpty()){
+				player->tag[objectName()] = IntList2VariantList(ids);
+				return QStringList(objectName());
+			}
+		}
+		return QStringList();
+	}
+
+	virtual bool cost(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer*) const{
+		if (player->askForSkillInvoke(this)){
+			player->getRoom()->broadcastSkillInvoke(objectName());
+			return true;
+		}
+		return false;
+	}
+
+	virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer*) const{
+		QList<int> ids = VariantList2IntList(player->tag[objectName()].toList());
+		if (player->isAlive() && !ids.isEmpty()){
+			CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+
+			foreach(int id, ids)
+				if (move.card_ids.contains(id))
+					move.card_ids.removeOne(id);
+			data = QVariant::fromValue(move);
+
+			DummyCard *dummy = new DummyCard(ids);
+
+			ServerPlayer *target = room->askForPlayerChosen(player, room->getAlivePlayers(), objectName());
+			if (target && target->isAlive())
+				room->moveCardTo(dummy, target, Player::PlaceHand, move.reason, true);
+
+			delete dummy;
+		}
+
+		player->tag[objectName()] = QVariant();
+
+		return false;
+	}
+};
+
 void MoesenPackage::addComicGenerals(){
 
 
@@ -288,12 +393,12 @@ void MoesenPackage::addComicGenerals(){
     General *nagi = new General(this, "nagi", "shu", 3, false); // Comic 003
 	nagi->addSkill(new Tianzi);
 	nagi->addSkill(new Yuzhai);
+	
+	General *izumi = new General(this, "izumi", "shu", 3, false); // Comic 002
+	izumi->addSkill(new Mizou);
+	izumi->addSkill(new Wushu);
+
     /*
-
-    General *izumi = new General(this, "izumi", "shu", 3, false); // Comic 002
-
-
-
     General *suiseiseki = new General(this, "suiseiseki", "shu", 3, false); // Comic 004
 
     General *shinku = new General(this, "shinku", "shu", 3, false); // Comic 005
