@@ -7,7 +7,7 @@
 #include "client.h"
 
 
-
+//jiandao by AK
 class Jiandao : public TriggerSkill {
 public:
     Jiandao() : TriggerSkill("jiandao") {
@@ -106,8 +106,10 @@ public:
             foreach (ServerPlayer *akari, akaris){
                 LureTiger *luretiger = new LureTiger(Card::SuitToBeDecided , 0);
                 QList<const Player *> targets;
-                if ((!akari->willBeFriendWith(player)) && (!akari->isFriendWith(player)) && player->hasShownOneGeneral() && akari->getHandcardNum() <= akari->getHp() && room->alivePlayerCount() > 2 && luretiger->targetFilter(targets, akari , player) && !player->isProhibited(akari, luretiger, targets))
+				if ((!akari->willBeFriendWith(player)) && (!akari->isFriendWith(player)) && player->hasShownOneGeneral() && akari->getHandcardNum() <= akari->getHp() && room->alivePlayerCount() > 2 && luretiger->targetFilter(targets, akari, player) && !player->isProhibited(akari, luretiger, targets)){
+					luretiger->deleteLater();
                     skill_list.insert(akari, QStringList(objectName()));
+				}
             }
         }
         return skill_list;
@@ -172,6 +174,105 @@ public:
     }
 };
 
+class Tianzi : public TriggerSkill {
+public:
+	Tianzi() : TriggerSkill("tianzi") {
+		events << DiscardNCards << DrawNCards;
+		frequency = NotFrequent;
+	}
+
+	virtual QStringList triggerable(TriggerEvent event, Room *, ServerPlayer *player, QVariant &, ServerPlayer* &) const{
+		if (!TriggerSkill::triggerable(player)) return QStringList();
+		if (event == DrawNCards){
+			return QStringList(objectName());
+		}
+		else{
+			if (player->getHandcardNum() >= qMax(1, player->getMaxCards(MaxCardsType::Normal)))
+				return QStringList(objectName());
+		}
+		return QStringList();
+	}
+
+	virtual bool cost(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+		if (player->askForSkillInvoke(this)){
+			int x;
+			if (event == DrawNCards){
+				x = 1;
+			}
+			else{
+				x = 2;
+			}
+			room->broadcastSkillInvoke(objectName(), x);
+			return true;
+		}
+		return false;
+	}
+
+	virtual bool effect(TriggerEvent event, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+		data = data.toInt() + 1;
+		return false;
+	}
+};
+
+class Yuzhai : public TriggerSkill {
+public:
+	Yuzhai() : TriggerSkill("yuzhai") {
+		events << EventPhaseEnd << CardsMoveOneTime;
+		frequency = NotFrequent;
+	}
+
+	virtual QStringList triggerable(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+		if (!TriggerSkill::triggerable(player)) return QStringList();
+		if (event == CardsMoveOneTime){
+			CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+			if (player->getPhase() != Player::Discard || move.to_place != Player::DiscardPile || (move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) != CardMoveReason::S_REASON_DISCARD)
+				return QStringList();
+			player->setMark("@yuzhai_cards", player->getMark("@yuzhai_cards") + move.card_ids.length());
+		}
+		else{
+			if (player->getPhase() == Player::Discard && player->getMark("@yuzhai_cards") >= player->getHp()){
+				player->setMark("@yuzhai_cards", 0);
+				QList<ServerPlayer *> others = room->getOtherPlayers(player);
+				bool invoke = true;
+				foreach(ServerPlayer * other, others){
+					if (!player->canDiscard(other, "he"))
+						invoke = false;
+				}
+				if (invoke)
+					return QStringList(objectName());
+			}
+		}
+		return QStringList();
+	}
+
+	virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+		QList<ServerPlayer *> others = room->getOtherPlayers(player);
+		QList<ServerPlayer *> targets;
+		foreach(ServerPlayer *p, others) {
+			if (player->canDiscard(p, "he"))
+				targets << p;
+		}
+		ServerPlayer *to = room->askForPlayerChosen(player, targets, objectName(), "yuzhai-invoke", true, true);
+		if (to) {
+			player->tag["yuzhai_target"] = QVariant::fromValue(to);
+			room->broadcastSkillInvoke(objectName(), player);
+			return true;
+		}
+		else player->tag.remove("yuzhai_target");
+		return false;
+	}
+
+	virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+		ServerPlayer *to = player->tag["yuzhai_target"].value<ServerPlayer *>();
+		player->tag.remove("yuzhai_target");
+		if (to && player->canDiscard(to, "he")) {
+			int card_id = room->askForCardChosen(player, to, "he", objectName(), false, Card::MethodDiscard);
+			room->throwCard(card_id, to, player);
+		}
+		return false;
+	}
+};
+
 void MoesenPackage::addComicGenerals(){
 
 
@@ -184,11 +285,14 @@ void MoesenPackage::addComicGenerals(){
     akari->addSkill(new Wucun);
     akari->addSkill(new Kongni);
 
+    General *nagi = new General(this, "nagi", "shu", 3, false); // Comic 003
+	nagi->addSkill(new Tianzi);
+	nagi->addSkill(new Yuzhai);
     /*
 
     General *izumi = new General(this, "izumi", "shu", 3, false); // Comic 002
 
-    General *nagi = new General(this, "nagi", "shu", 3, false); // Comic 003
+
 
     General *suiseiseki = new General(this, "suiseiseki", "shu", 3, false); // Comic 004
 
