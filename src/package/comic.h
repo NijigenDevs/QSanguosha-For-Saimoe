@@ -4,4 +4,38 @@
 #include "moesen-package.h"
 #include "card.h"
 
+class ShuimengCard : public SkillCard {
+	Q_OBJECT
+
+public:
+	Q_INVOKABLE ShuimengCard();
+	virtual bool targetFilter(const QList<const Player *> &targets, const Player *, const Player *) const;
+	virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+};
+
+class MingmingCard : public SkillCard {
+	Q_OBJECT
+
+public:
+	Q_INVOKABLE MingmingCard();
+	virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const;
+};
+
+class rosesuigintouCard : public SkillCard {
+	Q_OBJECT
+
+public:
+	Q_INVOKABLE rosesuigintouCard();
+	virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const;
+};
+
+class HeliCard : public SkillCard {
+	Q_OBJECT
+
+public:
+	Q_INVOKABLE HeliCard();
+	virtual bool targetFilter(const QList<const Player *> &targets, const Player *, const Player *) const;
+	virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+};
+
 #endif

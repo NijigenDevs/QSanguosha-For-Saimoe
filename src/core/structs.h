@@ -469,7 +469,7 @@ struct PlayerNumStruct {
 };
 
 enum TriggerEvent {
-    NonTrigger,
+	NonTrigger, 
 
     GameStart,
     TurnStart,

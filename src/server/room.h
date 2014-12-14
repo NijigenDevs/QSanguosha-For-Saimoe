@@ -335,6 +335,7 @@ public:
     bool askForSkillInvoke(ServerPlayer *player, const QString &skill_name, const QVariant &data = QVariant());
     QString askForChoice(ServerPlayer *player, const QString &skill_name, const QString &choices, const QVariant &data = QVariant());
     bool askForDiscard(ServerPlayer *target, const QString &reason, int discard_num, int min_num, bool optional = false, bool include_equip = false, const QString &prompt = QString(), bool notify_skill = false);
+	int askForDiscardNum(ServerPlayer *target, const QString &reason, int discard_num, int min_num, bool optional = false, bool include_equip = false, const QString &prompt = QString(), bool notify_skill = false);
     const Card *askForExchange(ServerPlayer *player, const QString &reason, int discard_num, bool include_equip = false,
         const QString &prompt = QString(), bool optional = false);
     bool askForNullification(const Card *trick, ServerPlayer *from, ServerPlayer *to, bool positive);

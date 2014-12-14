@@ -1228,7 +1228,7 @@ void FangquanCard::onEffect(const CardEffectStruct &effect) const{
     ServerPlayer *player = effect.to;
 
     LogMessage log;
-    log.type = "#Fangquan";
+	log.type = "#Fangquan";
     log.to << player;
     room->sendLog(log);
 

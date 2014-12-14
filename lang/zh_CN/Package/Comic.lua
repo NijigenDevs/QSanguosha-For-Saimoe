@@ -44,14 +44,14 @@ return {
 	["cv:shinku"] = "沢城みゆき",
 	["illustrator:shinku"] = "",
 	
-	["t_kyouko"] = "岁纳京子", 
-	["&t_kyouko"] = "岁纳京子", 
-	["#t_kyouko"] = "后宫王", 
-	["#&t_kyouko"] = "摇曳百合♪♪", 	
-	["~t_kyouko"] = "", 
-	["designer:t_kyouko"] = "",
-	["cv:t_kyouko"] = "大坪由佳",
-	["illustrator:t_kyouko"] = "",
+	["tkyouko"] = "岁纳京子", 
+	["&tkyouko"] = "岁纳京子", 
+	["#tkyouko"] = "后宫王", 
+	["#&tkyouko"] = "摇曳百合♪♪", 	
+	["~tkyouko"] = "", 
+	["designer:tkyouko"] = "",
+	["cv:tkyouko"] = "大坪由佳",
+	["illustrator:tkyouko"] = "",
 	
 	["akari"] = "赤座灯里", 
 	["&akari"] = "赤座灯里", 
@@ -183,14 +183,52 @@ return {
 	["yuzhai"] = "御宅",
 	[":yuzhai"] = "弃牌阶段结束时，若你于此阶段内弃置的牌的张数不小于你的体力值，你可以弃置一名其他角色的一张牌。",
 	["$yuzhai"] = "",
-	["@yuzhai_cards"] = "御宅计数",
+	["@yuzhaicards"] = "御宅计数",
+	["yuzhai-invoke"] = "请选择一名其他角色，发动“御宅”",
 
 	["mizou"] = "迷走",
-	[":mizou"] = "每当你受到或造成伤害时，你可以弃置一张牌，然后进行一次判定，若结果为红色，你令伤害来源摸一张牌，再防止此伤害。",
+	[":mizou"] = "每当你受到或造成伤害时，你可以弃置一张牌，然后进行一次判定，若结果为红色，你令伤害来源摸一张牌，再令此伤害-1。",
 	["$mizou"] = "",
-	["@mizou_discard"] = "请弃置一张牌，发动“迷走”",
+	["@mizoudiscard"] = "请弃置一张牌，发动“迷走”",
 
 	["wushu"] = "巫术",
 	[":wushu"] = "每当你的黑色牌因判定而置入弃牌堆时，你可以将之交给一名角色。",
 	["$wushu"] = "",
+
+	["shuimeng"] = "水梦",
+	[":shuimeng"] = "出牌阶段限一次，你可以弃置X张手牌并指定一名角色，若如此做，你令其摸X-1张牌。（X为至少为2的变量）",
+	["$shuimeng"] = "",
+	["shuimengdiscard"] = "请弃置至少两张牌发动“水梦”",
+
+	["mingming"] = "冥冥",
+	[":mingming"] = "出牌阶段限一次，你可以弃置两张相同花色的黑色手牌，若如此做，视为你使用一张【万箭齐发】。",
+	["$mingming"] = "",
+
+	["heli"] = "荷莉",
+	[":heli"] = "出牌阶段限一次，你可以弃置Ｘ张红色牌并指定一名其他角色，若如此做，你对其造成X/2点伤害（向下取整，且至多为3）。（X为至少为2的变量，且不多于存活角色数）",
+	["$heli"] = "",
+
+	["rosesuiseiseki"] = "蔷薇",
+	[":rosesuiseiseki"] = "主将技，每当你使用“水梦”时，可以将你的副将牌暗置，若如此做，你不能明置副将直到你的下个回合开始，然后此次使用“水梦”的弃牌消耗改为2，X改为该角色的手牌数。",
+	["$rosesuiseiseki"] = "",
+
+	["rosesuigintou"] = "蔷薇",
+	[":rosesuigintou"] = "主将技，每当你使用“冥冥”时，可以将你的副将牌暗置，若如此做，你不能明置副将直到你的下个回合开始，然后此次使用“冥冥”的弃牌消耗减半。",
+	["$rosesuigintou"] = "",
+
+	["roseshinku"] = "蔷薇",
+	[":roseshinku"] = "主将技，每当你使用“荷莉”时，可以将你的副将牌暗置，若如此做，你不能明置副将直到你的下个回合开始，然后此次使用“荷莉”造成的伤害改为X-1。",
+	["$roseshinku"] = "",
+
+	["meijiesuiseiseki"] = "媒戒",
+	[":meijiesuiseiseki"] = "副将技，锁定技，若你的主将未被移出游戏，你的手牌上限+1。",
+	["$meijiesuiseiseki"] = "",
+
+	["meijiesuigintou"] = "媒戒",
+	[":meijiesuigintou"] = "副将技，锁定技，若你的主将未被移出游戏，“冥冥”的弃牌消耗改为两张黑色手牌。",
+	["$meijiesuigintou"] = "",		
+
+	["meijieshinku"] = "媒戒",
+	[":meijieshinku"] = "副将技，锁定技，若你的主将未被移出游戏，“荷莉”的弃牌消耗改为X张牌。",
+	["$meijieshinku"] = ","
 }

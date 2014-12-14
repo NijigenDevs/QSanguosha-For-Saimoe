@@ -311,7 +311,8 @@ public:
 		if (judge.isGood()){
 			if (damage.from && damage.from->isAlive())
 				damage.from->drawCards(1);
-			return true;
+			damage.damage--;
+			data = QVariant::fromValue(damage);
 		}
 
 		return false;
@@ -378,8 +379,257 @@ public:
 	}
 };
 
-void MoesenPackage::addComicGenerals(){
+class rosesuiseiseki : public TriggerSkill{
+public:
+	rosesuiseiseki() : TriggerSkill("rosesuiseiseki"){
+		relate_to_place = "head";
+		events << EventPhaseStart;
+		frequency = NotFrequent;
+	}
 
+	virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer* &) const {
+		if (!TriggerSkill::triggerable(player)) return QStringList();
+		if (player->getPhase() == Player::RoundStart)
+			room->removePlayerDisableShow(player, objectName());
+		return QStringList();
+	}
+};
+
+class meijiesuiseiseki : public MaxCardsSkill{
+public:
+	meijiesuiseiseki() : MaxCardsSkill("meijiesuiseiseki"){
+		relate_to_place = "deputy";
+	}
+
+	virtual int getExtra(const ServerPlayer *target, MaxCardsType::MaxCardsCount) const{
+		if (target->hasShownSkill(this) && !target->getActualGeneral1Name().contains("sujiang"))
+			return 1;
+		return 0;
+	}
+};
+
+ShuimengCard::ShuimengCard() {
+	will_throw = true;
+	target_fixed = false;
+}
+
+bool ShuimengCard::targetFilter(const QList<const Player *> &targets, const Player *, const Player *) const{
+	return targets.isEmpty();
+}
+
+void ShuimengCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
+	if (targets.length() > 0){
+		ServerPlayer *master = targets.first();
+		if (source->hasSkill("rosesuiseiseki") && (!source->getActualGeneral2Name().contains("sujiang")) && (source->hasShownGeneral2()) && room->askForSkillInvoke(source, "rosesuiseiseki")) {
+			source->hideGeneral(false);
+			room->setPlayerDisableShow(source, "d", "rosesuiseiseki");
+			int d_num = room->askForDiscardNum(source, "shuimeng", 2, 2, false, false, "shuimeng_discard", true);
+			if (d_num == 2) 
+				master->drawCards(qMin(5, master->getHandcardNum()));
+		}
+		else{
+			int d_num = room->askForDiscardNum(source, "shuimeng", 999, 2, false, false, "shuimeng_discard", true);
+			if (d_num >= 2)
+				master->drawCards(d_num - 1);
+		}
+	}
+}
+
+class Shuimeng : public	ZeroCardViewAsSkill{
+public:
+	Shuimeng() : ZeroCardViewAsSkill("shuimeng"){
+	}
+
+	virtual bool isEnabledAtPlay(const Player *player) const{
+		return (player->getHandcardNum() > 1 && !player->hasUsed("ShuimengCard"));
+	}
+
+	virtual const Card *viewAs() const{
+		ShuimengCard *sm = new ShuimengCard;
+		sm->setShowSkill(objectName());
+		return sm;
+	}
+};
+
+rosesuigintouCard::rosesuigintouCard() {
+	will_throw = false;
+	target_fixed = true;
+}
+
+void rosesuigintouCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const{
+	source->hideGeneral(false);
+	room->setPlayerDisableShow(source, "d", "rosesuigintou");	
+	MingmingCard *mm = new MingmingCard();
+	mm->addSubcards(getSubcards());
+	room->useCard(CardUseStruct(mm, source, NULL, true));
+}
+
+class rosesuigintou : public OneCardViewAsSkill{
+public:
+	rosesuigintou() : OneCardViewAsSkill("rosesuigintou"){
+	}
+
+	virtual bool isEnabledAtPlay(const Player *player) const{
+		return player->getHandcardNum() >= 1 && (!player->hasUsed("MingmingCard")) && (!player->getActualGeneral2Name().contains("sujiang")) && player->hasShownGeneral2();
+	}
+
+	virtual bool viewFilter(const Card *card) const{
+		if (card->isEquipped())
+			return false;
+
+		return card->isBlack();
+	}
+
+	virtual const Card *viewAs(const Card *card) const{
+		rosesuigintouCard *rst = new rosesuigintouCard;
+		rst->addSubcard(card);
+		rst->setShowSkill(objectName());
+		return rst;
+	}
+};
+
+class rosesuigintouTrigger : public TriggerSkill{
+public:
+	rosesuigintouTrigger() : TriggerSkill("rosesuigintou"){
+		relate_to_place = "head";
+		view_as_skill = new rosesuigintou;
+		events << EventPhaseStart;
+	}
+
+	virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer* &) const {
+		if (!TriggerSkill::triggerable(player)) return QStringList();
+		if (player->getPhase() == Player::RoundStart)
+			room->removePlayerDisableShow(player, "rosesuigintou");
+		return QStringList();
+	}
+};
+
+class meijiesuigintou : public TriggerSkill{
+public:
+	meijiesuigintou() : TriggerSkill("meijiesuigintou"){
+		frequency = Compulsory;
+		relate_to_place = "deputy";
+	}
+};
+
+MingmingCard::MingmingCard() {
+	will_throw = true;
+	target_fixed = true;
+}
+
+void MingmingCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const{
+	ArcheryAttack *aa = new ArcheryAttack(Card::NoSuit, 0);
+	aa->setSkillName("mingming");
+	room->useCard(CardUseStruct(aa, source, room->getOtherPlayers(source), true));
+}
+
+class Mingming : public	ViewAsSkill{
+public:
+	Mingming() : ViewAsSkill("mingming"){
+	}
+
+	virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const{
+		if (selected.isEmpty())
+			return (to_select->isBlack() && !to_select->isEquipped());
+		else if (selected.length() == 1){
+			return !to_select->isEquipped() && ((to_select->getSuit() == selected.first()->getSuit()) || (to_select->isBlack() && Self->hasSkill("meijiesuigintou")));
+		}
+
+		return false;
+	}
+
+	virtual bool isEnabledAtPlay(const Player *player) const{
+		return player->getHandcardNum() >= 2 && !player->hasUsed("MingmingCard");
+	}
+
+	virtual const Card *viewAs(const QList<const Card *> &cards) const{
+		if (cards.length() == 2){
+			MingmingCard *mm = new MingmingCard;
+			mm->setShowSkill(objectName());
+			mm->addSubcards(cards);
+			return mm;
+		}
+		return NULL;
+	}
+};
+
+
+
+class roseshinku : public TriggerSkill{
+public:
+	roseshinku() : TriggerSkill("roseshinku"){
+		relate_to_place = "head";
+		events << EventPhaseStart;
+		frequency = NotFrequent;
+	}
+
+	virtual QStringList triggerable(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &, ServerPlayer* &) const {
+		if (!TriggerSkill::triggerable(player)) return QStringList();
+		if (event == EventPhaseStart){
+			if (player->getPhase() == Player::RoundStart)
+				room->removePlayerDisableShow(player, objectName());
+		}
+		return QStringList();
+	}
+};
+
+class meijieshinku : public TriggerSkill{
+public:
+	meijieshinku() : TriggerSkill("meijieshinku"){
+		frequency = Compulsory;
+		relate_to_place = "deputy";
+	}
+};
+
+HeliCard::HeliCard() {
+	will_throw = true;
+	target_fixed = false;
+}
+
+bool HeliCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+	return targets.isEmpty() && to_select != Self;
+}
+
+void HeliCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
+	ServerPlayer *target = targets.first();
+	bool invoke = false;
+
+	if (source->hasSkill("roseshinku") && !source->getActualGeneral2Name().contains("sujiang") && source->hasShownGeneral2() && source->askForSkillInvoke("roseshinku")){
+		invoke = true;
+		source->hideGeneral(false);
+		room->setPlayerDisableShow(source, "d", "roseshinku");
+	}
+
+
+	room->damage(DamageStruct("heli", source, target, invoke ? qMin(3, subcardsLength() - 1) : qMin(3, subcardsLength() / 2), DamageStruct::Normal));
+}
+
+class Heli : public	ViewAsSkill{
+public:
+	Heli() : ViewAsSkill("heli"){
+	}
+
+	virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const{
+		return (selected.length() + 1 <= Self->aliveCount()) && (to_select->isRed() || (Self->hasSkill("meijieshinku") && !Self->getActualGeneral1Name().contains("sujiang")));
+	}
+
+	virtual bool isEnabledAtPlay(const Player *player) const{
+		return player->getCardCount(true) >=2 && !player->hasUsed("HeliCard");
+	}
+
+	virtual const Card *viewAs(const QList<const Card *> &cards) const{
+		if (cards.length() >= 2){
+			HeliCard *hl = new HeliCard;
+			hl->setShowSkill(objectName());
+			hl->addSubcards(cards);
+			return hl;
+		}
+		return NULL;
+	}
+};
+
+
+void MoesenPackage::addComicGenerals(){
 
     General *hinagiku = new General(this, "hinagiku", "shu", 5, false); // Comic 001  (should change No.)
     hinagiku->addSkill(new Jiandao);
@@ -398,10 +648,25 @@ void MoesenPackage::addComicGenerals(){
 	izumi->addSkill(new Mizou);
 	izumi->addSkill(new Wushu);
 
-    /*
     General *suiseiseki = new General(this, "suiseiseki", "shu", 3, false); // Comic 004
+	suiseiseki->addSkill(new Shuimeng);
+	suiseiseki->addSkill(new rosesuiseiseki);
+	suiseiseki->addSkill(new meijiesuiseiseki);
 
-    General *shinku = new General(this, "shinku", "shu", 3, false); // Comic 005
+    General *suigintou = new General(this, "suigintou", "shu", 3, false); // Comic 017
+	suigintou->addSkill(new Mingming);
+	suigintou->addSkill(new rosesuigintouTrigger);
+	suigintou->addSkill(new meijiesuigintou);
+	
+	General *shinku = new General(this, "shinku", "shu", 3, false); // Comic 005
+	shinku->addSkill(new Heli); 
+	shinku->addSkill(new roseshinku);
+	shinku->addSkill(new meijieshinku);
+
+    /*
+
+
+
 
     General *t_kyouko = new General(this, "t_kyouko", "shu", 3, false); // Comic 006
 
@@ -423,8 +688,12 @@ void MoesenPackage::addComicGenerals(){
 
     General *shizuno = new General(this, "shizuno", "shu", 3, false); // Comic 016
 
-    General *suigintou = new General(this, "suigintou", "shu", 3, false); // Comic 017
 
     General *ika = new General(this, "ika", "shu", 3, false); // Comic 018
     */
+
+	addMetaObject<ShuimengCard>();
+	addMetaObject<rosesuigintouCard>();
+	addMetaObject<MingmingCard>();
+	addMetaObject<HeliCard>();
 }
