@@ -265,7 +265,7 @@ bool JisuiCard::targetFilter(const QList<const Player *> &targets, const Player 
     if (to_select == Self || (!to_select->hasShownOneGeneral())) 
         return false;
     bool invoke = true;
-    foreach ( const Player *p , targets){
+    foreach (const Player *p , targets){
         if (to_select->isFriendWith(p)){
             invoke = false;
             break;            

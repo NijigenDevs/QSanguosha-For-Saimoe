@@ -527,7 +527,7 @@ public:
         if (player != NULL && player->getPhase() == Player::Draw) {
             QList<ServerPlayer *> misuzus = room->findPlayersBySkillName(objectName());
             foreach (ServerPlayer *misuzu, misuzus)
-                if (misuzu->isFriendWith(player) && misuzu->getLostHp() > 0)
+                if ((misuzu->isFriendWith(player) || misuzu->willBeFriendWith(player)) && misuzu->getLostHp() > 0)
                     skill_list.insert(misuzu, QStringList(objectName()));
         }
         return skill_list;

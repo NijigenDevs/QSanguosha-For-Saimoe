@@ -29,7 +29,7 @@ public:
             if (mami->isKongcheng()) n++;
             if (!mami->hasEquip()) n++;
             if (mami->getJudgingArea().isEmpty()) n++;
-            if (n >= 2 && mami->isFriendWith(use.from))
+            if (n >= 2 && (mami->isFriendWith(use.from) || mami->willBeFriendWith(use.from)))
                 skill_list.insert(mami, QStringList(objectName()));
         }
         return skill_list;
@@ -329,7 +329,7 @@ public:
         if (!can_invoke || !move.from || move.from->isDead() || move.to_place != Player::DiscardPile ||
             ((move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) != CardMoveReason::S_REASON_DISCARD))
             return QStringList();
-        if (player->isFriendWith(move.from) && move.from->getMark("renmin"+player->objectName()) == 0)
+        if ((player->isFriendWith(move.from) || player->willBeFriendWith(move.from)) && move.from->getMark("renmin"+player->objectName()) == 0)
             return QStringList(objectName());
         return QStringList();
     }
@@ -1025,7 +1025,7 @@ public:
                     int tongxin = p->property("tongxin").toInt(&ok);
                     if (ok && tongxin > 0){
                         DeathStruct death = data.value<DeathStruct>();
-                        if (death.who->isFriendWith(p) && death.who != p){
+                        if ((death.who->isFriendWith(p) || death.who->willBeFriendWith(p)) && death.who != p){
                             ask_who = p;
                             return QStringList(objectName());
                         }
@@ -1206,9 +1206,9 @@ public:
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer * &) const{
         if (triggerEvent == TargetConfirming){
             CardUseStruct use = data.value<CardUseStruct>();
-            Player *right = player->getNextAlive();
-            Player *left = player->getLastAlive();
-            if (use.card->isKindOf("Slash") && TriggerSkill::triggerable(player) && use.to.contains(player) && !player->isFriendWith(right) && !player->isFriendWith(left) && left->hasShownOneGeneral() && right->hasShownOneGeneral())
+            Player *right = player->getNextAlive(1,false);
+            Player *left = player->getLastAlive(1, false);
+            if (use.card->isKindOf("Slash") && TriggerSkill::triggerable(player) && use.to.contains(player) && !(player->isFriendWith(right) || player->willBeFriendWith(right)) && !(player->isFriendWith(left) || player->willBeFriendWith(left)) && left->hasShownOneGeneral() && right->hasShownOneGeneral())
                 return QStringList(objectName());
         } else if (triggerEvent == SlashEffected){
             if (!TriggerSkill::triggerable(player)) return QStringList();
@@ -1288,7 +1288,7 @@ public:
                 return skill_list;
             QList<ServerPlayer *> inoris = room->findPlayersBySkillName(objectName());
             foreach (ServerPlayer *inori, inoris)
-                if (inori->isAlive() && inori->canDiscard(player, "h") && player->isFriendWith(inori))
+                if (inori->isAlive() && inori->canDiscard(player, "h") && (player->isFriendWith(inori) || inori->willBeFriendWith(player)))
                     skill_list.insert(inori, QStringList(objectName()));
             return skill_list;
         }
@@ -1405,7 +1405,7 @@ public:
         foreach (ServerPlayer *inori, inoris)
             if (inori->hasShownSkill(this)) {
                 foreach (ServerPlayer *p, room->getOtherPlayers(inori))
-                    if (inori->isFriendWith(p)) {
+                    if (inori->isFriendWith(p) || inori->willBeFriendWith(p)) {
                         room->setPlayerMark(p, "bajian", 1);
                         room->attachSkillToPlayer(p, "bajianVS");
                     }
@@ -1526,7 +1526,7 @@ public:
 
         QList<ServerPlayer *> mayus = room->findPlayersBySkillName(objectName());
         foreach (ServerPlayer *mayu, mayus) {
-            if (mayu->isFriendWith(player) && mayu != player && use.from->inMyAttackRange(mayu) && mayu->getHandcardNum() < mayu->getHp() )
+            if ((mayu->isFriendWith(player) || mayu->willBeFriendWith(player)) && mayu != player && use.from->inMyAttackRange(mayu) && mayu->getHandcardNum() < mayu->getHp() )
                 skill_list.insert(mayu, QStringList(objectName()));
         }
         return skill_list;
@@ -2051,7 +2051,7 @@ public:
             QList<ServerPlayer *> ayanamis = room->findPlayersBySkillName(objectName());
 
             foreach (ServerPlayer *ayanami, ayanamis)
-                if (ayanami->isFriendWith(player) && ayanami != player)
+                if ((ayanami->isFriendWith(player) || ayanami->willBeFriendWith(player)) && ayanami != player)
                     skill_list.insert(ayanami, QStringList(objectName()));
         } else if (triggerEvent == DamageComplete && damage.transfer && damage.transfer_reason == objectName() && damage.to == player && player->isAlive()) 
                 skill_list.insert( player , QStringList(objectName()));
@@ -2059,7 +2059,7 @@ public:
     }
 
      virtual bool cost(TriggerEvent triggerEvent , Room *room, ServerPlayer *, QVariant &data, ServerPlayer *ask_who) const{
-        if ( triggerEvent == DamageInflicted && ask_who->askForSkillInvoke(objectName(), data)) {
+        if (triggerEvent == DamageInflicted && ask_who->askForSkillInvoke(objectName(), data)) {
             if (ask_who->hasShownSkill(this)) {
                 room->notifySkillInvoked(ask_who, objectName());
                 LogMessage log;
@@ -2073,28 +2073,31 @@ public:
         } else if (triggerEvent == DamageComplete){
             ServerPlayer *slasher = NULL ;
             DamageStruct damage = data.value<DamageStruct>();
-            foreach (ServerPlayer *tar , room->getAlivePlayers())
+            foreach (ServerPlayer *tar, room->getAlivePlayers())
                 if (tar->hasFlag("chidun_tar"))
                     slasher = tar;
             if (slasher)
                 slasher->setFlags("-chidun_tar");
                 QString prompt = "@chidun:" + damage.from->objectName();
-                room->askForUseSlashTo(slasher,damage.from,prompt ,false,false,false);
+                if (room->askForUseSlashTo(slasher, damage.from, prompt , false, false, false))
+					return true;
         }
         return false;
     }
 
-    virtual bool effect(TriggerEvent , Room *, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who ) const {
+    virtual bool effect(TriggerEvent event, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who ) const {
+		if (event == DamageInflicted){
+			DamageStruct damage = data.value<DamageStruct>();
+			damage.to->setFlags("chidun_tar");
+			damage.transfer = true;
+			damage.to = ask_who;
+			damage.transfer_reason = objectName();
 
-        DamageStruct damage = data.value<DamageStruct>();
-        damage.to->setFlags("chidun_tar");
-        damage.transfer = true;
-        damage.to = ask_who;
-        damage.transfer_reason = objectName();
+			player->tag["TransferDamage"] = QVariant::fromValue(damage);
 
-        player->tag["TransferDamage"] = QVariant::fromValue(damage);
-
-        return true;
+			return true;
+		}
+		return false;
     }
 };
 

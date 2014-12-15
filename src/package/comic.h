@@ -38,4 +38,23 @@ public:
 	virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
+class ZhiyuCard : public SkillCard {
+	Q_OBJECT
+
+public:
+	Q_INVOKABLE ZhiyuCard();
+	virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+	virtual void onEffect(const CardEffectStruct &effect) const;
+};
+
+class BaozouCard : public SkillCard {
+	Q_OBJECT
+
+public:
+	Q_INVOKABLE BaozouCard();
+
+	virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+	virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+};
+
 #endif
