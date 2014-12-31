@@ -330,7 +330,7 @@ public:
 		if (!TriggerSkill::triggerable(player)) return QStringList();
 		CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
 		if (move.from != player) return QStringList();
-		if (move.to_place == Player::Discard && move.reason.m_reason == CardMoveReason::S_REASON_JUDGEDONE){
+		if (move.to_place == Player::DiscardPile && move.reason.m_reason == CardMoveReason::S_REASON_JUDGEDONE){
 			QList<int> ids;
 			int i = 0;
 			foreach(int id, move.card_ids){
@@ -1176,6 +1176,68 @@ public:
 	}
 };
 
+class Qinlve : public TriggerSkill{
+public:
+	Qinlve() : TriggerSkill("qinlve"){
+		events << EventPhaseChanging;
+	}
+
+	virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+		if (!TriggerSkill::triggerable(player)) return QStringList();
+		PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+		if (change.to == Player::Play && !player->hasFlag("qinlve_failed") && player->getHandcardNum() > 0 && !player->isSkipped(change.to)){
+			bool invoke = false;
+			foreach(ServerPlayer *p, room->getOtherPlayers(player)){
+				if (p->getHandcardNum() > 0)
+					invoke = true;
+			}
+			if (invoke)
+				return QStringList(objectName());
+		}
+		return QStringList();
+	}
+	
+	virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer*) const{
+		if (!player->isSkipped(Player::Play))
+			player->skip(Player::Play, true);
+		QList<ServerPlayer *> targets;
+		foreach(ServerPlayer *p, room->getOtherPlayers(player))
+			if (p->getHandcardNum() > 0)
+				targets << p;
+
+		if (!targets.isEmpty()){
+			ServerPlayer *target = room->askForPlayerChosen(player, targets, objectName(), "@qinlve_target", true);
+			if (target != NULL){
+				PindianStruct *pindian = player->pindianSelect(target, objectName());
+
+				if (pindian != NULL){
+					player->tag["qinlve_pindian"] = QVariant::fromValue(pindian);
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer*) const{
+		PindianStruct *pindian = player->tag["qinlve_pindian"].value<PindianStruct *>();
+		player->tag.remove("qinlve_pindian");
+		bool success = player->pindian(pindian);
+		if (success){
+			Slash *slash = new Slash(Card::NoSuit, 0);
+			slash->setSkillName(objectName());
+
+			if (!player->isProhibited(pindian->to, slash))
+				room->useCard(CardUseStruct(slash, player, pindian->to));
+
+			ServerPlayer *nil = NULL;
+			if (cost(EventPhaseChanging, room, player, data, nil))
+				effect(EventPhaseChanging, room, player, data, nil);
+		}
+		return false;
+	}
+};
+
 void MoesenPackage::addComicGenerals(){
 
     General *hinagiku = new General(this, "hinagiku", "shu", 5, false); // Comic 001  (should change No.)
@@ -1226,6 +1288,9 @@ void MoesenPackage::addComicGenerals(){
 	konata->addSkill(new Xipin);
 	konata->addSkill(new Zhaihun);
 
+    General *ika = new General(this, "ika", "shu", 4, false); // Comic 018
+	ika->addSkill(new Qinlve);
+
     /*
 
     General *sakura = new General(this, "sakura", "shu", 3, false); // Comic 011
@@ -1241,7 +1306,7 @@ void MoesenPackage::addComicGenerals(){
     General *shizuno = new General(this, "shizuno", "shu", 3, false); // Comic 016
 
 
-    General *ika = new General(this, "ika", "shu", 3, false); // Comic 018
+
     */
 
 	addMetaObject<ShuimengCard>();
