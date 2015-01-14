@@ -97,7 +97,7 @@ int main(int argc, char *argv[]) {
     if (splash == NULL) {\
         puts(message.toUtf8().constData());\
     } else {\
-        splash->showMessage(message, Qt::AlignBottom | Qt::AlignHCenter, Qt::cyan);\
+        splash->showMessage(message, Qt::AlignBottom | Qt::AlignHCenter, Qt::white);\
         qApp->processEvents();\
     }
 #endif

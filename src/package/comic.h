@@ -57,4 +57,36 @@ public:
 	virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
+class BaibianCard : public SkillCard {
+	Q_OBJECT
+
+public:
+	Q_INVOKABLE BaibianCard();
+	virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+};
+
+class LingshangCard : public SkillCard {
+	Q_OBJECT
+
+public:
+	Q_INVOKABLE LingshangCard();
+};
+
+class KaihuaCard : public SkillCard {
+	Q_OBJECT
+
+public:
+	Q_INVOKABLE KaihuaCard();
+
+	virtual void onUse(Room *room, const CardUseStruct &card_use) const;
+	virtual void onEffect(const CardEffectStruct &effect) const;
+};
+
+class SuanlvCard : public SkillCard {
+	Q_OBJECT
+
+public:
+	Q_INVOKABLE SuanlvCard();
+	virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+};
 #endif

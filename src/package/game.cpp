@@ -799,7 +799,7 @@ public:
         events << TargetChosen << DamageCaused ;
     }
 
-    virtual QStringList triggerable(TriggerEvent event, Room *, ServerPlayer *player, QVariant &data, ServerPlayer * &ask_who) const {
+    virtual QStringList triggerable(TriggerEvent event, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &ask_who) const {
     	if (event == TargetChosen){
 	        CardUseStruct use = data.value<CardUseStruct>();
 	        if (TriggerSkill::triggerable(use.from) && use.card != NULL && use.card->isKindOf("Slash") && use.to.contains(player)){
