@@ -365,6 +365,105 @@ public:
     }
 };
 
+//Jingdi by SE
+JingdiCard::JingdiCard() {
+    will_throw = false;
+    handling_method = Card::MethodNone;
+}
+
+bool JingdiCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *) const{
+    return targets.isEmpty() && to_select->getMark("aria_damaged") == 1;
+}
+
+void JingdiCard::onEffect(const CardEffectStruct &effect) const{
+    CardMoveReason reason(CardMoveReason::S_REASON_GIVE, effect.from->objectName(), effect.to->objectName(), "jingdi", QString());
+    effect.from->getRoom()->obtainCard(effect.to, this, reason, false);
+    effect.from->drawCards(1);
+}
+
+class Jingdi : public OneCardViewAsSkill{
+public:
+    Jingdi() : OneCardViewAsSkill("jingdi"){
+        filter_pattern = ".|.|.|hand!";
+    }
+
+    virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const{
+        return selected.isEmpty() && !to_select->isTransferable();
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return (!player->isKongcheng() && !player->hasUsed("JingdiCard"));
+    }
+
+    virtual const Card *viewAs(const Card *originalCard) const{
+        JingdiCard *jc = new JingdiCard;
+        jc->addSubcard(originalCard->getId());
+        jc->setShowSkill(objectName());
+        return jc;
+    }
+};
+
+class JingdiDamage : public TriggerSkill {
+public:
+    JingdiDamage() : TriggerSkill("jingdi-damage") {
+        events << Damaged;
+        global = true;
+    }
+
+    virtual QStringList triggerable(TriggerEvent , Room *, ServerPlayer *, QVariant &data, ServerPlayer * &) const {
+        DamageStruct damage = data.value<DamageStruct>();
+        if (damage.from->isAlive()){
+            if (damage.to->hasSkill("jingdi")){
+                return QStringList(objectName());
+            }
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *) const {
+        DamageStruct damage = data.value<DamageStruct>();
+        room->setPlayerMark(damage.from, "aria_damaged", 1);
+        return false;
+    }
+};
+
+//wujie by SE
+class Wujie : public TriggerSkill {
+public:
+    Wujie() : TriggerSkill("wujie") {
+        events << DamageCaused << DamageInflicted;
+    }
+
+    virtual QStringList triggerable(TriggerEvent , Room *, ServerPlayer *player, QVariant &data, ServerPlayer * &) const {
+        if (!TriggerSkill::triggerable(player))
+            return QStringList();
+        DamageStruct damage = data.value<DamageStruct>();
+        if (damage.to->getHp() - damage.damage < 1)
+            return QStringList(objectName());
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
+        DamageStruct damage = data.value<DamageStruct>();
+        if ((event == DamageCaused || player->hasShownSkill(this)) && damage.from->askForSkillInvoke(objectName(), QVariant::fromValue(damage.to))) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent , Room *room, ServerPlayer *, QVariant &data, ServerPlayer *) const {
+        DamageStruct damage = data.value<DamageStruct>();
+        RecoverStruct recover;
+        recover.who = damage.to;
+        room->recover(damage.to, recover, true);
+        damage.from->insertPhase(Player::Play);
+        return false;
+    }
+};
+
+
+
 
 void MoesenPackage::addNovelGenerals()
 {
@@ -400,9 +499,13 @@ void MoesenPackage::addNovelGenerals()
     General *watashi = new General(this, "watashi", "qun", 3, false); // Novel 008
 
     General *taiga = new General(this, "taiga", "qun", 3, false); // Novel 009
-
+    */
     General *aria = new General(this, "aria", "qun", 3, false); // Novel 010
-
+    aria->addSkill(new Jingdi);
+    aria->addSkill(new Wujie);
+    skills << new JingdiDamage;
+    
+    /*
     General *ruiko = new General(this, "ruiko", "qun", 3, false); // Novel 011
 
     General *mikoto = new General(this, "mikoto", "qun", 3, false); // Novel 012
@@ -420,4 +523,5 @@ void MoesenPackage::addNovelGenerals()
     addMetaObject<ZhuyiCard>();
     addMetaObject<HaoqiCard>();
     addMetaObject<JisuiCard>();
+    addMetaObject<JingdiCard>();
 }
