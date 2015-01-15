@@ -1625,5 +1625,5 @@ void MoesenPackage::addComicGenerals(){
 	addMetaObject<BaibianCard>();
 	addMetaObject<LingshangCard>();
 	addMetaObject<KaihuaCard>();
-	addMetaObject<SuanlvCard>();
+	//addMetaObject<SuanlvCard>();
 }

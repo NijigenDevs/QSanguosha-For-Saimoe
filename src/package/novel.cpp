@@ -462,7 +462,218 @@ public:
     }
 };
 
+//huxiao
+class Huxiao : public TriggerSkill {
+public:
+    Huxiao() : TriggerSkill("huxiao") {
+        events << CardsMoveOneTime;
+        frequency = NotFrequent;
+    }
 
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer * &) const{
+        if (!TriggerSkill::triggerable(player)) return QStringList();
+        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+        QList<ServerPlayer *> list;
+        foreach(ServerPlayer *p, room->getAlivePlayers()){
+            if (!p->getJudgingArea().isEmpty() || !p->getEquips().isEmpty()){
+                list.append(p);
+            }
+        }
+        if (list.isEmpty()){
+            return QStringList();
+        }
+        if (move.from == player && move.from_places.contains(Player::PlaceEquip)) {
+            return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        if (player->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+        int n = 0;
+        foreach(Player::Place place, move.from_places){
+            if (place == Player::PlaceEquip){
+                n++;
+            }
+        }
+        for (int i = 0; i < n; i++){
+            QList<ServerPlayer *> list;
+            foreach(ServerPlayer *p, room->getAlivePlayers()){
+                if (!p->getJudgingArea().isEmpty() || (p->getEquips().length() > 1 || (p->getEquips().length() == 1 && p->getTreasure() == NULL))){
+                    list.append(p);
+                }
+            }
+            if (list.isEmpty()){
+                return false;
+            }
+
+            if (i > 0){
+                if (!player->askForSkillInvoke(objectName())){
+                    return false;
+                }
+            }
+
+            ServerPlayer *from = room->askForPlayerChosen(player, list, objectName());
+            if (from == NULL){
+                return false;
+            }
+
+            QList<int> cardids;
+            if (from->getWeapon())
+                cardids.append(from->getWeapon()->getEffectiveId());
+            if (from->getArmor())
+                cardids.append(from->getArmor()->getEffectiveId());
+            if (from->getDefensiveHorse())
+                cardids.append(from->getDefensiveHorse()->getEffectiveId());
+            if (from->getOffensiveHorse())
+                cardids.append(from->getOffensiveHorse()->getEffectiveId());
+            foreach(const Card *c, from->getJudgingArea()){
+                cardids.append(c->getEffectiveId());
+            }
+            if (cardids.length() == 0)
+                return false;
+            room->fillAG(cardids, player);
+            int id = room->askForAG(player, cardids, true, objectName());
+            room->clearAG(player);
+            if (id == -1){
+                return false;
+            }
+
+            Card *card = Sanguosha->getCard(id);
+            Player::Place place = room->getCardPlace(id);
+
+            int type = -1;
+            if (place == Player::PlaceEquip){
+                if (card->isKindOf("Weapon")){
+                    type = 1;
+                }
+                else if (card->isKindOf("Armor")){
+                    type = 2;
+                }
+                else if (card->isKindOf("DefensiveHorse")){
+                    type = 3;
+                }
+                else if (card->isKindOf("OffensiveHorse")){
+                    type = 4;
+                }
+            }
+
+            QList<ServerPlayer *> tos;
+            list = room->getAlivePlayers();
+
+            foreach(ServerPlayer *p, list){
+                switch (type){
+                case -1:
+                    if (!player->isProhibited(p, card) && !p->containsTrick(card->objectName())){
+                        tos.append(p);
+                    }
+                    break;
+                case 1:
+                    if (!p->getWeapon()){
+                        tos.append(p);
+                    }
+                    break;
+                case 2:
+                    if (!p->getArmor()){
+                        tos.append(p);
+                    }
+                    break;
+                case 3:
+                    if (!p->getDefensiveHorse()){
+                        tos.append(p);
+                    }
+                    break;
+                case 4:
+                    if (!p->getOffensiveHorse()){
+                        tos.append(p);
+                    }
+                    break;
+                }
+            }
+            if (tos.isEmpty()){
+                return false;
+            }
+
+            ServerPlayer *to = room->askForPlayerChosen(player, tos, objectName());
+            if (!to)
+                return false;
+            CardMoveReason reason = CardMoveReason(CardMoveReason::S_REASON_TRANSFER, player->objectName(), objectName(), QString());
+            room->moveCardTo(card, from, to, place, reason);
+        }
+        return false;
+    }
+};
+
+//yexi
+class Yexi : public TriggerSkill {
+public:
+    Yexi() : TriggerSkill("yexi") {
+        events << CardUsed;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer * &) const {
+        CardUseStruct use = data.value<CardUseStruct>();
+        if (use.to.length() != 1)
+            return QStringList();
+        const Card *card = use.card;
+        if (card->isKindOf("Slash") && card->isBlack() && use.from->objectName() == player->objectName() && use.to.length() == 1 && player->distanceTo(use.to.at(0)) == 1){
+            bool trigger = false;
+            if (use.to.at(0)->getWeapon() && !player->getWeapon())
+                trigger = true;
+            if (use.to.at(0)->getArmor() && !player->getArmor())    
+                trigger = true;
+            if (use.to.at(0)->getDefensiveHorse() && !player->getDefensiveHorse())
+                trigger = true;
+            if (use.to.at(0)->getOffensiveHorse() && !player->getOffensiveHorse())
+                trigger = true;
+            if (trigger){
+                return QStringList(objectName());
+            }
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
+        CardUseStruct use = data.value<CardUseStruct>();
+        if (player->askForSkillInvoke(objectName(), QVariant::fromValue(use.to.at(0)))) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
+        CardUseStruct use = data.value<CardUseStruct>();
+        QList<int> cardids;
+        if (use.to.at(0)->getWeapon() && !player->getWeapon())
+            cardids.append(use.to.at(0)->getWeapon()->getEffectiveId());
+        if (use.to.at(0)->getArmor() && !player->getArmor())
+            cardids.append(use.to.at(0)->getArmor()->getEffectiveId());
+        if (use.to.at(0)->getDefensiveHorse() && !player->getDefensiveHorse())
+            cardids.append(use.to.at(0)->getDefensiveHorse()->getEffectiveId());
+        if (use.to.at(0)->getOffensiveHorse() && !player->getOffensiveHorse())
+            cardids.append(use.to.at(0)->getOffensiveHorse()->getEffectiveId());
+        if (cardids.length() == 0)
+            return false;
+        room->fillAG(cardids, player);
+        int id = room->askForAG(player, cardids, true, objectName());
+        room->clearAG(player);
+        if (id == -1)
+            return false;
+        CardMoveReason reason = CardMoveReason(CardMoveReason::S_REASON_TRANSFER, player->objectName(), objectName(), QString());
+        room->moveCardTo(Sanguosha->getCard(id), use.to.at(0), player, Player::PlaceEquip, reason);
+        return true;
+    }
+};
 
 
 void MoesenPackage::addNovelGenerals()
@@ -497,9 +708,11 @@ void MoesenPackage::addNovelGenerals()
     General *haruhi = new General(this, "haruhi", "qun", 3, false); // Novel 007
 
     General *watashi = new General(this, "watashi", "qun", 3, false); // Novel 008
-
-    General *taiga = new General(this, "taiga", "qun", 3, false); // Novel 009
     */
+    General *taiga = new General(this, "taiga", "qun", 3, false); // Novel 009
+    taiga->addSkill(new Huxiao);
+    taiga->addSkill(new Yexi);
+
     General *aria = new General(this, "aria", "qun", 3, false); // Novel 010
     aria->addSkill(new Jingdi);
     aria->addSkill(new Wujie);
