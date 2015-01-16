@@ -675,11 +675,83 @@ public:
     }
 };
 
+//feiyan
+FeiyanCard::FeiyanCard() {
+}
+
+bool FeiyanCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+    Slash *slash = new Slash(Card::NoSuit, 0);
+    slash->setSkillName("feiyan");
+    slash->deleteLater();
+    return slash->targetFilter(targets, to_select, Self);
+}
+
+const Card *FeiyanCard::validate(CardUseStruct &use) const{
+    ServerPlayer *shana = use.from;
+    Room *room = shana->getRoom();
+    shana->turnOver();
+    room->broadcastSkillInvoke(objectName());
+    Slash *slash = new Slash(Card::NoSuit, 0);
+    slash->setSkillName("feiyan");
+    return slash;
+}
+
+class FeiyanViewAsSkill : public ZeroCardViewAsSkill {
+public:
+    FeiyanViewAsSkill() : ZeroCardViewAsSkill("feiyan") {
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const {
+        return !player->hasUsed("FeiyanCard");
+    }
+
+    virtual const Card *viewAs() const {
+        FeiyanCard *feiyan = new FeiyanCard();
+        feiyan->setShowSkill(objectName());
+        return feiyan;
+    }
+};
+
+class Feiyan : public TriggerSkill{
+public:
+    Feiyan() : TriggerSkill("feiyan"){
+        events << SlashMissed << PreCardUsed;
+        view_as_skill = new FeiyanViewAsSkill;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer * &) const{
+        if (triggerEvent == PreCardUsed){
+            CardUseStruct use = data.value<CardUseStruct>();
+            if (use.card != NULL && use.card->getSkillName() == "feiyan" && use.from != NULL){
+                room->addPlayerHistory(player, use.card->getClassName(), -1);
+                use.m_addHistory = false;
+                data = QVariant::fromValue(use);
+            }
+        }
+        else {
+            SlashEffectStruct effect = data.value<SlashEffectStruct>();
+            if (effect.slash && effect.slash->getSkillName() == "feiyan") {
+                return QStringList(objectName());
+            }
+        }
+
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *) const {
+        if (!player->faceUp()){
+            player->turnOver();
+        }
+        return false;
+    }
+};
 
 void MoesenPackage::addNovelGenerals()
 {
-    /*General *shana = new General(this, "shana", "qun", 3, false); // Novel 001
+    General *shana = new General(this, "shana", "qun", 4, false); // Novel 001
+    shana->addSkill(new Feiyan);
 
+    /*
     General *louise = new General(this, "louise", "qun", 3, false); // Novel 002
 
     General *ruri = new General(this, "ruri", "qun", 3, false); // Novel 003
@@ -737,4 +809,5 @@ void MoesenPackage::addNovelGenerals()
     addMetaObject<HaoqiCard>();
     addMetaObject<JisuiCard>();
     addMetaObject<JingdiCard>();
+    addMetaObject<FeiyanCard>();
 }
