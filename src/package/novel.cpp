@@ -431,21 +431,27 @@ public:
 class Wujie : public TriggerSkill {
 public:
     Wujie() : TriggerSkill("wujie") {
-        events << DamageCaused << DamageInflicted;
+        events << DamageCaused << DamageInflicted << TurnStart;
     }
 
-    virtual QStringList triggerable(TriggerEvent , Room *, ServerPlayer *player, QVariant &data, ServerPlayer * &) const {
+    virtual QStringList triggerable(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer * &) const {
+        if (event == TurnStart){
+            foreach (ServerPlayer *p, room->getAlivePlayers()){
+                p->loseAllMarks("@wujie_used");
+            }
+            return QStringList();
+        }
         if (!TriggerSkill::triggerable(player))
             return QStringList();
         DamageStruct damage = data.value<DamageStruct>();
-        if (damage.to->getHp() - damage.damage < 1)
+        if (damage.to->getHp() - damage.damage < 1 && damage.from->getMark("@wujie_used") == 0)
             return QStringList(objectName());
         return QStringList();
     }
 
     virtual bool cost(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
         DamageStruct damage = data.value<DamageStruct>();
-        if ((event == DamageCaused || player->hasShownSkill(this)) && damage.from->askForSkillInvoke(objectName(), QVariant::fromValue(damage.to))) {
+        if (player->hasShownSkill(this) && damage.from->askForSkillInvoke(objectName(), QVariant::fromValue(damage.to))) {
             room->broadcastSkillInvoke(objectName());
             return true;
         }
@@ -457,6 +463,7 @@ public:
         RecoverStruct recover;
         recover.who = damage.to;
         room->recover(damage.to, recover, true);
+        damage.from->gainMark("@wujie_used");
         damage.from->insertPhase(Player::Play);
         return false;
     }
@@ -681,6 +688,7 @@ FeiyanCard::FeiyanCard() {
 
 bool FeiyanCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
     Slash *slash = new Slash(Card::NoSuit, 0);
+    slash->setNature(DamageStruct::Fire);
     slash->setSkillName("feiyan");
     slash->deleteLater();
     return slash->targetFilter(targets, to_select, Self);
@@ -692,6 +700,7 @@ const Card *FeiyanCard::validate(CardUseStruct &use) const{
     shana->turnOver();
     room->broadcastSkillInvoke(objectName());
     Slash *slash = new Slash(Card::NoSuit, 0);
+    slash->setNature(DamageStruct::Fire);
     slash->setSkillName("feiyan");
     return slash;
 }
