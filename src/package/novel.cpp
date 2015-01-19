@@ -89,7 +89,7 @@ public:
     AzusaMaxCards(): MaxCardsSkill("#azusa-maxcard") {
     }
 
-    virtual int getExtra(const Player *target) const{
+    virtual int getExtra(const ServerPlayer *target, MaxCardsType::MaxCardsCount) const{
         return target->getMark("@zhenhao") - target->getMark("@weihao");
     }
 };
@@ -102,8 +102,8 @@ public:
 
     virtual QStringList triggerable(TriggerEvent , Room *room, ServerPlayer *player, QVariant &, ServerPlayer * &) const {
         if (player->getPhase() == Player::Finish){
-            room->setPlayerMark(player, "@weihao", 0);
-            room->setPlayerMark(player, "@zhenhao", 0);
+            player->loseAllMarks("@weihao");
+            player->loseAllMarks("@zhenhao");
         }
         return QStringList();
     }
@@ -914,7 +914,7 @@ public:
     ShanguangMaxCards() : MaxCardsSkill("#shanguang-maxcard") {
     }
 
-    virtual int getExtra(const Player *target) const{
+    virtual int getExtra(const ServerPlayer *target, MaxCardsType::MaxCardsCount) const{
         if (!target->hasShownSkill("shanguang")){
             return 0;
         }
@@ -946,7 +946,8 @@ void MoesenPackage::addNovelGenerals()
     a_azusa->addSkill(new Zhuyi);
     a_azusa->addSkill(new AzusaMaxCards);
     a_azusa->addSkill(new AzusaTrigger);
-
+    insertRelatedSkills("weihao", "#azusa-maxcard");
+    insertRelatedSkills("zhuyi", "#azusa-maxcard");
 
     General *eru = new General(this, "eru", "qun", 3, false); // Novel 013
     eru->addSkill(new Haoqi);
