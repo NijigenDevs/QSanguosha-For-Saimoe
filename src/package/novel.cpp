@@ -52,7 +52,14 @@ bool ZhuyiCard::targetFilter(const QList<const Player *> &targets, const Player 
 
 void ZhuyiCard::onEffect(const CardEffectStruct &effect) const{
      //broadcast
-    effect.from->getRoom()->useCard(CardUseStruct(this,effect.to,effect.to,false));
+    effect.from->getRoom()->moveCardTo(this, effect.from, effect.to, Player::PlaceEquip, CardMoveReason(CardMoveReason::S_REASON_PUT, effect.from->objectName(), "zhuyi", QString()));
+
+    LogMessage log;
+    log.type = "$ZhijianEquip";
+    log.from = effect.to;
+    log.card_str = QString::number(getEffectiveId());
+    effect.from->getRoom()->sendLog(log);
+
     if (effect.from->getMark("@weihao") == 0)
         effect.from->gainMark("@zhenhao", 1);
     else
@@ -410,20 +417,15 @@ public:
         global = true;
     }
 
-    virtual QStringList triggerable(TriggerEvent , Room *, ServerPlayer *, QVariant &data, ServerPlayer * &) const {
+    virtual QStringList triggerable(TriggerEvent , Room *room, ServerPlayer *, QVariant &data, ServerPlayer * &) const {
         DamageStruct damage = data.value<DamageStruct>();
         if (damage.from->isAlive()){
             if (damage.to->hasSkill("jingdi")){
-                return QStringList(objectName());
+                room->setPlayerMark(damage.from, "aria_damaged", 1);
+                return QStringList();
             }
         }
         return QStringList();
-    }
-
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *) const {
-        DamageStruct damage = data.value<DamageStruct>();
-        room->setPlayerMark(damage.from, "aria_damaged", 1);
-        return false;
     }
 };
 
@@ -874,6 +876,55 @@ public:
 
 //Duotian
 
+//shanguang
+class Shanguang : public MasochismSkill {
+public:
+    Shanguang() : MasochismSkill("shanguang") {
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *asuna, QVariant &data, ServerPlayer * &) const {
+        if (MasochismSkill::triggerable(asuna)) {
+            ServerPlayer *from = data.value<DamageStruct>().from;
+            return (from && !from->isKongcheng()) ? QStringList(objectName()) : QStringList();
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *asuna, QVariant &data, ServerPlayer *) const {
+        DamageStruct damage = data.value<DamageStruct>();
+        if (!damage.from->isKongcheng() && asuna->askForSkillInvoke(this, data)) {
+            room->broadcastSkillInvoke(objectName(), asuna);
+            room->doAnimate(QSanProtocol::S_ANIMATE_INDICATE, asuna->objectName(), damage.from->objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual void onDamaged(ServerPlayer *asuna, const DamageStruct &damage) const{
+        Room *room = asuna->getRoom();
+        int card_id = room->askForCardChosen(damage.from, damage.from, "h", objectName());
+        QList<int> ids;
+        ids.append(card_id);
+        asuna->addToPile("shuo", ids);
+    }
+};
+
+class ShanguangMaxCards : public MaxCardsSkill {
+public:
+    ShanguangMaxCards() : MaxCardsSkill("#shanguang-maxcard") {
+    }
+
+    virtual int getExtra(const Player *target) const{
+        if (!target->hasShownSkill("shanguang")){
+            return 0;
+        }
+        return target->getPile("shuo").length();
+    }
+};
+
+//
+
+
 
 void MoesenPackage::addNovelGenerals()
 {
@@ -926,9 +977,12 @@ void MoesenPackage::addNovelGenerals()
     General *ruiko = new General(this, "ruiko", "qun", 3, false); // Novel 011
 
     General *mikoto = new General(this, "mikoto", "qun", 3, false); // Novel 012
-
+    */
     General *asuna = new General(this, "asuna", "qun", 3, false); // Novel 014
-
+    asuna->addSkill(new Shanguang);
+    asuna->addSkill(new ShanguangMaxCards);
+    insertRelatedSkills("shanguang", "#shanguang-maxcard");
+    /*
     General *sena = new General(this, "sena", "qun", 3, false); // Novel 015
 
     General *hitagi = new General(this, "hitagi", "qun", 3, false); // Novel 016
