@@ -55,7 +55,7 @@ void ZhuyiCard::onEffect(const CardEffectStruct &effect) const{
     effect.from->getRoom()->moveCardTo(this, effect.from, effect.to, Player::PlaceEquip, CardMoveReason(CardMoveReason::S_REASON_PUT, effect.from->objectName(), "zhuyi", QString()));
 
     LogMessage log;
-    log.type = "$ZhijianEquip";
+    log.type = "$ZhuyiEquip";
     log.from = effect.to;
     log.card_str = QString::number(getEffectiveId());
     effect.from->getRoom()->sendLog(log);
@@ -100,7 +100,7 @@ public:
         events << EventPhaseEnd;
     }
 
-    virtual QStringList triggerable(TriggerEvent , Room *room, ServerPlayer *player, QVariant &, ServerPlayer * &) const {
+    virtual QStringList triggerable(TriggerEvent , Room *, ServerPlayer *player, QVariant &, ServerPlayer * &) const {
         if (player->getPhase() == Player::Finish){
             player->loseAllMarks("@weihao");
             player->loseAllMarks("@zhenhao");
@@ -531,7 +531,7 @@ public:
                 }
             }
 
-            ServerPlayer *from = room->askForPlayerChosen(player, list, objectName());
+            ServerPlayer *from = room->askForPlayerChosen(player, list, objectName(), "@huxiao_from");
             if (from == NULL){
                 return false;
             }
@@ -612,7 +612,7 @@ public:
                 return false;
             }
 
-            ServerPlayer *to = room->askForPlayerChosen(player, tos, objectName());
+            ServerPlayer *to = room->askForPlayerChosen(player, tos, objectName(), "@huxiao_to");
             if (!to)
                 return false;
             CardMoveReason reason = CardMoveReason(CardMoveReason::S_REASON_TRANSFER, player->objectName(), objectName(), QString());
@@ -922,7 +922,154 @@ public:
     }
 };
 
-//
+//zhuanyu
+ZhuanyuCard::ZhuanyuCard() {
+    target_fixed = true;
+}
+
+void ZhuanyuCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const{
+    room->fillAG(source->getPile("shuo"), source);
+    int id = room->askForAG(source, source->getPile("shuo"), false, objectName());
+    room->clearAG(source);
+    if (id == -1){
+        return;
+    }
+    room->throwCard(Sanguosha->getCard(id), source, source, objectName());
+    source->drawCards(source->getLostHp());
+}
+
+class Zhuanyu : public ZeroCardViewAsSkill {
+public:
+    Zhuanyu() : ZeroCardViewAsSkill("zhuanyu") {
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return !player->hasUsed("ZhuanyuCard") && player->getPile("shuo").length() > 0;
+    }
+
+    virtual const Card *viewAs() const{
+        ZhuanyuCard *zy = new ZhuanyuCard;
+        zy->setShowSkill(objectName());
+        return zy;
+    }
+};
+
+//xianqun
+XianqunCard::XianqunCard() {
+}
+
+bool XianqunCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+    return targets.isEmpty() && Self->objectName() != to_select->objectName() && to_select->getEquips().length() > 0;
+}
+
+void XianqunCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const{
+    ServerPlayer *target = targets.at(0);
+    int id = room->askForCardChosen(source, target, "e", objectName());
+    if (id == -1){
+        return;
+    }
+    QList<int> ids;
+    ids.append(id);
+    target->addToPile("ruiko_qun", ids);
+}
+
+class XianqunVS : public ZeroCardViewAsSkill {
+public:
+    XianqunVS() : ZeroCardViewAsSkill("xianqun") {
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return !player->hasUsed("XianqunCard");
+    }
+
+    virtual const Card *viewAs() const{
+        XianqunCard *xq = new XianqunCard;
+        xq->setShowSkill("xianqun");
+        return xq;
+    }
+};
+
+class Xianqun : public TriggerSkill {
+public:
+    Xianqun() : TriggerSkill("xianqun") {
+        events << EventPhaseStart << Death << EventLoseSkill;
+        view_as_skill = new XianqunVS;
+    }
+
+    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &) const{
+        QMap<ServerPlayer *, QStringList> skill_list;
+        if (event == EventPhaseStart){
+            if (player != NULL && player->getPhase() == Player::Finish && player->getPile("ruiko_qun").length() > 0) {
+                QList<ServerPlayer *> ruikos = room->findPlayersBySkillName(objectName());
+                foreach(ServerPlayer *ruiko, ruikos){
+                    if (ruiko != NULL && player != ruiko){
+                        if (player->getPile("ruiko_qun").length() == 0){
+                            continue;
+                        }
+                        foreach(int id, player->getPile("ruiko_qun")){
+                            if (Sanguosha->getCard(id)->isKindOf("Weapon")){
+                                if (player->getWeapon()){
+                                    room->throwCard(player->getWeapon(), player, ruiko, objectName());
+                                }
+                            }
+                            if (Sanguosha->getCard(id)->isKindOf("Armor")){
+                                if (player->getArmor()){
+                                    room->throwCard(player->getArmor(), player, ruiko, objectName());
+                                }
+                            }
+                            if (Sanguosha->getCard(id)->isKindOf("DefensiveHorse")){
+                                if (player->getDefensiveHorse()){
+                                    room->throwCard(player->getDefensiveHorse(), player, ruiko, objectName());
+                                }
+                            }
+                            if (Sanguosha->getCard(id)->isKindOf("OffensiveHorse")){
+                                if (player->getOffensiveHorse()){
+                                    room->throwCard(player->getOffensiveHorse(), player, ruiko, objectName());
+                                }
+                            }
+                            if (Sanguosha->getCard(id)->isKindOf("Treasure")){
+                                if (player->getTreasure()){
+                                    room->throwCard(player->getTreasure(), player, ruiko, objectName());
+                                }
+                            }
+                        }
+                        CardsMoveStruct move;
+                        move.from = player;
+                        move.to = player;
+                        move.to_place = Player::PlaceEquip;
+                        move.from_pile_name = "ruiko_qun";
+                        move.card_ids = player->getPile("ruiko_qun");
+                        move.reason = CardMoveReason(CardMoveReason::S_REASON_PUT, ruiko->objectName(), objectName() + "Back", QString());
+                        room->moveCards(move, true);
+                        foreach(int id, move.card_ids){
+                            LogMessage log;
+                            log.type = "$Xianqun_back";
+                            log.from = ruiko;
+                            log.arg = objectName();
+                            log.arg2 = player->objectName();
+                            log.card_str = Sanguosha->getCard(id)->toString();
+                            room->sendLog(log);
+                        }
+                    }
+
+                }
+            }
+        }
+        else{
+            QList<ServerPlayer *> ruikos = room->findPlayersBySkillName(objectName());
+            if (ruikos.length() == 0){
+                foreach(ServerPlayer *p, room->getAlivePlayers()){
+                    if (p->getPile("ruiko_qun").length() > 0){
+                        p->clearOnePrivatePile("ruiko_qun");
+                    }
+                }
+            }
+        }
+        
+        return skill_list;
+    }
+};
+
 
 
 
@@ -974,15 +1121,18 @@ void MoesenPackage::addNovelGenerals()
     aria->addSkill(new Wujie);
     skills << new JingdiDamage;
     
-    /*
-    General *ruiko = new General(this, "ruiko", "qun", 3, false); // Novel 011
+    
+    General *ruiko = new General(this, "ruiko", "qun", 4, false); // Novel 011
+    ruiko->addSkill(new Xianqun);
 
+    /*
     General *mikoto = new General(this, "mikoto", "qun", 3, false); // Novel 012
     */
     General *asuna = new General(this, "asuna", "qun", 3, false); // Novel 014
     asuna->addSkill(new Shanguang);
     asuna->addSkill(new ShanguangMaxCards);
     insertRelatedSkills("shanguang", "#shanguang-maxcard");
+    asuna->addSkill(new Zhuanyu);
     /*
     General *sena = new General(this, "sena", "qun", 3, false); // Novel 015
 
@@ -998,4 +1148,7 @@ void MoesenPackage::addNovelGenerals()
     addMetaObject<JingdiCard>();
     addMetaObject<FeiyanCard>();
     addMetaObject<BianchiCard>();
+    addMetaObject<ZhuanyuCard>();
+    addMetaObject<XianqunCard>();
+
 }
