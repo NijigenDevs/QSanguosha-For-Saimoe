@@ -725,7 +725,8 @@ public:
             key->addSubcard(card);
             key->setShowSkill(objectName());
             key->setSkillName(objectName());
-            room->useCard(CardUseStruct(key, ask_who, dying.who));
+            CardMoveReason reason(CardMoveReason::S_REASON_PUT, ask_who->objectName(), dying.who->objectName(), objectName(), QString());
+            room->moveCardTo(key, ask_who, dying.who, Player::PlaceDelayedTrick, reason, true);
             return false;
         }
         else if (event == PreHpLost){
@@ -735,7 +736,8 @@ public:
             bool have = false;
             foreach (const Card *card, player->getJudgingArea()){
                 if (card->isKindOf("Key")){
-                    room->throwCard(card, player, ask_who, objectName());
+                    CardMoveReason reason(CardMoveReason::S_REASON_PUT, ask_who->objectName(), player->objectName(), objectName(), QString());
+                    room->moveCardTo(card, player, NULL, Player::DiscardPile, reason, true);
                     have = true;
                 }
             }
@@ -837,7 +839,8 @@ public:
         Key* key = new Key(card->getSuit(), card->getNumber());
         key->addSubcard(card);
         key->setSkillName(objectName());
-        room->useCard(CardUseStruct(key, player, dest));
+        CardMoveReason reason(CardMoveReason::S_REASON_PUT, player->objectName(), dest->objectName(), objectName(), QString());
+        room->moveCardTo(key, player, dest, Player::PlaceDelayedTrick, reason, true);
         return false;
     }
 };
