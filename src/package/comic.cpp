@@ -1724,6 +1724,105 @@ public:
 	}
 };
 
+class Moyun : public TriggerSkill{
+public:
+	Moyun() : TriggerSkill("moyun"){
+		events << BeforeCardsMove << CardsMoveOneTime;
+		frequency = Frequent;
+	}
+
+	virtual QStringList triggerable(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+		if (!TriggerSkill::triggerable(player)) return QStringList();
+		CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+		if (move.to == player){
+			if (move.to_place == Player::PlaceHand && player->getHandcardNum() > 0)
+				room->setPlayerMark(player, "moyunHand", 1);
+			else if (move.to_place == Player::PlaceEquip && player->getEquips().length() > 0)
+				room->setPlayerMark(player, "moyunEquip", 1);
+			else if (move.to_place == Player::PlaceDelayedTrick && player->getJudgingArea().length() > 0)
+				room->setPlayerMark(player, "moyunDelayedTrick", 1);
+			return QStringList();
+		}
+
+		QStringList triggers;
+
+		if (player->getHandcardNum() == 0 && player->getMark("moyunHand") == 1){
+			if (move.from == player && room->getCurrent() ? room->getCurrent() != player : true)
+				triggers << objectName();
+			room->setPlayerMark(player, "moyunHand", 0);
+		}
+
+		if (player->getEquips().length() == 0 && player->getMark("moyunEquip") == 1){
+			if (move.from == player)
+				triggers << objectName();
+			room->setPlayerMark(player, "moyunEquip", 0);
+		}
+
+		if (player->getJudgingArea().length() == 0 && player->getMark("moyunDelayedTrick") == 1){
+			triggers << objectName();
+			room->setPlayerMark(player, "moyunDelayedTrick", 0);
+		}
+
+		return triggers;
+	}
+
+	virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+		if (room->askForSkillInvoke(player, objectName())){
+			room->broadcastSkillInvoke(objectName());
+			return true;
+		}
+		return false;
+	}
+
+	virtual bool effect(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+		player->drawCards(1);
+		return false;
+	}
+};
+
+class Shanzhu : public PhaseChangeSkill {
+public:
+	Shanzhu() : PhaseChangeSkill("shanzhu") {
+		frequency = Frequent;
+	}
+
+	virtual bool canPreshow() const {
+		return true;
+	}
+
+	virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer* &) const {
+		if (!PhaseChangeSkill::triggerable(player)) return QStringList();
+		if (player->getRoom()->getDiscardPile().length() / 14 >= 1 && player->getPhase() == Player::Play && !player->isNude())
+			return QStringList(objectName());
+		return QStringList();
+	}
+
+	virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
+		if (room->askForSkillInvoke(player, objectName())){
+			room->broadcastSkillInvoke(objectName());
+			return true;
+		}
+
+		return false;
+	}
+
+	virtual bool onPhaseChange(ServerPlayer *player) const{
+		Room *room = player->getRoom(); 
+
+		QList<int> cards = room->getNCards(room->getDiscardPile().length() / 14);
+
+		LogMessage log;
+		log.type = "$ViewDrawPile";
+		log.from = player;
+		log.card_str = IntList2StringList(cards).join("+");
+		room->doNotify(player, QSanProtocol::S_COMMAND_LOG_SKILL, log.toVariant());
+
+		room->askForGuanxing(player, cards, Room::GuanxingUpOnly);
+
+		return false;
+	}
+};
+
 void MoesenPackage::addComicGenerals(){
 
     General *hinagiku = new General(this, "hinagiku", "shu", 5, false); // Comic 001  (@todo:should change No.)
@@ -1794,11 +1893,15 @@ void MoesenPackage::addComicGenerals(){
 	nodoka->addSkill(new Sugong);
 	insertRelatedSkills("suanlv", "#suanlvrecord");
 
+    General *shizuno = new General(this, "shizuno", "shu", 3, false); // Comic 016
+	shizuno->addSkill(new Moyun);
+	shizuno->addSkill(new Shanzhu);
+
+
     /*
 
     General *koromo = new General(this, "koromo", "shu", 3, false); // Comic 015
 
-    General *shizuno = new General(this, "shizuno", "shu", 3, false); // Comic 016
 
     */
 
