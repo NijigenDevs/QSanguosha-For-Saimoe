@@ -569,7 +569,7 @@ public:
     }
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
-        bool invoke = player->hasShownSkill(this) ? true : room->askForSkillInvoke(player, objectName());
+        bool invoke = room->askForSkillInvoke(player, objectName());
         if (invoke){
             room->broadcastSkillInvoke(objectName(), player);
             return true;
@@ -620,6 +620,10 @@ void Key::takeEffect(ServerPlayer *target) const{
 #endif
 }
 
+void Key::onEffect(const CardEffectStruct &) const{
+
+}
+
 
 class Jiuzhu : public TriggerSkill {
 public:
@@ -631,12 +635,10 @@ public:
         QMap<ServerPlayer *, QStringList> skill_list;
         if (event == Dying){
             DyingStruct dying = data.value<DyingStruct>();
-            if (dying.who->containsTrick("keyCard")) return skill_list;
+            if (!dying.who || dying.who->containsTrick("keyCard")) return skill_list;
             QList<ServerPlayer *> rins = room->findPlayersBySkillName(objectName());
             foreach(ServerPlayer *rin, rins){
-                if (rin == player){
-                    skill_list.insert(rin, QStringList(objectName()));
-                }
+                skill_list.insert(rin, QStringList(objectName()));
             }
         }
         else if (event == PreHpLost){//need to add lost reason? not sure
@@ -733,7 +735,7 @@ public:
             bool have = false;
             foreach (const Card *card, player->getJudgingArea()){
                 if (card->isKindOf("Key")){
-                    room->throwCard(card, NULL, ask_who);
+                    room->throwCard(card, player, ask_who, objectName());
                     have = true;
                 }
             }
@@ -742,7 +744,7 @@ public:
             return false;
         }
         else if (event == CardsMoveOneTime){
-            ask_who->drawCards(2);
+            ask_who->drawCards(1);
             return false;
         }
         return false;
@@ -781,7 +783,7 @@ public:
     }
 
     virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const{
-        return selected.isEmpty() && (to_select->isKindOf("EquipCard") || to_select->isKindOf("Peach")) && !Self->isJilei(to_select);
+        return selected.isEmpty() && !to_select->isEquipped() && (to_select->isKindOf("EquipCard") || to_select->isKindOf("Peach")) && !Self->isJilei(to_select);
     }
 
     virtual const Card *viewAs(const Card *originalCard) const{
@@ -789,6 +791,54 @@ public:
         luoxuan->addSubcard(originalCard->getId());
         luoxuan->setShowSkill(objectName());
         return luoxuan;
+    }
+};
+
+//sidai
+class Sidai : public TriggerSkill {
+public:
+    Sidai() : TriggerSkill("sidai") {
+        events << Death;
+        frequency = NotFrequent;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (player == NULL || !player->hasSkill(objectName())) return QStringList();
+        DeathStruct death = data.value<DeathStruct>();
+        if (death.who != player)
+            return QStringList();
+
+        return QStringList(objectName());
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
+        if (player->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName(), player);
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+        room->notifySkillInvoked(player, objectName());
+
+        if (room->getDrawPile().length() == 0){
+            room->swapPile();
+        }
+        int id = room->getDrawPile().at(0);
+        room->showCard(player, id);
+
+        ServerPlayer * dest = room->askForPlayerChosen(player, room->getOtherPlayers(player), objectName());
+        if (!dest){
+            return false;
+        }
+
+        const Card *card = Sanguosha->getCard(id);
+        Key* key = new Key(card->getSuit(), card->getNumber());
+        key->addSubcard(card);
+        key->setSkillName(objectName());
+        room->useCard(CardUseStruct(key, player, dest));
+        return false;
     }
 };
 
@@ -1303,6 +1353,7 @@ void MoesenPackage::addGameGenerals()
     */
     General *komari = new General(this, "komari", "wu", 3, false); // Game 018
     komari->addSkill(new Luoxuan);
+    komari->addSkill(new Sidai);
 
    addMetaObject<HaixingCard>();
    addMetaObject<TaozuiCard>();
