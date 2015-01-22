@@ -1070,7 +1070,131 @@ public:
     }
 };
 
+//fangzhu
+class Fangzhu6 : public MasochismSkill {
+public:
+    Fangzhu6() : MasochismSkill("fangzhu_rikka") {
+    }
 
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer * &ask_who) const{
+        if (TriggerSkill::triggerable(triggerEvent, room, player, data, ask_who).contains(objectName())){
+            DamageStruct damage = data.value<DamageStruct>();
+            QStringList trigger_list;
+            for (int i = 1; i <= damage.damage; i++){
+                trigger_list << objectName();
+            }
+
+            return trigger_list;
+        }
+
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
+        ServerPlayer *to = room->askForPlayerChosen(player, room->getOtherPlayers(player), objectName(), "fangzhu_rikka-invoke", true, true);
+        if (to != NULL){
+            room->broadcastSkillInvoke(objectName(), (to->faceUp() ? 1 : 2), player);
+            player->tag["fangzhu_rikka_invoke"] = QVariant::fromValue(to);
+            return true;
+        }
+        return false;
+    }
+
+    virtual void onDamaged(ServerPlayer *player, const DamageStruct &) const{
+        ServerPlayer *to = player->tag["fangzhu_rikka_invoke"].value<ServerPlayer *>();
+        player->tag.remove("fangzhu_rikka_invoke");
+        if (to) {
+            if (player->isWounded())
+                to->drawCards(player->getLostHp(), objectName());
+            to->turnOver();
+        }
+    }
+};
+
+//xieyu
+XieyuSummon::XieyuSummon()
+    : ArraySummonCard("xieyu")
+{
+}
+
+class Xieyu : public BattleArraySkill {
+public:
+    Xieyu() : BattleArraySkill("xieyu", HegemonyMode::Formation) {
+        events << GeneralShown << GeneralHidden << GeneralRemoved << Death << RemoveStateChanged;
+    }
+
+    virtual bool canPreshow() const{
+        return false;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (player == NULL) return QStringList();
+        if (triggerEvent == Death) {
+            DeathStruct death = data.value<DeathStruct>();
+            if (death.who->hasSkill(objectName())) {
+                foreach(ServerPlayer *p, room->getAllPlayers()) {
+                    if (p->getMark("xieyu_dis") > 0) {
+                        room->setPlayerMark(p, "xieyu_dis", 0);
+                        //detach
+                        room->detachSkillFromPlayer(p, "xieyu-target");
+                        foreach(ServerPlayer *target, room->getAllPlayers()){
+                            room->setFixedDistance(p, target, -1);
+                        }
+                    }
+                }
+                return QStringList();
+            }
+            if (death.who->getMark("xieyu_dis") > 0) {
+                room->setPlayerMark(death.who, "xieyu_dis", 0);
+                //detach
+                room->detachSkillFromPlayer(death.who, "xieyu-target");
+                foreach(ServerPlayer *target, room->getAllPlayers()){
+                    room->setFixedDistance(death.who, target, -1);
+                }
+            }
+        }
+        foreach(ServerPlayer *p, room->getAllPlayers()) {
+            if (p->getMark("xieyu_dis") > 0) {
+                room->setPlayerMark(p, "xieyu_dis", 0);
+                //detach
+                room->detachSkillFromPlayer(p, "xieyu-target");
+                foreach(ServerPlayer *target, room->getAllPlayers()){
+                    room->setFixedDistance(p, target, -1);
+                }
+            }
+        }
+        if (room->alivePlayerCount() < 4) return QStringList();
+        QList<ServerPlayer *> rikkas = room->findPlayersBySkillName(objectName());
+        foreach(ServerPlayer *rikka, rikkas) {
+            if (rikka->hasShownSkill(this)) {
+                foreach(ServerPlayer *p, room->getAlivePlayers()) {
+                    if (rikka->inFormationRalation(p)) {
+                        room->setPlayerMark(p, "xieyu_dis", 1);
+                        room->acquireSkill(p, "xieyu-target", false);
+                        foreach(ServerPlayer *target, room->getAllPlayers()){
+                            room->setFixedDistance(p, target, 1);
+                        }
+                    }
+                }
+            }
+        }
+        return QStringList();
+    }
+};
+
+class XieyuTargetMod : public TargetModSkill {
+public:
+    XieyuTargetMod() : TargetModSkill("xieyu-target") {
+        pattern = "SingleTargetTrick";
+    }
+
+    virtual int getExtraTargetNum(const Player *from, const Card *) const{
+        if (from->getMark("xieyu_dis") == 1)
+            return 1;
+        else
+            return 0;
+    }
+};
 
 
 void MoesenPackage::addNovelGenerals()
@@ -1137,10 +1261,12 @@ void MoesenPackage::addNovelGenerals()
     General *sena = new General(this, "sena", "qun", 3, false); // Novel 015
 
     General *hitagi = new General(this, "hitagi", "qun", 3, false); // Novel 016
-
-    General *rikka = new General(this, "rikka", "qun", 3, false); // Novel 017
-
     */
+    General *rikka = new General(this, "rikka", "qun", 3, false); // Novel 017
+    rikka->addSkill(new Fangzhu6);
+    rikka->addSkill(new Xieyu);
+    skills << new XieyuTargetMod;
+    
     addMetaObject<WeihaoCard>();
     addMetaObject<ZhuyiCard>();
     addMetaObject<HaoqiCard>();
@@ -1150,5 +1276,6 @@ void MoesenPackage::addNovelGenerals()
     addMetaObject<BianchiCard>();
     addMetaObject<ZhuanyuCard>();
     addMetaObject<XianqunCard>();
+    addMetaObject<XieyuSummon>();
 
 }

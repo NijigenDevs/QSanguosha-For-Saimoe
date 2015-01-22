@@ -235,4 +235,14 @@ return {
 	["$xianqun"] = "",
 	["ruiko_qun"] = "裙",
 	["$Xianqun_back"] = "%from 的“%arg”被触发， %arg2 的%card被置入装备区。",
+
+	["fangzhu_rikka"] = "放逐",
+	[":fangzhu_rikka"] = "每当你受到1点伤害后，可令一名其他角色摸X张牌（X为你已损失的体力值），然后该角色将其武将牌叠置。",
+	["$fangzhu_rikka"] = "",
+	["fangzhu_rikka-invoke"] = "你可以发动“放逐”<br/> <b>操作提示</b>: 选择一名其他角色→点击确定<br/>",
+
+	["xieyu"] = "邪域",
+	[":xieyu"] = "阵法技，与你处于同一队列的角色计算与其他角色的距离均视为1；与你处于同一队列的角色使用非延时单体锦囊时，可以额外指定一个目标。",
+	["$xieyu"] = "",
+	["xieyu-target"] = "邪域",
 }
