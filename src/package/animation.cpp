@@ -155,7 +155,7 @@ public:
                 damage.from->tag["InvokeYingqiangSpade"] = (damage.from->distanceTo(player) <= 1);
         } else if(triggerEvent == Damage) {
             DamageStruct damage = data.value<DamageStruct>();
-            if (damage.from->isAlive() && damage.card && damage.card->getSkillName() == "yingqiang")
+            if (damage.from != NULL && damage.from->isAlive() && damage.card && damage.card->getSkillName() == "yingqiang")
                 foreach (int cardid, damage.card->getSubcards())
                     if (Sanguosha->getCard(cardid)->getSuit() == Card::Spade && player->isWounded()) {
                         QStringList skill_list;
@@ -186,7 +186,7 @@ public:
 
     virtual QStringList triggerable(TriggerEvent , Room *, ServerPlayer *, QVariant &data, ServerPlayer * &) const {
         DamageStruct damage = data.value<DamageStruct>();
-        if (damage.from->isAlive() && damage.card && damage.card->getSkillName() == "yingqiang" && damage.to->isAlive())
+		if (damage.from != NULL && damage.from->isAlive() && damage.card && damage.card->getSkillName() == "yingqiang" && damage.to->isAlive())
             foreach (int cardid, damage.card->getSubcards())
                 if (Sanguosha->getCard(cardid)->getSuit() == Card::Heart)
                     return QStringList(objectName());
@@ -1894,10 +1894,9 @@ public:
         }
         room->fillAG(useids, miho);
         int cid = room->askForAG(miho, useids, true, objectName());
-        if (cid <= 0){
+		room->clearAG(miho);
+        if (cid <= 0)
             return false;
-        }
-        room->clearAG(miho);
         if (Sanguosha->getCard(cid)->isKindOf("Weapon")){
             room->throwCard(miho->getWeapon(), CardMoveReason(CardMoveReason::S_REASON_CHANGE_EQUIP, miho->objectName()), miho);
         }else if (Sanguosha->getCard(cid)->isKindOf("Armor")){
@@ -1906,7 +1905,9 @@ public:
             room->throwCard(miho->getDefensiveHorse(), CardMoveReason(CardMoveReason::S_REASON_CHANGE_EQUIP, miho->objectName()), miho);
         }else if (Sanguosha->getCard(cid)->isKindOf("OffensiveHorse")){
             room->throwCard(miho->getOffensiveHorse(), CardMoveReason(CardMoveReason::S_REASON_CHANGE_EQUIP, miho->objectName()), miho);
-        }
+		}else if (Sanguosha->getCard(cid)->isKindOf("Treasure")){
+			room->throwCard(miho->getTreasure(), CardMoveReason(CardMoveReason::S_REASON_CHANGE_EQUIP, miho->objectName()), miho);
+		}
 
         room->moveCardTo(Sanguosha->getCard(cid), miho, Player::PlaceEquip, CardMoveReason(CardMoveReason::S_REASON_CHANGE_EQUIP, miho->objectName()));
         return false;
@@ -2192,7 +2193,6 @@ void MoesenPackage::addAnimationGenerals()
     General *kanade = new General(this, "kanade", "wei", 4, false); // Animation 009
     kanade->addSkill(new Yinren);
     kanade->addSkill(new Tongxin);
-
 
     General *rei = new General(this, "rei", "wei", 3, false); // Animation 010
     rei->addSkill(new WuxinAya);
