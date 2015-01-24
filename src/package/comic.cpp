@@ -288,7 +288,7 @@ public:
 	}
 
 	virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
-		if (room->askForCard(player, "..", "@mizou_discard", QVariant(), objectName())) {
+		if (room->askForCard(player, ".", "@mizou_discard", QVariant(), objectName())) {
 			room->broadcastSkillInvoke(objectName());
 			return true;
 		}
@@ -1727,11 +1727,11 @@ public:
 class Moyun : public TriggerSkill{
 public:
 	Moyun() : TriggerSkill("moyun"){
-		events << BeforeCardsMove << CardsMoveOneTime;
+		events << CardsMoveOneTime;
 		frequency = Frequent;
 	}
 
-	virtual QStringList triggerable(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+	virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
 		if (!TriggerSkill::triggerable(player)) return QStringList();
 		CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
 		if (move.to == player){
@@ -1823,6 +1823,279 @@ public:
 	}
 };
 
+class Kongyun : public TriggerSkill {
+public:
+	Kongyun() : TriggerSkill("kongyun") {
+		events << AskForRetrial;
+	}
+
+	virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+		JudgeStruct *judge = data.value<JudgeStruct *>();
+		return (TriggerSkill::triggerable(player) && (judge->card->isRed() ? !player->isKongcheng() : true)) ? QStringList(objectName()) : QStringList();
+	}
+
+	virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+		JudgeStruct *judge = data.value<JudgeStruct *>();
+		const Card *card;
+		if (judge->card->isRed()){
+			QStringList prompt_list;
+			prompt_list << "@kongyun-card" << judge->who->objectName()
+				<< objectName() << judge->reason << QString::number(judge->card->getEffectiveId());
+			QString prompt = prompt_list.join(":");
+
+			card = room->askForCard(player, ".", prompt, data, Card::MethodResponse, judge->who, true);
+		}
+		else if (room->askForSkillInvoke(player, objectName())){
+			room->getThread()->trigger(FetchDrawPileCard, room, NULL);
+			if (room->getDrawPile().isEmpty())
+				room->swapPile();
+			card = Sanguosha->getEngineCard(room->getDrawPile().takeLast());
+			room->doBroadcastNotify(QSanProtocol::S_COMMAND_UPDATE_PILE, room->getDrawPile().length());
+		}
+
+		if (card != NULL){
+			room->broadcastSkillInvoke(objectName(), player);
+			if (judge->card->isRed())
+				room->retrial(card, player, judge, objectName(), true);
+			else{
+				const Card *oldJudge = judge->card;
+				judge->card = Sanguosha->getCard(card->getEffectiveId());
+				CardsMoveStruct move1(QList<int>(), judge->who, Player::PlaceJudge,
+					CardMoveReason(CardMoveReason::S_REASON_RETRIAL, player->objectName(), objectName(), QString()));
+				move1.card_ids.append(card->getEffectiveId());
+				CardsMoveStruct move2(QList<int>(), judge->who, NULL, Player::PlaceUnknown, Player::DrawPileBottom,
+					CardMoveReason(CardMoveReason::S_REASON_OVERRIDE, player->objectName(), objectName(), QString()));
+				move2.card_ids.append(oldJudge->getEffectiveId());
+
+				LogMessage log;
+				log.type = "$ChangedJudge";
+				log.arg = objectName();
+				log.from = player;
+				log.to << judge->who;
+				log.card_str = QString::number(card->getEffectiveId());
+				room->sendLog(log);
+
+				QList<CardsMoveStruct> moves;
+				moves.append(move2);
+				moves.append(move1);
+				room->moveCardsAtomic(moves, true);
+			}
+			return true;
+		}
+		return false;
+	}
+
+	virtual bool effect(TriggerEvent, Room *, ServerPlayer *, QVariant &data, ServerPlayer *) const{
+		JudgeStruct *judge = data.value<JudgeStruct *>();
+		judge->updateResult();
+		return false;
+	}
+};
+
+// Aocai by QSanguosha V2 , maybe Para. Modified by OmnisReen
+
+#include "json.h"
+class LaoyueViewAsSkill : public ZeroCardViewAsSkill {
+public:
+	LaoyueViewAsSkill() : ZeroCardViewAsSkill("laoyue") {
+	}
+
+	virtual bool isEnabledAtPlay(const Player *) const{
+		return false;
+	}
+
+	virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const{
+		if (player->getPhase() != Player::NotActive || player->hasFlag("Global_LaoyueFailed")) return false;
+		if (pattern == "slash")
+			return Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE;
+		else if (pattern == "peach")
+			return player->getMark("Global_PreventPeach") == 0;
+		else if (pattern.contains("analeptic"))
+			return true;
+		return false;
+	}
+	virtual const Card *viewAs() const{
+		LaoyueCard *laoyue_card = new LaoyueCard;
+		QString pattern = Sanguosha->currentRoomState()->getCurrentCardUsePattern();
+		if (pattern == "peach+analeptic" && Self->getMark("Global_PreventPeach") > 0)
+			pattern = "analeptic";
+		laoyue_card->setUserString(pattern);
+		return laoyue_card;
+	}
+};
+
+class Laoyue : public TriggerSkill {
+public:
+	Laoyue() : TriggerSkill("laoyue") {
+		events << CardAsked;
+		view_as_skill = new LaoyueViewAsSkill;
+	}
+
+	virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+		if (!TriggerSkill::triggerable(player)) return QStringList();
+		QString pattern = data.toStringList().first();
+		if (player->getPhase() == Player::NotActive && (pattern == "slash" || pattern == "jink"))
+			return QStringList(objectName());
+		return QStringList();
+	}
+
+	virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+		return room->askForSkillInvoke(player, objectName(), data);
+	}
+
+	virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+		QList<int> ids;
+
+		for (int i = 0; i < 2; i++){
+			room->getThread()->trigger(FetchDrawPileCard, room, NULL);
+			if (room->getDrawPile().isEmpty())
+				room->swapPile();
+			ids << room->getDrawPile().takeLast();
+		}
+
+		QList<int> enabled, disabled;
+		foreach(int id, ids) {
+			if (Sanguosha->getCard(id)->objectName().contains(data.toStringList().first()))
+				enabled << id;
+			else
+				disabled << id;
+		}
+		int id = Laoyue::view(room, player, ids, enabled, disabled);
+
+		if (id != -1) {
+			const Card *card = Sanguosha->getCard(id);
+			room->provide(card);
+			return true;
+		}
+		return false;
+	}
+
+	static int view(Room *room, ServerPlayer *player, QList<int> &ids, QList<int> &enabled, QList<int> &disabled){
+		int result = -1, index = -1;
+		LogMessage log;
+		log.type = "$ViewDrawPile";
+		log.from = player;
+		log.card_str = IntList2StringList(ids).join("+");
+		room->sendLog(log);
+		room->broadcastSkillInvoke("laoyue");
+		room->notifySkillInvoked(player, "laoyue");
+		if (enabled.isEmpty()) {
+			JsonArray gongxinArgs;
+			gongxinArgs << player->objectName();
+			gongxinArgs << false;
+			gongxinArgs << JsonUtils::toJsonArray(ids);
+			room->doNotify(player, QSanProtocol::S_COMMAND_SHOW_ALL_CARDS, gongxinArgs);
+		}
+		else {
+			room->fillAG(ids, player, disabled);
+			int id = room->askForAG(player, enabled, true, "laoyue");
+			if (id != -1) {
+				index = ids.indexOf(id);
+				ids.removeOne(id);
+				result = id;
+			}
+			room->clearAG(player);
+		}
+		QList<int> &drawPile = room->getDrawPile();
+		for (int i = ids.length() - 1; i >= 0; i--)
+			drawPile.append(ids.at(i));
+		room->doBroadcastNotify(QSanProtocol::S_COMMAND_UPDATE_PILE, drawPile.length());
+		if (result == -1)
+			room->setPlayerFlag(player, "Global_LaoyueFailed");
+		else {
+			LogMessage log;
+			log.type = "#LaoyueUse";
+			log.from = player;
+			log.arg = "laoyue";
+			log.arg2 = QString("CAPITAL(%1)").arg(index + 1);
+			room->sendLog(log);
+		}
+		return result;
+	}
+};
+
+LaoyueCard::LaoyueCard() {
+}
+
+bool LaoyueCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+	const Card *card = NULL;
+	if (!user_string.isEmpty())
+		card = Sanguosha->cloneCard(user_string.split("+").first());
+	return card && card->targetFilter(targets, to_select, Self) && !Self->isProhibited(to_select, card, targets);
+}
+
+bool LaoyueCard::targetFixed() const{
+	if (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE)
+		return true;
+	const Card *card = NULL;
+	if (!user_string.isEmpty())
+		card = Sanguosha->cloneCard(user_string.split("+").first());
+	return card && card->targetFixed();
+}
+
+bool LaoyueCard::targetsFeasible(const QList<const Player *> &targets, const Player *Self) const{
+	const Card *card = NULL;
+	if (!user_string.isEmpty())
+		card = Sanguosha->cloneCard(user_string.split("+").first());
+	return card && card->targetsFeasible(targets, Self);
+}
+
+const Card *LaoyueCard::validateInResponse(ServerPlayer *user) const{
+	Room *room = user->getRoom();
+	QList<int> ids;
+	for (int i = 0; i < 2; i++){
+		room->getThread()->trigger(FetchDrawPileCard, room, NULL);
+		if (room->getDrawPile().isEmpty())
+			room->swapPile();
+		ids << room->getDrawPile().takeLast();
+	}
+	QStringList names = user_string.split("+");
+	if (names.contains("slash")) names << "fire_slash" << "thunder_slash";
+	QList<int> enabled, disabled;
+	foreach(int id, ids) {
+		if (names.contains(Sanguosha->getCard(id)->objectName()))
+			enabled << id;
+		else
+			disabled << id;
+	}
+	LogMessage log;
+	log.type = "#InvokeSkill";
+	log.from = user;
+	log.arg = "laoyue";
+	room->sendLog(log);
+	int id = Laoyue::view(room, user, ids, enabled, disabled);
+	return Sanguosha->getCard(id);
+}
+
+const Card *LaoyueCard::validate(CardUseStruct &cardUse) const{
+	cardUse.m_isOwnerUse = false;
+	ServerPlayer *user = cardUse.from;
+	Room *room = user->getRoom();
+	QList<int> ids;
+	for (int i = 0; i < 2; i++){
+		room->getThread()->trigger(FetchDrawPileCard, room, NULL);
+		if (room->getDrawPile().isEmpty())
+			room->swapPile();
+		ids << room->getDrawPile().takeLast();
+	}
+	QStringList names = user_string.split("+");
+	if (names.contains("slash")) names << "fire_slash" << "thunder_slash";
+	QList<int> enabled, disabled;
+	foreach(int id, ids) {
+		if (names.contains(Sanguosha->getCard(id)->objectName()))
+			enabled << id;
+		else
+			disabled << id;
+	}
+	LogMessage log;
+	log.type = "#InvokeSkill";
+	log.from = user;
+	log.arg = "laoyue";
+	room->sendLog(log);
+	int id = Laoyue::view(room, user, ids, enabled, disabled);
+	return Sanguosha->getCard(id);
+}
+
 void MoesenPackage::addComicGenerals(){
 
     General *hinagiku = new General(this, "hinagiku", "shu", 5, false); // Comic 001  (@todo:should change No.)
@@ -1897,13 +2170,9 @@ void MoesenPackage::addComicGenerals(){
 	shizuno->addSkill(new Moyun);
 	shizuno->addSkill(new Shanzhu);
 
-
-    /*
-
-    General *koromo = new General(this, "koromo", "shu", 3, false); // Comic 015
-
-
-    */
+    General *koromo = new General(this, "koromo", "shu", 4, false); // Comic 015
+	koromo->addSkill(new Kongyun);
+	koromo->addSkill(new Laoyue);
 
 	addMetaObject<ShuimengCard>();
 	addMetaObject<rosesuigintouCard>();
@@ -1915,4 +2184,5 @@ void MoesenPackage::addComicGenerals(){
 	addMetaObject<LingshangCard>();
 	addMetaObject<KaihuaCard>();
 	addMetaObject<SuanlvCard>();
+	addMetaObject<LaoyueCard>();
 }

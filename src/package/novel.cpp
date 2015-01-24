@@ -419,7 +419,7 @@ public:
 
     virtual QStringList triggerable(TriggerEvent , Room *room, ServerPlayer *, QVariant &data, ServerPlayer * &) const {
         DamageStruct damage = data.value<DamageStruct>();
-        if (damage.from && damage.from->isAlive()){
+        if (damage.from != NULL && damage.from->isAlive()){
             if (damage.to->hasSkill("jingdi")){
                 room->setPlayerMark(damage.from, "aria_damaged", 1);
                 return QStringList();

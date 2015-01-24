@@ -89,4 +89,17 @@ public:
 	Q_INVOKABLE SuanlvCard();
 	virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
+
+class LaoyueCard : public SkillCard {
+	Q_OBJECT
+
+public:
+	Q_INVOKABLE LaoyueCard();
+	virtual bool targetFixed() const;
+	virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+	virtual bool targetsFeasible(const QList<const Player *> &targets, const Player *Self) const;
+	virtual const Card *validateInResponse(ServerPlayer *user) const;
+	virtual const Card *validate(CardUseStruct &cardUse) const;
+};
+
 #endif
