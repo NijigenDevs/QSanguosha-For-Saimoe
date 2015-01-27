@@ -485,9 +485,9 @@ public:
 	}
 
 
-	virtual bool cost(TriggerEvent event, Room *room, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const{
+    virtual bool cost(TriggerEvent event, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *ask_who) const{
 		if (event == TargetConfirmed){
-			if (room->askForSkillInvoke(ask_who, objectName())){
+            if (room->askForSkillInvoke(ask_who, objectName(), data)){
 				ask_who->throwAllHandCards();
 				// sounds
 				return true;
@@ -2198,7 +2198,7 @@ void MoesenPackage::addAnimationGenerals()
     rei->addSkill(new WuxinAya);
     rei->addSkill(new Chidun);
 
-    General *asuka = new General(this, "asuka", "wei", 3, false); // Animation 011
+    General *asuka = new General(this, "asuka", "wei", 4, false); // Animation 011
     asuka->addSkill(new Xiehang);
     skills << new XiehangAnother;
     related_skills.insertMulti("Xiehang", "XiehangAnother");
