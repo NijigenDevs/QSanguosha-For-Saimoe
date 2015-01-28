@@ -631,7 +631,7 @@ public:
 
     virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer * &) const {
         CardUseStruct use = data.value<CardUseStruct>();
-        if (use.to.length() != 1)
+        if (use.to.length() != 1 || !player->hasSkill(objectName()))
             return QStringList();
         const Card *card = use.card;
         if (card->isKindOf("Slash") && card->isBlack() && use.from->objectName() == player->objectName() && use.to.length() == 1 && player->distanceTo(use.to.at(0)) == 1){

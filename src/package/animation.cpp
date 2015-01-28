@@ -1665,7 +1665,7 @@ void GejiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targ
     QList<ServerPlayer *> drawPlayers;
     //broadcast
     foreach (ServerPlayer *p, targets){
-        int cardid = room->askForCardChosen(source, p, "he", "geji");
+        int cardid = room->askForCardChosen(source, p, "he", "geji", false, Card::MethodDiscard);
         room->throwCard(cardid, p, source);
         if (Sanguosha->getCard(cardid)->getSuit() == Card::Spade){
             drawPlayers.append(p);
@@ -1727,7 +1727,7 @@ public:
         CardUseStruct use = data.value<CardUseStruct>();
         room->notifySkillInvoked(ask_who, objectName());
         //log
-        if (room->askForCard(use.from, "slash", "@pinghe", QVariant(), Card::MethodNone)){
+        if (room->askForCard(use.from, "slash", "@pinghe", QVariant(), Card::MethodDiscard)){
             room->detachSkillFromPlayer(use.from, objectName());
         }
         return true;
