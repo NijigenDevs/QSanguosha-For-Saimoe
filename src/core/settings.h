@@ -27,7 +27,8 @@
 #include <QPixmap>
 #include <QBrush>
 
-class Settings : public QSettings {
+class Settings : public QSettings
+{
     Q_OBJECT
 
 public:
@@ -54,6 +55,7 @@ public:
     QFont TinyFont;
 
     QFont AppFont;
+    QFont iosLogFont;
     QFont UIFont;
     QColor TextEditColor;
     QColor SkillDescriptionInToolTipColor;
@@ -115,7 +117,7 @@ public:
 
     QString BackgroundImage;
     QString TableBgImage;
-    QString RecordSavePaths;
+    QString RecordSavePath;
 
     int BubbleChatBoxKeepSeconds;
     bool IgnoreOthersSwitchesOfSkin;

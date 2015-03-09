@@ -923,20 +923,77 @@
     <ClCompile Include="Release\moc_serverdialog.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\ui\choosesuitbox.cpp">
+      <Filter>ui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\tile.cpp">
+      <Filter>ui</Filter>
+    </ClCompile>
+    <ClCompile Include="Debug\moc_tile.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="Release\moc_tile.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="Debug\moc_choosesuitbox.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="Release\moc_choosesuitbox.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\guhuobox.cpp">
+      <Filter>ui</Filter>
+    </ClCompile>
+    <ClCompile Include="Debug\moc_guhuobox.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="Release\moc_guhuobox.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\package\comic.cpp">
       <Filter>package</Filter>
+    </ClCompile>
+    <ClCompile Include="Debug\moc_comic.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="Release\moc_comic.cpp">
+      <Filter>Generated Files\Release</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\package\game.cpp">
       <Filter>package</Filter>
     </ClCompile>
+    <ClCompile Include="Debug\moc_game.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="Release\moc_game.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\package\moesen-package.cpp">
       <Filter>package</Filter>
+    </ClCompile>
+    <ClCompile Include="Debug\moc_moesen-package.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="Release\moc_moesen-package.cpp">
+      <Filter>Generated Files\Release</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\package\novel.cpp">
       <Filter>package</Filter>
     </ClCompile>
+    <ClCompile Include="Debug\moc_novel.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="Release\moc_novel.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\package\animation.cpp">
       <Filter>package</Filter>
+    </ClCompile>
+    <ClCompile Include="Debug\moc_animation.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="Release\moc_animation.cpp">
+      <Filter>Generated Files\Release</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1228,6 +1285,30 @@
     <CustomBuild Include="..\..\src\dialog\serverdialog.h">
       <Filter>dialog</Filter>
     </CustomBuild>
+    <CustomBuild Include="..\..\src\ui\tile.h">
+      <Filter>ui</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\src\ui\choosesuitbox.h">
+      <Filter>ui</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\src\ui\guhuobox.h">
+      <Filter>ui</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\src\package\comic.h">
+      <Filter>package</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\src\package\game.h">
+      <Filter>package</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\src\package\moesen-package.h">
+      <Filter>package</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\src\package\novel.h">
+      <Filter>package</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\src\package\animation.h">
+      <Filter>package</Filter>
+    </CustomBuild>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\..\resource\icon.rc" />
@@ -1292,21 +1373,6 @@
     </ClInclude>
     <ClInclude Include="..\..\src\core\json.h">
       <Filter>core</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\package\animation.h">
-      <Filter>package</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\package\comic.h">
-      <Filter>package</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\package\game.h">
-      <Filter>package</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\package\moesen-package.h">
-      <Filter>package</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\package\novel.h">
-      <Filter>package</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

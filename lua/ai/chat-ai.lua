@@ -90,7 +90,6 @@ sgs.ai_chat_func[sgs.SlashEffected].blindness = function(self, player, data)
 		table.insert(chat, "别再杀我，你会裸")
 		table.insert(chat, "盲狙一时爽啊, 我泪奔啊")
 		table.insert(chat, "我次奥，哥们，盲狙能不能轻点？")
-		table.insert(chat, "老兄,没长眼睛啊！")
 		if not sgs.isAnjiang(effect.from) and effect.from:getRole() ~= "careerist" then
 			table.insert(chat, "杀你妹啊，我也是" .. sgs.Sanguosha:translate(effect.from:getKingdom()))
 		end
@@ -111,7 +110,6 @@ sgs.ai_chat_func[sgs.Death].stupid_friend = function(self, player, data)
 				"房主下盘T了这个2货，拉黑不解释",
 				"还有更2的吗",
 				"真的很无语",
-				"错的不是我，是这个世界"
 				}
 	if damage and damage.from and player:isFriendWith(damage.from) and damage.to:objectName() == player:objectName() and ((not damage.card) or (damage.card:getSkillName() ~= "lijian")) then
 		local index = 1 + (os.time() % #chat)
@@ -218,7 +216,7 @@ sgs.ai_chat_func[sgs.TargetConfirmed].gounannv = function(self, player, data)
 		if to:objectName() ~= use.from:objectName() and use.from:isFemale() and to:isMale() and math.random() < 0.1
 			and to:getState() == "robot" and use.from:getState() == "robot" then
 			use.from:speak("复活吧，我的勇士")
-			to:speak("为你而战，我的女士")
+			to:speak("为你而战，我的女王")
 		end
 	end
 end
@@ -236,12 +234,8 @@ sgs.ai_chat_func[sgs.CardFinished].analeptic = function(self, player, data)
 			"前排围观，出售爆米花，矿泉水，花生，瓜子...",
 			"不要砍我，我有" .. "<b><font color = 'yellow'>" .. sgs.Sanguosha:translate("jink")
 				.. string.format("[<img src='image/system/log/%s.png' height = 12/>", suit) .. math.random(1, 10) .. "] </font></b>",
-			"我菊花一紧",
-			"举杯消愁愁更愁，不如来根黄鹤楼"
+			"我菊花一紧"
 		}
-		if (to:hasSkill("wushuang") or to:hasSkill("liegong") or to:hasWeapon("Axe")) and math.random() < 0.2 and to:isMale() and to:getState() == "robot" then
-			to:speak("葡萄美酒夜光杯，金钱美女一大堆")
-		end
 		for _, p in ipairs(sgs.robot) do
 			if p:objectName() ~= to:objectName() and not p:isFriendWith(to) and math.random() < 0.2 then
 				if not p:isWounded() then
@@ -395,25 +389,6 @@ sgs.ai_chat_func[sgs.GeneralShown].show = function(self, player, data)
 		table.insert(chat,"野了")
 		table.insert(chat,"喜闻乐见野心家")
 		table.insert(chat1,"竟然野了")
-	end
-	if self.player:getState() == "robot" then
-		if self.player:hasLordSkill("hongfa") and notshown > 2 and math.random() < 0.2 then
-			local t = sgs.GetConfig("OriginAIDelay", 0)
-			self.player:speak("祈求者！")
-			self.room:getThread():delay(t)
-			self.player:speak("荣耀的祈祷")
-			self.room:getThread():delay(t)
-			self.player:speak("吾已现世，普天同庆！")
-			self.room:getThread():delay(t)
-			self.player:speak("如吾所祈，吾身圣临！")
-		end
-
-		if self.player:hasShownSkill("tiaoxin") and math.random() < 0.25 then
-			self.player:speak("快让开，我的麒麟臂要发作了")
-		end
-	end		
-	if self.player:hasShownSkill("zhangwu") then
-		table.insert(chat,"你，已经不适合这个版本了")
 	end
 	if not self.player:hasShownAllGenerals() then
 		table.insert(chat,self.player:screenName() .."原来是"..kingdom)
@@ -577,8 +552,7 @@ sgs.ai_chat.Duel = {
 
 sgs.ai_chat.ExNihilo = {
 "哎哟运气好",
-"哈哈哈哈哈",
-"做人呢，最重要的就是开心啦"
+"哈哈哈哈哈"
 }
 
 sgs.ai_chat.Collateral_female = {

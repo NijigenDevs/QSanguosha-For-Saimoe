@@ -29,7 +29,8 @@
 
 static GeneralSelector *Selector;
 
-GeneralSelector *GeneralSelector::getInstance() {
+GeneralSelector *GeneralSelector::getInstance()
+{
     if (Selector == NULL) {
         Selector = new GeneralSelector;
         Selector->setParent(Sanguosha);
@@ -38,12 +39,14 @@ GeneralSelector *GeneralSelector::getInstance() {
     return Selector;
 }
 
-GeneralSelector::GeneralSelector() {
+GeneralSelector::GeneralSelector()
+{
     loadGeneralTable();
     loadPairTable();
 }
 
-QStringList GeneralSelector::selectGenerals(ServerPlayer *player, const QStringList &candidates) {
+QStringList GeneralSelector::selectGenerals(ServerPlayer *player, const QStringList &candidates)
+{
     if (m_privatePairValueTable[player].isEmpty())
         calculatePairValues(player, candidates);
 
@@ -52,7 +55,7 @@ QStringList GeneralSelector::selectGenerals(ServerPlayer *player, const QStringL
     int max_score = my_hash.values().first();
     QString best_pair = my_hash.keys().first();
 
-    foreach(QString key, my_hash.keys()) {
+    foreach (const QString &key, my_hash.keys()) {
         int score = my_hash.value(key);
         if (score > max_score) {
             max_score = score;
@@ -69,7 +72,8 @@ QStringList GeneralSelector::selectGenerals(ServerPlayer *player, const QStringL
     return pair;
 }
 
-void GeneralSelector::loadGeneralTable() {
+void GeneralSelector::loadGeneralTable()
+{
     QRegExp rx("(\\w+)\\s+(\\d+)");
     QFile file("ai-selector/general-value.txt");
     if (file.open(QIODevice::ReadOnly)) {
@@ -89,7 +93,7 @@ void GeneralSelector::loadGeneralTable() {
 
         file.close();
     }
-    foreach(QString pack, Config.value("LuaPackages", QString()).toString().split("+")) {
+    foreach (const QString &pack, Config.value("LuaPackages", QString()).toString().split("+")) {
         QFile lua_file(QString("extensions/ai-selector/%1-general-value.txt").arg(pack));
         if (lua_file.exists() && lua_file.open(QIODevice::ReadOnly)) {
             QTextStream stream(&lua_file);
@@ -111,7 +115,8 @@ void GeneralSelector::loadGeneralTable() {
     }
 }
 
-void GeneralSelector::loadPairTable() {
+void GeneralSelector::loadPairTable()
+{
     QRegExp rx("(\\w+)\\s+(\\w+)\\s+(\\d+)\\s+(\\d+)");
     QFile file("ai-selector/pair-value.txt");
     if (file.open(QIODevice::ReadOnly)) {
@@ -136,7 +141,7 @@ void GeneralSelector::loadPairTable() {
 
         file.close();
     }
-    foreach(QString pack, Config.value("LuaPackages", QString()).toString().split("+")) {
+    foreach (const QString &pack, Config.value("LuaPackages", QString()).toString().split("+")) {
         QFile lua_file(QString("extensions/ai-selector/%1-pair-value.txt").arg(pack));
         if (lua_file.exists() && lua_file.open(QIODevice::ReadOnly)) {
             QTextStream stream(&lua_file);
@@ -176,13 +181,13 @@ void GeneralSelector::calculatePairValues(const ServerPlayer *player, const QStr
     }
 
     QStringList candidates = _candidates;
-    if (!player->getGeneralName().isEmpty()){
-        foreach(QString candidate, _candidates){
+    if (!player->getGeneralName().isEmpty()) {
+        foreach (const QString &candidate, _candidates) {
             if (BanPair::isBanned(player->getGeneralName(), candidate))
                 candidates.removeOne(candidate);
         }
     }
-    foreach(QString first, candidates) {
+    foreach (const QString &first, candidates) {
         calculateDeputyValue(player, first, candidates, kingdoms);
     }
 }
@@ -190,13 +195,13 @@ void GeneralSelector::calculatePairValues(const ServerPlayer *player, const QStr
 void GeneralSelector::calculateDeputyValue(const ServerPlayer *player, const QString &first, const QStringList &_candidates, const QStringList &kingdom_list)
 {
     QStringList candidates = _candidates;
-    foreach(QString candidate, _candidates){
-        if (BanPair::isBanned(first, candidate)){
+    foreach (const QString &candidate, _candidates) {
+        if (BanPair::isBanned(first, candidate)) {
             m_privatePairValueTable[player][QString("%1+%2").arg(first, candidate)] = -100;
             candidates.removeOne(candidate);
         }
     }
-    foreach(QString second, candidates) {
+    foreach (const QString &second, candidates) {
         if (first == second) continue;
         QString key = QString("%1+%2").arg(first, second);
         if (m_pairTable.contains(key))
@@ -223,8 +228,7 @@ void GeneralSelector::calculateDeputyValue(const ServerPlayer *player, const QSt
                     v -= 2;
                 else if (kingdom != "qun")
                     v += 1;
-            }
-            else if ("qun" == kingdom)
+            } else if ("qun" == kingdom)
                 v += 1;
 
             if (general1->hasSkill("baoling") && general2_value > 6) v -= 5;
@@ -232,7 +236,7 @@ void GeneralSelector::calculateDeputyValue(const ServerPlayer *player, const QSt
             if (max_hp < 8) {
                 QSet<QString> need_high_max_hp_skills;
                 need_high_max_hp_skills << "zhiheng" << "zaiqi" << "yinghun" << "kurou";
-                foreach(const Skill *skill, general1->getVisibleSkills() + general2->getVisibleSkills()) {
+                foreach (const Skill *skill, general1->getVisibleSkills() + general2->getVisibleSkills()) {
                     if (need_high_max_hp_skills.contains(skill->objectName())) v -= 5;
                 }
             }

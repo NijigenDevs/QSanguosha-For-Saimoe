@@ -30,7 +30,8 @@ class QCheckBox;
 class QButtonGroup;
 class QAbstractButton;
 
-class ServerDialog : public FlatDialog {
+class ServerDialog : public FlatDialog
+{
     Q_OBJECT
 
 public:
@@ -68,6 +69,10 @@ public:
 
 private:
     QWidget *createBasicTab();
+#ifdef Q_OS_IOS
+    QWidget *createGameModeTab();
+    QWidget *createAiTab();
+#endif
     QWidget *createPackageTab();
     //************************************
     // Method:    createAdvancedTab
@@ -137,10 +142,11 @@ private:
 
 
     QCheckBox *convert_ds_to_dp;
+    QCheckBox *convert_jf_to_ps;
     QCheckBox *convert_lord;
 
     //QCheckBox *add_peace_spell;
-    QCheckBox *convert_zhangjiao_to_lord;
+    //QCheckBox *convert_zhangjiao_to_lord;
 
     QCheckBox *ai_chat_checkbox;
 

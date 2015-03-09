@@ -45,6 +45,9 @@ function sgs.CreateTriggerSkill(spec)
 				skill:setCanPreshow(true)
 			end
 		end
+		if type(spec.guhuo_type) == "string" and spec.guhuo_type ~= ""then
+			skill:setGuhuoType(spec.guhuo_type)
+		end
 	end
 
 	if type(spec.events) == "number" then
@@ -252,8 +255,21 @@ function sgs.CreateSkillCard(spec)
 	if type(spec.handling_method) == "number" then
 		card:setHandlingMethod(spec.handling_method)
 	end
-
-	card.filter = spec.filter
+	if type(spec.filter) == "function" then
+		function card:filter(...)
+			local result,vote = spec.filter(self,...)
+			if type(result) == "boolean" and type(vote) == "number" then
+				return result,vote
+			elseif type(result) == "boolean" and vote == nil then
+				if result then vote = 1 else vote = 0 end
+				return result,vote
+			elseif type(result) == "number" then
+				return result > 0,result
+			else
+				return false,0
+			end
+		end
+	end
 	card.feasible = spec.feasible
 	card.about_to_use = spec.about_to_use
 	card.on_use = spec.on_use
@@ -498,6 +514,9 @@ function sgs.CreateViewAsSkill(spec)
 
 	local skill = sgs.LuaViewAsSkill(spec.name, response_pattern, response_or_use, expand_pile)
 
+	if type(spec.guhuo_type) == "string" and spec.guhuo_type ~= ""then
+		skill:setGuhuoType(spec.guhuo_type)
+	end
 	if spec.relate_to_place then
 		skill:setRelateToPlace(spec.relate_to_place)
 	end
@@ -553,7 +572,11 @@ function sgs.CreateOneCardViewAsSkill(spec)
 	skill.enabled_at_play = spec.enabled_at_play
 	skill.enabled_at_response = spec.enabled_at_response
 	skill.enabled_at_nullification = spec.enabled_at_nullification
-
+	
+	if type(spec.guhuo_type) == "string" and spec.guhuo_type ~= ""then
+		skill:setGuhuoType(spec.guhuo_type)
+	end
+	
 	return skill
 end
 
@@ -581,7 +604,11 @@ function sgs.CreateZeroCardViewAsSkill(spec)
 	skill.enabled_at_play = spec.enabled_at_play
 	skill.enabled_at_response = spec.enabled_at_response
 	skill.enabled_at_nullification = spec.enabled_at_nullification
-
+	
+	if type(spec.guhuo_type) == "string" and spec.guhuo_type ~= ""then
+		skill:setGuhuoType(spec.guhuo_type)
+	end
+	
 	return skill
 end
 

@@ -29,15 +29,18 @@ Slash::Slash(Suit suit, int number) : BasicCard(suit, number)
     drank = 0;
 }
 
-DamageStruct::Nature Slash::getNature() const{
+DamageStruct::Nature Slash::getNature() const
+{
     return nature;
 }
 
-void Slash::setNature(DamageStruct::Nature nature) {
+void Slash::setNature(DamageStruct::Nature nature)
+{
     this->nature = nature;
 }
 
-bool Slash::IsAvailable(const Player *player, const Card *slash, bool considerSpecificAssignee) {
+bool Slash::IsAvailable(const Player *player, const Card *slash, bool considerSpecificAssignee)
+{
     Slash *newslash = new Slash(Card::NoSuit, 0);
     newslash->deleteLater();
 #define THIS_SLASH (slash == NULL ? newslash : slash)
@@ -50,8 +53,7 @@ bool Slash::IsAvailable(const Player *player, const Card *slash, bool considerSp
             if (slash->isVirtualCard()) {
                 if (slash->subcardsLength() > 0)
                     ids = slash->getSubcards();
-            }
-            else {
+            } else {
                 ids << slash->getEffectiveId();
             }
         }
@@ -62,21 +64,21 @@ bool Slash::IsAvailable(const Player *player, const Card *slash, bool considerSp
         if (considerSpecificAssignee) {
             QStringList assignee_list = player->property("extra_slash_specific_assignee").toString().split("+");
             if (!assignee_list.isEmpty()) {
-                foreach(const Player *p, player->getAliveSiblings()) {
+                foreach (const Player *p, player->getAliveSiblings()) {
                     if (assignee_list.contains(p->objectName()) && player->canSlash(p, THIS_SLASH))
                         return true;
                 }
             }
         }
         return false;
-    }
-    else {
+    } else {
         return true;
     }
 #undef THIS_SLASH
 }
 
-bool Slash::IsSpecificAssignee(const Player *player, const Player *from, const Card *slash) {
+bool Slash::IsSpecificAssignee(const Player *player, const Player *from, const Card *slash)
+{
     if (from->hasFlag("slashTargetFix") && player->hasFlag("SlashAssignee"))
         return true;
     else if (from->getPhase() == Player::Play && Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_PLAY
@@ -88,22 +90,25 @@ bool Slash::IsSpecificAssignee(const Player *player, const Player *from, const C
 }
 
 
-bool Slash::isAvailable(const Player *player) const{
+bool Slash::isAvailable(const Player *player) const
+{
     return IsAvailable(player, this) && BasicCard::isAvailable(player);
 }
 
-QString Slash::getSubtype() const{
+QString Slash::getSubtype() const
+{
     return "attack_card";
 }
 
-void Slash::onUse(Room *room, const CardUseStruct &card_use) const{
+void Slash::onUse(Room *room, const CardUseStruct &card_use) const
+{
     CardUseStruct use = card_use;
     ServerPlayer *player = use.from;
 
     if (player->hasFlag("slashTargetFix")) {
         room->setPlayerFlag(player, "-slashTargetFix");
         room->setPlayerFlag(player, "-slashTargetFixToOne");
-        foreach(ServerPlayer *target, room->getAlivePlayers())
+        foreach (ServerPlayer *target, room->getAlivePlayers())
             if (target->hasFlag("SlashAssignee"))
                 room->setPlayerFlag(target, "-SlashAssignee");
     }
@@ -134,7 +139,7 @@ void Slash::onUse(Room *room, const CardUseStruct &card_use) const{
                     fire_slash->addSubcard(this);
                 fire_slash->setSkillName("Fan");
                 bool can_use = true;
-                foreach(ServerPlayer *p, use.to) {
+                foreach (ServerPlayer *p, use.to) {
                     if (!player->canSlash(p, fire_slash, false)) {
                         can_use = false;
                         break;
@@ -151,16 +156,16 @@ void Slash::onUse(Room *room, const CardUseStruct &card_use) const{
         && !player->hasFlag("slashDisableExtraTarget")) {
         if (!player->hasFlag("HalberdUse") && player->hasWeapon("Halberd")) {
             room->setPlayerFlag(player, "HalberdSlashFilter");
-            forever {
+            forever{
                 QList<ServerPlayer *> targets_ts;
                 QList<const Player *> targets_const;
-                foreach(ServerPlayer *p, use.to)
+                foreach (ServerPlayer *p, use.to)
                     targets_const << qobject_cast<const Player *>(p);
-                foreach(ServerPlayer *p, room->getAlivePlayers())
+                foreach (ServerPlayer *p, room->getAlivePlayers())
                     if (!use.to.contains(p) && use.card->targetFilter(targets_const, p, use.from))
                         targets_ts << p;
                 if (targets_ts.isEmpty())
-                break;
+                    break;
 
                 ServerPlayer *extra_target = room->askForPlayerChosen(player, targets_ts, "Halberd", "@halberd_extra_targets", true);
                 if (extra_target) {
@@ -177,9 +182,9 @@ void Slash::onUse(Room *room, const CardUseStruct &card_use) const{
         QList<ServerPlayer *> targets_ts;
         while (true) {
             QList<const Player *> targets_const;
-            foreach(ServerPlayer *p, use.to)
+            foreach (ServerPlayer *p, use.to)
                 targets_const << qobject_cast<const Player *>(p);
-            foreach(ServerPlayer *p, room->getAlivePlayers())
+            foreach (ServerPlayer *p, room->getAlivePlayers())
                 if (!use.to.contains(p) && use.card->targetFilter(targets_const, p, use.from))
                     targets_ts << p;
             if (targets_ts.isEmpty())
@@ -269,7 +274,8 @@ void Slash::onUse(Room *room, const CardUseStruct &card_use) const{
     BasicCard::onUse(room, use);
 }
 
-void Slash::onEffect(const CardEffectStruct &card_effect) const{
+void Slash::onEffect(const CardEffectStruct &card_effect) const
+{
     Room *room = card_effect.from->getRoom();
     if (card_effect.from->getMark("drank") > 0) {
         room->setCardFlag(this, "drank");
@@ -296,7 +302,8 @@ void Slash::onEffect(const CardEffectStruct &card_effect) const{
     room->slashEffect(effect);
 }
 
-bool Slash::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
+bool Slash::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
+{
     int slash_targets = 1 + Sanguosha->correctCardTarget(TargetModSkill::ExtraTarget, Self, this);
     bool distance_limit = ((1 + Sanguosha->correctCardTarget(TargetModSkill::DistanceLimit, Self, this)) < 500);
     if (Self->hasFlag("slashNoDistanceLimit"))
@@ -312,7 +319,7 @@ bool Slash::targetFilter(const QList<const Player *> &targets, const Player *to_
         ++rangefix;
 
     bool has_specific_assignee = false;
-    foreach(const Player *p, Self->getAliveSiblings()) {
+    foreach (const Player *p, Self->getAliveSiblings()) {
         if (Slash::IsSpecificAssignee(p, Self, this)) {
             has_specific_assignee = true;
             break;
@@ -325,7 +332,7 @@ bool Slash::targetFilter(const QList<const Player *> &targets, const Player *to_
         else {
             if (Self->hasFlag("slashDisableExtraTarget")) return false;
             bool canSelect = false;
-            foreach(const Player *p, targets) {
+            foreach (const Player *p, targets) {
                 if (Slash::IsSpecificAssignee(p, Self, this)) {
                     canSelect = true;
                     break;
@@ -353,7 +360,7 @@ bool Slash::targetFilter(const QList<const Player *> &targets, const Player *to_
         if (Self->hasSkill("duanbing") && targets.length() == slash_targets) {
             QList<const Player *> duanbing_targets;
             bool no_other_assignee = true;
-            foreach(const Player *p, targets) {
+            foreach (const Player *p, targets) {
                 if (Self->distanceTo(p, rangefix) == 1)
                     duanbing_targets << p;
                 else if (no_other_assignee && Slash::IsSpecificAssignee(p, Self, this))
@@ -375,7 +382,8 @@ NatureSlash::NatureSlash(Suit suit, int number, DamageStruct::Nature nature)
     this->nature = nature;
 }
 
-bool NatureSlash::match(const QString &pattern) const{
+bool NatureSlash::match(const QString &pattern) const
+{
     QStringList patterns = pattern.split("+");
     if (patterns.contains("slash"))
         return true;
@@ -402,32 +410,38 @@ Jink::Jink(Suit suit, int number) : BasicCard(suit, number)
     target_fixed = true;
 }
 
-QString Jink::getSubtype() const{
+QString Jink::getSubtype() const
+{
     return "defense_card";
 }
 
-bool Jink::isAvailable(const Player *) const{
+bool Jink::isAvailable(const Player *) const
+{
     return false;
 }
 
-Peach::Peach(Suit suit, int number, bool is_transferable) : BasicCard(suit, number) {
+Peach::Peach(Suit suit, int number, bool is_transferable) : BasicCard(suit, number)
+{
     setObjectName("peach");
     target_fixed = true;
     transferable = is_transferable;
 }
 
-QString Peach::getSubtype() const{
+QString Peach::getSubtype() const
+{
     return "recover_card";
 }
 
-void Peach::onUse(Room *room, const CardUseStruct &card_use) const{
+void Peach::onUse(Room *room, const CardUseStruct &card_use) const
+{
     CardUseStruct use = card_use;
     if (use.to.isEmpty())
         use.to << use.from;
     BasicCard::onUse(room, use);
 }
 
-void Peach::onEffect(const CardEffectStruct &effect) const{
+void Peach::onEffect(const CardEffectStruct &effect) const
+{
     Room *room = effect.to->getRoom();
     room->setEmotion(effect.from, "peach");
 
@@ -438,7 +452,8 @@ void Peach::onEffect(const CardEffectStruct &effect) const{
     room->recover(effect.to, recover);
 }
 
-bool Peach::isAvailable(const Player *player) const{
+bool Peach::isAvailable(const Player *player) const
+{
     return player->isWounded() && !player->isProhibited(player, this) && BasicCard::isAvailable(player);
 }
 
@@ -450,11 +465,13 @@ Analeptic::Analeptic(Card::Suit suit, int number, bool is_transferable)
     transferable = is_transferable;
 }
 
-QString Analeptic::getSubtype() const{
+QString Analeptic::getSubtype() const
+{
     return "buff_card";
 }
 
-bool Analeptic::IsAvailable(const Player *player, const Card *analeptic) {
+bool Analeptic::IsAvailable(const Player *player, const Card *analeptic)
+{
     Analeptic *newanal = new Analeptic(Card::NoSuit, 0);
     newanal->deleteLater();
 #define THIS_ANAL (analeptic == NULL ? newanal : analeptic)
@@ -465,18 +482,21 @@ bool Analeptic::IsAvailable(const Player *player, const Card *analeptic) {
 #undef THIS_ANAL
 }
 
-bool Analeptic::isAvailable(const Player *player) const{
+bool Analeptic::isAvailable(const Player *player) const
+{
     return IsAvailable(player, this) && BasicCard::isAvailable(player);
 }
 
-void Analeptic::onUse(Room *room, const CardUseStruct &card_use) const{
+void Analeptic::onUse(Room *room, const CardUseStruct &card_use) const
+{
     CardUseStruct use = card_use;
     if (use.to.isEmpty())
         use.to << use.from;
     BasicCard::onUse(room, use);
 }
 
-void Analeptic::onEffect(const CardEffectStruct &effect) const{
+void Analeptic::onEffect(const CardEffectStruct &effect) const
+{
     Room *room = effect.to->getRoom();
     room->setEmotion(effect.to, "analeptic");
 
@@ -486,20 +506,23 @@ void Analeptic::onEffect(const CardEffectStruct &effect) const{
         recover.card = this;
         recover.who = effect.from;
         room->recover(effect.to, recover);
-    }
-    else {
+    } else {
         room->addPlayerMark(effect.to, "drank");
     }
 }
 
-QStringList Analeptic::checkTargetModSkillShow(const CardUseStruct &use) const{
-    if (use.from->usedTimes(getClassName()) >= 2){
+QStringList Analeptic::checkTargetModSkillShow(const CardUseStruct &use) const
+{
+    if (use.card == NULL)
+        return QStringList();
+
+    if (use.from->usedTimes(getClassName()) >= 2) {
         const ServerPlayer *from = use.from;
         QList<const Skill *> skills = from->getSkillList(false, false);
         QList<const TargetModSkill *> tarmods;
 
-        foreach(const Skill *skill, skills){
-            if (from->hasSkill(skill->objectName()) && skill->inherits("TargetModSkill")){
+        foreach (const Skill *skill, skills) {
+            if (from->hasSkill(skill) && skill->inherits("TargetModSkill")) {
                 const TargetModSkill *tarmod = qobject_cast<const TargetModSkill *>(skill);
                 tarmods << tarmod;
             }
@@ -511,11 +534,16 @@ QStringList Analeptic::checkTargetModSkillShow(const CardUseStruct &use) const{
         int n = use.from->usedTimes(getClassName()) - 1;
         QList<const TargetModSkill *> tarmods_copy = tarmods;
 
-        foreach(const TargetModSkill *tarmod, tarmods_copy){
-            const Skill *main_skill = Sanguosha->getMainSkill(tarmod->objectName());
-            if (from->hasShownSkill(main_skill)){
+        foreach (const TargetModSkill *tarmod, tarmods_copy) {
+            if (tarmod->getResidueNum(from, use.card) == 0) {
                 tarmods.removeOne(tarmod);
-                n -= tarmod->getResidueNum(from, this);
+                continue;
+            }
+
+            const Skill *main_skill = Sanguosha->getMainSkill(tarmod->objectName());
+            if (from->hasShownSkill(main_skill)) {
+                tarmods.removeOne(tarmod);
+                n -= tarmod->getResidueNum(from, use.card);
             }
         }
 
@@ -525,7 +553,7 @@ QStringList Analeptic::checkTargetModSkillShow(const CardUseStruct &use) const{
         tarmods_copy = tarmods;
 
         QStringList shows;
-        foreach(const TargetModSkill *tarmod, tarmods_copy){
+        foreach (const TargetModSkill *tarmod, tarmods_copy) {
             const Skill *main_skill = Sanguosha->getMainSkill(tarmod->objectName());
             shows << main_skill->objectName();
         }
@@ -534,7 +562,8 @@ QStringList Analeptic::checkTargetModSkillShow(const CardUseStruct &use) const{
     return QStringList();
 }
 
-QList<Card *> StandardCardPackage::basicCards() {
+QList<Card *> StandardCardPackage::basicCards()
+{
     QList<Card *> cards;
 
 

@@ -23,6 +23,7 @@
 #include "audio.h"
 #include "qsanselectableitem.h"
 #include "stylehelper.h"
+#include "tile.h"
 
 #include <QPropertyAnimation>
 #include <QParallelAnimationGroup>
@@ -58,7 +59,7 @@ StartScene::StartScene(QObject *parent)
     QGraphicsSimpleTextItem *website_text = addSimpleText("http://qsanguosha.org", website_font);
     website_text->setBrush(Qt::white);
     website_text->setPos(Config.Rect.width() / 2 - website_text->boundingRect().width(),
-        Config.Rect.height() / 2 - website_text->boundingRect().height());*/
+    Config.Rect.height() / 2 - website_text->boundingRect().height());*/
     serverLog = NULL;
 
     setBackgroundBrush(QBrush(QPixmap(Config.BackgroundImage)));
@@ -66,25 +67,42 @@ StartScene::StartScene(QObject *parent)
     connect(this, &StartScene::sceneRectChanged, this, &StartScene::onSceneRectChanged);
 }
 
-void StartScene::addButton(QAction *action) {
-    Button *button = new Button(action->text());
+void StartScene::addButton(QAction *action)
+{
+    Tile *button = new Tile(action->text());
+    QString icon = action->objectName();
+    icon.remove(0, 6);
+    button->setIcon(icon.toLower());
 
-    connect(button, &Button::clicked, action, &QAction::trigger);
+    connect(button, &Tile::clicked, action, &QAction::trigger);
     addItem(button);
 
     QRectF rect = button->boundingRect();
     int n = buttons.length();
-    qreal center_x = Config.Rect.width() / 4;
-    qreal top_y = - (2 * rect.height()) - (4 * 3);
+    qreal center_x, top_y;
+#ifdef Q_OS_IOS
+    center_x = Config.Rect.width() / 6;
+    top_y = - (1.5 * rect.height()) - (4 * 3);
+    if (n < 3)
+        button->setPos(center_x - rect.width() - 4, top_y + n * (rect.height() + 8));
+    else if (n < 6)
+        button->setPos(center_x + 4, top_y + (n - 3) * (rect.height() + 8));
+    else
+        button->setPos(center_x + 12 + rect.width(), top_y + (n - 6) * (rect.height() + 8));
+#else
+    center_x = Config.Rect.width() / 4;
+    top_y = -(2 * rect.height()) - (4 * 3);
     if (n < 4)
         button->setPos(center_x - rect.width() - 4, top_y + n * (rect.height() + 8));
     else
         button->setPos(center_x + 4, top_y + (n - 4) * (rect.height() + 8));
+#endif
 
     buttons << button;
 }
 
-void StartScene::setServerLogBackground() {
+void StartScene::setServerLogBackground()
+{
     if (serverLog) {
         // make its background the same as background, looks transparent
         QPalette palette;
@@ -93,7 +111,8 @@ void StartScene::setServerLogBackground() {
     }
 }
 
-void StartScene::switchToServer(Server *server) {
+void StartScene::switchToServer(Server *server)
+{
 #ifdef AUDIO_SUPPORT
     Audio::quit();
 #endif
@@ -122,7 +141,7 @@ void StartScene::switchToServer(Server *server) {
     group->addAnimation(yScale);
     group->start(QAbstractAnimation::DeleteWhenStopped);
 
-    foreach(Button *button, buttons)
+    foreach(Tile *button, buttons)
         button->hide();
 
     serverLog = new QTextEdit;
@@ -227,10 +246,11 @@ void StartScene::onSceneRectChanged(const QRectF &rect)
     connect(this, &StartScene::sceneRectChanged, this, &StartScene::onSceneRectChanged);
 }
 
-void StartScene::printServerInfo() {
+void StartScene::printServerInfo()
+{
     QStringList items;
     QList<QHostAddress> addresses = QNetworkInterface::allAddresses();
-    foreach(QHostAddress address, addresses) {
+    foreach (const QHostAddress &address, addresses) {
         quint32 ipv4 = address.toIPv4Address();
         if (ipv4)
             items << address.toString();
@@ -238,7 +258,7 @@ void StartScene::printServerInfo() {
 
     items.sort();
 
-    foreach(QString item, items) {
+    foreach (const QString &item, items) {
         if (item.startsWith("192.168.") || item.startsWith("10."))
             serverLog->append(tr("Your LAN address: %1, this address is available only for hosts that in the same LAN").arg(item));
         else if (item == "127.0.0.1")

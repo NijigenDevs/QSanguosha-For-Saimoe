@@ -86,7 +86,6 @@ CommonTranslationTable = {
 	["drawPileTop"] = "牌堆顶",
 	["drawPileBottom"] = "牌堆底",
 
-	["use upon"] = "对",
 	["yourself"] = "你",
 
 	["attack_card"] = "进攻牌",
@@ -249,7 +248,12 @@ CommonTranslationTable = {
 	["custom_scenario"] = "自定义场景",
 	
 	["Player"] = "玩家",
-	["AI"] = "机器人"
+	["AI"] = "机器人",
+	
+	--for GuhuoBox:
+	["SingleTargetTrick"] = "单体锦囊",
+	["MultiTarget"] = "群体锦囊",
+	["DelayedTrick"] = "延时锦囊",
 }
 
 return CommonTranslationTable

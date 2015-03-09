@@ -272,6 +272,9 @@ public:
 
     bool pileOpen(const char *pile_name, const char *player) const;
     void setPileOpen(const char *pile_name, const char *player);
+	
+	//Xusine:
+    QList<int> getHandPile() const;
 
     void addHistory(const char *name, int times = 1);
     void clearHistory(const char *name = "");
@@ -780,7 +783,7 @@ struct CardResponseStruct {
 };
 
 struct PlayerNumStruct {
-	PlayerNumStruct();
+    PlayerNumStruct();
     PlayerNumStruct(int num, const char *toCalculate);
     PlayerNumStruct(int num, const char *toCalculate, MaxCardsType::MaxCardsCount type);
     PlayerNumStruct(int num, const char *toCalculate, MaxCardsType::MaxCardsCount type, const char *reason);
@@ -790,6 +793,24 @@ struct PlayerNumStruct {
     QString m_toCalculate;
     QString m_reason;
 };
+
+struct ServerInfoStruct {
+    const QString Name;
+    const QString GameMode;
+    const int OperationTimeout;
+    const int NullificationCountDown;
+    const QStringList Extensions;
+    const bool RandomSeat;
+    const bool EnableCheat;
+    const bool FreeChoose;
+    const bool ForbidAddingRobot;
+    const bool DisableChat;
+    const bool FirstShowingReward;
+
+    const bool DuringGame;
+};
+
+extern ServerInfoStruct ServerInfo;
 
 enum TriggerEvent {
     NonTrigger,
@@ -806,9 +827,6 @@ enum TriggerEvent {
 
     DrawNCards,
     AfterDrawNCards,
-
-	DiscardNCards,
-	AfterDiscardNCards,
 
     PreHpRecover,
     HpRecover,
@@ -1235,6 +1253,8 @@ public:
 
     virtual int getEffectIndex(const ServerPlayer *player, const Card *card) const;
     virtual QDialog *getDialog() const;
+	
+	virtual QString getGuhuoBox() const;
 
     void initMediaSource();
     void playAudioEffect(int index = -1) const;
@@ -1264,7 +1284,7 @@ public:
     virtual int getPriority() const;
     virtual bool triggerable(const ServerPlayer *target) const;
 
-    //virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const;
+    //virtual TriggerList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const;
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &ask_who) const;
     virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who = NULL) const;
     virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who = NULL) const;
@@ -1279,7 +1299,7 @@ public:
         return qobject_cast<const BattleArraySkill *>($self);
     }
 
-    QMap<ServerPlayer *, QStringList> TriggerSkillTriggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
+    TriggerList TriggerSkillTriggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const{
         return $self->TriggerSkill::triggerable(triggerEvent, room, player, data);
     }
 };
@@ -1381,6 +1401,7 @@ public:
     void provide(const Card *card);
     QList<ServerPlayer *> getLieges(const char *kingdom, ServerPlayer *lord) const;
     void sendLog(const LogMessage &log);
+    void sendCompulsoryTriggerLog(ServerPlayer *player, const char *skill_name, bool notify_skill);
     void showCard(ServerPlayer *player, int card_id, ServerPlayer *only_viewer = NULL);
     void showAllCards(ServerPlayer *player, ServerPlayer *to = NULL);
     void retrial(const Card *card, ServerPlayer *player, JudgeStruct *judge, const char *skill_name, bool exchange = false);
@@ -1389,6 +1410,10 @@ public:
     bool doNotify(ServerPlayer *player, int command, const char *arg);
     bool doBroadcastNotify(int command, const char *arg);
     bool doBroadcastNotify(const QList<ServerPlayer *> &players, int command, const char *arg);
+    
+    bool doNotify(ServerPlayer *player, int command, const QVariant &arg);
+    bool doBroadcastNotify(int command, const QVariant &arg);
+    bool doBroadcastNotify(const QList<ServerPlayer *> &players, int command,  const QVariant &arg);
 
     bool notifyMoveCards(bool isLostPhase, QList<CardsMoveStruct> move, bool forceVisible, QList<ServerPlayer *> players = QList<ServerPlayer *>());
     bool notifyProperty(ServerPlayer *playerToNotify, const ServerPlayer *propertyOwner, const char *propertyName, const char *value = NULL);
@@ -1483,7 +1508,6 @@ public:
     bool askForSkillInvoke(ServerPlayer *player, const char *skill_name, const QVariant &data = QVariant());
     QString askForChoice(ServerPlayer *player, const char *skill_name, const char *choices, const QVariant &data = QVariant());
     bool askForDiscard(ServerPlayer *target, const char *reason, int discard_num, int min_num,bool optional = false, bool include_equip = false, const char *prompt = NULL, bool notify_skill = false);
-	int askForDiscardNum(ServerPlayer *target, const char *reason, int discard_num, int min_num,bool optional = false, bool include_equip = false, const char *prompt = NULL, bool notify_skill = false);
     const Card *askForExchange(ServerPlayer *player, const char *reason, int discard_num, bool include_equip = false,
         const char *prompt = NULL, bool optional = false);
     bool askForNullification(const Card *trick, ServerPlayer *from, ServerPlayer *to, bool positive);
@@ -1549,7 +1573,9 @@ public:
 
 %{
 
-void Room::doScript(const QString &script) {
+
+void Room::doScript(const QString &script)
+{
     SWIG_NewPointerObj(L, this, SWIGTYPE_p_Room, 0);
     lua_setglobal(L, "R");
 
@@ -1557,7 +1583,7 @@ void Room::doScript(const QString &script) {
     lua_setglobal(L, "P");
 
     int err = luaL_dostring(L, script.toLatin1());
-    if (err){
+    if (err) {
         QString err_str = lua_tostring(L, -1);
         lua_pop(L, 1);
         output(err_str);

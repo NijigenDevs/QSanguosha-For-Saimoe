@@ -29,54 +29,65 @@
 
 #include <QTime>
 
-class GameRule_AskForGeneralShowHead : public TriggerSkill {
+class GameRule_AskForGeneralShowHead : public TriggerSkill
+{
 public:
-    GameRule_AskForGeneralShowHead() : TriggerSkill("GameRule_AskForGeneralShowHead") {
+    GameRule_AskForGeneralShowHead() : TriggerSkill("GameRule_AskForGeneralShowHead")
+    {
         events << EventPhaseStart;
         global = true;
     }
 
-    virtual bool cost(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+    virtual bool cost(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
         player->showGeneral(true, true);
         return false;
     }
 
-    virtual bool triggerable(const ServerPlayer *player) const{
+    virtual bool triggerable(const ServerPlayer *player) const
+    {
         return player->getPhase() == Player::Start
-               && !player->hasShownGeneral1()
-               && player->disableShow(true).isEmpty();
+            && !player->hasShownGeneral1()
+            && player->disableShow(true).isEmpty();
     }
 };
 
-class GameRule_AskForGeneralShowDeputy : public TriggerSkill {
+class GameRule_AskForGeneralShowDeputy : public TriggerSkill
+{
 public:
-    GameRule_AskForGeneralShowDeputy() : TriggerSkill("GameRule_AskForGeneralShowDeputy") {
+    GameRule_AskForGeneralShowDeputy() : TriggerSkill("GameRule_AskForGeneralShowDeputy")
+    {
         events << EventPhaseStart;
         global = true;
     }
 
-    virtual bool cost(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *) const{
+    virtual bool cost(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
         player->showGeneral(false, true);
         return false;
     }
 
-    virtual bool triggerable(const ServerPlayer *player) const{
+    virtual bool triggerable(const ServerPlayer *player) const
+    {
         return player->getPhase() == Player::Start
-               && player->getGeneral2()
-               && !player->hasShownGeneral2()
-               && player->disableShow(false).isEmpty();
+            && player->getGeneral2()
+            && !player->hasShownGeneral2()
+            && player->disableShow(false).isEmpty();
     }
 };
 
-class GameRule_AskForArraySummon : public TriggerSkill {
+class GameRule_AskForArraySummon : public TriggerSkill
+{
 public:
-    GameRule_AskForArraySummon() : TriggerSkill("GameRule_AskForArraySummon") {
+    GameRule_AskForArraySummon() : TriggerSkill("GameRule_AskForArraySummon")
+    {
         events << EventPhaseStart;
         global = true;
     }
 
-    virtual bool cost(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *) const{
-        foreach(const Skill *skill, player->getVisibleSkillList()) {
+    virtual bool cost(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        foreach (const Skill *skill, player->getVisibleSkillList()) {
             if (!skill->inherits("BattleArraySkill")) continue;
             const BattleArraySkill *baskill = qobject_cast<const BattleArraySkill *>(skill);
             if (!player->askForSkillInvoke(objectName())) return false;
@@ -87,10 +98,11 @@ public:
         return false;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer * &) const{
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer * &) const
+    {
         if (player->getPhase() != Player::Start) return QStringList();
         if (room->getAlivePlayers().length() < 4) return QStringList();
-        foreach(const Skill *skill, player->getVisibleSkillList()) {
+        foreach (const Skill *skill, player->getVisibleSkillList()) {
             if (!skill->inherits("BattleArraySkill")) continue;
             return (qobject_cast<const BattleArraySkill *>(skill)->getViewAsSkill()->isEnabledAtPlay(player)) ? QStringList(objectName()) : QStringList();
         }
@@ -98,21 +110,24 @@ public:
     }
 };
 
-class GameRule_LordConvertion : public TriggerSkill {
+class GameRule_LordConvertion : public TriggerSkill
+{
 public:
-    GameRule_LordConvertion() : TriggerSkill("GameRule_LordConvertion") {
+    GameRule_LordConvertion() : TriggerSkill("GameRule_LordConvertion")
+    {
         events << GameStart;
         global = true;
     }
 
-    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const{
-        QMap<ServerPlayer *, QStringList> trigger_map;
+    virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const
+    {
+        TriggerList trigger_map;
 
         if (!Config.value("EnableLordConvertion", true).toBool())
             return trigger_map;
 
         if (player == NULL) {
-            foreach(ServerPlayer *p, room->getAllPlayers()) {
+            foreach (ServerPlayer *p, room->getAllPlayers()) {
                 if (p->getActualGeneral1() != NULL) {
                     QString lord = "lord_" + p->getActualGeneral1()->objectName();
                     const General *lord_general = Sanguosha->getGeneral(lord);
@@ -126,11 +141,13 @@ public:
         return trigger_map;
     }
 
-    virtual bool cost(TriggerEvent, Room *, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const{
+    virtual bool cost(TriggerEvent, Room *, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const
+    {
         return ask_who->askForSkillInvoke("userdefine:changetolord");
     }
 
-    virtual bool effect(TriggerEvent, Room *, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const{
+    virtual bool effect(TriggerEvent, Room *, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const
+    {
         ask_who->changeToLord();
         return false;
     }
@@ -142,17 +159,17 @@ GameRule::GameRule(QObject *parent)
     setParent(parent);
 
     events << GameStart << TurnStart
-           << EventPhaseStart << EventPhaseProceeding << EventPhaseEnd << EventPhaseChanging
-           << PreCardUsed << CardUsed << CardFinished << CardEffected
-           << PostHpReduced
-           << EventLoseSkill << EventAcquireSkill
-           << AskForPeaches << AskForPeachesDone << BuryVictim
-           << BeforeGameOverJudge << GameOverJudge
-           << SlashHit << SlashEffected << SlashProceed
-           << ConfirmDamage << DamageDone << DamageComplete
-           << FinishRetrial << FinishJudge
-           << ChoiceMade << GeneralShown
-           << BeforeCardsMove << CardsMoveOneTime;
+        << EventPhaseProceeding << EventPhaseEnd << EventPhaseChanging
+        << PreCardUsed << CardUsed << CardFinished << CardEffected
+        << PostHpReduced
+        << EventLoseSkill << EventAcquireSkill
+        << AskForPeaches << AskForPeachesDone << BuryVictim
+        << BeforeGameOverJudge << GameOverJudge
+        << SlashHit << SlashEffected << SlashProceed
+        << ConfirmDamage << DamageDone << DamageComplete
+        << FinishRetrial << FinishJudge
+        << ChoiceMade << GeneralShown
+        << BeforeCardsMove << CardsMoveOneTime;
 
     QList<Skill *> list;
     list << new GameRule_AskForGeneralShowHead;
@@ -162,7 +179,7 @@ GameRule::GameRule(QObject *parent)
 
     QList<const Skill *> list_copy;
     foreach (Skill *s, list) {
-        if (Sanguosha->getSkill(s->objectName())){
+        if (Sanguosha->getSkill(s->objectName())) {
             delete s;
         } else {
             list_copy << s;
@@ -171,16 +188,19 @@ GameRule::GameRule(QObject *parent)
     Sanguosha->addSkills(list_copy);
 }
 
-QStringList GameRule::triggerable(TriggerEvent, Room *, ServerPlayer *, QVariant &, ServerPlayer * &ask_who) const{
+QStringList GameRule::triggerable(TriggerEvent, Room *, ServerPlayer *, QVariant &, ServerPlayer * &ask_who) const
+{
     ask_who = NULL;
     return QStringList(objectName());
 }
 
-int GameRule::getPriority() const{
+int GameRule::getPriority() const
+{
     return 0;
 }
 
-void GameRule::onPhaseProceed(ServerPlayer *player) const{
+void GameRule::onPhaseProceed(ServerPlayer *player) const
+{
     Room *room = player->getRoom();
     switch (player->getPhase()) {
     case Player::PhaseNone: {
@@ -255,7 +275,8 @@ void GameRule::onPhaseProceed(ServerPlayer *player) const{
     }
 }
 
-bool GameRule::effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+bool GameRule::effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+{
     if (room->getTag("SkipGameRule").toBool()) {
         room->removeTag("SkipGameRule");
         return false;
@@ -328,28 +349,9 @@ bool GameRule::effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *playe
             if (player->isAlive() && !player->getAI() && player->askForSkillInvoke("userdefine:playNormally"))
                 player->play();
 #endif
-        }
-        else if (player->isAlive())
+        } else if (player->isAlive())
             player->play();
 
-        break;
-    }
-    case EventPhaseStart: {
-        if (player->getPhase() == Player::NotActive && room->getTag("ImperialOrderInvoke").toBool()) {
-            room->setTag("ImperialOrderInvoke", false);
-            LogMessage log;
-            log.type = "#ImperialOrderEffect";
-            log.from = player;
-            log.arg = "imperial_order";
-            room->sendLog(log);
-            const Card *io = room->getTag("ImperialOrderCard").value<const Card *>();
-            if (io) {
-                foreach (ServerPlayer *p, room->getAllPlayers()) {
-                    if (!p->hasShownOneGeneral() && !Sanguosha->isProhibited(NULL, p, io)) // from is NULL!
-                        room->cardEffect(io, NULL, p);
-                }
-            }
-        }
         break;
     }
     case EventPhaseProceeding: {
@@ -510,8 +512,7 @@ bool GameRule::effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *playe
         if (data.canConvert<DamageStruct>()) {
             DamageStruct damage = data.value<DamageStruct>();
             room->enterDying(player, &damage);
-        }
-        else
+        } else
             room->enterDying(player, NULL);
 
         break;
@@ -695,8 +696,7 @@ bool GameRule::effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *playe
         if (effect.jink_num == 1) {
             const Card *jink = room->askForCard(effect.to, "jink", "slash-jink:" + slasher, data, Card::MethodUse, effect.from);
             room->slashResult(effect, room->isJinkEffected(effect.to, jink) ? jink : NULL);
-        }
-        else {
+        } else {
             DummyCard *jink = new DummyCard;
             const Card *asked_jink = NULL;
             for (int i = effect.jink_num; i > 0; i--) {
@@ -707,8 +707,7 @@ bool GameRule::effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *playe
                     delete jink;
                     room->slashResult(effect, NULL);
                     return false;
-                }
-                else {
+                } else {
                     jink->addSubcard(asked_jink->getEffectiveId());
                 }
             }
@@ -798,8 +797,8 @@ bool GameRule::effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *playe
         break;
     }
     case ChoiceMade: {
-        foreach(ServerPlayer *p, room->getAlivePlayers()) {
-            foreach(QString flag, p->getFlagList()) {
+        foreach (ServerPlayer *p, room->getAlivePlayers()) {
+            foreach (const QString &flag, p->getFlagList()) {
                 if (flag.startsWith("Global_") && flag.endsWith("Failed"))
                     room->setPlayerFlag(p, "-" + flag);
             }
@@ -837,8 +836,7 @@ bool GameRule::effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *playe
                     recover.who = player;
                     recover.recover = 1;
                     room->recover(player, recover);
-                }
-                else if (choice == "draw")
+                } else if (choice == "draw")
                     player->drawCards(2);
                 room->removePlayerMark(player, "CompanionEffect");
 
@@ -911,7 +909,8 @@ bool GameRule::effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *playe
     return false;
 }
 
-void GameRule::rewardAndPunish(ServerPlayer *killer, ServerPlayer *victim) const{
+void GameRule::rewardAndPunish(ServerPlayer *killer, ServerPlayer *victim) const
+{
     if (killer->isDead() || !killer->hasShownOneGeneral())
         return;
 
@@ -920,17 +919,17 @@ void GameRule::rewardAndPunish(ServerPlayer *killer, ServerPlayer *victim) const
 
     if (!killer->isFriendWith(victim)) {
         int n = 1;
-        foreach(ServerPlayer *p, room->getOtherPlayers(victim)) {
+        foreach (ServerPlayer *p, room->getOtherPlayers(victim)) {
             if (victim->isFriendWith(p))
                 ++n;
         }
         killer->drawCards(n);
-    }
-    else
+    } else
         killer->throwAllHandCardsAndEquips();
 }
 
-QString GameRule::getWinner(ServerPlayer *victim) const{
+QString GameRule::getWinner(ServerPlayer *victim) const
+{
     Room *room = victim->getRoom();
     QStringList winners;
     QList<ServerPlayer *> players = room->getAlivePlayers();

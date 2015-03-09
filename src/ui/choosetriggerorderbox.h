@@ -29,16 +29,21 @@ class Button;
 class QGraphicsProxyWidget;
 class QSanCommandProgressBar;
 
-class TriggerOptionButton : public QGraphicsObject {
+class TriggerOptionButton : public QGraphicsObject
+{
     Q_OBJECT
 
-    friend class ChooseTriggerOrderBox;
+        friend class ChooseTriggerOrderBox;
 
 public:
     static QFont defaultFont();
 
 signals:
     void clicked();
+    void hovered(bool entering);
+
+public slots:
+    void needDisabled(bool disabled);
 
 protected:
     virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *);
@@ -48,19 +53,23 @@ protected:
     virtual void hoverEnterEvent(QGraphicsSceneHoverEvent *event);
     virtual void hoverLeaveEvent(QGraphicsSceneHoverEvent *event);
 
+    static QString displayedTextOf(const QString &str);
+
 private:
-    explicit TriggerOptionButton(QGraphicsObject *parent, const QString &player, const QString &skill, const int width);
+    TriggerOptionButton(QGraphicsObject *parent, const QString &player, const QString &skillStr, const int width);
+    bool isPreferentialSkillOf(const TriggerOptionButton *other) const;
 
     QString getGeneralNameBySkill() const;
 
-    QString skillName;
+    QString m_skillStr;
+    QString m_text;
     QString playerName;
     int width;
 };
 
-class GeneralButton : public QGraphicsObject {
+class GeneralButton : public QGraphicsObject
+{
     Q_OBJECT
-
     friend class ChooseTriggerOrderBox;
 
 signals:
@@ -75,19 +84,19 @@ protected:
     virtual void hoverLeaveEvent(QGraphicsSceneHoverEvent *event);
 
 private:
-    explicit GeneralButton(QGraphicsObject *parent, const QString &general, const bool isHead);
+    GeneralButton(QGraphicsObject *parent, const QString &general, const bool isHead);
 
     QString generalName;
     bool isHead;
 };
 
-class ChooseTriggerOrderBox : public GraphicsBox {
+class ChooseTriggerOrderBox : public GraphicsBox
+{
     Q_OBJECT
 
 public:
-    explicit ChooseTriggerOrderBox();
+    ChooseTriggerOrderBox();
 
-    virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
     virtual QRectF boundingRect() const;
     void chooseOption(const QString &reason, const QStringList &options, const bool optional);
     void clear();
@@ -104,7 +113,6 @@ private:
     static const int interval;
     static const int m_leftBlankWidth;
 
-    QString reason;
     QStringList options;
     bool optional;
     int m_minimumWidth;
