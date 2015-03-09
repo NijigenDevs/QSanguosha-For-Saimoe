@@ -80,4 +80,12 @@ public:
     virtual void takeEffect(ServerPlayer *target) const;
 };
 
+class FengwangCard : public SkillCard {
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE FengwangCard();
+    virtual void onUse(Room *room, const CardUseStruct &card_use) const;
+};
+
 #endif
