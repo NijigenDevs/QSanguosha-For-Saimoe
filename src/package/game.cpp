@@ -1805,11 +1805,13 @@ public:
         else {
             DamageStruct damage = data.value<DamageStruct>();
             LogMessage log;
-            log.type = "#LuoyiBuff";
+            log.type = "#DuangangBuff";
             log.from = player;
             log.to << damage.to;
             log.arg = QString::number(damage.damage);
             damage.damage += player->tag["excalibur_count"].toInt();
+            if (damage.damage == log.arg.toInt())
+                return false;
             log.arg2 = QString::number(damage.damage);
             room->sendLog(log);
 
@@ -1855,10 +1857,10 @@ void MoesenPackage::addGameGenerals()
     altria->addSkill(new Fengwang);
     altria->addSkill(new FengwangFilter);
     altria->addSkill(new FengwangTMS);
-    insertRelatedSkills("fengwang", "#fengwang-target");
-    insertRelatedSkills("fengwang", "#fengwang-filter");
     altria->addSkill(new Duangang);
     altria->addSkill(new DuangangRecord);
+    insertRelatedSkills("fengwang", "#fengwang-target");
+    insertRelatedSkills("fengwang", "#fengwang-filter");
     insertRelatedSkills("duangang", "#duangang-record");
 
     General *t_rin = new General(this, "t_rin", "wu", 3, false); // Game 004
