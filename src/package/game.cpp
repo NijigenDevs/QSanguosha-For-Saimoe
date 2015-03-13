@@ -1839,6 +1839,143 @@ public:
     }
 };
 
+YonglanCard::YonglanCard() {
+    will_throw = false;
+}
+
+bool YonglanCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *) const{
+    Indulgence *indu = new Indulgence(Card::NoSuit, 0);
+    if (Self->isProhibited(to_select, indu))
+        return false;
+
+    delete indu;
+    return targets.isEmpty() && !to_select->containsTrick(objectName()) && (Self->isFriendWith(to_select) || Self->willBeFriendWith(to_select));
+}
+
+void YonglanCard::onEffect(const CardEffectStruct &effect) const{
+    if (subcards.length() == 1) {
+        Indulgence *indu = new Indulgence(Card::SuitToBeDecided, -1);
+        indu->addSubcards(subcards);
+        indu->setSkillName("yonglan");
+        Room *room = effect.from->getRoom();
+        if (room->useCard(CardUseStruct(indu, effect.from, effect.to, true), true)) {
+            room->askForUseCard(effect.from, "@@yonglan", "@yonglan");
+        }
+    }
+}
+
+#include "roomthread.h"
+
+YonglanPindianCard::YonglanPindianCard()
+{
+    mute = true;
+}
+
+bool YonglanPindianCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
+{
+    return targets.length() < 2 && to_select != Self && to_select->isKongcheng();
+}
+
+bool YonglanPindianCard::targetsFeasible(const QList<const Player *> &targets, const Player *) const
+{
+    return targets.length() == 2;
+}
+
+void YonglanPindianCard::onUse(Room *room, const CardUseStruct &card_use) const
+{
+    ServerPlayer *miki = card_use.from;
+
+    LogMessage log;
+    log.from = miki;
+    log.to << card_use.to;
+    log.type = "#UseCard";
+    log.card_str = toString();
+    room->sendLog(log);
+
+    QVariant data = QVariant::fromValue(card_use);
+    RoomThread *thread = room->getThread();
+
+    thread->trigger(PreCardUsed, room, miki, data);
+    room->broadcastSkillInvoke("yonglan", miki);
+
+    CardMoveReason reason(CardMoveReason::S_REASON_THROW, miki->objectName(), QString(), "yonglan", QString());
+    room->moveCardTo(this, miki, NULL, Player::PlaceTable, reason, true);
+
+    if (miki->ownSkill("yonglan") && !miki->hasShownSkill("yonglan"))
+        miki->showGeneral(miki->inHeadSkills("yonglan"));
+
+    QList<int> table_ids = room->getCardIdsOnTable(this);
+    if (!table_ids.isEmpty()) {
+        DummyCard dummy(table_ids);
+        room->moveCardTo(&dummy, miki, NULL, Player::DiscardPile, reason, true);
+    }
+
+    thread->trigger(CardUsed, room, miki, data);
+    thread->trigger(CardFinished, room, miki, data);
+}
+
+void YonglanPindianCard::use(Room *room, ServerPlayer *, QList<ServerPlayer *> &targets) const
+{
+    ServerPlayer *user = targets.at(0);
+    ServerPlayer *victim = targets.at(1);
+    ServerPlayer *winner;
+    ServerPlayer *loser;
+
+    PindianStruct *pd = user->pindianSelect(victim, "yonglan");
+    if (pd != NULL) {
+        bool success = user->pindian(pd);
+        if (pd->from_number > pd->to_number) {
+            winner = pd->from;
+            loser = pd->to;
+        }
+        else if (pd->to_number > pd->from_number) {
+            winner = pd->to;
+            loser = pd->from;
+        }
+        pd = NULL;
+        if (success && winner != NULL && loser != NULL) {
+            Duel *duel = new Duel(Card::NoSuit, 0);
+            duel->setSkillName(QString("_%1").arg(getSkillName()));
+            if (!winner->isCardLimited(duel, Card::MethodUse) && !winner->isProhibited(loser, duel))
+                room->useCard(CardUseStruct(duel, winner, loser));
+            else
+                delete duel;
+        }
+    }
+}
+
+#include "standard-qun-generals.h"
+
+class Yonglan : public OneCardViewAsSkill{
+public:
+    Yonglan() : OneCardViewAsSkill("yonglan"){
+        filter_pattern = ".|.|.|hand";
+    }
+
+    virtual bool isEnabledAtResponse(const Player *, const QString &pattern) const {
+        return pattern == "@@yonglan";
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const {
+        return player->getHandcardNum() + player->getPile("wooden_ox").length() > 0;
+    }
+
+    virtual const Card *viewAs(const Card *originalCard) const {
+        if (Sanguosha->getCurrentCardUsePattern() == "@@yonglan") {
+            YonglanPindianCard *pd = new YonglanPindianCard;
+            pd->setShowSkill(objectName());
+            return pd;
+        }
+        else {
+            YonglanCard *yl = new YonglanCard;
+            yl->addSubcard(originalCard);
+            yl->setShowSkill(objectName());
+            return yl;
+        }
+        return NULL;
+    }
+};
+
 void MoesenPackage::addGameGenerals()
 {
     skills << new keyCardGlobalManagement;
@@ -1923,4 +2060,6 @@ void MoesenPackage::addGameGenerals()
    addMetaObject<Lingdan>();
    addMetaObject<LuoxuanCard>();
    addMetaObject<FengwangCard>();
+   addMetaObject<YonglanCard>();
+   addMetaObject<YonglanPindianCard>();
 }
