@@ -1944,8 +1944,6 @@ void YonglanPindianCard::use(Room *room, ServerPlayer *, QList<ServerPlayer *> &
     }
 }
 
-#include "standard-qun-generals.h"
-
 class Yonglan : public OneCardViewAsSkill{
 public:
     Yonglan() : OneCardViewAsSkill("yonglan"){
@@ -1973,6 +1971,52 @@ public:
             return yl;
         }
         return NULL;
+    }
+};
+
+class ZhiyanMiki : public TriggerSkill{
+public:
+    ZhiyanMiki() : TriggerSkill("zhiyanmiki"){
+        events << EventPhaseSkipping << EventPhaseStart;
+        frequency = NotFrequent;
+    }
+
+    virtual QStringList triggerable(TriggerEvent event, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+        if (event == EventPhaseStart) {
+            if (TriggerSkill::triggerable(player) && player->hasFlag("zhiyanmiki_skip") && player->getPhase() == Player::Finish) {
+                return QStringList(objectName());
+            }
+        }
+        else {
+            if (player->ownSkill(this) && player->isAlive()) {
+                player->setFlags("zhiyanmiki_skip");
+            }
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
+        return player->hasShownSkill(this) ? true : room->askForSkillInvoke(player);
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
+        QString choice = "draw";
+        QList<ServerPlayer *> targets;
+        foreach(ServerPlayer *p, room->getAlivePlayers())
+            if (player->canDiscard(p, "hej"))
+                targets << p;
+        if (!targets.isEmpty())
+            choice += "+discard";
+        if (room->askForChoice(player, objectName(), choice) == "draw") {
+            player->drawCards(1, objectName());
+        }
+        else {
+            ServerPlayer *target = room->askForPlayerChosen(player, targets, objectName());
+            if (target != NULL) {
+                room->throwCard(room->askForCardChosen(player, target, "hej", objectName(), false, Card::MethodDiscard), objectName(), target, player, objectName());
+            }
+        }
+        return false;
     }
 };
 
@@ -2026,9 +2070,10 @@ void MoesenPackage::addGameGenerals()
     haruka->addSkill(new Yuanqi);
     haruka->addSkill(new Daihei);
 
-    /*
     General *miki = new General(this, "miki", "wu", 3, false); // Game 011
-    */
+    miki->addSkill(new Yonglan);
+    miki->addSkill(new ZhiyanMiki);
+
     General *n_rin = new General(this, "n_rin", "wu", 3, false); // Game 012
     
     n_rin->addSkill(new Pasheng);
