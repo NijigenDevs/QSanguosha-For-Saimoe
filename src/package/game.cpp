@@ -1996,7 +1996,7 @@ public:
     }
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
-        return player->hasShownSkill(this) ? true : room->askForSkillInvoke(player);
+        return player->hasShownSkill(this) ? true : player->askForSkillInvoke(this);
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
@@ -2013,7 +2013,7 @@ public:
         else {
             ServerPlayer *target = room->askForPlayerChosen(player, targets, objectName());
             if (target != NULL) {
-                room->throwCard(room->askForCardChosen(player, target, "hej", objectName(), false, Card::MethodDiscard), objectName(), target, player, objectName());
+                room->throwCard(room->askForCardChosen(player, target, "hej", objectName(), false, Card::MethodDiscard), target, player, objectName());
             }
         }
         return false;
@@ -2023,6 +2023,7 @@ public:
 void MoesenPackage::addGameGenerals()
 {
     skills << new keyCardGlobalManagement;
+
     /*General *nagisa = new General(this, "nagisa", "wu", 3, false); // Game 001
     */
 
@@ -2055,7 +2056,6 @@ void MoesenPackage::addGameGenerals()
 
     /*
     General *rika = new General(this, "rika", "wu", 3, false); // Game 007
-
     */
 
     General *rena = new General(this, "rena", "wu", 4, false); // Game 008
