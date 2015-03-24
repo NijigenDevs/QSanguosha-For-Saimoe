@@ -1845,11 +1845,10 @@ YonglanCard::YonglanCard() {
 
 bool YonglanCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *) const{
     Indulgence *indu = new Indulgence(Card::NoSuit, 0);
+    indu->deleteLater();
     if (Self->isProhibited(to_select, indu))
         return false;
-
-    delete indu;
-    return targets.isEmpty() && !to_select->containsTrick(objectName()) && (Self->isFriendWith(to_select) || Self->willBeFriendWith(to_select));
+    return targets.isEmpty() && !to_select->containsTrick("indulgence") && (Self->isFriendWith(to_select) || Self->willBeFriendWith(to_select));
 }
 
 void YonglanCard::onEffect(const CardEffectStruct &effect) const{
@@ -1868,12 +1867,11 @@ void YonglanCard::onEffect(const CardEffectStruct &effect) const{
 
 YonglanPindianCard::YonglanPindianCard()
 {
-    mute = true;
 }
 
 bool YonglanPindianCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
 {
-    return targets.length() < 2 && to_select != Self && to_select->isKongcheng();
+    return targets.length() < 2 && to_select != Self && !to_select->isKongcheng();
 }
 
 bool YonglanPindianCard::targetsFeasible(const QList<const Player *> &targets, const Player *) const
@@ -1924,7 +1922,7 @@ void YonglanPindianCard::use(Room *room, ServerPlayer *, QList<ServerPlayer *> &
     PindianStruct *pd = user->pindianSelect(victim, "yonglan");
     if (pd != NULL) {
         bool success = user->pindian(pd);
-        if (pd->from_number > pd->to_number) {
+        if (success) {
             winner = pd->from;
             loser = pd->to;
         }
@@ -1933,21 +1931,29 @@ void YonglanPindianCard::use(Room *room, ServerPlayer *, QList<ServerPlayer *> &
             loser = pd->from;
         }
         pd = NULL;
-        if (success && winner != NULL && loser != NULL) {
+        if (winner != NULL && loser != NULL) {
             Duel *duel = new Duel(Card::NoSuit, 0);
             duel->setSkillName(QString("_%1").arg(getSkillName()));
             if (!winner->isCardLimited(duel, Card::MethodUse) && !winner->isProhibited(loser, duel))
                 room->useCard(CardUseStruct(duel, winner, loser));
-            else
+            else {
+                LogMessage log;
+                log.type = "#YonglanNullified";
+                log.from = winner;
+                log.arg = winner->objectName();
                 delete duel;
+            }
         }
     }
 }
 
-class Yonglan : public OneCardViewAsSkill{
+class Yonglan : public ViewAsSkill{
 public:
-    Yonglan() : OneCardViewAsSkill("yonglan"){
-        filter_pattern = ".|.|.|hand";
+    Yonglan() : ViewAsSkill("yonglan"){
+    }
+    
+    virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const {
+        return !to_select->isEquipped() && Sanguosha->currentRoomState()->getCurrentCardUsePattern() == "@@yonglan" ? false : selected.length() == 0;
     }
 
     virtual bool isEnabledAtResponse(const Player *, const QString &pattern) const {
@@ -1958,15 +1964,15 @@ public:
         return player->getHandcardNum() + player->getPile("wooden_ox").length() > 0;
     }
 
-    virtual const Card *viewAs(const Card *originalCard) const {
-        if (Sanguosha->getCurrentCardUsePattern() == "@@yonglan") {
+    virtual const Card *viewAs(const QList<const Card *> &cards) const {
+        if (Sanguosha->currentRoomState()->getCurrentCardUsePattern() == "@@yonglan" && cards.length() == 0) {
             YonglanPindianCard *pd = new YonglanPindianCard;
             pd->setShowSkill(objectName());
             return pd;
         }
-        else {
+        else if (cards.length() == 1) {
             YonglanCard *yl = new YonglanCard;
-            yl->addSubcard(originalCard);
+            yl->addSubcards(cards);
             yl->setShowSkill(objectName());
             return yl;
         }
@@ -1981,7 +1987,7 @@ public:
         frequency = NotFrequent;
     }
 
-    virtual QStringList triggerable(TriggerEvent event, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
+    virtual QStringList triggerable(TriggerEvent event, Room *, ServerPlayer *player, QVariant &, ServerPlayer* &) const{
         if (event == EventPhaseStart) {
             if (TriggerSkill::triggerable(player) && player->hasFlag("zhiyanmiki_skip") && player->getPhase() == Player::Finish) {
                 return QStringList(objectName());
@@ -1995,7 +2001,7 @@ public:
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
+    virtual bool cost(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *) const {
         return player->hasShownSkill(this) ? true : player->askForSkillInvoke(this);
     }
 
