@@ -14,13 +14,14 @@ Key::Key(Card::Suit suit, int number)
 }
 
 bool Key::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *) const{
+    // please use this to check validity when put key
     int num = 0;
     foreach(const Card *card, to_select->getJudgingArea()){
         if (card->objectName() == objectName()){
             num++;
         }
     }
-    return targets.isEmpty() && (num == 0 || (to_select->hasSkill("huanyuan") && num < 3));
+    return targets.isEmpty() && (num == 0 || (to_select->hasShownSkill("huanyuan") && num < 3));
 }
 
 void Key::takeEffect(ServerPlayer *target) const{
@@ -31,7 +32,6 @@ void Key::takeEffect(ServerPlayer *target) const{
 }
 
 void Key::onEffect(const CardEffectStruct &) const{
-
 }
 
 //for managing anything needed to be done with key
@@ -46,14 +46,24 @@ public:
         QMap<ServerPlayer *, QStringList> skill_list;
         if (event == CardsMoveOneTime){
             CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-            if (move.to_place != Player::DiscardPile){
-                return skill_list;
-            }
-            QList<ServerPlayer *> rins = room->findPlayersBySkillName("jiuzhu");// if rin is there, we use rin's skill instead of this.
-            if (rins.length() > 0){
-                return skill_list;
-            }
+            int i = 1;
             foreach(int id, move.card_ids){
+                if (move.from_places[i] == Player::PlaceDelayedTrick && move.from != NULL) {
+                    ServerPlayer *player;
+                    foreach(ServerPlayer *p, room->getAlivePlayers()) {
+                        if (p->objectName() == move.from->objectName()) {
+                            player = p;
+                            break;
+                        }
+                    }
+                    if (player != NULL && player->isAlive()) {
+                        RecoverStruct recover;
+                        recover.recover = 1;
+                        recover.who = NULL;
+                        recover.card = Sanguosha->getEngineCard(move.card_ids[i]);
+                        room->recover(player, recover, true);
+                    }
+                }
                 if (move.to_place == Player::DiscardPile){
                     if (VariantList2IntList(room->getTag("keyList").toList()).contains(id)){
                         QList<QVariant> ql = room->getTag("keyList").toList();
@@ -61,6 +71,7 @@ public:
                         room->setTag("keyList", ql);
                     }
                 }
+                i++;
             }
         }
         return skill_list;
@@ -705,24 +716,13 @@ public:
         if (event == Dying){
             DyingStruct dying = data.value<DyingStruct>();
 
-            //ayuyu
-            bool ayuyu = false;
-            if (dying.who->hasSkill("huanyuan")){
-                int num = 0;
-                foreach(const Card *card, dying.who->getJudgingArea()){
-                    if (card->isKindOf("Key")){
-                        num++;
-                    }
-                }
-                if (num < 3){
-                    ayuyu = true;
-                }
-            }
-
-            if (!dying.who || (!ayuyu && dying.who->containsTrick("keyCard"))) return skill_list;
+            if (dying.who == NULL) return skill_list;
             QList<ServerPlayer *> rins = room->findPlayersBySkillName(objectName());
             foreach(ServerPlayer *rin, rins){
-                if (!rin->hasFlag("jiuzhu_used")){
+                Key *key = new Key(Card::NoSuit, 0);
+                const QList<const Player *> empty;
+                if (key->targetFilter(empty, dying.who, rin) && !rin->hasFlag("jiuzhu_used")){
+                    delete key;
                     skill_list.insert(rin, QStringList(objectName()));
                 }
             }
@@ -734,34 +734,6 @@ public:
                     if (rin != NULL)
                     	skill_list.insert(rin, QStringList(objectName()));
                 }
-        }
-        else if (event == CardsMoveOneTime){
-            QList<ServerPlayer *> rins = room->findPlayersBySkillName(objectName());
-            CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-            if (move.to_place != Player::DiscardPile){
-                return skill_list;
-            }
-            foreach(int id, move.card_ids){
-                bool done = false;
-                foreach(ServerPlayer *rin, rins){
-                    if (rin != NULL) {
-                        if (VariantList2IntList(room->getTag("keyList").toList()).contains(id) || id == room->getTag("key_in_move").toInt()){
-                            skill_list.insert(rin, QStringList(objectName()));
-                            done = true;
-                        }
-                    }    
-                }
-                if (done){
-                    room->setTag("key_in_move", -1);
-                    //alert
-                    if (VariantList2IntList(room->getTag("keyList").toList()).contains(id)){
-                        QList<QVariant> ql = room->getTag("keyList").toList();
-                        ql.removeOne(QVariant::fromValue(id));
-                        room->setTag("keyList", ql);
-                    }
-                    break;
-                }
-            }
         }
         else if (event == AskForPeachesDone){
             QList<ServerPlayer *> rins = room->findPlayersBySkillName(objectName());
@@ -790,21 +762,12 @@ public:
                 return true;
             }
         }
-        else if (event == CardsMoveOneTime){
-        	bool invoke = ask_who->hasShownSkill(this) ? true : room->askForSkillInvoke(ask_who, "jiuzhu_getCard");
-            if (invoke){
-                return true;
-            }
-        }
         return false;
     }
     virtual bool effect(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const{
         if (event == Dying){
             DyingStruct dying = data.value<DyingStruct>();
-            if (room->getDrawPile().length() == 0)
-                room->swapPile();
-
-            putKeyFromId(room, room->getDrawPile().at(0), ask_who, dying.who, objectName());
+            putKeyFromId(room, room->drawCard(), ask_who, dying.who, objectName());
             return false;
         }
         else if (event == PreHpLost){
@@ -817,13 +780,8 @@ public:
                     CardMoveReason reason(CardMoveReason::S_REASON_PUT, ask_who->objectName(), player->objectName(), objectName(), QString());
                     room->setTag("key_in_move", QVariant::fromValue(card->getEffectiveId()));
                     room->moveCardTo(card, player, NULL, Player::DiscardPile, reason, true);
-                    
-                    return true;
                 }
             }
-            return false;
-        }
-        else if (event == CardsMoveOneTime){
             ask_who->drawCards(1);
             return false;
         }
@@ -889,17 +847,13 @@ public:
             return QStringList();
 
         QList<ServerPlayer *> dests = room->getOtherPlayers(player);
+        Key *key = new Key(Card::NoSuit, 0);
+        const QList<const Player *> empty;
         foreach(ServerPlayer *p, dests){
-            int num = 0;
-            foreach(const Card *cc, p->getJudgingArea()){
-                if (cc->isKindOf("Key")){
-                    num++;
-                }
-            }
-            if (!((p->hasSkill("huanyuan") && num < 3) || num == 0)){
+            if (!key->targetFilter(empty, p, player))
                 dests.removeOne(p);
-            }
         }
+        delete key;
         if (dests.length() == 0){
             return QStringList();
         }
@@ -918,23 +872,16 @@ public:
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
         room->notifySkillInvoked(player, objectName());
 
-        if (room->getDrawPile().length() == 0){
-            room->swapPile();
-        }
-        int id = room->getDrawPile().at(0);
+        int id = room->drawCard();
         room->showCard(player, id);
         QList<ServerPlayer *> dests = room->getOtherPlayers(player);
+        Key *key = new Key(Card::NoSuit, 0);
+        const QList<const Player *> empty;
         foreach(ServerPlayer *p, dests){
-            int num = 0;
-            foreach(const Card *cc, p->getJudgingArea()){
-                if (cc->isKindOf("Key")){
-                    num++;
-                }
-            }
-            if (!((p->hasSkill("huanyuan") && num < 3) || num == 0)){
+            if (!key->targetFilter(empty, p, player))
                 dests.removeOne(p);
-            }
         }
+        delete key;
         if (dests.length() == 0){
             return false;
         }
@@ -1424,6 +1371,10 @@ public:
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
         if (player->askForSkillInvoke(this)){
+            const Card *c = room->askForCard(player, ".|heart", "@huanyuan_discard", NULL, objectName());
+            if (!c){
+                room->loseHp(player);
+            }
             room->broadcastSkillInvoke(objectName(), player);
             return true;
         }
@@ -1431,16 +1382,8 @@ public:
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *ayu, QVariant &, ServerPlayer *) const{
-        const Card *c = room->askForCard(ayu, ".|heart", "@huanyuan_discard", NULL, objectName());
-        if (!c){
-            room->loseHp(ayu);
-        }
-        if (room->getDrawPile().length() == 0){
-            room->swapPile();
-        }
-        int id = room->getDrawPile().at(0);
+        int id = room->drawCard();
         room->showCard(ayu, id);
-        
         putKeyFromId(room, id, ayu, ayu, objectName());
 
         return false;
@@ -1479,32 +1422,32 @@ public:
     }
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *ayu, QVariant &data, ServerPlayer *) const{
-        if (ayu->askForSkillInvoke(this, data)) {
-            room->broadcastSkillInvoke(objectName(), ayu);
-            //room->doSuperLightbox("mengxian", objectName());
-            return true;
-        }
-        return false;
-    }
-
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *ayu, QVariant &, ServerPlayer *) const{
         QList<int> keys;
         foreach(const Card *card, ayu->getJudgingArea()){
             if (card->isKindOf("Key")){
                 keys.append(card->getEffectiveId());
             }
         }
-        if (keys.length() < 2){
-            return false;
-        }
-
-        int num = keys.length() - 1;
-
         room->fillAG(keys, ayu);
         int id = room->askForAG(ayu, keys, false, objectName());
         room->clearAG(ayu);
         if (id == -1){
             return false;
+        }
+        ayu->tag["mengxian_id"] = id;
+        CardMoveReason reason(CardMoveReason::S_REASON_PUT, ayu->objectName(), ayu->objectName(), objectName(), QString());
+        room->moveCardTo(Sanguosha->getEngineCard(id), ayu, NULL, Player::DiscardPile, reason, true);
+        room->broadcastSkillInvoke(objectName(), ayu);
+        //room->doSuperLightbox("mengxian", objectName());
+        return true;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *ayu, QVariant &, ServerPlayer *) const{
+        int num = 0;
+        foreach(const Card *card, ayu->getJudgingArea()){
+            if (card->isKindOf("Key")){
+                num++;
+            }
         }
 
         ServerPlayer *y1 = room->askForPlayerChosen(ayu, room->getOtherPlayers(ayu), objectName());
@@ -1513,23 +1456,10 @@ public:
             return false;
         }
 
-        putKeyFromId(room, id, ayu, y1, objectName());
+        QList<ServerPlayer *> drawers;
+        drawers << ayu << y1;
 
-        foreach(const Card *card, ayu->getJudgingArea()){
-            if (card->isKindOf("Key")){
-                CardMoveReason reason(CardMoveReason::S_REASON_PUT, ayu->objectName(), ayu->objectName(), objectName(), QString());
-                room->moveCardTo(card, ayu, NULL, Player::DiscardPile, reason, true);
-            }
-        }
-
-        
-        RecoverStruct rs;
-        rs.who = ayu;
-        room->recover(ayu, rs);
-
-        ayu->drawCards(num);
-        y1->drawCards(num);
-        
+        room->drawCards(drawers, num, objectName());
         return false;
     }
 };
