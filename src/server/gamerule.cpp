@@ -378,11 +378,24 @@ bool GameRule::effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *playe
                     room->setPlayerMark(p, "drank", 0);
                 }
             }
-        }
-        else if (change.to == Player::Play) {
+            if (room->getTag("ImperialOrderInvoke").toBool()) {
+                room->setTag("ImperialOrderInvoke", false);
+                LogMessage log;
+                log.type = "#ImperialOrderEffect";
+                log.from = player;
+                log.arg = "imperial_order";
+                room->sendLog(log);
+                const Card *io = room->getTag("ImperialOrderCard").value<const Card *>();
+                if (io) {
+                    foreach (ServerPlayer *p, room->getAllPlayers()) {
+                        if (!p->hasShownOneGeneral() && !Sanguosha->isProhibited(NULL, p, io)) // from is NULL!
+                            room->cardEffect(io, NULL, p);
+                    }
+                }
+            }
+        } else if (change.to == Player::Play) {
             room->addPlayerHistory(player, ".");
-        }
-        else if (change.to == Player::Start) {
+        } else if (change.to == Player::Start) {
             if (!player->hasShownGeneral1()
                 && Sanguosha->getGeneral(room->getTag(player->objectName()).toStringList().first())->isLord())
                 player->showGeneral();
@@ -414,7 +427,7 @@ bool GameRule::effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *playe
 
             QList<ServerPlayer *> targets = card_use.to;
 
-            if (card_use.from != NULL){
+            if (card_use.from != NULL) {
                 thread->trigger(TargetChoosing, room, card_use.from, data);
                 CardUseStruct new_use = data.value<CardUseStruct>();
                 targets = new_use.to;
@@ -422,7 +435,7 @@ bool GameRule::effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *playe
 
             if (card_use.from && !targets.isEmpty()) {
                 QList<ServerPlayer *> targets_copy = targets;
-                foreach(ServerPlayer *to, targets_copy) {
+                foreach (ServerPlayer *to, targets_copy) {
                     if (targets.contains(to)) {
                         thread->trigger(TargetConfirming, room, to, data);
                         CardUseStruct new_use = data.value<CardUseStruct>();
@@ -436,7 +449,7 @@ bool GameRule::effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *playe
             if (card_use.card && !(card_use.card->isVirtualCard() && card_use.card->getSubcards().isEmpty())
                 && !card_use.card->targetFixed() && card_use.to.isEmpty()) {
                 QList<int> table_cardids = room->getCardIdsOnTable(card_use.card);
-                if (!table_cardids.isEmpty()){
+                if (!table_cardids.isEmpty()) {
                     DummyCard dummy(table_cardids);
                     CardMoveReason reason(CardMoveReason::S_REASON_NATURAL_ENTER, QString());
                     room->throwCard(&dummy, reason, NULL);
@@ -454,8 +467,7 @@ bool GameRule::effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *playe
                     card_use.from->tag["Jink_" + card_use.card->toString()] = QVariant::fromValue(jink_list);
                 }
                 if (card_use.from && !card_use.to.isEmpty()) {
-                    foreach(ServerPlayer *p, room->getAllPlayers())
-                        thread->trigger(TargetChosen, room, p, data);
+                    thread->trigger(TargetChosen, room, card_use.from, data);
                     foreach(ServerPlayer *p, room->getAllPlayers())
                         thread->trigger(TargetConfirmed, room, p, data);
                 }
@@ -524,7 +536,7 @@ bool GameRule::effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *playe
         try {
             ServerPlayer *jiayu = room->getCurrent();
             if (jiayu->hasSkill("wansha") && jiayu->hasShownSkill("wansha")
-                && jiayu->isAlive() && jiayu->getPhase() != Player::NotActive){
+                && jiayu->isAlive() && jiayu->getPhase() != Player::NotActive) {
                 if (player != dying.who && player != jiayu)
                     room->setPlayerFlag(player, "Global_PreventPeach");
             }

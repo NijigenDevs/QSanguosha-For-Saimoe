@@ -46,32 +46,30 @@ public:
         QMap<ServerPlayer *, QStringList> skill_list;
         if (event == CardsMoveOneTime){
             CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-            int i = 1;
-            foreach(int id, move.card_ids){
-                if (move.from_places[i] == Player::PlaceDelayedTrick && move.from != NULL) {
-                    ServerPlayer *player;
+            for (int i = 0; i < move.card_ids.length(); i++) {
+                if (!VariantList2IntList(room->getTag("keyList").toList()).contains(move.card_ids[i]))
+                    continue;
+                if (move.from != NULL && move.from_places[i] != NULL && move.from_places[i] == Player::PlaceDelayedTrick) {
+                    ServerPlayer *player = NULL;
                     foreach(ServerPlayer *p, room->getAlivePlayers()) {
                         if (p->objectName() == move.from->objectName()) {
                             player = p;
                             break;
                         }
                     }
-                    if (player != NULL && player->isAlive()) {
+                    if (player != NULL && player->isAlive() && !player->isDead()) {
                         RecoverStruct recover;
                         recover.recover = 1;
-                        recover.who = NULL;
+                        recover.who = player;
                         recover.card = Sanguosha->getEngineCard(move.card_ids[i]);
                         room->recover(player, recover, true);
                     }
                 }
                 if (move.to_place == Player::DiscardPile){
-                    if (VariantList2IntList(room->getTag("keyList").toList()).contains(id)){
-                        QList<QVariant> ql = room->getTag("keyList").toList();
-                        ql.removeOne(QVariant::fromValue(id));
-                        room->setTag("keyList", ql);
-                    }
+                    QList<QVariant> ql = room->getTag("keyList").toList();
+                    ql.removeOne(QVariant::fromValue(move.card_ids[i]));
+                    room->setTag("keyList", ql);
                 }
-                i++;
             }
         }
         return skill_list;
@@ -1382,6 +1380,7 @@ public:
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *ayu, QVariant &, ServerPlayer *) const{
+        if (!ayu->isAlive()) return false;
         int id = room->drawCard();
         room->showCard(ayu, id);
         putKeyFromId(room, id, ayu, ayu, objectName());
@@ -1421,7 +1420,7 @@ public:
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *ayu, QVariant &data, ServerPlayer *) const{
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *ayu, QVariant &, ServerPlayer *) const{
         QList<int> keys;
         foreach(const Card *card, ayu->getJudgingArea()){
             if (card->isKindOf("Key")){
@@ -1429,7 +1428,7 @@ public:
             }
         }
         room->fillAG(keys, ayu);
-        int id = room->askForAG(ayu, keys, false, objectName());
+        int id = room->askForAG(ayu, keys, true, objectName());
         room->clearAG(ayu);
         if (id == -1){
             return false;

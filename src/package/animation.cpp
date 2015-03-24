@@ -677,7 +677,7 @@ public:
     virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *mio, QVariant &data, ServerPlayer * &) const{
         if (!TriggerSkill::triggerable(mio)) return QStringList();
         CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-        if (move.from == mio && move.from_places.contains(Player::PlaceEquip)
+        if (move.from != NULL && move.from == mio && move.from_places.contains(Player::PlaceEquip)
             && (move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) != CardMoveReason::S_REASON_RESPONSE) {
             QStringList skill_list;
             for (int i = 0; i < move.card_ids.length(); i ++)
