@@ -121,14 +121,14 @@
 	["cv:inori"] = "茅野愛衣",
 	["illustrator:inori"] = "しる",
 	
-	["nico"] = "矢泽妮可", 
-	["&nico"] = "矢泽妮可", 
-	["#nico"] = "妮可妮可妮", 
-	["#&nico"] = "Love Live！", 
-	["~nico"] = "", 
-	["designer:nico"] = "hmqgg",
-	["cv:nico"] = "徳井青空",
-	["illustrator:nico"] = "すいみゃ",
+	["n_maki"] = "西木野真姬", 
+	["&n_maki"] = "西木野真姬", 
+	["#n_maki"] = "越南姬", 
+	["#&n_maki"] = "Love Live！", 
+	["~n_maki"] = "", 
+	["designer:n_maki"] = "Kayak",
+	["cv:n_maki"] = "Pile",
+	["illustrator:n_maki"] = "",
 	
 	["mayu"] = "岛田真梦", 
 	["&mayu"] = "岛田真梦", 
@@ -277,14 +277,6 @@
 	["bajianVS"] = "拔剑",
 	[":bajianVS"] = "出牌阶段限一次，你可以将楪祈的一张手牌当【杀】使用或打出。 ",
 	["bajian-multipleInoris"] = "场上有超过一个【拔剑】的目标，请选择其中一个。",
-	
-	["mengyin"] = "萌音",
-	[":mengyin"] = "出牌阶段限一次，你可以弃置两张手牌，然后你摸一张牌，再视为对一名角色使用一张【杀】。",
-	["$mengyin"] = "",
-	
-	["lvdong"] = "律动",
-	[":lvdong"] = "结束阶段开始时，若你本回合内置入弃牌堆的牌的张数不少于五张，你可以摸一张牌。",
-	["$lvdong"] = "",
 	
 	["liufei"] = "流蜚",
 	[":liufei"] = "锁定技，每当与你势力相同的其他角色成为攻击范围内有你的其他角色使用【杀】的目标时，若你的手牌数少于体力值，取消之。",

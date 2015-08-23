@@ -1415,101 +1415,6 @@ public:
     }
 };
 
-
-//mengyin & lvdong by SE
-MengyinCard::MengyinCard() {
-    target_fixed = true;
-}
-
-void MengyinCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const{
-    if (source->isAlive())
-        room->drawCards(source, 1);
-    Slash *slash = new Slash(Card::NoSuit, 0);
-        slash->setSkillName("mengyin");
-        QList<ServerPlayer *> targets;
-        foreach (ServerPlayer *p, room->getAllPlayers())
-            if (source->canSlash(p, slash, false))
-                targets << p;
-        if (!targets.isEmpty()) {
-            ServerPlayer *target = room->askForPlayerChosen(source, targets, "mengyin", "@mengyin_slash");
-            room->useCard(CardUseStruct(slash, source, target), true);
-        }
-}
-
-class Mengyin: public ViewAsSkill {
-public:
-    Mengyin(): ViewAsSkill("mengyin") {
-    }
-
-    virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const{
-        return !Self->isJilei(to_select) && selected.length() < 2 && !to_select->isEquipped();
-    }
-
-    virtual const Card *viewAs(const QList<const Card *> &cards) const{
-        if (cards.length() < 2)
-            return NULL;
-
-        MengyinCard *mengyin_card = new MengyinCard;
-        mengyin_card->addSubcards(cards);
-        mengyin_card->setSkillName(objectName());
-        mengyin_card->setShowSkill(objectName());
-        return mengyin_card;
-    }
-
-    virtual bool isEnabledAtPlay(const Player *player) const{
-        return player->canDiscard(player, "he") && !player->hasUsed("MengyinCard") && Slash::IsAvailable(player);
-    }
-};
-
-class Lvdong: public TriggerSkill {
-public:
-    Lvdong(): TriggerSkill("lvdong") {
-        events << CardsMoveOneTime << EventPhaseStart;
-        frequency = Frequent;
-    }
-
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *, ServerPlayer *nico, QVariant &data, ServerPlayer * &) const{
-        if (!TriggerSkill::triggerable(nico)) return QStringList();
-        if (triggerEvent == CardsMoveOneTime){
-            CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-            if (nico->getPhase() == Player::NotActive || move.to_place != Player::DiscardPile)
-                return QStringList();
-                //nico->gainMark("lvdong_cards");//for debug--BUG:when yingan used, the skill will be triggered 1 more time.
-            nico->setMark("@lvdong_cards", nico->getMark("@lvdong_cards") + move.card_ids.length());
-            return QStringList();
-        }else{
-            if (nico->getPhase() == Player::Finish){
-                if (nico->getMark("@lvdong_cards") < 5){
-                    nico->setMark("@lvdong_cards", 0);
-                    return QStringList();
-                }else{
-                    return QStringList(objectName());
-                }
-            }
-            return QStringList();
-        }
-        return QStringList();
-    }
-
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *nico, QVariant &, ServerPlayer *) const{
-        if (nico->askForSkillInvoke(objectName())) {
-            room->broadcastSkillInvoke(objectName());
-            return true;
-        }
-
-        return false;
-    }
-
-    virtual bool effect(TriggerEvent, Room *, ServerPlayer *nico, QVariant &, ServerPlayer *) const{
-        nico->drawCards(1);
-        nico->setMark("@lvdong_cards", 0);
-        return false;
-    }
-};
-
-
-
-
 //liufei by AK
 class Liufei: public TriggerSkill {
 public:
@@ -2148,11 +2053,15 @@ public:
 
 void MoesenPackage::addAnimationGenerals()
 {
-    General *mami = new General(this, "mami", "wei", 4, false); // Animation 001
+    General *madoka = new General(this, "madoka", "wei", 4, false); // A001
+    madoka->addSkill(new Cibei);
+    madoka->addSkill(new Renmin);
+    
+    General *mami = new General(this, "mami", "wei", 4, false); // A002
     mami->addSkill(new Lieqiang);
     mami->addSkill(new Molu);
 
-    General *s_kyouko = new General(this, "s_kyouko", "wei", 4, false); // Animation 002
+    General *s_kyouko = new General(this, "s_kyouko", "wei", 4, false); // A003
     s_kyouko->addCompanion("sayaka");
     s_kyouko->addSkill(new Yingqiang);
     s_kyouko->addSkill(new YingqiangTargetMod);
@@ -2162,22 +2071,18 @@ void MoesenPackage::addAnimationGenerals()
            << new YingqiangClub
            << new YingqiangDiamond;
 
-    General *madoka = new General(this, "madoka", "wei", 4, false); // Animation 003
-    madoka->addSkill(new Cibei);
-    madoka->addSkill(new Renmin);
-
-    General *sayaka = new General(this, "sayaka", "wei", 4, false); // Animation 004
+    General *sayaka = new General(this, "sayaka", "wei", 4, false); // A004
     sayaka->addSkill(new Wuwei);
 
-    General *homura = new General(this, "homura", "wei", 3, false); // Animation 005
+    General *homura = new General(this, "homura", "wei", 3, false);  // A005
     homura->addSkill(new Shiting);
     homura->addSkill(new Shizhi);
 
-    General *n_azusa = new General(this, "n_azusa", "wei", 3, false); // Animation 006
+    General *n_azusa = new General(this, "n_azusa", "wei", 3, false); // A006
     n_azusa->addSkill(new Quanmian);
     n_azusa->addSkill(new Miaolv);
 
-    General *mio = new General(this, "mio", "wei", 3, false); // Animation 007
+    General *mio = new General(this, "mio", "wei", 3, false); // A007
     mio->addSkill(new Yinzhuang);
     mio->addSkill(new YinzhuangWeapon);
     mio->addSkill(new YinzhuangArmor);
@@ -2187,41 +2092,39 @@ void MoesenPackage::addAnimationGenerals()
     related_skills.insertMulti("yinzhuang", "#yinzhuang-horse");
     mio->addSkill(new Xiuse);
 
-    General *yui = new General(this, "yui", "wei", 4, false); // Animation 008
+    General *yui = new General(this, "yui", "wei", 4, false); // A008
     yui->addSkill(new Yingan);
 
-    General *kanade = new General(this, "kanade", "wei", 4, false); // Animation 009
+    General *kanade = new General(this, "kanade", "wei", 4, false); // A009
     kanade->addSkill(new Yinren);
     kanade->addSkill(new Tongxin);
 
-    General *rei = new General(this, "rei", "wei", 3, false); // Animation 010
+    General *rei = new General(this, "rei", "wei", 3, false); // A010
     rei->addSkill(new WuxinAya);
     rei->addSkill(new Chidun);
 
-    General *asuka = new General(this, "asuka", "wei", 4, false); // Animation 011
+    General *asuka = new General(this, "asuka", "wei", 4, false); // A011
     asuka->addSkill(new Xiehang);
     skills << new XiehangAnother;
     related_skills.insertMulti("Xiehang", "XiehangAnother");
     asuka->addSkill(new Powei);
 
-    General *inori = new General(this, "inori", "wei", 3, false); // Animation 012
+    General *inori = new General(this, "inori", "wei", 3, false); // A012
     inori->addSkill(new Lingchang);
     inori->addSkill(new Bajian);
     skills << new BajianViewAsSkill;
 
-    General *nico = new General(this, "nico", "wei", 3, false); // Animation 013
-    nico->addSkill(new Mengyin);
-    nico->addSkill(new Lvdong);
+    //General *n_maki = new General(this, "n_maki", "wei", 3, false); // A013
     
-    General *mayu = new General(this, "mayu", "wei", 3, false); // Animation 014
+    General *mayu = new General(this, "mayu", "wei", 3, false); // A014
     mayu->addSkill(new Pianxian);
     mayu->addSkill(new Liufei);
     
-    General *lacus = new General(this, "lacus", "wei", 3, false); // Animation 015
+    General *lacus = new General(this, "lacus", "wei", 3, false); // A015
     lacus->addSkill(new Geji);
     lacus->addSkill(new Pinghe);
 
-    General *sawa = new General(this, "sawa", "wei", 4, false); // Animation 016
+    General *sawa = new General(this, "sawa", "wei", 4, false); // A016
     sawa->addSkill(new Mashu("sawa"));
     sawa->addSkill(new Tengyue);
     sawa->addSkill(new TengyueTrigger);
@@ -2229,17 +2132,16 @@ void MoesenPackage::addAnimationGenerals()
     related_skills.insertMulti("tengyue", "#tengyue-trigger");
     related_skills.insertMulti("tengyue", "#tengyue-target");
 
-    General *erinoa = new General(this, "erinoa", "wei", 4, false); // Animation 017
+    General *erinoa = new General(this, "erinoa", "wei", 4, false); // A017
     erinoa->addSkill(new Huixin);
 
-    General *miho = new General(this, "miho", "wei", 3, false); // Animation 018
+    General *miho = new General(this, "miho", "wei", 3, false); // A018
     miho->addSkill(new Mogai);
     miho->addSkill(new Ruhun);
 
     addMetaObject<WuweiCard>();
     addMetaObject<MiaolvCard>();
     addMetaObject<QuanmianCard>();
-    addMetaObject<MengyinCard>();
     addMetaObject<BajianCard>();
     addMetaObject<XiehangCard>();
     addMetaObject<XiehangUseCard>();

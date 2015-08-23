@@ -1958,19 +1958,18 @@ public:
 void MoesenPackage::addGameGenerals()
 {
     skills << new keyCardGlobalManagement;
+    
+    General *nanoha = new General(this, "nanoha", "wu", 4, false); // G001
+    nanoha->addSkill(new Liepo);
+    nanoha->addSkill(new Shenxing);
+    
+    General *fate = new General(this, "fate", "wu", 4, false); // G002
+    fate->addSkill(new Leiguang);
+    fate->addSkill(new Kongwu);
 
-    /*General *nagisa = new General(this, "nagisa", "wu", 3, false); // Game 001
-    */
-
-    General *fuuko = new General(this, "fuuko", "wu", 3, false); // Game 002
-    fuuko->addSkill(new Haixing);
-    fuuko->addSkill(new Taozui);
-
-    /*
-    General *tomoyo = new General(this, "tomoyo", "wu", 3, false); // Game 003
-	*/
-
-    General *altria = new General(this, "altria", "wu", 4, false); // Game 005
+    //General *hayate = new General(this, "hayate", "wu", 3, false); // G003
+    
+    General *altria = new General(this, "altria", "wu", 4, false); // G004
     altria->addSkill(new Fengwang);
     altria->addSkill(new FengwangFilter);
     altria->addSkill(new FengwangTMS);
@@ -1979,67 +1978,60 @@ void MoesenPackage::addGameGenerals()
     insertRelatedSkills("fengwang", "#fengwang-target");
     insertRelatedSkills("fengwang", "#fengwang-filter");
     insertRelatedSkills("duangang", "#duangang-record");
-
-    General *t_rin = new General(this, "t_rin", "wu", 3, false); // Game 004
+    
+    General *t_rin = new General(this, "t_rin", "wu", 3, false); // G005
     t_rin->addSkill(new Canshi);
     t_rin->addSkill(new Modan);
-
-    General *nanoha = new General(this, "nanoha", "wu", 4, false); // Game 001 ps:Moe
-    nanoha->addSkill(new Liepo);
-    nanoha->addSkill(new Shenxing);
-
-
-    /*
-    General *rika = new General(this, "rika", "wu", 3, false); // Game 007
-    */
-
-    General *rena = new General(this, "rena", "wu", 4, false); // Game 008
+    
+    //General *rika = new General(this, "rika", "wu", 3, false); // G006
+    
+    General *rena = new General(this, "rena", "wu", 4, false); // G007
     rena->addSkill(new Chaidao);
 
-    General *fate = new General(this, "fate", "wu", 4, false); // Game 009
-    fate->addSkill(new Leiguang);
-    fate->addSkill(new Kongwu);
-
-
-    General *haruka = new General(this, "haruka", "wu", 4, false); // Game 010
+    General *haruka = new General(this, "haruka", "wu", 4, false); // G008
     haruka->addSkill(new Yuanqi);
     haruka->addSkill(new Daihei);
 
-    General *miki = new General(this, "miki", "wu", 3, false); // Game 011
+    General *miki = new General(this, "miki", "wu", 3, false); // G009
     miki->addSkill(new Yonglan);
     miki->addSkill(new ZhiyanMiki);
 
-    General *n_rin = new General(this, "n_rin", "wu", 3, false); // Game 012
-    
-    n_rin->addSkill(new Pasheng);
-    n_rin->addSkill(new Jiuzhu);
+    //General *setsuna = new General(this, "setsuna", "wu", 3, false); // G010
 
-    General *misuzu = new General(this, "misuzu", "wu", 3, false); // Game 013
+    //General *kazusa = new General(this, "kazusa", "wu", 3, false); // G011
+
+    //General *nagisa = new General(this, "nagisa", "wu", 3, false); // G012
+    
+    //General *tomoyo = new General(this, "tomoyo", "wu", 3, false); // G013
+    
+    General *fuuko = new General(this, "fuuko", "wu", 3, false); // G014
+    fuuko->addSkill(new Haixing);
+    fuuko->addSkill(new Taozui);
+    
+    General *misuzu = new General(this, "misuzu", "wu", 3, false); // G015
     misuzu->addSkill(new Xiaying);
     misuzu->addSkill(new Yumeng);
     skills << new YumengDraw;
-    /*
-    General *setsuna = new General(this, "setsuna", "wu", 3, false); // Game 014
-
-    General *kazusa = new General(this, "kazusa", "wu", 3, false); // Game 015
-    */
-    General *ayu = new General(this, "ayu", "wu", 3, false); // Game 016
+    
+    General *ayu = new General(this, "ayu", "wu", 3, false); // G016
     ayu->addSkill(new Huanyuan);
     ayu->addSkill(new Mengxian);
-    /*
-    General *hayate = new General(this, "hayate", "wu", 3, false); // Game 017
-    */
-    General *komari = new General(this, "komari", "wu", 3, false); // Game 018
+    
+    General *n_rin = new General(this, "n_rin", "wu", 3, false); // G017
+    n_rin->addSkill(new Pasheng);
+    n_rin->addSkill(new Jiuzhu);
+
+    General *komari = new General(this, "komari", "wu", 3, false); // G018
     komari->addSkill(new Luoxuan);
     komari->addSkill(new Sidai);
 
-   addMetaObject<HaixingCard>();
-   addMetaObject<TaozuiCard>();
-   addMetaObject<ShenxingCard>();
-   addMetaObject<Key>();
-   addMetaObject<Lingdan>();
-   addMetaObject<LuoxuanCard>();
-   addMetaObject<FengwangCard>();
-   addMetaObject<YonglanCard>();
-   addMetaObject<YonglanPindianCard>();
+    addMetaObject<HaixingCard>();
+    addMetaObject<TaozuiCard>();
+    addMetaObject<ShenxingCard>();
+    addMetaObject<Key>();
+    addMetaObject<Lingdan>();
+    addMetaObject<LuoxuanCard>();
+    addMetaObject<FengwangCard>();
+    addMetaObject<YonglanCard>();
+    addMetaObject<YonglanPindianCard>();
 }

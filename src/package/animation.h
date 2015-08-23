@@ -62,14 +62,6 @@ public:
     virtual void use(Room *room, ServerPlayer *xunyu, QList<ServerPlayer *> &targets) const;
 };
 
-class MengyinCard: public SkillCard {
-    Q_OBJECT
-
-public:
-    Q_INVOKABLE MengyinCard();
-    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const;
-};
-
 class GejiCard: public SkillCard {
     Q_OBJECT
 

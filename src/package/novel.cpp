@@ -684,79 +684,6 @@ public:
     }
 };
 
-//feiyan
-FeiyanCard::FeiyanCard() {
-}
-
-bool FeiyanCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const{
-    Slash *slash = new Slash(Card::NoSuit, 0);
-    slash->setNature(DamageStruct::Fire);
-    slash->setSkillName("feiyan");
-    slash->deleteLater();
-    return slash->targetFilter(targets, to_select, Self);
-}
-
-const Card *FeiyanCard::validate(CardUseStruct &use) const{
-    ServerPlayer *shana = use.from;
-    Room *room = shana->getRoom();
-    shana->turnOver();
-    room->broadcastSkillInvoke(objectName());
-    Slash *slash = new Slash(Card::NoSuit, 0);
-    slash->setNature(DamageStruct::Fire);
-    slash->setSkillName("feiyan");
-    return slash;
-}
-
-class FeiyanViewAsSkill : public ZeroCardViewAsSkill {
-public:
-    FeiyanViewAsSkill() : ZeroCardViewAsSkill("feiyan") {
-    }
-
-    virtual bool isEnabledAtPlay(const Player *player) const {
-        return !player->hasUsed("FeiyanCard");
-    }
-
-    virtual const Card *viewAs() const {
-        FeiyanCard *feiyan = new FeiyanCard();
-        feiyan->setShowSkill(objectName());
-        return feiyan;
-    }
-};
-
-class Feiyan : public TriggerSkill{
-public:
-    Feiyan() : TriggerSkill("feiyan"){
-        events << SlashMissed << PreCardUsed;
-        view_as_skill = new FeiyanViewAsSkill;
-    }
-
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer * &) const{
-        if (triggerEvent == PreCardUsed){
-            CardUseStruct use = data.value<CardUseStruct>();
-            if (use.card != NULL && use.card->getSkillName() == "feiyan" && use.from != NULL){
-                room->addPlayerHistory(player, use.card->getClassName(), -1);
-                use.m_addHistory = false;
-                data = QVariant::fromValue(use);
-            }
-        }
-        else {
-            SlashEffectStruct effect = data.value<SlashEffectStruct>();
-            if (effect.slash && effect.slash->getSkillName() == "feiyan") {
-                return QStringList(objectName());
-            }
-        }
-
-        return QStringList();
-    }
-
-    virtual bool effect(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *) const {
-        if (!player->faceUp()){
-            player->turnOver();
-        }
-        return false;
-    }
-};
-
 //bianchi
 BianchiCard::BianchiCard() {
 }
@@ -1199,20 +1126,34 @@ public:
 
 void MoesenPackage::addNovelGenerals()
 {
-    General *shana = new General(this, "shana", "qun", 4, false); // Novel 001
-    shana->addSkill(new Feiyan);
-
     
-    General *louise = new General(this, "louise", "qun", 3, false); // Novel 002
+    General *taiga = new General(this, "taiga", "qun", 3, false); // N001
+    taiga->addSkill(new Huxiao);
+    taiga->addSkill(new Yexi);
+    
+    //General *shana = new General(this, "shana", "qun", 4, false); // N002
+
+    General *louise = new General(this, "louise", "qun", 3, false); // N003
     louise->addSkill(new Bianchi);
-
     
-    General *ruri = new General(this, "ruri", "qun", 3, false); // Novel 003
+    General *aria = new General(this, "aria", "qun", 3, false); // N004
+    aria->addSkill(new Jingdi);
+    aria->addSkill(new Wujie);
+    skills << new JingdiDamage;
+    
+    General *holo = new General(this, "holo", "qun", 4, false); // N005
+    holo->addSkill(new Jisui);
+    
+    General *eru = new General(this, "eru", "qun", 3, false); // N006
+    eru->addSkill(new Haoqi);
+    eru->addSkill(new Jinzhi);
+    eru->addSkill(new JinzhiMove);
+    insertRelatedSkills("jinzhi", "#jinzhi-move");
+    
+    General *ruri = new General(this, "ruri", "qun", 4, false); // N007
     ruri->addSkill(new Dushe);
-    /*
-    General *tsukiko = new General(this, "tsukiko", "qun", 3, false); // Novel 004
-    */
-    General *a_azusa = new General(this, "a_azusa", "qun", 3, false); // Novel 005
+
+    General *a_azusa = new General(this, "a_azusa", "qun", 3, false); // N008
     a_azusa->addSkill(new Weihao);
     a_azusa->addSkill(new Zhuyi);
     a_azusa->addSkill(new AzusaMaxCards);
@@ -1220,62 +1161,41 @@ void MoesenPackage::addNovelGenerals()
     insertRelatedSkills("weihao", "#azusa-maxcard");
     insertRelatedSkills("zhuyi", "#azusa-maxcard");
 
-    General *eru = new General(this, "eru", "qun", 3, false); // Novel 013
-    eru->addSkill(new Haoqi);
-    eru->addSkill(new Jinzhi);
-    eru->addSkill(new JinzhiMove);
-    insertRelatedSkills("jinzhi", "#jinzhi-move");
-
-    General *holo = new General(this, "holo", "qun", 4, false); // Novel 018
-    holo->addSkill(new Jisui);
-
-    /*
-    General *yuki = new General(this, "yuki", "qun", 3, false); // Novel 006
-
-    General *haruhi = new General(this, "haruhi", "qun", 3, false); // Novel 007
-
-    General *watashi = new General(this, "watashi", "qun", 3, false); // Novel 008
-    */
-    General *taiga = new General(this, "taiga", "qun", 3, false); // Novel 009
-    taiga->addSkill(new Huxiao);
-    taiga->addSkill(new Yexi);
-
-    General *aria = new General(this, "aria", "qun", 3, false); // Novel 010
-    aria->addSkill(new Jingdi);
-    aria->addSkill(new Wujie);
-    skills << new JingdiDamage;
+    General *rikka = new General(this, "rikka", "qun", 3, false); // N009
+    rikka->addSkill(new Fangzhu6);
+    rikka->addSkill(new Xieyu);
+    skills << new XieyuTargetMod;
     
+    //General *yukino = new General(this, "yukino", "qun", 3, false); // N010
     
-    General *ruiko = new General(this, "ruiko", "qun", 4, false); // Novel 011
+    //General *y_yui = new General(this, "y_yui", "qun", 3, false); // N011
+    
+    //General *mikoto = new General(this, "mikoto", "qun", 3, false); // N012
+    
+    General *ruiko = new General(this, "ruiko", "qun", 4, false); // N013
     ruiko->addSkill(new Xianqun);
-
-    /*
-    General *mikoto = new General(this, "mikoto", "qun", 3, false); // Novel 012
-    */
-    General *asuna = new General(this, "asuna", "qun", 3, false); // Novel 014
+    
+    General *asuna = new General(this, "asuna", "qun", 3, false); // N014
     asuna->addSkill(new Shanguang);
     asuna->addSkill(new ShanguangMaxCards);
     insertRelatedSkills("shanguang", "#shanguang-maxcard");
     asuna->addSkill(new Zhuanyu);
-    /*
-    General *sena = new General(this, "sena", "qun", 3, false); // Novel 015
+    
+    //General *hitagi = new General(this, "hitagi", "qun", 3, false); // N015
+    
+    //General *watashi = new General(this, "watashi", "qun", 3, false); // N016
+    
+    //General *haruhi = new General(this, "haruhi", "qun", 3, false); // N017
 
-    General *hitagi = new General(this, "hitagi", "qun", 3, false); // Novel 016
-    */
-    General *rikka = new General(this, "rikka", "qun", 3, false); // Novel 017
-    rikka->addSkill(new Fangzhu6);
-    rikka->addSkill(new Xieyu);
-    skills << new XieyuTargetMod;
+    //General *yuki = new General(this, "yuki", "qun", 3, false); // N018
     
     addMetaObject<WeihaoCard>();
     addMetaObject<ZhuyiCard>();
     addMetaObject<HaoqiCard>();
     addMetaObject<JisuiCard>();
     addMetaObject<JingdiCard>();
-    addMetaObject<FeiyanCard>();
     addMetaObject<BianchiCard>();
     addMetaObject<ZhuanyuCard>();
     addMetaObject<XianqunCard>();
     addMetaObject<XieyuSummon>();
-
 }

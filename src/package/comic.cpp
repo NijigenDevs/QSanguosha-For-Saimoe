@@ -6,92 +6,6 @@
 #include "engine.h"
 #include "client.h"
 
-
-//jiandao by AK
-class Jiandao : public TriggerSkill {
-public:
-    Jiandao() : TriggerSkill("jiandao") {
-        events << CardUsed << CardFinished;
-        frequency = Compulsory;
-    }
-
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
-        CardUseStruct use = data.value<CardUseStruct>();
-        if (player->getWeapon() != NULL)
-            return QStringList();
-        if (triggerEvent == CardUsed) {
-            if (!TriggerSkill::triggerable(player))
-                return QStringList();
-            if (use.card->isKindOf("Slash"))
-                return QStringList(objectName());
-        } else {
-            if (use.card->isKindOf("Slash")) {
-                foreach (ServerPlayer *p, use.to) {
-                    QStringList blade_use = p->property("blade_use").toStringList();
-                    if (!blade_use.contains(use.card->toString()))
-                        return QStringList();
-
-                    blade_use.removeOne(use.card->toString());
-                    room->setPlayerProperty(p, "blade_use", blade_use);
-
-                    if (blade_use.isEmpty())
-                        room->removePlayerDisableShow(p, "Blade");
-                }
-            }
-        }
-        return QStringList();
-    }
-
-    virtual bool cost(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
-        bool invoke = player->hasShownSkill(this) ? true : player->askForSkillInvoke(objectName(),data);
-        if (invoke){
-            player->broadcastSkillInvoke(objectName());
-            return true;
-        }
-        return false;
-    }
-
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
-        CardUseStruct use = data.value<CardUseStruct>();
-        bool play_animation = false;
-        foreach (ServerPlayer *p, use.to) {
-            if (p->getMark("Equips_of_Others_Nullified_to_You") > 0)
-                continue;
-            QStringList blade_use = p->property("blade_use").toStringList();
-            if (blade_use.contains(use.card->toString()))
-                return false;
-
-            blade_use << use.card->toString();
-            room->setPlayerProperty(p, "blade_use", blade_use);
-
-            if (!p->hasShownAllGenerals())
-                play_animation = true;
-
-            room->setPlayerDisableShow(p, "hd", "Blade"); // this effect should always make sense.
-        }
-
-        if (play_animation)
-            room->setEmotion(player, "weapon/blade");
-
-        return false;
-    }
-};
-
-class JiandaoRange : public AttackRangeSkill{
-public:
-    JiandaoRange() : AttackRangeSkill("#jiandao-range"){
-    }
-
-    virtual int getExtra(const Player *target, bool) const{
-        if (target->hasShownSkill("jiandao")){
-            if (target->getWeapon() == NULL ){
-                return 2;
-            }
-        }
-        return 0;
-    }
-};
-
 class Wucun : public TriggerSkill{
 public:
     Wucun() : TriggerSkill("wucun"){
@@ -1232,43 +1146,6 @@ public:
 	}
 };
 
-BaibianCard::BaibianCard() {
-	target_fixed = true;
-}
-
-void BaibianCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const{
-	if (source->isAlive())
-		room->drawCards(source, subcards.length());
-}
-
-class Baibian : public ViewAsSkill {
-public:
-	Baibian() : ViewAsSkill("baibian") {
-	}
-
-	virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const{
-		int x = 0;
-		foreach(const Card * card, selected)
-			x = x + card->getNumber();
-		return (x + to_select->getNumber() <= 52) && !Self->isJilei(to_select) ;
-	}
-
-	virtual const Card *viewAs(const QList<const Card *> &cards) const{
-		if (cards.isEmpty())
-			return NULL;
-
-		BaibianCard *bbcard = new BaibianCard;
-		bbcard->addSubcards(cards);
-		bbcard->setSkillName(objectName());
-		bbcard->setShowSkill(objectName());
-		return bbcard;
-	}
-
-	virtual bool isEnabledAtPlay(const Player *player) const{
-		return player->canDiscard(player, "he") && !player->hasUsed("BaibianCard");
-	}
-};
-
 class Yujian : public TriggerSkill{
 public:
 	Yujian() : TriggerSkill("yujian"){
@@ -2097,80 +1974,76 @@ const Card *LaoyueCard::validate(CardUseStruct &cardUse) const{
 }
 
 void MoesenPackage::addComicGenerals(){
+    
+    //General *sakura = new General(this, "sakura", "shu", 3, false); // C001
 
-    General *hinagiku = new General(this, "hinagiku", "shu", 5, false); // Comic 001  (@todo:should change No.)
-    hinagiku->addSkill(new Jiandao);
-    hinagiku->addSkill(new JiandaoRange);
-    insertRelatedSkills("jiandao", "#jiandao-range");
+    //General *hinagiku = new General(this, "hinagiku", "shu", 5, false); // C002
 
-    General *akari = new General(this, "akari", "shu", 3, false); // Comic 007
+    General *akari = new General(this, "akari", "shu", 3, false); // C003
     akari->addSkill(new Wucun);
     akari->addSkill(new Kongni);
 
-    General *nagi = new General(this, "nagi", "shu", 3, false); // Comic 003
+    General *nagi = new General(this, "nagi", "shu", 3, false); // C004
 	nagi->addSkill(new Tianzi);
 	nagi->addSkill(new Yuzhai);
 	
-	General *izumi = new General(this, "izumi", "shu", 3, false); // Comic 002
+	General *izumi = new General(this, "izumi", "shu", 3, false); // C005
 	izumi->addSkill(new Mizou);
 	izumi->addSkill(new Wushu);
 
-    General *suiseiseki = new General(this, "suiseiseki", "shu", 3, false); // Comic 004
+    General *suiseiseki = new General(this, "suiseiseki", "shu", 3, false); // C006
 	suiseiseki->addSkill(new Shuimeng);
 	suiseiseki->addSkill(new rosesuiseiseki);
 	suiseiseki->addSkill(new meijiesuiseiseki);
 
-    General *suigintou = new General(this, "suigintou", "shu", 3, false); // Comic 017
+    General *suigintou = new General(this, "suigintou", "shu", 3, false); // C007
 	suigintou->addSkill(new Mingming);
 	suigintou->addSkill(new rosesuigintouTrigger);
 	suigintou->addSkill(new meijiesuigintou);
 	
-	General *shinku = new General(this, "shinku", "shu", 3, false); // Comic 005
+	General *shinku = new General(this, "shinku", "shu", 3, false); // C008
 	shinku->addSkill(new Heli); 
 	shinku->addSkill(new roseshinku);
 	shinku->addSkill(new meijieshinku);
 
-    General *t_kyouko = new General(this, "t_kyouko", "shu", 3, false); // Comic 006
+    General *t_kyouko = new General(this, "t_kyouko", "shu", 3, false); // C009
 	t_kyouko->addSkill(new Ziwo);
 	t_kyouko->addSkill(new Baozou);
 
-    General *tsukasa = new General(this, "tsukasa", "shu", 3, false); // Comic 010
+    General *tsukasa = new General(this, "tsukasa", "shu", 3, false); // C010
 	tsukasa->addSkill(new Zhiyu);
 	tsukasa->addSkill(new Maoshi);
 
-    General *kagami = new General(this, "kagami", "shu", 3, false); // Comic 009
+    General *kagami = new General(this, "kagami", "shu", 3, false); // C011
 	kagami->addSkill(new Tsukkomi);
 	kagami->addSkill(new Aolin);
 
-    General *konata = new General(this, "konata", "shu", 3, false); // Comic 008
+    General *konata = new General(this, "konata", "shu", 3, false); // C012
 	konata->addSkill(new Xipin);
 	konata->addSkill(new Zhaihun);
 
-    General *ika = new General(this, "ika", "shu", 4, false); // Comic 018
+    General *ika = new General(this, "ika", "shu", 4, false); // C013
 	ika->addSkill(new Qinlve);
 
-    General *sakura = new General(this, "sakura", "shu", 4, false); // Comic 011
-	sakura->addSkill(new Baibian);
-
-    General *toki = new General(this, "toki", "shu", 3, false); // Comic 012
+    General *toki = new General(this, "toki", "shu", 3, false); // C014
 	toki->addSkill(new Tiruo);
 	toki->addSkill(new Yujian);
 
-    General *saki = new General(this, "saki", "shu", 4, false); // Comic 013
+    General *saki = new General(this, "saki", "shu", 4, false); // C015
 	saki->addSkill(new Lingshang);
 	saki->addSkill(new Kaihua);
 
-    General *nodoka = new General(this, "nodoka", "shu", 3, false); // Comic 014
+    General *nodoka = new General(this, "nodoka", "shu", 3, false); // C016
 	nodoka->addSkill(new Suanlv);
 	nodoka->addSkill(new SuanlvRecord);
 	nodoka->addSkill(new Sugong);
 	insertRelatedSkills("suanlv", "#suanlvrecord");
 
-    General *shizuno = new General(this, "shizuno", "shu", 3, false); // Comic 016
+    General *shizuno = new General(this, "shizuno", "shu", 3, false); // C017
 	shizuno->addSkill(new Moyun);
 	shizuno->addSkill(new Shanzhu);
 
-    General *koromo = new General(this, "koromo", "shu", 4, false); // Comic 015
+    General *koromo = new General(this, "koromo", "shu", 4, false); // C018
 	koromo->addSkill(new Kongyun);
 	koromo->addSkill(new Laoyue);
 
@@ -2180,7 +2053,6 @@ void MoesenPackage::addComicGenerals(){
 	addMetaObject<HeliCard>();
 	addMetaObject<ZhiyuCard>();
 	addMetaObject<BaozouCard>();
-	addMetaObject<BaibianCard>();
 	addMetaObject<LingshangCard>();
 	addMetaObject<KaihuaCard>();
 	addMetaObject<SuanlvCard>();
