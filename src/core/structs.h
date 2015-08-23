@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #ifndef _STRUCTS_H
@@ -70,7 +70,7 @@ struct CardEffectStruct
     ServerPlayer *to;
 
     bool multiple; // helper to judge whether the card has multiple targets
-                   // does not make sense if the card inherits SkillCard
+    // does not make sense if the card inherits SkillCard
     bool nullified;
 };
 
@@ -514,7 +514,7 @@ struct PlayerNumStruct
 
 enum TriggerEvent
 {
-	NonTrigger, 
+    NonTrigger,
 
     GameStart,
     TurnStart,
@@ -528,9 +528,8 @@ enum TriggerEvent
 
     DrawNCards,
     AfterDrawNCards,
-
-	DiscardNCards,
-	AfterDiscardNCards,
+    DiscardNCards,
+    AfterDiscardNCards,
 
     PreHpRecover,
     HpRecover,
@@ -538,6 +537,7 @@ enum TriggerEvent
     HpChanged,
     MaxHpChanged,
     PostHpReduced,
+    HpLost,
 
     EventLoseSkill,
     EventAcquireSkill,
@@ -595,6 +595,7 @@ enum TriggerEvent
     TargetConfirmed,
     CardEffect,
     CardEffected,
+    CardEffectConfirmed, //after Nullification
     PostCardEffected,
     CardFinished,
     TrickCardCanceling,
@@ -629,6 +630,16 @@ struct LogMessage
     QString arg2;
 };
 
+struct AskForMoveCardsStruct
+{
+    AskForMoveCardsStruct();
+
+    QList<int> top;
+    QList<int> bottom;
+
+    bool is_success;
+};
+
 Q_DECLARE_METATYPE(DamageStruct)
 Q_DECLARE_METATYPE(CardEffectStruct)
 Q_DECLARE_METATYPE(SlashEffectStruct)
@@ -645,5 +656,6 @@ Q_DECLARE_METATYPE(const Card *)
 Q_DECLARE_METATYPE(ServerPlayer *)
 Q_DECLARE_METATYPE(JudgeStruct *)
 Q_DECLARE_METATYPE(PindianStruct *)
+Q_DECLARE_METATYPE(AskForMoveCardsStruct)
 #endif
 

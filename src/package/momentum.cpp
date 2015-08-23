@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #include "momentum.h"
@@ -57,23 +57,40 @@ public:
         room->notifySkillInvoked(lidian, objectName());
 
         QList<int> card_ids = room->getNCards(4);
-        QList<int> original_card_ids = card_ids;
-        QList<int> obtained;
-        room->fillAG(card_ids, lidian);
-        int id1 = room->askForAG(lidian, card_ids, false, objectName());
-        card_ids.removeOne(id1);
-        obtained << id1;
-        room->clearAG(lidian);
-        room->fillAG(original_card_ids, lidian, obtained);
-        int id2 = room->askForAG(lidian, card_ids, false, objectName());
-        card_ids.removeOne(id2);
-        obtained << id2;
-        room->clearAG(lidian);
+        //         QList<int> original_card_ids = card_ids;
+        //         QList<int> obtained;
+        //         room->fillAG(card_ids, lidian);
+        //         int id1 = room->askForAG(lidian, card_ids, false, objectName());
+        //         card_ids.removeOne(id1);
+        //         obtained << id1;
+        //         room->clearAG(lidian);
+        //         room->fillAG(original_card_ids, lidian, obtained);
+        //         int id2 = room->askForAG(lidian, card_ids, false, objectName());
+        //         card_ids.removeOne(id2);
+        //         obtained << id2;
+        //         room->clearAG(lidian);
+        // 
+        //         DummyCard dummy(obtained);
+        //         lidian->obtainCard(&dummy, false);
+        //         room->askForGuanxing(lidian, card_ids, Room::GuanxingDownOnly);
 
-        DummyCard dummy(obtained);
+        AskForMoveCardsStruct result = room->askForMoveCards(lidian, card_ids, QList<int>(), true, objectName(), "", objectName(), 2, 2, false, false, QList<int>() << -1);
+        DummyCard dummy(result.bottom);
         lidian->obtainCard(&dummy, false);
-        room->askForGuanxing(lidian, card_ids, Room::GuanxingDownOnly);
-
+        foreach(int id, result.top)
+            room->getDrawPile().append(id);
+        room->doBroadcastNotify(QSanProtocol::S_COMMAND_UPDATE_PILE, QVariant(room->getDrawPile().length()));
+        LogMessage a;
+        a.type = "#GuanxingResult";
+        a.from = lidian;
+        a.arg = QString::number(0);
+        a.arg2 = QString::number(2);
+        room->sendLog(a);
+        LogMessage b;
+        b.type = "$GuanxingBottom";
+        b.from = lidian;
+        b.card_str = IntList2StringList(result.top).join("+");
+        room->doNotify(lidian, QSanProtocol::S_COMMAND_LOG_SKILL, b.toVariant());
         return true;
     }
 };
@@ -873,16 +890,20 @@ DuanxieCard::DuanxieCard()
 
 bool DuanxieCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
 {
-    return targets.isEmpty() && !to_select->isChained() && to_select != Self;
+    return targets.isEmpty() && !to_select->isChained() && to_select != Self && to_select->canBeChainedBy(Self);
+}
+
+void DuanxieCard::extraCost(Room *room, const CardUseStruct &card_use) const
+{
+    if (card_use.to.first()->canBeChainedBy(card_use.from))
+        room->setPlayerProperty(card_use.to.first(), "chained", true);
 }
 
 void DuanxieCard::onEffect(const CardEffectStruct &effect) const
 {
-    if (effect.to->canBeChainedBy(effect.from)) {
+    if (!effect.from->isChained() && effect.from->canBeChainedBy(effect.from)) {
         Room *room = effect.from->getRoom();
-        room->setPlayerProperty(effect.to, "chained", true);
-        if (!effect.from->isChained())
-            room->setPlayerProperty(effect.from, "chained", true);
+        room->setPlayerProperty(effect.from, "chained", true);
     }
 }
 
@@ -1303,89 +1324,6 @@ public:
     }
 };
 
-HongfaCard::HongfaCard()
-{
-    target_fixed = true;
-    will_throw = false;
-    handling_method = Card::MethodNone;
-}
-
-void HongfaCard::use(Room *, ServerPlayer *source, QList<ServerPlayer *> &) const
-{
-    source->tag["hongfa_prevent"] = subcards.first();
-}
-
-HongfaTianbingCard::HongfaTianbingCard()
-{
-    target_fixed = true;
-    will_throw = false;
-    handling_method = Card::MethodNone;
-}
-
-void HongfaTianbingCard::onUse(Room *room, const CardUseStruct &use) const
-{
-    CardUseStruct card_use = use;
-    ServerPlayer *player = card_use.from;
-
-    LogMessage log;
-    log.type = "#HongfaTianbing";
-    log.from = player;
-    log.arg = "+" + QString::number(subcardsLength());
-    room->sendLog(log);
-
-    QVariant data = QVariant::fromValue(card_use);
-    RoomThread *thread = room->getThread();
-    Q_ASSERT(thread != NULL);
-    thread->trigger(PreCardUsed, room, player, data);
-    card_use = data.value<CardUseStruct>();
-    thread->trigger(CardUsed, room, player, data);
-    thread->trigger(CardFinished, room, player, data);
-}
-
-class HongfaVS : public ViewAsSkill
-{
-public:
-    HongfaVS() : ViewAsSkill("hongfa")
-    {
-        expand_pile = "heavenly_army";
-    }
-
-    virtual bool isEnabledAtPlay(const Player *) const
-    {
-        return false;
-    }
-
-    virtual bool isEnabledAtResponse(const Player *, const QString &pattern) const
-    {
-        return pattern.startsWith("@@hongfa");
-    }
-
-    virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const
-    {
-        if (!Self->getPile("heavenly_army").contains(to_select->getId()))
-            return false;
-        if (Sanguosha->currentRoomState()->getCurrentCardUsePattern().endsWith("1"))
-            return selected.isEmpty();
-        else
-            return true;
-    }
-
-    virtual const Card *viewAs(const QList<const Card *> &cards) const
-    {
-        if (cards.isEmpty())
-            return NULL;
-        if (Sanguosha->currentRoomState()->getCurrentCardUsePattern().endsWith("1")) {
-            HongfaCard *c = new HongfaCard;
-            c->addSubcards(cards);
-            return c;
-        } else {
-            HongfaTianbingCard *c = new HongfaTianbingCard;
-            c->addSubcards(cards);
-            return c;
-        }
-    }
-};
-
 class Hongfa : public TriggerSkill
 {
 public:
@@ -1395,7 +1333,6 @@ public:
             << EventPhaseStart // get Tianbing
             << PreHpLost << GeneralShown << GeneralHidden << GeneralRemoved << Death; // HongfaSlash
         frequency = Compulsory;
-        view_as_skill = new HongfaVS;
     }
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const
@@ -1459,10 +1396,16 @@ public:
             else if (player_num.m_type == MaxCardsType::Normal) {
                 player->tag["HongfaTianbingData"] = data; // for AI
                 QString prompt = QString("@hongfa-tianbing:%1").arg(player_num.m_reason);
-                const Card *card = room->askForUseCard(player, "@@hongfa2", prompt, 2, Card::MethodNone);
+                //const Card *card = room->askForUseCard(player, "@@hongfa2", prompt, 2, Card::MethodNone);
+                const Card *card = room->askForExchange(player,"hongfa2",player->getPile("heavenly_army").length(),0,prompt,"heavenly_army");
                 player->tag.remove("HongfaTianbingData");
-                if (card)
+                if (card->subcardsLength() > 0) {
+                    player->showGeneral(player->inHeadSkills(objectName()));
                     player_num.m_num += card->subcardsLength();
+                    room->notifySkillInvoked(player,objectName());
+                    room->broadcastSkillInvoke(objectName(),2);
+                    delete card;
+                }
             }
             data = QVariant::fromValue(player_num);
             return false;
@@ -1471,7 +1414,15 @@ public:
             return true;
         if (triggerEvent == PreHpLost) {
             player->tag.remove("hongfa_prevent");
-            return room->askForUseCard(player, "@@hongfa1", "@hongfa-prevent", 1, Card::MethodNone);
+            //return room->askForUseCard(player, "@@hongfa1", "@hongfa-prevent", 1, Card::MethodNone);
+            const Card *card = room->askForExchange(player,"hongfa1",1,0,"@hongfa-prevent","heavenly_army");
+            if (card->subcardsLength() > 0) {
+                room->notifySkillInvoked(player,objectName());
+                room->broadcastSkillInvoke(objectName(),1);
+                player->tag["hongfa_prevent"] = card->getEffectiveId();
+                delete card;
+                return true;
+            }
         }
         return false;
     }
@@ -1624,8 +1575,6 @@ MomentumPackage::MomentumPackage()
     addMetaObject<CunsiCard>();
     addMetaObject<DuanxieCard>();
     addMetaObject<FengshiSummon>();
-    addMetaObject<HongfaCard>();
-    addMetaObject<HongfaTianbingCard>();
     addMetaObject<WendaoCard>();
 }
 
@@ -1685,9 +1634,9 @@ public:
             l.to << damage.to;
             l.arg = QString::number(damage.damage);
             switch (damage.nature) {
-            case DamageStruct::Normal: l.arg2 = "normal_nature"; break;
-            case DamageStruct::Fire: l.arg2 = "fire_nature"; break;
-            case DamageStruct::Thunder: l.arg2 = "thunder_nature"; break;
+                case DamageStruct::Normal: l.arg2 = "normal_nature"; break;
+                case DamageStruct::Fire: l.arg2 = "fire_nature"; break;
+                case DamageStruct::Thunder: l.arg2 = "thunder_nature"; break;
             }
 
             room->sendLog(l);

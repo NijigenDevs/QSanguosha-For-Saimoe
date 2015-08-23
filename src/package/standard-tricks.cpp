@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #include "standard-tricks.h"
@@ -680,20 +680,16 @@ bool IronChain::targetFilter(const QList<const Player *> &targets, const Player 
 
 bool IronChain::targetsFeasible(const QList<const Player *> &targets, const Player *Self) const
 {
-    bool rec = (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_PLAY);
+    bool rec = (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_PLAY) && can_recast;
     QList<int> sub;
     if (isVirtualCard())
         sub = subcards;
     else
         sub << getEffectiveId();
     foreach (int id, sub) {
-        foreach (const QString &pile, Self->getPileNames()) {
-            if (pile.startsWith("&") || pile == "wooden_ox") {
-                if (Self->getPile(pile).contains(id)) {
-                    rec = false;
-                    break;
-                }
-            }
+        if (Self->getHandPile().contains(id)) {
+            rec = false;
+            break;
         }
 
     }
@@ -853,9 +849,6 @@ void AwaitExhausted::onUse(Room *room, const CardUseStruct &card_use) const
         }
     }
 
-    if (getSkillName() == "duoshi")
-        room->addPlayerHistory(new_use.from, "DuoshiAE", 1);
-
     TrickCard::onUse(room, new_use);
 }
 
@@ -871,8 +864,17 @@ void AwaitExhausted::use(Room *room, ServerPlayer *source, QList<ServerPlayer *>
         effect.multiple = (targets.length() > 1);
         effect.nullified = (all_nullified || nullified_list.contains(target->objectName()));
 
+        QVariantList players;
+        for (int i = targets.indexOf(target); i < targets.length(); i++) {
+            if (!nullified_list.contains(targets.at(i)->objectName()) && !all_nullified)
+                players.append(QVariant::fromValue(targets.at(i)));
+        }
+        room->setTag("targets" + this->toString(), QVariant::fromValue(players));
+
         room->cardEffect(effect);
     }
+
+    room->removeTag("targets" + this->toString());
 
     foreach (ServerPlayer *target, targets) {
         if (target->hasFlag("AwaitExhaustedEffected")) {
@@ -914,7 +916,7 @@ bool KnownBoth::isAvailable(const Player *player) const
         can_use = true;
         break;
     }
-    bool can_rec = true;
+    bool can_rec = can_recast;
     QList<int> sub;
     if (isVirtualCard())
         sub = subcards;
@@ -923,7 +925,7 @@ bool KnownBoth::isAvailable(const Player *player) const
     if (sub.isEmpty() || sub.contains(-1))
         can_rec = false;
     return (can_use && !player->isCardLimited(this, Card::MethodUse))
-        || (can_rec && can_recast && !player->isCardLimited(this, Card::MethodRecast));
+        || (can_rec && !player->isCardLimited(this, Card::MethodRecast));
 }
 
 bool KnownBoth::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
@@ -947,7 +949,7 @@ bool KnownBoth::targetsFeasible(const QList<const Player *> &targets, const Play
     else
         sub << getEffectiveId();
     foreach (int id, sub) {
-        if (Self->getPile("wooden_ox").contains(id)) {
+        if (Self->getHandPile().contains(id)) {
             rec = false;
             break;
         }

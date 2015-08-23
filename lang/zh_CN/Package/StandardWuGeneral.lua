@@ -1,3 +1,23 @@
+--[[********************************************************************
+	Copyright (c) 2013-2015 Mogara
+
+  This file is part of QSanguosha-Hegemony.
+
+  This game is free software; you can redistribute it and/or
+  modify it under the terms of the GNU General Public License as
+  published by the Free Software Foundation; either version 3.0
+  of the License, or (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  General Public License for more details.
+
+  See the LICENSE file for more details.
+
+  Mogara
+*********************************************************************]]
+
 -- translation for Standard General Package
 
 return {
@@ -92,6 +112,7 @@ return {
 	["illustrator:lusu"] = "LiuHeng",
 	["haoshi"] = "好施",
 	[":haoshi"] = "摸牌阶段，你可以多摸两张牌，然后若你的手牌数大于5，你将一半的手牌交给一名手牌最少的其他角色。",
+	["#haoshi-give"] = "好施[给牌]",
 	["@haoshi"] = "请选择“好施”的目标，将一半手牌（向下取整）交给该角色",
 	["~haoshi"] = "选择需要给出的手牌→选择一名其他角色→点击确定",
 	["dimeng"] = "缔盟",
@@ -107,7 +128,11 @@ return {
 	["guzheng"] = "固政",
 	[":guzheng"] = "其他角色的弃牌阶段结束时，你可以将弃牌堆里的一张其于此阶段内因其弃置而失去过的手牌交给该角色，若如此做，你可以获得弃牌堆里的其余于此阶段内弃置的牌。",
 	["$ZhijianEquip"] = "%from 被装备了 %card",
-	["_Guzheng:GuzhengObtain"] = "你可以获得弃牌堆里的其余于此阶段内弃置的牌", 
+	["@guzheng"] = "你可以令 %src 获得其弃置的其中一张牌。" ,
+	["~guzheng"] = "选择一张牌 -> 点击确定" ,
+	["_Guzheng:GuzhengObtain"] = "你可以获得弃牌堆里的其余于此阶段内弃置的牌",
+	["#guzheng"] = "固政",
+	["#guzhengOther"] = "固政",
 
 	["#dingfeng"] = "清侧重臣",
 	["dingfeng"] = "丁奉",

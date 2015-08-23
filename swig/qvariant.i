@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
   This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
   See the LICENSE file for more details.
 
-  QSanguosha-Rara
+  Mogara
 *********************************************************************/
 
 class QVariant {
@@ -25,6 +25,7 @@ public:
     QVariant(const char *);
     QVariant(bool);
     QVariant(QList<QVariant>);
+    bool canConvert(int targetTypeId) const; // a very six method..
     int toInt() const;
     QString toString() const;
     QStringList toStringList() const;

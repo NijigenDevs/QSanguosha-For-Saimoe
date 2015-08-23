@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #ifndef _H_MOMENTUM_H
@@ -47,6 +47,7 @@ public:
     Q_INVOKABLE DuanxieCard();
 
     virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+    virtual void extraCost(Room *room, const CardUseStruct &card_use) const;
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
@@ -56,24 +57,6 @@ class FengshiSummon : public ArraySummonCard
 
 public:
     Q_INVOKABLE FengshiSummon();
-};
-
-class HongfaCard : public SkillCard
-{
-    Q_OBJECT
-
-public:
-    Q_INVOKABLE HongfaCard();
-    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
-};
-
-class HongfaTianbingCard : public SkillCard
-{
-    Q_OBJECT
-
-public:
-    Q_INVOKABLE HongfaTianbingCard();
-    virtual void onUse(Room *room, const CardUseStruct &card_use) const;
 };
 
 class WendaoCard : public SkillCard

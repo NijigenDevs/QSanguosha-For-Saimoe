@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #include "standard-shu-generals.h"
@@ -443,19 +443,19 @@ public:
         const Card *card = to_select;
 
         switch (Sanguosha->currentRoomState()->getCurrentCardUseReason()) {
-        case CardUseStruct::CARD_USE_REASON_PLAY: {
-            return card->isKindOf("Jink");
-        }
-        case CardUseStruct::CARD_USE_REASON_RESPONSE:
-        case CardUseStruct::CARD_USE_REASON_RESPONSE_USE: {
-            QString pattern = Sanguosha->currentRoomState()->getCurrentCardUsePattern();
-            if (pattern == "slash")
+            case CardUseStruct::CARD_USE_REASON_PLAY: {
                 return card->isKindOf("Jink");
-            else if (pattern == "jink")
-                return card->isKindOf("Slash");
-        }
-        default:
-            return false;
+            }
+            case CardUseStruct::CARD_USE_REASON_RESPONSE:
+            case CardUseStruct::CARD_USE_REASON_RESPONSE_USE: {
+                QString pattern = Sanguosha->currentRoomState()->getCurrentCardUsePattern();
+                if (pattern == "slash")
+                    return card->isKindOf("Jink");
+                else if (pattern == "jink")
+                    return card->isKindOf("Slash");
+            }
+            default:
+                return false;
         }
     }
 
@@ -896,6 +896,7 @@ public:
         if (pangtong->askForSkillInvoke(this, data)) {
             room->broadcastSkillInvoke(objectName(), pangtong);
             room->doSuperLightbox("pangtong", objectName());
+            room->setPlayerMark(pangtong, "@nirvana", 0);
             return true;
         }
         return false;
@@ -903,7 +904,6 @@ public:
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *pangtong, QVariant &, ServerPlayer *) const
     {
-        room->removePlayerMark(pangtong, "@nirvana");
         pangtong->throwAllHandCardsAndEquips();
         QList<const Card *> tricks = pangtong->getJudgingArea();
         foreach (const Card *trick, tricks) {
@@ -1079,7 +1079,7 @@ public:
             CardUseStruct use = data.value<CardUseStruct>();
             if (use.card->isKindOf("SavageAssault")) {
                 ServerPlayer *menghuo = room->findPlayerBySkillName(objectName());
-                if (TriggerSkill::triggerable(menghuo)) {
+                if (TriggerSkill::triggerable(menghuo) && use.from != menghuo) {
                     ask_who = menghuo;
                     return QStringList(objectName());
                 }
@@ -1325,17 +1325,17 @@ public:
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
     {
-        if (player->hasShownSkill(this)) {
-            room->sendCompulsoryTriggerLog(player, objectName());
-        } else if (!player->askForSkillInvoke(this, data))
-            return false;
+        if (player->hasShownSkill(this) || player->askForSkillInvoke(this, data)) {
+            room->broadcastSkillInvoke(objectName(), player);
+            return true;
+        }
 
-        room->broadcastSkillInvoke(objectName(), player);
-        return true;
+        return false;
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *liushan, QVariant &data, ServerPlayer *) const
     {
+        room->sendCompulsoryTriggerLog(liushan, objectName());
         CardUseStruct use = data.value<CardUseStruct>();
 
         QVariant dataforai = QVariant::fromValue(liushan);
@@ -1383,7 +1383,7 @@ public:
     {
         FangquanCard *fangquan = new FangquanCard;
         fangquan->addSubcard(originalCard);
-        fangquan->setShowSkill(objectName());
+        //fangquan->setShowSkill(objectName());
         return fangquan;
     }
 };

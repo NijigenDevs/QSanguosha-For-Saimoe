@@ -1,5 +1,5 @@
 --[[********************************************************************
-	Copyright (c) 2013-2014 - QSanguosha-Rara
+	Copyright (c) 2013-2015 Mogara
 
   This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
   See the LICENSE file for more details.
 
-  QSanguosha-Rara
+  Mogara
 *********************************************************************]]
 
 sgs.ai_skill_invoke.tuntian = function(self, data)
@@ -596,9 +596,9 @@ sgs.ai_skill_choice.DragonPhoenix = function(self, choices, data)
 		table.removeOne(choices_t, "zhangjiao")
 
 	end
-	
-	if #choices_pri > 0 then 
-		return choices_pri[math.random(1, #choices_pri)] 
+
+	if #choices_pri > 0 then
+		return choices_pri[math.random(1, #choices_pri)]
 	end
 	if #choices_t == 0 then choices_t = string.split(choices, "+") end
 	return choices_t[math.random(1, #choices_t)]

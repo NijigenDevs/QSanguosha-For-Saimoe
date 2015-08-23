@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #include "skill.h"
@@ -72,8 +72,7 @@ QString Skill::getDescription(bool inToolTip) const
     if (des_src == ":" + skill_name)
         return desc;
 
-    foreach(const QString &skill_type, Sanguosha->getSkillColorMap().keys())
-    {
+    foreach (const QString &skill_type, Sanguosha->getSkillColorMap().keys()) {
         QString to_replace = Sanguosha->translate(skill_type);
         if (to_replace == skill_type) continue;
         QString color_str = Sanguosha->getSkillColor(skill_type).name();
@@ -249,11 +248,11 @@ bool ViewAsSkill::isAvailable(const Player *invoker, CardUseStruct::CardUseReaso
         return false;
     }
     switch (reason) {
-    case CardUseStruct::CARD_USE_REASON_PLAY: return isEnabledAtPlay(invoker);
-    case CardUseStruct::CARD_USE_REASON_RESPONSE:
-    case CardUseStruct::CARD_USE_REASON_RESPONSE_USE: return isEnabledAtResponse(invoker, pattern);
-    default:
-        return false;
+        case CardUseStruct::CARD_USE_REASON_PLAY: return isEnabledAtPlay(invoker);
+        case CardUseStruct::CARD_USE_REASON_RESPONSE:
+        case CardUseStruct::CARD_USE_REASON_RESPONSE_USE: return isEnabledAtResponse(invoker, pattern);
+        default:
+            return false;
     }
 }
 
@@ -355,8 +354,9 @@ FilterSkill::FilterSkill(const QString &name)
 }
 
 TriggerSkill::TriggerSkill(const QString &name)
-    : Skill(name), view_as_skill(NULL), global(false), dynamic_priority(0.0)
+    : Skill(name), view_as_skill(NULL), global(false), current_priority(0.0)
 {
+    priority.clear();
 }
 
 const ViewAsSkill *TriggerSkill::getViewAsSkill() const
@@ -372,6 +372,14 @@ QList<TriggerEvent> TriggerSkill::getTriggerEvents() const
 int TriggerSkill::getPriority() const
 {
     return 3;
+}
+
+double TriggerSkill::getDynamicPriority(TriggerEvent e) const
+{
+    if (priority.keys().contains(e))
+        return priority.key(e);
+    else
+        return this->getPriority();
 }
 
 /*!
@@ -401,6 +409,16 @@ TriggerList TriggerSkill::triggerable(TriggerEvent triggerEvent, Room *room, Ser
 bool TriggerSkill::triggerable(const ServerPlayer *target) const
 {
     return target != NULL && target->isAlive() && target->hasSkill(objectName());
+}
+
+void TriggerSkill::insertPriority(TriggerEvent e, double value)
+{
+    priority.insert(e, value);
+}
+
+void TriggerSkill::record(TriggerEvent, Room *, ServerPlayer *, QVariant &) const
+{
+
 }
 
 QStringList TriggerSkill::triggerable(TriggerEvent, Room *, ServerPlayer *target, QVariant &, ServerPlayer* &) const
@@ -540,41 +558,41 @@ bool ArraySummonSkill::isEnabledAtPlay(const Player *player) const
     if (skill) {
         ArrayType type = skill->getArrayType();
         switch (type) {
-        case Siege: {
-            if (player->willBeFriendWith(player->getNextAlive())
-                && player->willBeFriendWith(player->getLastAlive()))
-                return false;
-            if (!player->willBeFriendWith(player->getNextAlive())) {
-                if (!player->getNextAlive(2)->hasShownOneGeneral() && player->getNextAlive()->hasShownOneGeneral())
-                    return true;
-            }
-            if (!player->willBeFriendWith(player->getLastAlive()))
-                return !player->getLastAlive(2)->hasShownOneGeneral() && player->getLastAlive()->hasShownOneGeneral();
-            break;
-        }
-        case Formation: {
-            int n = player->aliveCount(false);
-            int asked = n;
-            for (int i = 1; i < n; ++i) {
-                Player *target = player->getNextAlive(i);
-                if (player->isFriendWith(target))
-                    continue;
-                else if (!target->hasShownOneGeneral())
-                    return true;
-                else {
-                    asked = i;
-                    break;
+            case Siege: {
+                if (player->willBeFriendWith(player->getNextAlive())
+                    && player->willBeFriendWith(player->getLastAlive()))
+                    return false;
+                if (!player->willBeFriendWith(player->getNextAlive())) {
+                    if (!player->getNextAlive(2)->hasShownOneGeneral() && player->getNextAlive()->hasShownOneGeneral())
+                        return true;
                 }
+                if (!player->willBeFriendWith(player->getLastAlive()))
+                    return !player->getLastAlive(2)->hasShownOneGeneral() && player->getLastAlive()->hasShownOneGeneral();
+                break;
             }
-            n -= asked;
-            for (int i = 1; i < n; ++i) {
-                Player *target = player->getLastAlive(i);
-                if (player->isFriendWith(target))
-                    continue;
-                else return !target->hasShownOneGeneral();
+            case Formation: {
+                int n = player->aliveCount(false);
+                int asked = n;
+                for (int i = 1; i < n; ++i) {
+                    Player *target = player->getNextAlive(i);
+                    if (player->isFriendWith(target))
+                        continue;
+                    else if (!target->hasShownOneGeneral())
+                        return true;
+                    else {
+                        asked = i;
+                        break;
+                    }
+                }
+                n -= asked;
+                for (int i = 1; i < n; ++i) {
+                    Player *target = player->getLastAlive(i);
+                    if (player->isFriendWith(target))
+                        continue;
+                    else return !target->hasShownOneGeneral();
+                }
+                break;
             }
-            break;
-        }
         }
     }
     return false;

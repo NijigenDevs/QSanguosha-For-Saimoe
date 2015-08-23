@@ -1,4 +1,22 @@
+--[[********************************************************************
+	Copyright (c) 2013-2015 Mogara
 
+  This file is part of QSanguosha-Hegemony.
+
+  This game is free software; you can redistribute it and/or
+  modify it under the terms of the GNU General Public License as
+  published by the Free Software Foundation; either version 3.0
+  of the License, or (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  General Public License for more details.
+
+  See the LICENSE file for more details.
+
+  Mogara
+*********************************************************************]]
 
 return {
 
@@ -9,7 +27,7 @@ return {
 	["$wangxi1"] = "典岂可因私憾而忘公义？" ,
 	["$wangxi2"] = "义忘私隙，端国正己。" ,
 	["~lidian"] = "隙仇俱忘，怎奈……" ,
-	
+
 	-- 臧霸
 	["cv:zangba"] = "老狼",
 	["$hengjiang1"] = "横江断人道，骁骑跨江表。",
@@ -21,10 +39,10 @@ return {
 	["$qianxi1"] = "喊什么喊，我敢杀你。",
 	["$qianxi2"] = "笑什么笑，叫你得意。",
 	["~madai"] = "我怎么会死在这里……",
-	
+
 	-- 糜夫人
 	--["cv:mifuren"] = "琴音",
-	
+
 	-- 孙策
 	["cv:sunce"] = "水水",
 	["$jiang1"] = "拔山盖世，勇力绝人。",
@@ -37,7 +55,7 @@ return {
 	["$yingyang1"] = "鹰击破长空，扬武震四海。",
 	["$yingyang2"] = "急流勇退，适时而为。",
 	["~sunce"] = "公等善相吾弟。",
-	
+
 	-- 陈武&董袭
 	--["cv:chenwudongxi"] = "凌天翼&七哥",
 
@@ -50,7 +68,7 @@ return {
 	["$benghuai1"] = "醉梦酒肉里，不闻朝纲事。",
 	["$benghuai2"] = "纸醉金迷，穷奢极欲。",
 	["~dongzhuo"] = "王允老贼，罪该……",
-	
+
 	-- 张任
 	["cv:zhangren"] = "极光",
 	["$chuanxin1"] = "今日饶你，还不速速退去！",
@@ -58,7 +76,7 @@ return {
 	["$fengshi1"] = "良将劲弩，胜乃可图。",
 	["$fengshi2"] = "锐箭劲弓，挫敌前锋。",
 	["~zhangren"] = "老臣绝不侍二主！",
-	
+
 	-- 君张角
 	["cv:lord_zhangjiao"] = "水水",
 	["$wuxin1"] = "问心何来，因境而起。" ,

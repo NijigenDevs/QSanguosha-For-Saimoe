@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #ifndef _LUA_WRAPPER_H
@@ -61,10 +61,14 @@ public:
     virtual TriggerList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const;
     virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who = NULL) const;
     virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who = NULL) const;
+    void onTurnBroken(const char *function_name, TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who = NULL) const;
+    virtual void record(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const;
 
+    LuaFunction on_record;
     LuaFunction can_trigger;
     LuaFunction on_cost;
     LuaFunction on_effect;
+    LuaFunction on_turn_broken;
 
     int priority;
     bool can_preshow;
@@ -92,10 +96,14 @@ public:
     virtual TriggerList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const;
     virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who = NULL) const;
     virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who = NULL) const;
+    void onTurnBroken(const char *function_name, TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who = NULL) const;
+    virtual void record(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const;
 
+    LuaFunction on_record;
     LuaFunction can_trigger;
     LuaFunction on_cost;
     LuaFunction on_effect;
+    LuaFunction on_turn_broken;
 
     int priority;
 };
@@ -105,7 +113,7 @@ class LuaViewAsSkill : public ViewAsSkill
     Q_OBJECT
 
 public:
-    LuaViewAsSkill(const char *name, const char *response_pattern, bool response_or_use, const char *expand_pile);
+    LuaViewAsSkill(const char *name, const char *response_pattern, bool response_or_use, const char *expand_pile, const char *limit_mark);
 
     inline void setGuhuoType(const char *type)
     {
@@ -228,6 +236,10 @@ public:
     {
         this->handling_method = handling_method;
     }
+    inline void setMute(bool isMute)
+    {
+        this->mute = isMute;
+    }
 
     // member functions that do not expose to Lua interpreter
     static LuaSkillCard *Parse(const QString &str);
@@ -245,6 +257,7 @@ public:
     virtual const Card *validate(CardUseStruct &cardUse) const;
     virtual const Card *validateInResponse(ServerPlayer *user) const;
     virtual void extraCost(Room *room, const CardUseStruct &card_use) const;
+    void onTurnBroken(const char *function_name, Room *room, QVariant &value) const;
 
     // the lua callbacks
     LuaFunction filter;
@@ -255,6 +268,7 @@ public:
     LuaFunction on_validate;
     LuaFunction on_validate_in_response;
     LuaFunction extra_cost;
+    LuaFunction on_turn_broken;
 };
 
 class LuaBasicCard : public BasicCard
@@ -373,14 +387,14 @@ public:
         else {
             if (Card::isKindOf(cardType)) return true;
             switch (subclass) {
-            case TypeSingleTargetTrick: return strcmp(cardType, "SingleTargetTrick") == 0; break;
-            case TypeDelayedTrick: return strcmp(cardType, "DelayedTrick") == 0; break;
-            case TypeAOE: return strcmp(cardType, "AOE") == 0; break;
-            case TypeGlobalEffect: return strcmp(cardType, "GlobalEffect") == 0; break;
-            case TypeNormal:
-            default:
-                return false;
-                break;
+                case TypeSingleTargetTrick: return strcmp(cardType, "SingleTargetTrick") == 0; break;
+                case TypeDelayedTrick: return strcmp(cardType, "DelayedTrick") == 0; break;
+                case TypeAOE: return strcmp(cardType, "AOE") == 0; break;
+                case TypeGlobalEffect: return strcmp(cardType, "GlobalEffect") == 0; break;
+                case TypeNormal:
+                default:
+                    return false;
+                    break;
             }
         }
     }
@@ -501,6 +515,65 @@ public:
 
 private:
     QString class_name;
+};
+
+#include "ai.h"
+#include "scenario.h"
+
+class LuaScenario : public Scenario
+{
+    Q_OBJECT
+
+public:
+    LuaScenario(const char *name);
+
+    void setRule(LuaTriggerSkill *rule);
+
+    inline virtual bool exposeRoles() const
+    {
+        return expose_role;
+    }
+    inline virtual int getPlayerCount() const
+    {
+        return player_count;
+    }
+    virtual QString getRoles() const;
+    virtual void assign(QStringList &generals, QStringList &generals2, QStringList &roles, Room *room) const;
+    virtual AI::Relation relationTo(const ServerPlayer *a, const ServerPlayer *b) const;
+    virtual void onTagSet(Room *room, const char *key) const;
+    inline virtual bool generalSelection() const
+    {
+        return general_selection;
+    }
+
+    inline void setRandomSeat(bool random)
+    {
+        random_seat = random;
+    }
+
+    bool expose_role;
+    int player_count;
+    bool general_selection;
+
+    LuaFunction on_assign;
+    LuaFunction relation;
+    LuaFunction on_tag_set;
+};
+
+class LuaSceneRule : public ScenarioRule
+{
+public:
+    LuaSceneRule(LuaScenario *parent, TriggerSkill *t);
+
+    virtual int getPriority() const
+    {
+        return origin->getPriority();
+    }
+
+    virtual bool effect(TriggerEvent event, Room* room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who = NULL) const;
+
+protected:
+    TriggerSkill *origin;
 };
 
 #endif

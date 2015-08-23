@@ -1,5 +1,5 @@
 --[[********************************************************************
-	Copyright (c) 2013-2014 - QSanguosha-Rara
+	Copyright (c) 2013-2015 Mogara
 
   This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
   See the LICENSE file for more details.
 
-  QSanguosha-Rara
+  Mogara
 *********************************************************************]]
 
 function sgs.insertRelatedSkills(Package, main_skill, ...)
@@ -26,6 +26,65 @@ function sgs.insertRelatedSkills(Package, main_skill, ...)
 	end
 end
 
+sgs.isBigKingdom = function(player,skill_name)
+	if not player:hasShownOneGeneral() then
+		return false
+	end
+	local big_kingdoms = player:getBigKingdoms(skill_name,sgs.Max)
+	local invoke = #big_kingdoms > 0
+	if invoke then
+		if #big_kingdoms == 1 and big_kingdoms[1]:startsWith("sgs") then
+			invoke = table.contains(big_kingdoms,player:objectName())
+		elseif player:getRole() == "careerist" then
+			invoke = false
+		else
+			invoke = table.contains(big_kingdoms,player:getKingdom())
+		end
+	end
+	return invoke
+end
+
+sgs.addSkillToEngine = function(skill)
+	local skill_list = sgs.SkillList()
+	if type(skill) == "table" then
+		for _,ski in pairs(skill)do
+			if not sgs.Sanguosha:getSkill(ski:objectName()) then
+				skill_list:append(ski)
+			end
+		end
+		sgs.Sanguosha:addSkills(skill_list)
+		return true
+	end
+	if not sgs.Sanguosha:getSkill(skill:objectName()) then
+		skill_list:append(skill)
+		sgs.Sanguosha:addSkills(skill_list)
+		return true
+	end
+	return false
+end
+
+sgs.addNewKingdom = function(kingdom_name,color)
+	assert(type(kingdom_name) == "string")
+	assert(type(color) == "string")
+	require "lua.config"
+	if not table.contains(config.kingdoms,kingdom_name) then
+		table.insert(config.kingdoms,kingdom_name)
+		config.kingdom_colors[kingdom_name] = string.upper(color)
+		return true
+	else
+		return false
+	end
+end
+
+function table.Shuffle(list)
+	local result = {}
+	while #list > 0 do
+		local value = list[math.random(1,#list)]
+		table.insert(result,value)
+		table.removeOne(list,value)
+	end
+	return result
+end
 -- utilities, i.e: convert QList<const Card> to Lua's native table
 function sgs.QList2Table(qlist)
 	local t = {}
@@ -256,7 +315,10 @@ sgs.CommandType = {
 	"S_COMMAND_DISABLE_SHOW",
 	"S_COMMAND_TRIGGER_ORDER",
 	"S_COMMAND_MIRROR_GUANXING_STEP",
-	"S_COMMAND_CHANGE_SKIN"
+	"S_COMMAND_CHANGE_SKIN",
+	"S_COMMAND_SKILL_MOVECARDS",
+    "S_COMMAND_MIRROR_MOVECARDS_STEP",
+	"S_COMMAND_SET_VISIBLE_CARDS"
 }
 
 local i = 0

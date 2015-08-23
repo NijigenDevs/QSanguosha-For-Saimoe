@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,14 +15,17 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #include "lua-wrapper.h"
 #include "util.h"
 
 LuaTriggerSkill::LuaTriggerSkill(const char *name, Frequency frequency, const char *limit_mark)
-    : TriggerSkill(name), can_trigger(0), on_cost(0), on_effect(0), priority(3) //Fs is a Bug ! 666666......   by Xusine
+    : TriggerSkill(name), can_trigger(0), on_cost(0),
+    on_effect(0), priority(3),
+    on_turn_broken(0), on_record(0)
+
 {
     this->frequency = frequency;
     this->limit_mark = limit_mark;
@@ -56,7 +59,7 @@ int LuaBattleArraySkill::getPriority() const
     return priority;
 }
 
-LuaViewAsSkill::LuaViewAsSkill(const char *name, const char *response_pattern, bool response_or_use, const char *expand_pile)
+LuaViewAsSkill::LuaViewAsSkill(const char *name, const char *response_pattern, bool response_or_use, const char *expand_pile, const char *limit_mark)
     : ViewAsSkill(name), view_filter(0), view_as(0),
     enabled_at_play(0), enabled_at_response(0), enabled_at_nullification(0)
 {
@@ -64,6 +67,9 @@ LuaViewAsSkill::LuaViewAsSkill(const char *name, const char *response_pattern, b
     this->response_or_use = response_or_use;
     this->expand_pile = expand_pile;
     this->guhuo_type = "";
+    this->limit_mark = limit_mark;
+    if (!QString(limit_mark).isEmpty())
+        this->frequency = Skill::Limited;
 }
 
 QString LuaViewAsSkill::getGuhuoBox() const
@@ -102,7 +108,9 @@ static QHash<QString, QString> LuaSkillCardsSkillName;
 
 LuaSkillCard::LuaSkillCard(const char *name, const char *skillName)
     : SkillCard(), filter(0), feasible(0),
-    about_to_use(0), on_use(0), on_effect(0), on_validate(0), on_validate_in_response(0), extra_cost(0)
+    about_to_use(0), on_use(0), on_effect(0),
+    on_validate(0), on_validate_in_response(0),
+    extra_cost(0), on_turn_broken(0)
 {
     if (name) {
         LuaSkillCards.insert(name, this);
@@ -134,6 +142,8 @@ LuaSkillCard *LuaSkillCard::clone() const
     new_card->on_validate = on_validate;
     new_card->on_validate_in_response = on_validate_in_response;
     new_card->extra_cost = extra_cost;
+
+    new_card->mute = mute;
 
     return new_card;
 }
@@ -340,4 +350,35 @@ LuaTreasure *LuaTreasure::clone(Card::Suit suit, int number) const
     new_card->on_uninstall = on_uninstall;
 
     return new_card;
+}
+
+LuaScenario::LuaScenario(const char *name)
+    : Scenario(name), expose_role(false), general_selection(false), player_count(0),
+    on_assign(0), on_tag_set(0), relation(0)
+{
+}
+
+void LuaScenario::setRule(LuaTriggerSkill *rule)
+{
+    this->rule = new LuaSceneRule(this, rule);
+}
+
+QString LuaScenario::getRoles() const
+{
+    QString result("Z");
+    for (int i = 2; i <= player_count; i++)
+        result.append("N");
+    return result;
+}
+
+LuaSceneRule::LuaSceneRule(LuaScenario *parent, TriggerSkill *t)
+    :ScenarioRule(parent)
+{
+    this->origin = t;
+    events.append(origin->getTriggerEvents());
+}
+
+bool LuaSceneRule::effect(TriggerEvent event, Room* room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const
+{
+    return origin->effect(event, room, player, data, ask_who);
 }

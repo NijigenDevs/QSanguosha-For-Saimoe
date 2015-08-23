@@ -1,3 +1,23 @@
+--[[********************************************************************
+	Copyright (c) 2013-2015 Mogara
+
+  This file is part of QSanguosha-Hegemony.
+
+  This game is free software; you can redistribute it and/or
+  modify it under the terms of the GNU General Public License as
+  published by the Free Software Foundation; either version 3.0
+  of the License, or (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  General Public License for more details.
+
+  See the LICENSE file for more details.
+
+  Mogara
+*********************************************************************]]
+
 -- translation for Standard General Package
 
 return {
@@ -13,7 +33,7 @@ return {
 	["lvbu"] = "吕布",
 	["illustrator:lvbu"] = "LiuHeng",
 	["wushuang"] = "无双",
-	[":wushuang"] = "锁定技，每当你使用【杀】指定一个目标后，你将其抵消此【杀】的方式改为依次使用两张【闪】；" .. 
+	[":wushuang"] = "锁定技，每当你使用【杀】指定一个目标后，你将其抵消此【杀】的方式改为依次使用两张【闪】；" ..
 					"锁定技，每当你使用【决斗】指定一个目标后，或成为一名角色使用【决斗】的目标后，你将其执行此【决斗】中打出【杀】的效果改为依次打出两张【杀】。",
 	["@wushuang-slash-1"] = "%src 对你【决斗】，你须连续打出两张【杀】",
 	["@wushuang-slash-2"] = "%src 对你【决斗】，你须再打出一张【杀】",
@@ -89,7 +109,7 @@ return {
 	["xiongyi"] = "雄异",
 	[":xiongyi"] = "限定技，出牌阶段，你可以令与你势力相同的所有角色各摸三张牌，然后若你的势力是角色最少的势力，你回复1点体力。",
 	["@arise"] = "雄异",
-	
+
 	["#kongrong"] = "凛然重义",
 	["kongrong"] = "孔融",
 	["illustrator:kongrong"] = "苍月白龙",
@@ -97,7 +117,10 @@ return {
 	[":mingshi"] = "锁定技，每当你受到伤害时，若来源有暗置的武将牌，你令此伤害-1。",
 	["lirang"] = "礼让",
 	[":lirang"] = "每当你的一张被弃置的牌置入弃牌堆后，你可以将之交给一名其他角色。",
-	["@lirang-distribute"] = "你可以发动“礼让”将 %arg 张牌任意分配给任意数量的其他角色",
+	["@lirang-distribute1"] = "礼让：你须将至少 1 张牌任意分配给其他角色",
+	["@lirang-distribute2"] = "礼让：你可将至多 %arg 张牌任意分配给其他角色",
+	["~lirang"] = "选择任意礼让牌和一名其他角色→点击确定",
+	["#lirang"] = "礼让",
 	["#Mingshi"] = "%from 的“<font color=\"yellow\"><b>名士</b></font>”被触发，伤害从 %arg 点减少至 %arg2 点",
 
 	["#jiling"] = "仲家的主将",

@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #include "gamerule.h"
@@ -216,6 +216,7 @@ void GameRule::onPhaseProceed(ServerPlayer *player) const
         QList<const Card *> tricks = player->getJudgingArea();
         while (!tricks.isEmpty() && player->isAlive()) {
             const Card *trick = tricks.takeLast();
+            if (trick->isKindOf("Key"))
             bool on_effect = room->cardEffect(trick, NULL, player);
             if (!on_effect)
                 trick->onNullified(player);
@@ -285,23 +286,22 @@ bool GameRule::effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *playe
     // Handle global events
     if (player == NULL) {
         if (triggerEvent == GameStart) {
-            foreach(ServerPlayer *player, room->getPlayers()) {
+            foreach (ServerPlayer *player, room->getPlayers()) {
                 Q_ASSERT(player->getGeneral() != NULL);
                 /*
                 if (player->getGeneral()->getKingdom() == "god" && player->getGeneralName() != "anjiang") {
-                    QString new_kingdom = room->askForKingdom(player);
-                    room->setPlayerProperty(player, "kingdom", new_kingdom);
+                QString new_kingdom = room->askForKingdom(player);
+                room->setPlayerProperty(player, "kingdom", new_kingdom);
 
-                    LogMessage log;
-                    log.type = "#ChooseKingdom";
-                    log.from = player;
-                    log.arg = new_kingdom;
-                    room->sendLog(log);
+                LogMessage log;
+                log.type = "#ChooseKingdom";
+                log.from = player;
+                log.arg = new_kingdom;
+                room->sendLog(log);
                 }
                 */
-                foreach(const Skill *skill, player->getVisibleSkillList()) {
-                    if (skill->getFrequency() == Skill::Limited && !skill->getLimitMark().isEmpty()
-                        && (!skill->isLordSkill() || player->hasLordSkill(skill->objectName()))) {
+                foreach (const Skill *skill, player->getVisibleSkillList()) {
+                    if (skill->getFrequency() == Skill::Limited && !skill->getLimitMark().isEmpty() && (!skill->isLordSkill() || player->hasLordSkill(skill->objectName()))) {
                         JsonArray arg;
                         arg << player->objectName();
                         arg << skill->getLimitMark();
@@ -334,7 +334,7 @@ bool GameRule::effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *playe
         room->addPlayerMark(player, "Global_TurnCount");
 
         JsonArray update_handcards_array;
-        foreach(ServerPlayer *p, room->getPlayers()){
+        foreach (ServerPlayer *p, room->getPlayers()) {
             JsonArray _current;
             _current << p->objectName();
             _current << p->getHandcardNum();
@@ -368,7 +368,7 @@ bool GameRule::effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *playe
         if (change.to == Player::NotActive) {
             room->setPlayerFlag(player, ".");
             room->clearPlayerCardLimitation(player, true);
-            foreach(ServerPlayer *p, room->getAllPlayers()) {
+            foreach (ServerPlayer *p, room->getAllPlayers()) {
                 if (p->getMark("drank") > 0) {
                     LogMessage log;
                     log.type = "#UnsetDrankEndOfTurn";
@@ -634,7 +634,7 @@ bool GameRule::effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *playe
                     chained_players = room->getOtherPlayers(room->getCurrent());
                 else
                     chained_players = room->getAllPlayers();
-                foreach(ServerPlayer *chained_player, chained_players) {
+                foreach (ServerPlayer *chained_player, chained_players) {
                     if (chained_player->isChained()) {
                         room->getThread()->delay();
                         LogMessage log;
@@ -653,7 +653,7 @@ bool GameRule::effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *playe
                 }
             }
         }
-        foreach(ServerPlayer *p, room->getAllPlayers()) {
+        foreach (ServerPlayer *p, room->getAllPlayers()) {
             if (p->hasFlag("Global_DFDebut")) {
                 p->setFlags("-Global_DFDebut");
                 room->getThread()->trigger(DFDebut, room, p);
@@ -676,6 +676,8 @@ bool GameRule::effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *playe
                 effect.to->setFlags("Global_NonSkillNullify");
                 return true;
             }
+            QVariant _effect = QVariant::fromValue(effect);
+            room->getThread()->trigger(CardEffectConfirmed, room, effect.to, _effect);
             if (effect.to->isAlive() || effect.card->isKindOf("Slash"))
                 effect.card->onEffect(effect);
         }
@@ -764,7 +766,7 @@ bool GameRule::effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *playe
             rewardAndPunish(killer, player);
 
         if (player->getGeneral()->isLord() && player == data.value<DeathStruct>().who) {
-            foreach(ServerPlayer *p, room->getOtherPlayers(player, true)) {
+            foreach (ServerPlayer *p, room->getOtherPlayers(player, true)) {
                 if (p->getKingdom() == player->getKingdom()) {
                     if (p->hasShownOneGeneral()) {
                         room->setPlayerProperty(p, "role", "careerist");
@@ -823,7 +825,7 @@ bool GameRule::effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *playe
             room->gameOver(winner); // if all hasShownGenreal, and they are all friend, game over.
             return true;
         }
-        if (Config.RewardTheFirstShowingPlayer && room->getTag("TheFirstToShowRewarded").isNull()) {
+        if (Config.RewardTheFirstShowingPlayer && room->getTag("TheFirstToShowRewarded").isNull() && room->getScenario() == NULL) {
             LogMessage log;
             log.type = "#FirstShowReward";
             log.from = player;
@@ -957,8 +959,8 @@ QString GameRule::getWinner(ServerPlayer *victim) const
         }
     } else {
         bool has_diff_kingdoms = false;
-        foreach(ServerPlayer *p, players) {
-            foreach(ServerPlayer *p2, players) {
+        foreach (ServerPlayer *p, players) {
+            foreach (ServerPlayer *p2, players) {
                 if (p->hasShownOneGeneral() && p2->hasShownOneGeneral() && !p->isFriendWith(p2)) {
                     has_diff_kingdoms = true;
                     break;// if both shown but not friend, hehe.
@@ -985,13 +987,13 @@ QString GameRule::getWinner(ServerPlayer *victim) const
                 if (p->isLord() || p->getActualGeneral1()->isLord())
                     if (p->isAlive())
                         lords << p->getActualGeneral1()->getKingdom();
-            foreach(ServerPlayer *p, room->getPlayers()) {
+            foreach (ServerPlayer *p, room->getPlayers()) {
                 QString kingdom;
                 if (p->hasShownOneGeneral())
                     kingdom = p->getKingdom();
                 else if (!lords.isEmpty())
                     return QString(); // if hasLord() and there are someone haven't shown its kingdom, it means this one could kill
-                                      // the lord to become careerist.
+                // the lord to become careerist.
                 else
                     kingdom = p->getActualGeneral1()->getKingdom();
                 if (lords.contains(kingdom)) continue;
@@ -1009,14 +1011,14 @@ QString GameRule::getWinner(ServerPlayer *victim) const
         if (has_diff_kingdoms) return QString();    //if has enemy, hehe
 
         // if run here, all are friend.
-        foreach(ServerPlayer *p, players) {
+        foreach (ServerPlayer *p, players) {
             if (!p->hasShownGeneral1())
                 p->showGeneral(true, false, false); // dont trigger event
             if (!p->hasShownGeneral2())
                 p->showGeneral(false, false, false);
         }
 
-        foreach(ServerPlayer *p, room->getPlayers()) {
+        foreach (ServerPlayer *p, room->getPlayers()) {
             if (win_player->isFriendWith(p))
                 winners << p->objectName();
         }

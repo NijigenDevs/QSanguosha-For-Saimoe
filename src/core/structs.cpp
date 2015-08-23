@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #include "structs.h"
@@ -338,4 +338,11 @@ void CardUseStruct::parse(const QString &str, Room *room)
         foreach (const QString &target_name, target_names)
             to << room->findChild<ServerPlayer *>(target_name);
     }
+}
+
+AskForMoveCardsStruct::AskForMoveCardsStruct()
+{
+    is_success = false;
+    top.clear();
+    bottom.clear();
 }

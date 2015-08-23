@@ -6,7 +6,7 @@
 
 --CreateTriggerSkill需要以下参数：
 
---name, relate_to_place, can_preshow, frequency, limit_mark, guhuo_type, is_battle_array, battle_array_type, events, view_as_skill, can_trigger, on_cost, on_effect, priority
+--name, relate_to_place, can_preshow, frequency, limit_mark, guhuo_type, is_battle_array, battle_array_type, events, view_as_skill, can_trigger, on_cost, on_effect, on_turn_broken, priority
 
 --name和relate_to_place不再说明。
 
@@ -58,7 +58,7 @@
 --can_trigger:
 --lua函数，返回两个值，第一个用加号分割的技能名的字符串，第二个是技能的发动者（也就是源码里可以改变的那个ask_who）。
 --关于第一个返回值，这里的用途是这样，比如姜维的遗志，可以返回"guanxing"来使遗志发动观星而不用在遗志里把观星整个重写一遍。
---对于遗计等等技能，如果一次受到两点伤害，可以返回"yiji+yiji"，这样的话，可以发动两次遗计。神智忘隙节命同理。
+--对于遗计等等技能，如果一次受到两点伤害，可以返回"yiji,yiji"，这样的话，可以发动两次遗计。神智忘隙节命同理。
 --第二个返回值，用于技能触发者和技能发动者不一致的情况，比如类似骁果的技能
 --对于这种情况，用room:findPlayerBySkillName(self:objectName())找到技能的发动者，最后返回，类似这样：
 local yuejin = room:findPlayerBySkillName("xiaoguo")
@@ -86,6 +86,14 @@ return self:objectName().."->"..table.concat(targets,"+")
 --传入参数为：self,event,room,player,data,ask_who，与on_cost一致。
 --如果需要区分不同的事件执行不同效果，请根据event参数使用条件语句。
 --通常需要将事件数据(data)转为具体的游戏结构对象才能进行操作。你可以在源码的swig/qvariant.i文件中看到定义。
+--无默认值。
+
+--on_turn_broken:
+--lua函数，无返回值。
+--用于处理抛出异常（TurnBroken）时处理的一些部分。
+--传入参数为self,function_name,event,room,player,data,ask_who
+--其中function_name为字符串类型，是捕获到异常的函数名，可以是"can_trigger"、"on_cost"、"on_effect"中的一个。
+--其余的几个参数则是捕获异常的函数的参数。如果捕获函数是can_tigger，那么最后一个ask_who将是nil空值。
 --无默认值。
 
 --priority:
@@ -162,7 +170,7 @@ LuaWangxi = sgs.CreateTriggerSkill{
 		for i = 1, damage.damage, 1 do
 			table.insert(trigger_list, self:objectName()) --在LUA表中插入一个元素
 		end
-		return table.concat(trigger_list, "+") --table.concat用于所有元素均为字符串的情况，返回字符串的连接，中间用由第二个参数指定的字符分割
+		return table.concat(trigger_list, ",") --table.concat用于所有元素均为字符串的情况，返回字符串的连接，中间用由第二个参数指定的字符分割
 	end ,
 	on_cost = function(self, event, room, player, data)
 		local damage = data:toDamage()

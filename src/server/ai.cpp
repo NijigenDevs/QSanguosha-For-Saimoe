@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #include "ai.h"
@@ -169,6 +169,26 @@ bool TrustAI::useCard(const Card *card)
     return false;
 }
 
+QList<int> TrustAI::askForExchange(const QString &, const QString &pattern, int , int min_num, const QString &expand_pile)
+{
+    QList<int> to_discard;
+    if (min_num == 0)
+        return to_discard;
+    else
+        return self->forceToDiscard(min_num,pattern,expand_pile,false);
+}
+
+QList<ServerPlayer *> TrustAI::askForPlayersChosen(const QList<ServerPlayer *> &targets, const QString &reason, int min_num, int max_num)
+{
+    Q_UNUSED(reason)
+    Q_UNUSED(max_num)
+    QList<ServerPlayer *> result;
+    QList<ServerPlayer *> copy = targets;
+    while (result.length() < min_num)
+        result << copy.takeAt(qrand() % copy.length());
+    return result;
+}
+
 Card::Suit TrustAI::askForSuit(const QString &)
 {
     return Card::AllSuits[qrand() % 4];
@@ -201,12 +221,21 @@ QList<int> TrustAI::askForDiscard(const QString &, int discard_num, int, bool op
         return self->forceToDiscard(discard_num, include_equip, self->hasFlag("Global_AIDiscardExchanging"));
 }
 
+QMap<QString, QList<int> > TrustAI::askForMoveCards(const QList<int> &, const QList<int> &, const QString &, const QString &, int, int)
+{
+    QList<int> empty;
+    QMap<QString, QList<int> > returns;
+    returns["bottom"] = empty;
+    returns["top"] = empty;
+    return returns;
+}
+
 const Card *TrustAI::askForNullification(const Card *, ServerPlayer *, ServerPlayer *, bool)
 {
     return NULL;
 }
 
-int TrustAI::askForCardChosen(ServerPlayer *, const QString &, const QString &, Card::HandlingMethod)
+int TrustAI::askForCardChosen(ServerPlayer *, const QString &, const QString &, Card::HandlingMethod,const QList<int> &)
 {
     return -1;
 }
@@ -259,13 +288,13 @@ const Card *TrustAI::askForPindian(ServerPlayer *requestor, const QString &)
         return cards.last();
 }
 
-ServerPlayer *TrustAI::askForPlayerChosen(const QList<ServerPlayer *> &targets, const QString &reason)
-{
-    Q_UNUSED(reason);
+//ServerPlayer *TrustAI::askForPlayerChosen(const QList<ServerPlayer *> &targets, const QString &reason)
+//{
+//    Q_UNUSED(reason);
 
-    int r = qrand() % targets.length();
-    return targets.at(r);
-}
+//    int r = qrand() % targets.length();
+//    return targets.at(r);
+//}
 
 const Card *TrustAI::askForSinglePeach(ServerPlayer *dying)
 {
@@ -350,6 +379,58 @@ QList<int> LuaAI::askForDiscard(const QString &reason, int discard_num, int min_
         return result;
     else
         return TrustAI::askForDiscard(reason, discard_num, min_num, optional, include_equip);
+}
+
+QMap<QString, QList<int> > LuaAI::askForMoveCards(const QList<int> &upcards, const QList<int> &downcards, const QString &reason, const QString &pattern, int min_num, int max_num)
+{
+    lua_State *L = room->getLuaState();
+
+    pushCallback(L, __FUNCTION__);
+    pushQIntList(L, upcards);
+    pushQIntList(L, downcards);
+    lua_pushstring(L, reason.toLatin1());
+    lua_pushstring(L, pattern.toLatin1());
+    lua_pushinteger(L, min_num);
+    lua_pushinteger(L, max_num);
+
+    int error = lua_pcall(L, 7, 2, 0);
+    if (error) {
+        reportError(L);
+        return TrustAI::askForMoveCards(upcards, downcards, reason, pattern, min_num, max_num);
+    }
+
+    QList<int> top_cards, bottom_cards;
+    if (getTable(L, bottom_cards) && getTable(L, top_cards)) {
+        QMap<QString, QList<int> > returns;
+        returns["top"] = top_cards;
+        returns["bottom"] = bottom_cards;
+        return returns;
+    } else
+        return TrustAI::askForMoveCards(upcards, downcards, reason, pattern, min_num, max_num);
+}
+
+QList<int> LuaAI::askForExchange(const QString &reason, const QString &pattern, int max_num, int min_num, const QString &expand_pile)
+{
+    lua_State *L = room->getLuaState();
+
+    pushCallback(L, __FUNCTION__);
+    lua_pushstring(L, reason.toLatin1());
+    lua_pushstring(L, pattern.toLatin1());
+    lua_pushinteger(L, max_num);
+    lua_pushinteger(L, min_num);
+    lua_pushstring(L, expand_pile.toLatin1());
+
+    int error = lua_pcall(L, 6, 1, 0);
+    if (error) {
+        reportError(L);
+        return TrustAI::askForExchange(reason,pattern,max_num,min_num,expand_pile);
+    }
+
+    QList<int> result;
+    if (getTable(L, result))
+        return result;
+    else
+        return TrustAI::askForExchange(reason,pattern,max_num,min_num,expand_pile);
 }
 
 bool LuaAI::getTable(lua_State *L, QList<int> &table)

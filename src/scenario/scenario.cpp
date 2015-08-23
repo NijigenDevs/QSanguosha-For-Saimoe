@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #include "scenario.h"
@@ -39,6 +39,11 @@ ScenarioRule *Scenario::getRule() const
 bool Scenario::exposeRoles() const
 {
     return true;
+}
+
+void Scenario::onTagSet(Room *, const QString &) const
+{
+
 }
 
 QString Scenario::getRoles() const

@@ -1,5 +1,5 @@
 --[[********************************************************************
-	Copyright (c) 2013-2014 - QSanguosha-Rara
+	Copyright (c) 2013-2015 Mogara
 
   This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
   See the LICENSE file for more details.
 
-  QSanguosha-Rara
+  Mogara
 *********************************************************************]]
 
 sgs.ai_skill_invoke.jianxiong = function(self, data)
@@ -142,12 +142,8 @@ sgs.ai_skill_cardask["@guicai-card"] = function(self, data)
 	if not (self:willShowForAttack() or self:willShowForDefence() ) then return "." end
 	local judge = data:toJudge()
 	local cards = sgs.QList2Table(self.player:getHandcards())
-	for _,pile in sgs.list(self.player:getPileNames())do
-		if pile:startsWith("&") or pile == "wooden_ox" then
-			for _, id in sgs.qlist(self.player:getPile(pile)) do
-				table.insert(cards, 1, sgs.Sanguosha:getCard(id))
-			end
-		end
+	for _, id in sgs.qlist(self.player:getHandPile()) do
+		table.insert(cards, 1, sgs.Sanguosha:getCard(id))
 	end
 	if judge.reason == "tieqi" then
 		local target
@@ -333,15 +329,29 @@ function SmartAI:findTuxiTarget()
 	end
 end
 
-sgs.ai_skill_use["@@tuxi"] = function(self, prompt)
-	if not self:willShowForAttack() then
-		return "."
-	end
+-- sgs.ai_skill_use["@@tuxi"] = function(self, prompt)
+	-- if not self:willShowForAttack() then
+		-- return "."
+	-- end
+	-- if self.player:getTreasure() and self.player:getTreasure():isKindOf("JadeSeal") then return "." end
+	-- local targets = self:findTuxiTarget()
+	-- if type(targets) == "table" and #targets > 0 then
+		-- return ("@TuxiCard=.&->" .. table.concat(targets, "+"))
+	-- end
+	-- return "."
+-- end
+
+sgs.ai_skill_playerchosen.tuxi = function(self)
+	if self.player:getTreasure() and self.player:getTreasure():isKindOf("JadeSeal") then return {} end
 	local targets = self:findTuxiTarget()
 	if type(targets) == "table" and #targets > 0 then
-		return ("@TuxiCard=.&->" .. table.concat(targets, "+"))
+		local result = {}
+		for _,name in pairs(targets)do
+			table.insert(result,findPlayerByObjectName(name))
+		end
+		return result
 	end
-	return "."
+	return {}
 end
 
 sgs.ai_skill_invoke.luoyi = function(self,data)
@@ -410,22 +420,22 @@ function sgs.ai_cardneed.luoyi(to, card, self)
 end
 
 sgs.luoyi_keep_value = {
-	Peach 			= 6,
-	Analeptic 		= 5.8,
-	Jink 			= 5.2,
-	Duel			= 5.5,
-	FireSlash 		= 5.6,
-	Slash 			= 5.4,
-	ThunderSlash 	= 5.5,
-	Axe				= 5,
-	Blade 			= 4.9,
-	Spear 			= 4.9,
-	Fan				= 4.8,
-	KylinBow		= 4.7,
-	Halberd			= 4.6,
-	MoonSpear		= 4.5,
+	Peach           = 6,
+	Analeptic       = 5.8,
+	Jink            = 5.2,
+	Duel            = 5.5,
+	FireSlash       = 5.6,
+	Slash           = 5.4,
+	ThunderSlash    = 5.5,
+	Axe             = 5,
+	Blade           = 4.9,
+	Spear           = 4.9,
+	Fan             = 4.8,
+	KylinBow        = 4.7,
+	Halberd         = 4.6,
+	MoonSpear       = 4.5,
 	SPMoonSpear = 4.5,
-	DefensiveHorse 	= 4
+	DefensiveHorse  = 4
 }
 
 
@@ -498,19 +508,11 @@ sgs.ai_need_damaged.yiji = function (self, attacker, player)
 
 	return player:getHp() > 2 and sgs.turncount > 2 and #self.friends > 1
 end
-local isInPile = function(player,id)
-	for _,pile in sgs.list(player:getPileNames())do
-		if pile:startsWith("&") or pile == "wooden_ox" then
-			if player:getPile(pile):contains(id) then return true end
-		end
-	end
-	return false
-end
 sgs.ai_view_as.qingguo = function(card, player, card_place)
 	local suit = card:getSuitString()
 	local number = card:getNumberString()
 	local card_id = card:getEffectiveId()
-	if card:isBlack() and (card_place == sgs.Player_PlaceHand or isInPile(player,card_id)) then
+	if card:isBlack() and (card_place == sgs.Player_PlaceHand or player:getHandPile():contains(card_id)) then
 		return ("jink:qingguo[%s:%s]=%d&qingguo"):format(suit, number, card_id)
 	end
 end
@@ -548,20 +550,61 @@ sgs.ai_skill_use["@@shensu1"] = function(self, prompt)
 		return "."
 	end
 
+	if not self.player:containsTrick("indulgence") and not self.player:containsTrick("supply_shortage") then
+		if self.player:getTreasure() and self.player:getTreasure():isKindOf("JadeSeal") then return "." end
+	end
+
 	local slash = sgs.cloneCard("slash")
 	local dummy_use = { isDummy = true, to = sgs.SPlayerList() }
 	self.player:setFlags("slashNoDistanceLimit")
 	self:useBasicCard(slash, dummy_use)
 	self.player:setFlags("-slashNoDistanceLimit")
-
+	
 	if dummy_use.card and not dummy_use.to:isEmpty() then
 		for _, enemy in sgs.qlist(dummy_use.to) do
-			local def = sgs.getDefenseSlash(enemy, self)
-			if def < 3 then return "@ShensuCard=.->" .. enemy:objectName() end
-			if not self:isWeak() and def < 5 then return "@ShensuCard=.->" .. enemy:objectName() end
+			if self:isEnemy(enemy) and sgs.getDefenseSlash(enemy, self) < 2.95 + self.player:getCards("j"):length() * 0.7 then
+				if  enemy:getHp() <= 1 and (not self.player:inMyAttackRange(enemy) or self:getCardsNum("Slash") == 0) then
+					return "@ShensuCard=.->" .. enemy:objectName()
+				end
+				if enemy:getHp() <= 2 and self.player:inMyAttackRange(enemy) and self:getCardsNum("Slash") > 0 then
+					return "@ShensuCard=.->" .. enemy:objectName()
+				end
+			end
 		end
 	end
 
+	local Nullification = false
+	for _, p in ipairs(self.friends) do
+		if getKnownCard(p, self.player, "Nullification") > 0 then
+			Nullification = true
+		end
+	end
+	if self.player:containsTrick("indulgence") and (not self:hasWizard(self.friends) or self:hasWizard(self.enemies, true))
+		and not Nullification then
+		local target
+		if dummy_use.card and not dummy_use.to:isEmpty() then
+			for _, enemy in sgs.qlist(dummy_use.to) do
+				local def = sgs.getDefenseSlash(enemy, self)
+				if def < 3 or (not self:isWeak() and def < 5) then
+					target = enemy
+					break
+				end
+			end
+			if not target then
+				local handcardsValue = 0
+				local cards = sgs.QList2Table(self.player:getCards("h"))
+				for _, c in ipairs(cards) do
+					handcardsValue = handcardsValue + self:getUseValue(c)
+				end
+				if handcardsValue > 16 or self:getOverflow(self.player, true) > 1 then
+					local targets =  sgs.QList2Table(dummy_use.to)
+					self:sort(targets, "defenseSlash")
+					target = targets[1]
+				end
+			end
+			if target then return "@ShensuCard=.->" .. target:objectName() end
+		end
+	end
 	return "."
 end
 
@@ -820,10 +863,11 @@ sgs.ai_skill_discard.qiaobian = function(self, discard_num, min_num, optional, i
 			return to_discard
 		elseif self.player:containsTrick("supply_shortage") then
 			if self.player:getHp() > self.player:getHandcardNum() then return to_discard end
-			local cardstr = sgs.ai_skill_use["@@tuxi"](self, "@tuxi")
-			if cardstr:match("->") then
-				local targetstr = cardstr:split("->")[2]
-				local targets = targetstr:split("+")
+			--local cardstr = sgs.ai_skill_use["@@tuxi"](self, "@tuxi")
+			local targets = sgs.ai_skill_playerchosen.tuxi(self)
+			if #targets == 2 then
+				--local targetstr = cardstr:split("->")[2]
+				--local targets = targetstr:split("+")
 				if #targets == 2 then
 					return to_discard
 				end
@@ -838,15 +882,12 @@ sgs.ai_skill_discard.qiaobian = function(self, discard_num, min_num, optional, i
 		end
 	elseif current_phase == sgs.Player_Draw and not self.player:isSkipped(sgs.Player_Draw) and not self.player:hasShownSkill("tuxi") then
 		self.qiaobian_draw_targets = {}
-		local cardstr = sgs.ai_skill_use["@@tuxi"](self, "@tuxi")
-		if cardstr:match("->") then
-			local targetstr = cardstr:split("->")[2]
-			local targets = targetstr:split("+")
-			if #targets == 2 then
-				table.insert(self.qiaobian_draw_targets, targets[1])
-				table.insert(self.qiaobian_draw_targets, targets[2])
-				return to_discard
-			end
+		--local cardstr = sgs.ai_skill_use["@@tuxi"](self, "@tuxi")
+		local targets = sgs.ai_skill_playerchosen.tuxi(self)
+		if #targets == 2  then
+			table.insert(self.qiaobian_draw_targets, targets[1]:objectName())
+			table.insert(self.qiaobian_draw_targets, targets[2]:objectName())
+			return to_discard
 		end
 		return {}
 	elseif current_phase == sgs.Player_Play and not self.player:isSkipped(sgs.Player_Play) then
@@ -969,12 +1010,8 @@ duanliang_skill.getTurnUseCard = function(self)
 
 	local cards = self.player:getCards("he")
 	cards = sgs.QList2Table(cards)
-	for _,pile in sgs.list(self.player:getPileNames())do
-		if pile:startsWith("&") or pile == "wooden_ox" then
-			for _, id in sgs.qlist(self.player:getPile(pile)) do
-				table.insert(cards, sgs.Sanguosha:getCard(id))
-			end
-		end
+	for _, id in sgs.qlist(self.player:getHandPile()) do
+		table.insert(cards, sgs.Sanguosha:getCard(id))
 	end
 	local card
 
@@ -1204,6 +1241,7 @@ sgs.ai_skill_invoke.xingshang = true
 function SmartAI:toTurnOver(player, n, reason) -- @todo: param of toTurnOver
 	if not player then global_room:writeToConsole(debug.traceback()) return end
 	n = n or 0
+	if not player:faceUp() then return false end
 	if reason and reason == "fangzhu" and player:getHp() == 1 and sgs.ai_AOE_data then
 		local use = sgs.ai_AOE_data:toCardUse()
 		if use.to:contains(player) and self:aoeIsEffective(use.card, player)
@@ -1218,7 +1256,6 @@ function SmartAI:toTurnOver(player, n, reason) -- @todo: param of toTurnOver
 		return false end
 	end
 	if player:hasShownSkill("jushou") and player:getPhase() <= sgs.Player_Finish then return false end
-	if not player:faceUp() then return false end
 	return true
 end
 
@@ -1228,12 +1265,17 @@ sgs.ai_skill_playerchosen.fangzhu = function(self, targets)
 	local target = nil
 	local n = self.player:getLostHp()
 	for _, friend in ipairs(self.friends_noself) do
-		if not self:toTurnOver(friend, n, "fangzhu") then
-			target = friend
+		if not friend:faceUp() then
+				target = friend
 			break
 		end
+		if not target then
+			if not self:toTurnOver(friend, n, "fangzhu") then
+				target = friend
+				break
+			end
+		end
 	end
-
 	if not target then
 		if n >= 3 then
 			target = self:findPlayerToDraw(false, n)

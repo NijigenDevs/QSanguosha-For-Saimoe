@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #ifndef _SCENARIO_H
@@ -42,7 +42,7 @@ public:
     virtual QString getRoles() const;
     virtual void assign(QStringList &generals, QStringList &generals2, QStringList &roles, Room *room) const;
     virtual AI::Relation relationTo(const ServerPlayer *a, const ServerPlayer *b) const;
-    virtual void onTagSet(Room *room, const QString &key) const = 0;
+    virtual void onTagSet(Room *room, const QString &key) const;
     virtual bool generalSelection() const;
     inline bool isRandomSeat() const
     {

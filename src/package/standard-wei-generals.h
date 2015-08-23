@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #ifndef _STANDARD_WEI_H
@@ -24,15 +24,15 @@
 #include "standard-package.h"
 #include "card.h"
 
-class TuxiCard : public SkillCard
-{
-    Q_OBJECT
-
-public:
-    Q_INVOKABLE TuxiCard();
-    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
-    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
-};
+// class TuxiCard : public SkillCard
+// {
+//     Q_OBJECT
+// 
+// public:
+//     Q_INVOKABLE TuxiCard();
+//     virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+//     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+// };
 
 class ShensuCard : public SkillCard
 {

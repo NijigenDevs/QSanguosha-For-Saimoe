@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #include "strategic-advantage.h"
@@ -239,21 +239,21 @@ Breastplate::Breastplate(Card::Suit suit, int number)
     transferable = true;
 }
 
-class BreastplateViewAsSkill : public ZeroCardViewAsSkill
-{
-public:
-    BreastplateViewAsSkill() : ZeroCardViewAsSkill("Breastplate")
-    {
-    }
-
-    virtual const Card *viewAs() const
-    {
-        TransferCard *card = new TransferCard;
-        card->addSubcard(Self->getArmor());
-        card->setSkillName("transfer");
-        return card;
-    }
-};
+// class BreastplateViewAsSkill : public ZeroCardViewAsSkill
+// {
+// public:
+//     BreastplateViewAsSkill() : ZeroCardViewAsSkill("Breastplate")
+//     {
+//     }
+// 
+//     virtual const Card *viewAs() const
+//     {
+//         TransferCard *card = new TransferCard;
+//         card->addSubcard(Self->getArmor());
+//         card->setSkillName("transfer");
+//         return card;
+//     }
+// };
 
 class BreastplateSkill : public ArmorSkill
 {
@@ -262,7 +262,7 @@ public:
     {
         events << DamageInflicted;
         frequency = Compulsory;
-        view_as_skill = new BreastplateViewAsSkill;
+        //view_as_skill = new BreastplateViewAsSkill;
     }
 
     virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const
@@ -718,8 +718,17 @@ void LureTiger::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &tar
         effect.multiple = (targets.length() > 1);
         effect.nullified = (all_nullified || nullified_list.contains(target->objectName()));
 
+        QVariantList players;
+        for (int i = targets.indexOf(target); i < targets.length(); i++) {
+            if (!nullified_list.contains(targets.at(i)->objectName()) && !all_nullified)
+                players.append(QVariant::fromValue(targets.at(i)));
+        }
+        room->setTag("targets" + this->toString(), QVariant::fromValue(players));
+
         room->cardEffect(effect);
     }
+
+    room->removeTag("targets" + this->toString());
 
     source->drawCards(1, objectName());
 
@@ -849,7 +858,7 @@ bool FightTogether::isAvailable(const Player *player) const
 {
     if (player->hasFlag("Global_FightTogetherFailed"))
         return false;
-    bool rec = (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_PLAY);
+    bool rec = (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_PLAY) && can_recast;
     QList<int> sub;
     if (isVirtualCard())
         sub = subcards;
@@ -1064,6 +1073,13 @@ void AllianceFeast::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> 
         effect.multiple = (targets.length() > 1);
         effect.nullified = (all_nullified || nullified_list.contains(target->objectName()));
 
+        QVariantList players;
+        for (int i = targets.indexOf(target); i < targets.length(); i++) {
+            if (!nullified_list.contains(targets.at(i)->objectName()) && !all_nullified)
+                players.append(QVariant::fromValue(targets.at(i)));
+        }
+        room->setTag("targets" + this->toString(), QVariant::fromValue(players));
+
         if (target == source) {
             int n = 0;
             ServerPlayer *enemy = targets.last();
@@ -1076,6 +1092,8 @@ void AllianceFeast::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> 
         room->cardEffect(effect);
         target->setMark(objectName(), 0);
     }
+
+    room->removeTag("targets" + this->toString());
 
     QList<int> table_cardids = room->getCardIdsOnTable(this);
     if (!table_cardids.isEmpty()) {
@@ -1281,22 +1299,6 @@ void ImperialOrder::onEffect(const CardEffectStruct &effect) const
     }
 }
 
-class JingFanSkill : public ZeroCardViewAsSkill
-{
-public:
-    JingFanSkill() : ZeroCardViewAsSkill("JingFan")
-    {
-    }
-
-    virtual const Card *viewAs() const
-    {
-        TransferCard *card = new TransferCard;
-        card->addSubcard(Self->getOffensiveHorse());
-        card->setSkillName("transfer");
-        return card;
-    }
-};
-
 StrategicAdvantagePackage::StrategicAdvantagePackage()
     : Package("strategic_advantage", Package::CardPack)
 {
@@ -1376,7 +1378,6 @@ StrategicAdvantagePackage::StrategicAdvantagePackage()
         << new BladeSkill
         << new JadeSealSkill
         << new BreastplateSkill
-        << new JingFanSkill
         << new WoodenOxSkill << new WoodenOxTriggerSkill
         << new HalberdSkill << new HalberdTrigger << new HalberdTargetMod
         << new LureTigerSkill << new LureTigerProhibit

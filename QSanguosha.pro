@@ -7,6 +7,8 @@ QT += network widgets
 TEMPLATE = app
 CONFIG += audio
 
+CONFIG += c++11
+
 CONFIG += lua
 #CONFIG += lua53
 
@@ -117,7 +119,8 @@ SOURCES += \
     src/util/nativesocket.cpp \
     src/util/recorder.cpp \
     swig/sanguosha_wrap.cxx \
-    src/ui/guhuobox.cpp
+    src/ui/guhuobox.cpp \
+	src/ui/cardchoosebox.cpp 
 
 HEADERS += \
     src/client/aux-skills.h \
@@ -228,7 +231,8 @@ HEADERS += \
     src/util/nativesocket.h \
     src/util/recorder.h \
     src/util/socket.h \
-    src/ui/guhuobox.h
+    src/ui/guhuobox.h \
+	src/ui/cardchoosebox.h
 
 FORMS += \
     src/dialog/cardoverview.ui \
@@ -236,6 +240,12 @@ FORMS += \
     src/dialog/connectiondialog.ui \
     src/dialog/generaloverview.ui
     
+
+
+CONFIG(buildbot) {
+    DEFINES += USE_BUILDBOT
+    SOURCES += src/bot_version.cpp
+}
 
 win32 {
     FORMS += src/dialog/mainwindow.ui
@@ -346,9 +356,11 @@ linux{
         DEFINES += LINUX
         !contains(QMAKE_HOST.arch, x86_64) {
             LIBS += -L"$$_PRO_FILE_PWD_/lib/linux/x86"
+            QMAKE_LFLAGS += -Wl,--rpath=lib/linux/x86
         }
         else {
             LIBS += -L"$$_PRO_FILE_PWD_/lib/linux/x64"
+            QMAKE_LFLAGS += -Wl,--rpath=lib/linux/x64
         }
     }
 }
@@ -511,12 +523,12 @@ CONFIG(opengl){
 TRANSLATIONS += builds/sanguosha.ts
 
 !build_pass{
-    system("lrelease builds/sanguosha.ts -qm $$PWD/sanguosha.qm")
+    system("lrelease $$_PRO_FILE_PWD_/builds/sanguosha.ts -qm $$_PRO_FILE_PWD_/sanguosha.qm")
 
     SWIG_bin = "swig"
-    win32: SWIG_bin = "$$PWD/tools/swig/swig.exe"
+    contains(QMAKE_HOST.os, "Windows"): SWIG_bin = "$$_PRO_FILE_PWD_/tools/swig/swig.exe"
 
-    system("$$SWIG_bin -c++ -lua $$PWD/swig/sanguosha.i")
+    system("$$SWIG_bin -c++ -lua $$_PRO_FILE_PWD_/swig/sanguosha.i")
 }
 
 OTHER_FILES += \
@@ -528,7 +540,7 @@ OTHER_FILES += \
 CONFIG(debug, debug|release): LIBS += -lfreetype_D
 else:LIBS += -lfreetype
 
-INCLUDEPATH += $$PWD/include/freetype
-DEPENDPATH += $$PWD/include/freetype
+INCLUDEPATH += $$_PRO_FILE_PWD_/include/freetype
+DEPENDPATH += $$_PRO_FILE_PWD_/include/freetype
 
-ANDROID_PACKAGE_SOURCE_DIR = $$PWD/resource/android
+ANDROID_PACKAGE_SOURCE_DIR = $$_PRO_FILE_PWD_/resource/android

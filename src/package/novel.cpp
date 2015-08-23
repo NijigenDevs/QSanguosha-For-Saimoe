@@ -328,20 +328,21 @@ void JisuiCard::onEffect(const CardEffectStruct &effect) const{
     QList<int> card_ids;
     foreach(QVariant card_id, ag_list)
         card_ids << card_id.toInt();
-    if (effect.to->getHandcardNum() > 0 ){
+    if (effect.to->getHandcardNum() > 0)
+    {
 
         QList<CardsMoveStruct> exchangeMove;
 
-        const Card *excard = room->askForExchange(effect.to,"jisui",1,false,NULL,true);
+        const Card *excard = room->askForExchange(effect.to, "jisui", 1, 0, "@jisui-exchange", "", ".");
 
         if (excard){
             int card_id = room->askForAG(effect.to, card_ids, false, objectName());
             card_ids.removeOne(card_id);
 
-            CardsMoveStruct move1( excard->getEffectiveId() ,  NULL , Player::PlaceTable ,
-                CardMoveReason(CardMoveReason::S_REASON_SWAP, effect.to->objectName(), NULL , "jisui" , NULL));
-            CardsMoveStruct move2( card_id , effect.to , Player::PlaceHand ,
-                CardMoveReason(CardMoveReason::S_REASON_SWAP, NULL , effect.to->objectName(), "jisui" , NULL));
+            CardsMoveStruct move1(excard->getEffectiveId(),  NULL, Player::PlaceTable,
+                CardMoveReason(CardMoveReason::S_REASON_SWAP, effect.to->objectName(), NULL, "jisui", NULL));
+            CardsMoveStruct move2(card_id, effect.to, Player::PlaceHand,
+                CardMoveReason(CardMoveReason::S_REASON_SWAP, NULL, effect.to->objectName(), "jisui", NULL));
             exchangeMove.push_back(move1);
             exchangeMove.push_back(move2);
             room->moveCardsAtomic(exchangeMove, true);

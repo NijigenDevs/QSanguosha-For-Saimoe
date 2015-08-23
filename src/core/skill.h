@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #ifndef _SKILL_H
@@ -168,7 +168,21 @@ public:
     QList<TriggerEvent> getTriggerEvents() const;
 
     virtual int getPriority() const;
+    virtual double getDynamicPriority(TriggerEvent e) const;
+    //     double getCurrentPriority() const
+    //     {
+    //         return current_priority;
+    //     }
+    //     void setCurrentPriority(double p) const
+    //     {
+    //         current_priority = p;
+    //     }
+
+    void insertPriority(TriggerEvent e, double value);
+
     virtual bool triggerable(const ServerPlayer *target) const;
+
+    virtual void record(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const;
 
     virtual TriggerList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const;
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &ask_who) const;
@@ -186,9 +200,10 @@ protected:
     const ViewAsSkill *view_as_skill;
     QList<TriggerEvent> events;
     bool global;
+    QHash<TriggerEvent, double> priority;
 
 private:
-    mutable double dynamic_priority;
+    mutable double current_priority;
 };
 
 class Scenario;
@@ -314,7 +329,7 @@ public:
 class TargetModSkill : public Skill
 {
     Q_OBJECT
-    Q_ENUMS(ModType)
+        Q_ENUMS(ModType)
 
 public:
     enum ModType

@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #include "choosetriggerorderbox.h"
@@ -193,7 +193,8 @@ QString TriggerOptionButton::displayedTextOf(const QString &str)
             .arg(Sanguosha->translate(targetName));
     }
     if (time > 1)
-        text += " " + tr("*") + time;
+        //text += " " + tr("*") + time;
+        text += QString(" %1 %2").arg(tr("*")).arg(time);
 
     return text;
 }

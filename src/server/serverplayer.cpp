@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #include "serverplayer.h"
@@ -35,9 +35,9 @@ const int ServerPlayer::S_NUM_SEMAPHORES = 6;
 
 ServerPlayer::ServerPlayer(Room *room)
     : Player(room), m_isClientResponseReady(false), m_isWaitingReply(false),
-      event_received(false), socket(NULL), room(room),
-      ai(NULL), trust_ai(new TrustAI(this)), recorder(NULL),
-      _m_phases_index(0)
+    event_received(false), socket(NULL), room(room),
+    ai(NULL), trust_ai(new TrustAI(this)), recorder(NULL),
+    _m_phases_index(0)
 {
     semas = new QSemaphore *[S_NUM_SEMAPHORES];
     for (int i = 0; i < S_NUM_SEMAPHORES; i++)
@@ -120,7 +120,7 @@ void ServerPlayer::throwAllEquips()
     if (equips.isEmpty()) return;
 
     DummyCard card;
-    foreach(const Card *equip, equips) {
+    foreach (const Card *equip, equips) {
         if (!isJilei(&card))
             card.addSubcard(equip);
     }
@@ -196,7 +196,7 @@ void ServerPlayer::throwAllCards()
     card->deleteLater();
 
     QList<const Card *> tricks = getJudgingArea();
-    foreach(const Card *trick, tricks) {
+    foreach (const Card *trick, tricks) {
         CardMoveReason reason(CardMoveReason::S_REASON_THROW, this->objectName());
         room->throwCard(trick, reason, NULL);
     }
@@ -250,13 +250,39 @@ QList<int> ServerPlayer::forceToDiscard(int discard_num, bool include_equip, boo
     return to_discard;
 }
 
+QList<int> ServerPlayer::forceToDiscard(int discard_num, const QString &pattern, const QString &expand_pile, bool is_discard)
+{
+    QList<int> to_discard;
+    QList<const Card *> all_cards;
+    foreach (const Card *c, getCards("he")) {
+        if (Sanguosha->matchExpPattern(pattern, this, c))
+            all_cards << c;
+    }
+    foreach (const QString &pile,expand_pile.split(",")) {
+        foreach (int id, getPile(pile))
+            all_cards << Sanguosha->getCard(id);
+    }
+    qShuffle(all_cards);
+
+    for (int i = 0; i < all_cards.length(); i++) {
+        if (!is_discard || !isJilei(all_cards.at(i)))
+            to_discard << all_cards.at(i)->getId();
+        if (to_discard.length() == discard_num)
+            break;
+    }
+
+    return to_discard;
+}
+
 int ServerPlayer::aliveCount(bool includeRemoved) const
 {
     int n = room->alivePlayerCount();
-    if (!includeRemoved)
-        foreach (ServerPlayer *p, room->getAllPlayers())
+    if (!includeRemoved) {
+        foreach (ServerPlayer *p, room->getAllPlayers()) {
             if (p->isRemoved())
                 n--;
+        }
+    }
     return n;
 }
 
@@ -344,7 +370,7 @@ void ServerPlayer::getMessage(QByteArray request)
         case S_DEST_ROOM:
             emit roomPacketReceived(packet);
             break;
-        //unused destination. Lobby hasn't been implemented.
+            //unused destination. Lobby hasn't been implemented.
         case S_DEST_LOBBY:
             emit lobbyPacketReceived(packet);
             break;
@@ -464,8 +490,8 @@ void ServerPlayer::removeCard(const Card *card, Place place)
         bool show_log = true;
         foreach(const QString &flag, flags)
             if (flag.endsWith("_InTempMoving")) {
-            show_log = false;
-            break;
+                show_log = false;
+                break;
             }
         if (show_log) {
             LogMessage log;
@@ -524,13 +550,13 @@ bool ServerPlayer::isLastHandCard(const Card *card, bool contain) const
         return handcards.length() == 1 && handcards.first()->getEffectiveId() == card->getEffectiveId();
     } else if (card->getSubcards().length() > 0) {
         if (!contain) {
-            foreach(int card_id, card->getSubcards()) {
+            foreach (int card_id, card->getSubcards()) {
                 if (!handcards.contains(Sanguosha->getCard(card_id)))
                     return false;
             }
             return handcards.length() == card->getSubcards().length();
         } else {
-            foreach(const Card *ncard, handcards) {
+            foreach (const Card *ncard, handcards) {
                 if (!card->getSubcards().contains(ncard->getEffectiveId()))
                     return false;
             }
@@ -583,16 +609,14 @@ bool ServerPlayer::hasNullification() const
         if (card->isKindOf("Nullification"))
             return true;
     }
-    foreach (const QString &pile, getPileNames()) {
-        if (pile.startsWith("&") || pile == "wooden_ox") {
-            foreach (int id, getPile(pile)) {
-        if (Sanguosha->getCard(id)->isKindOf("Nullification"))
-            return true;
-    }
+    foreach (const QString &pile, getHandPileList(false)) {
+        foreach (int id, getPile(pile)) {
+            if (Sanguosha->getCard(id)->isKindOf("Nullification"))
+                return true;
         }
     }
-    foreach(const Skill *skill, getVisibleSkillList(true)) {
-        if (hasSkill(skill->objectName())){
+    foreach (const Skill *skill, getVisibleSkillList(true)) {
+        if (hasSkill(skill->objectName())) {
             if (skill->inherits("ViewAsSkill")) {
                 const ViewAsSkill *vsskill = qobject_cast<const ViewAsSkill *>(skill);
                 if (vsskill->isEnabledAtNullification(this)) return true;
@@ -900,7 +924,7 @@ void ServerPlayer::skip(Player::Phase phase, bool sendLog)
         << "play" << "discard" << "finish" << "not_active";
     int index = static_cast<int>(phase);
 
-    if (sendLog){
+    if (sendLog) {
         LogMessage log;
         log.type = "#SkipPhase";
         log.from = this;
@@ -967,7 +991,7 @@ void ServerPlayer::addSkill(const QString &skill_name, bool head_skill)
 {
     Player::addSkill(skill_name, head_skill);
     JsonArray args;
-    args << (int) QSanProtocol::S_GAME_EVENT_ADD_SKILL;
+    args << (int)QSanProtocol::S_GAME_EVENT_ADD_SKILL;
     args << objectName();
     args << skill_name;
     args << head_skill;
@@ -978,7 +1002,7 @@ void ServerPlayer::loseSkill(const QString &skill_name)
 {
     Player::loseSkill(skill_name);
     JsonArray args;
-    args << (int) QSanProtocol::S_GAME_EVENT_LOSE_SKILL;
+    args << (int)QSanProtocol::S_GAME_EVENT_LOSE_SKILL;
     args << objectName();
     args << skill_name;
     room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
@@ -990,7 +1014,7 @@ void ServerPlayer::setGender(General::Gender gender)
         return;
     Player::setGender(gender);
     JsonArray args;
-    args << (int) QSanProtocol::S_GAME_EVENT_CHANGE_GENDER;
+    args << (int)QSanProtocol::S_GAME_EVENT_CHANGE_GENDER;
     args << objectName();
     args << (int)gender;
     room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
@@ -1079,20 +1103,20 @@ void ServerPlayer::introduceTo(ServerPlayer *player)
     }
 
     if (hasShownGeneral1()) {
-        foreach(const QString skill_name, head_skills.keys()) {
+        foreach (const QString skill_name, head_skills.keys()) {
             if (Sanguosha->getSkill(skill_name)->isVisible()) {
                 JsonArray args1;
-                args1 << (int) S_GAME_EVENT_ADD_SKILL;
+                args1 << (int)S_GAME_EVENT_ADD_SKILL;
                 args1 << objectName();
                 args1 << skill_name;
                 args1 << true;
                 room->doNotify(player, S_COMMAND_LOG_EVENT, args1);
             }
 
-            foreach(const Skill *related_skill, Sanguosha->getRelatedSkills(skill_name)) {
+            foreach (const Skill *related_skill, Sanguosha->getRelatedSkills(skill_name)) {
                 if (!related_skill->isVisible()) {
                     JsonArray args2;
-                    args2 << (int) S_GAME_EVENT_ADD_SKILL;
+                    args2 << (int)S_GAME_EVENT_ADD_SKILL;
                     args2 << objectName();
                     args2 << related_skill->objectName();
                     args2 << true;
@@ -1103,7 +1127,7 @@ void ServerPlayer::introduceTo(ServerPlayer *player)
     }
 
     if (hasShownGeneral2()) {
-        foreach(const QString skill_name, deputy_skills.keys()) {
+        foreach (const QString skill_name, deputy_skills.keys()) {
             if (Sanguosha->getSkill(skill_name)->isVisible()) {
                 JsonArray args1;
                 args1 << S_GAME_EVENT_ADD_SKILL;
@@ -1113,10 +1137,10 @@ void ServerPlayer::introduceTo(ServerPlayer *player)
                 room->doNotify(player, S_COMMAND_LOG_EVENT, args1);
             }
 
-            foreach(const Skill *related_skill, Sanguosha->getRelatedSkills(skill_name)) {
+            foreach (const Skill *related_skill, Sanguosha->getRelatedSkills(skill_name)) {
                 if (!related_skill->isVisible()) {
                     JsonArray args2;
-                    args2 << (int) S_GAME_EVENT_ADD_SKILL;
+                    args2 << (int)S_GAME_EVENT_ADD_SKILL;
                     args2 << objectName();
                     args2 << related_skill->objectName();
                     args2 << false;
@@ -1164,7 +1188,7 @@ void ServerPlayer::marshal(ServerPlayer *player) const
 
     if (!isKongcheng()) {
         CardsMoveStruct move;
-        foreach(const Card *card, handcards) {
+        foreach (const Card *card, handcards) {
             move.card_ids << card->getId();
             if (player == this) {
                 WrappedCard *wrapped = qobject_cast<WrappedCard *>(room->getCard(card->getId()));
@@ -1184,7 +1208,7 @@ void ServerPlayer::marshal(ServerPlayer *player) const
 
     if (hasEquip()) {
         CardsMoveStruct move;
-        foreach(const Card *card, getEquips()) {
+        foreach (const Card *card, getEquips()) {
             move.card_ids << card->getId();
             WrappedCard *wrapped = qobject_cast<WrappedCard *>(room->getCard(card->getId()));
             if (wrapped->isModified())
@@ -1255,7 +1279,7 @@ void ServerPlayer::marshal(ServerPlayer *player) const
     foreach(const QString &flag, flags)
         room->notifyProperty(player, this, "flags", flag);
 
-    foreach(const QString &item, history.keys()) {
+    foreach (const QString &item, history.keys()) {
         int value = history.value(item);
         if (value > 0) {
 
@@ -1295,7 +1319,7 @@ void ServerPlayer::addToPile(const QString &pile_name, QList<int> card_ids,
 {
     if (!open) {
         if (open_players.isEmpty()) {
-            foreach(int id, card_ids) {
+            foreach (int id, card_ids) {
                 ServerPlayer *owner = room->getCardOwner(id);
                 if (owner && !open_players.contains(owner))
                     open_players << owner;
@@ -1362,7 +1386,7 @@ void ServerPlayer::showGeneral(bool head_general, bool trigger_event, bool sendL
         general_name = names.first();
 
         JsonArray arg;
-        arg << (int) S_GAME_EVENT_CHANGE_HERO;
+        arg << (int)S_GAME_EVENT_CHANGE_HERO;
         arg << objectName();
         arg << general_name;
         arg << false;
@@ -1370,33 +1394,32 @@ void ServerPlayer::showGeneral(bool head_general, bool trigger_event, bool sendL
         room->doBroadcastNotify(S_COMMAND_LOG_EVENT, arg);
         room->changePlayerGeneral(this, general_name);
 
-        sendSkillsToOthers();
 
-        if (!property("Duanchang").toStringList().contains("head"))
-            foreach(const Skill *skill, getHeadSkillList()) {
-            if (skill->getFrequency() == Skill::Limited && !skill->getLimitMark().isEmpty()
-                && (!skill->isLordSkill() || hasLordSkill(skill->objectName()))
-                && hasShownSkill(skill)) {
-                JsonArray arg;
-                arg << objectName();
-                arg << skill->getLimitMark();
-                arg << getMark(skill->getLimitMark());
-                room->doBroadcastNotify(QSanProtocol::S_COMMAND_SET_MARK, arg);
+        if (!property("Duanchang").toString().split(",").contains("head")) {
+            sendSkillsToOthers();
+            foreach (const Skill *skill, getHeadSkillList()) {
+                if (skill->getFrequency() == Skill::Limited && !skill->getLimitMark().isEmpty() && (!skill->isLordSkill() || hasLordSkill(skill->objectName())) && hasShownSkill(skill)) {
+                    JsonArray arg;
+                    arg << objectName();
+                    arg << skill->getLimitMark();
+                    arg << getMark(skill->getLimitMark());
+                    room->doBroadcastNotify(QSanProtocol::S_COMMAND_SET_MARK, arg);
+                }
             }
         }
 
-        foreach (ServerPlayer *p, room->getOtherPlayers(this, true))
+        foreach(ServerPlayer *p, room->getOtherPlayers(this, true))
             room->notifyProperty(p, this, "head_skin_id");
 
         if (!hasShownGeneral2()) {
-            QString kingdom = room->getMode() == "custom_scenario" ? getKingdom() : getGeneral()->getKingdom();
+            QString kingdom = getKingdom() != getGeneral()->getKingdom() ? getKingdom() : getGeneral()->getKingdom();
             room->setPlayerProperty(this, "kingdom", kingdom);
 
             QString role = HegemonyMode::GetMappedRole(kingdom);
             int i = 1;
             bool has_lord = isAlive() && getGeneral()->isLord();
             if (!has_lord) {
-                foreach(ServerPlayer *p, room->getOtherPlayers(this, true)) {
+                foreach (ServerPlayer *p, room->getOtherPlayers(this, true)) {
                     if (p->getKingdom() == kingdom) {
                         if (p->getGeneral()->isLord()) {
                             has_lord = true;
@@ -1416,8 +1439,8 @@ void ServerPlayer::showGeneral(bool head_general, bool trigger_event, bool sendL
 
         if (isLord()) {
             QString kingdom = getKingdom();
-            foreach(ServerPlayer *p, room->getPlayers()) {
-                if (p->getKingdom() == kingdom && p->getRole() == "careerist"){
+            foreach (ServerPlayer *p, room->getPlayers()) {
+                if (p->getKingdom() == kingdom && p->getRole() == "careerist") {
                     room->setPlayerProperty(p, "role", HegemonyMode::GetMappedRole(kingdom));
                     room->broadcastProperty(p, "kingdom");
                 }
@@ -1440,13 +1463,11 @@ void ServerPlayer::showGeneral(bool head_general, bool trigger_event, bool sendL
         room->doBroadcastNotify(S_COMMAND_LOG_EVENT, arg);
         room->changePlayerGeneral2(this, general_name);
 
-        sendSkillsToOthers(false);
 
-        if (!property("Duanchang").toStringList().contains("deputy")) {
-            foreach(const Skill *skill, getDeputySkillList()) {
-                if (skill->getFrequency() == Skill::Limited && !skill->getLimitMark().isEmpty()
-                    && (!skill->isLordSkill() || hasLordSkill(skill->objectName()))
-                    && hasShownSkill(skill)) {
+        if (!property("Duanchang").toString().split(",").contains("deputy")) {
+            sendSkillsToOthers(false);
+            foreach (const Skill *skill, getDeputySkillList()) {
+                if (skill->getFrequency() == Skill::Limited && !skill->getLimitMark().isEmpty() && (!skill->isLordSkill() || hasLordSkill(skill->objectName())) && hasShownSkill(skill)) {
                     JsonArray arg;
                     arg << objectName();
                     arg << skill->getLimitMark();
@@ -1456,18 +1477,18 @@ void ServerPlayer::showGeneral(bool head_general, bool trigger_event, bool sendL
             }
         }
 
-        foreach (ServerPlayer *p, room->getOtherPlayers(this, true))
+        foreach(ServerPlayer *p, room->getOtherPlayers(this, true))
             room->notifyProperty(p, this, "deputy_skin_id");
 
         if (!hasShownGeneral1()) {
-            QString kingdom = room->getMode() == "custom_scenario" ? getKingdom() : getGeneral2()->getKingdom();
+            QString kingdom = getKingdom() != getGeneral()->getKingdom() ? getKingdom() : getGeneral()->getKingdom();
             room->setPlayerProperty(this, "kingdom", kingdom);
 
             QString role = HegemonyMode::GetMappedRole(kingdom);
             int i = 1;
             bool has_lord = isAlive() && getGeneral()->isLord();
             if (!has_lord) {
-                foreach(ServerPlayer *p, room->getOtherPlayers(this, true)) {
+                foreach (ServerPlayer *p, room->getOtherPlayers(this, true)) {
                     if (p->getKingdom() == kingdom) {
                         if (p->getGeneral()->isLord()) {
                             has_lord = true;
@@ -1479,8 +1500,7 @@ void ServerPlayer::showGeneral(bool head_general, bool trigger_event, bool sendL
                 }
             }
 
-            if ((!has_lord && i > (room->getPlayers().length() / 2))
-                || (has_lord && getLord(true)->isDead()))
+            if ((!has_lord && i > (room->getPlayers().length() / 2)) || (has_lord && getLord(true)->isDead()))
                 role = "careerist";
 
             room->setPlayerProperty(this, "role", role);
@@ -1520,7 +1540,7 @@ void ServerPlayer::hideGeneral(bool head_general)
         room->setPlayerProperty(this, "flags", "-hiding");
 
         JsonArray arg;
-        arg << (int) S_GAME_EVENT_CHANGE_HERO;
+        arg << (int)S_GAME_EVENT_CHANGE_HERO;
         arg << objectName();
         arg << "anjiang";
         arg << false;
@@ -1531,10 +1551,8 @@ void ServerPlayer::hideGeneral(bool head_general)
 
         disconnectSkillsFromOthers();
 
-        foreach(const Skill *skill, getVisibleSkillList()) {
-            if (skill->getFrequency() == Skill::Limited && !skill->getLimitMark().isEmpty()
-                && (!skill->isLordSkill() || hasLordSkill(skill->objectName()))
-                && !hasShownSkill(skill) && getMark(skill->getLimitMark()) > 0) {
+        foreach (const Skill *skill, getVisibleSkillList()) {
+            if (skill->getFrequency() == Skill::Limited && !skill->getLimitMark().isEmpty() && (!skill->isLordSkill() || hasLordSkill(skill->objectName())) && !hasShownSkill(skill) && getMark(skill->getLimitMark()) > 0) {
                 JsonArray arg;
                 arg << objectName();
                 arg << skill->getLimitMark();
@@ -1559,7 +1577,7 @@ void ServerPlayer::hideGeneral(bool head_general)
         room->setPlayerProperty(this, "flags", "-hiding");
 
         JsonArray arg;
-        arg << (int) S_GAME_EVENT_CHANGE_HERO;
+        arg << (int)S_GAME_EVENT_CHANGE_HERO;
         arg << objectName();
         arg << "anjiang";
         arg << true;
@@ -1570,10 +1588,8 @@ void ServerPlayer::hideGeneral(bool head_general)
 
         disconnectSkillsFromOthers(false);
 
-        foreach(const Skill *skill, getVisibleSkillList()) {
-            if (skill->getFrequency() == Skill::Limited && !skill->getLimitMark().isEmpty()
-                && (!skill->isLordSkill() || hasLordSkill(skill->objectName()))
-                && !hasShownSkill(skill) && getMark(skill->getLimitMark()) > 0) {
+        foreach (const Skill *skill, getVisibleSkillList()) {
+            if (skill->getFrequency() == Skill::Limited && !skill->getLimitMark().isEmpty() && (!skill->isLordSkill() || hasLordSkill(skill->objectName())) && !hasShownSkill(skill) && getMark(skill->getLimitMark()) > 0) {
                 JsonArray arg;
                 arg << objectName();
                 arg << skill->getLimitMark();
@@ -1625,7 +1641,7 @@ void ServerPlayer::removeGeneral(bool head_general)
         room->setPlayerProperty(this, "general1_showed", true);
 
         JsonArray arg;
-        arg << (int) S_GAME_EVENT_CHANGE_HERO;
+        arg << (int)S_GAME_EVENT_CHANGE_HERO;
         arg << objectName();
         arg << general_name;
         arg << false;
@@ -1636,7 +1652,7 @@ void ServerPlayer::removeGeneral(bool head_general)
         setSkillsPreshowed("h", false);
         disconnectSkillsFromOthers();
 
-        foreach(const Skill *skill, getHeadSkillList()){
+        foreach (const Skill *skill, getHeadSkillList()) {
             if (skill)
                 room->detachSkillFromPlayer(this, skill->objectName(), true);
         }
@@ -1647,7 +1663,7 @@ void ServerPlayer::removeGeneral(bool head_general)
             int i = 1;
             bool has_lord = isAlive() && getGeneral()->isLord();
             if (!has_lord) {
-                foreach(ServerPlayer *p, room->getOtherPlayers(this, true)) {
+                foreach (ServerPlayer *p, room->getOtherPlayers(this, true)) {
                     if (p->getKingdom() == kingdom) {
                         if (p->isAlive() && p->getGeneral()->isLord()) {
                             has_lord = true;
@@ -1678,7 +1694,7 @@ void ServerPlayer::removeGeneral(bool head_general)
         room->setPlayerProperty(this, "general2_showed", true);
 
         JsonArray arg;
-        arg << (int) S_GAME_EVENT_CHANGE_HERO;
+        arg << (int)S_GAME_EVENT_CHANGE_HERO;
         arg << objectName();
         arg << general_name;
         arg << true;
@@ -1689,7 +1705,7 @@ void ServerPlayer::removeGeneral(bool head_general)
         setSkillsPreshowed("d", false);
         disconnectSkillsFromOthers(false);
 
-        foreach(const Skill *skill, getDeputySkillList()){
+        foreach (const Skill *skill, getDeputySkillList()) {
             if (skill)
                 room->detachSkillFromPlayer(this, skill->objectName());
         }
@@ -1700,7 +1716,7 @@ void ServerPlayer::removeGeneral(bool head_general)
             int i = 1;
             bool has_lord = isAlive() && getGeneral()->isLord();
             if (!has_lord) {
-                foreach(ServerPlayer *p, room->getOtherPlayers(this, true)) {
+                foreach (ServerPlayer *p, room->getOtherPlayers(this, true)) {
                     if (p->getKingdom() == kingdom) {
                         if (p->isAlive() && p->getGeneral()->isLord()) {
                             has_lord = true;
@@ -1738,8 +1754,8 @@ void ServerPlayer::sendSkillsToOthers(bool head_skill /* = true */)
     QStringList names = room->getTag(objectName()).toStringList();
     if (names.isEmpty()) return;
 
-    QString general = head_skill ? names.first() : names.last();
-    foreach(const Skill *skill, Sanguosha->getGeneral(general)->getSkillList(true, head_skill)) {
+    const QList<const Skill *> skills = head_skill ? getHeadSkillList() : getDeputySkillList();
+    foreach (const Skill *skill, skills) {
         JsonArray args;
         args << QSanProtocol::S_GAME_EVENT_ADD_SKILL;
         args << objectName();
@@ -1752,12 +1768,11 @@ void ServerPlayer::sendSkillsToOthers(bool head_skill /* = true */)
 
 void ServerPlayer::disconnectSkillsFromOthers(bool head_skill /* = true */)
 {
-    foreach(const QString &skill, head_skill ? head_skills.keys() : deputy_skills.keys())
-    {
+    foreach (const QString &skill, head_skill ? head_skills.keys() : deputy_skills.keys()) {
         QVariant _skill = skill;
         room->getThread()->trigger(EventLoseSkill, room, this, _skill);
         JsonArray args;
-        args << (int) QSanProtocol::S_GAME_EVENT_DETACH_SKILL;
+        args << (int)QSanProtocol::S_GAME_EVENT_DETACH_SKILL;
         args << objectName();
         args << skill;
         foreach(ServerPlayer *p, room->getOtherPlayers(this, true))
@@ -1797,9 +1812,9 @@ bool ServerPlayer::askForGeneralShow(bool one, bool refusable)
 void ServerPlayer::notifyPreshow()
 {
     JsonArray args;
-    args << (int) S_GAME_EVENT_UPDATE_PRESHOW;
+    args << (int)S_GAME_EVENT_UPDATE_PRESHOW;
     JsonObject args1;
-    foreach(const QString skill, head_skills.keys() + deputy_skills.keys()) {
+    foreach (const QString skill, head_skills.keys() + deputy_skills.keys()) {
         args1.insert(skill, head_skills.value(skill, false)
             || deputy_skills.value(skill, false));
     }
@@ -1807,7 +1822,7 @@ void ServerPlayer::notifyPreshow()
     room->doNotify(this, S_COMMAND_LOG_EVENT, args);
 
     JsonArray args2;
-    args2 << (int) QSanProtocol::S_GAME_EVENT_UPDATE_SKILL;
+    args2 << (int)QSanProtocol::S_GAME_EVENT_UPDATE_SKILL;
     room->doNotify(this, QSanProtocol::S_COMMAND_LOG_EVENT, args2);
 }
 
@@ -2037,7 +2052,7 @@ void ServerPlayer::changeToLord()
     arg_changehero << false;
     room->doNotify(this, QSanProtocol::S_COMMAND_LOG_EVENT, arg_changehero);
 
-    foreach(const Skill *skill, lord->getVisibleSkillList(true)) {
+    foreach (const Skill *skill, lord->getVisibleSkillList(true)) {
         addSkill(skill->objectName());
 
         if (skill->getFrequency() == Skill::Limited && !skill->getLimitMark().isEmpty()) {

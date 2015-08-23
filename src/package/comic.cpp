@@ -929,7 +929,7 @@ public :
 		bool has_given = false;
 		foreach(ServerPlayer *p, room->getOtherPlayers(player)){
 			if (p->getHandcardNum() > 0){
-				const Card *card = room->askForExchange(p, objectName(), 1, false, "@xipin_give", true);
+				const Card *card = room->askForExchange(p, objectName(), 1, 0, "@xipin_give", "", ".");
 				if (card){
 					CardsMoveStruct move;
 					move.card_ids << card->getEffectiveId();

@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #include "jiange-defense.h"
@@ -405,14 +405,14 @@ public:
 
         foreach (int id, ids) {
             switch (Sanguosha->getCard(id)->getTypeId()) {
-            case Card::TypeTrick:
-                has_trick = true;
-                break;
-            case Card::TypeEquip:
-                has_equip = true;
-                break;
-            default:
-                break;
+                case Card::TypeTrick:
+                    has_trick = true;
+                    break;
+                case Card::TypeEquip:
+                    has_equip = true;
+                    break;
+                default:
+                    break;
             }
         }
 

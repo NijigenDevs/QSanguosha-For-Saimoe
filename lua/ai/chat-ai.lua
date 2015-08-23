@@ -1,5 +1,5 @@
 --[[********************************************************************
-	Copyright (c) 2013-2014 - QSanguosha-Rara
+	Copyright (c) 2013-2015 Mogara
 
   This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
   See the LICENSE file for more details.
 
-  QSanguosha-Rara
+  Mogara
 *********************************************************************]]
 
 sgs.ai_chat = {}
@@ -223,7 +223,7 @@ end
 
 sgs.ai_chat_func[sgs.CardFinished].analeptic = function(self, player, data)
 	local use = data:toCardUse()
-	if use.card:isKindOf("Analeptic") and use.card:getSkillName() ~= "zhendu" then
+	if use.card and use.card:isKindOf("Analeptic") and use.card:getSkillName() ~= "zhendu" then
 		local to = use.to:first()
 		if to:getMark("drank") == 0 then return end
 		local suit = { "spade", "heart", "club", "diamond" }
@@ -327,7 +327,7 @@ end
 
 sgs.ai_chat_func[sgs.CardFinished].duoshi = function(self, player, data)
 	local use = data:toCardUse()
-	if use.card:isKindOf("AwaitExhausted") and use.card:getSkillName() == "duoshi" and use.from:usedTimes("DuoshiAE") >= 2 then
+	if use.card:isKindOf("AwaitExhausted") and use.card:getSkillName() == "duoshi" and use.from:usedTimes("ViewAsSkill_duoshiCard") >= 2 then
 		local chat = {
 			"又刷牌了",
 			"快点吧",
@@ -346,7 +346,7 @@ sgs.ai_chat_func[sgs.CardFinished].duoshi = function(self, player, data)
 end
 
 sgs.ai_chat_func[sgs.GeneralShown].show = function(self, player, data)
-	if self.room:getMode() == "jiange_defense" then return end
+	if sgs.isRoleExpose() then return end
 	local name1 =  sgs.Sanguosha:translate(self.player:getGeneralName())
 	local name2 =  sgs.Sanguosha:translate(self.player:getGeneral2Name())
 	local kingdom = sgs.Sanguosha:translate(self.player:getKingdom())
@@ -368,7 +368,7 @@ sgs.ai_chat_func[sgs.GeneralShown].show = function(self, player, data)
 		end
 	end
 	if shown == 1 then
-		table.insert(chat,"首亮一时爽，全家火葬场")
+		table.insert(chat,"首亮一时爽")
 		if sgs.GetConfig("RewardTheFirstShowingPlayer", true) then
 			table.insert(chat1,"我来摸两张")
 		end
@@ -407,7 +407,7 @@ sgs.ai_chat_func[sgs.GeneralShown].show = function(self, player, data)
 end
 
 sgs.ai_chat_func[sgs.DamageCaused].attackAnjiang = function(self, player, data)
-	if self.room:getMode() == "jiange_defense" then return end
+	if sgs.isRoleExpose() then return end
 	local damage = data:toDamage()
 	local chat = {
 			"看看局势再说",
@@ -485,20 +485,20 @@ sgs.ai_chat_func[sgs.GeneralShown].show_jiange = function(self, player, data)
 		table.insert(chat1, "众将官，剑阁去者！")
 		table.insert(chat1, "此战若胜，大业必成！")
 		table.insert(chat2, "蓝色！")
-	end	
-	if string.find(self.player:getGeneral():objectName(), "baihu") then 
+	end
+	if string.find(self.player:getGeneral():objectName(), "baihu") then
 		table.insert(chat2, "喵~！")
 	end
-	if string.find(self.player:getGeneral():objectName(), "jiangwei") then 
+	if string.find(self.player:getGeneral():objectName(), "jiangwei") then
 		table.insert(chat1, "白水地狭路多，非征战之所，不如且退，去救剑阁。若剑阁一失，是绝路也。")
-		table.insert(chat1, "今四面受敌，粮道不同，不如退守剑阁，再作良图。")	
-	elseif string.find(self.player:getGeneral():objectName(), "dengai") then 
+		table.insert(chat1, "今四面受敌，粮道不同，不如退守剑阁，再作良图。")
+	elseif string.find(self.player:getGeneral():objectName(), "dengai") then
 		table.insert(chat1, "剑阁之守必还赴涪，则会方轨而进；剑阁之军不还，则应涪之兵寡矣。")
 		table.insert(chat1, "以愚意度之，可引一军从阴平小路出汉中德阳亭，用奇兵径取成都，姜维必撤兵来救，将军乘虚就取剑阁，可获全功。")
-	end	
+	end
 	for _, p in ipairs(sgs.robot) do
 		if p:objectName() == self.player:objectName() and (string.find(self.player:getGeneral():objectName(), "jg_") or math.random() < 0.1) then
-			if string.find(self.player:getGeneral():objectName(), "machine") then 
+			if string.find(self.player:getGeneral():objectName(), "machine") then
 			p:speak(chat2[math.random(1, #chat2)])
 			else
 			p:speak(chat1[math.random(1, #chat1)])

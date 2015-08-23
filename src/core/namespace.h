@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #ifndef _NAMESPACE_H
@@ -23,7 +23,8 @@
 
 #include <QString>
 
-namespace HegemonyMode {
+namespace HegemonyMode
+{
     QString GetMappedRole(const QString &kingdom);
     QString GetMappedKingdom(const QString &role);
 
@@ -34,7 +35,8 @@ namespace HegemonyMode {
     };
 }
 
-namespace MaxCardsType {
+namespace MaxCardsType
+{
     enum MaxCardsCount
     {
         Max = 1,

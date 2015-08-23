@@ -1,5 +1,5 @@
 --[[********************************************************************
-	Copyright (c) 2013-2014 - QSanguosha-Rara
+	Copyright (c) 2013-2015 Mogara
 
   This file is part of QSanguosha-Hegemony.
 
@@ -15,13 +15,27 @@
 
   See the LICENSE file for more details.
 
-  QSanguosha-Rara
+  Mogara
 *********************************************************************]]
+
 sgs.ai_skill_invoke.xunxun = function(self, data)
 	if not (self:willShowForDefence() or self:willShowForAttack()) then
 		return false
 	end
+	if self.player:getTreasure() and self.player:getTreasure():isKindOf("JadeSeal") then return false end
 	return true
+end
+
+sgs.ai_skill_movecards.xunxun = function(self, upcards, downcards, min_num, max_num)
+	local upcards_copy = table.copyFrom(upcards)
+	local down = {}
+	local id1 = self:askForAG(upcards_copy,false,"xunxun")
+	down[1] = id1
+	table.removeOne(upcards_copy,id1)
+	local id2 = self:askForAG(upcards_copy,false,"xunxun")
+	down[2] = id2
+	table.removeOne(upcards_copy,id2)
+	return upcards_copy,down
 end
 
 function sgs.ai_skill_invoke.wangxi(self, data)
@@ -31,7 +45,8 @@ function sgs.ai_skill_invoke.wangxi(self, data)
 		if (self.player:isFriendWith(target) or self:isFriend(target)) and not self:needKongcheng(target)then
 				return true
 		else
-			if	not ( target:getPhase() ~= sgs.Player_NotActive and (target:hasShownSkills(sgs.Active_cardneed_skill) or target:hasWeapon("Crossbow")) )
+			if self.player:hasShownSkill("fankui") and target:isNude() then return true end
+			if  not ( target:getPhase() ~= sgs.Player_NotActive and (target:hasShownSkills(sgs.Active_cardneed_skill) or target:hasWeapon("Crossbow")) )
 				and not ( target:getPhase() == sgs.Player_NotActive and target:hasShownSkills(sgs.notActive_cardneed_skill) )
 				or self:needKongcheng(target) then
 				return true
@@ -465,33 +480,33 @@ sgs.ai_cardsview.hongfa_slash = function(self, class_name, player)
 	return card_str
 end
 
-sgs.ai_skill_use["@@hongfa1"] = function(self)
+sgs.ai_skill_exchange["hongfa1"] = function(self,pattern,max_num,min_num,expand_pile)
 	local ints = sgs.QList2Table(self.player:getPile("heavenly_army"))
 	local int = getHongfaCard(ints)
 	if int then
-		return "@HongfaCard=" .. tostring(int)
+		return {int}
 	end
-	return "."
+	return {}
 end
 
-sgs.ai_skill_use["@@hongfa2"] = function(self)
-	if self.player:getRole() == "careerist" then return "." end
+sgs.ai_skill_exchange["hongfa2"] = function(self,pattern,max_num,min_num,expand_pile)
+	if self.player:getRole() == "careerist" then return {} end
 	local ints = sgs.QList2Table(self.player:getPile("heavenly_army"))
 	local pn = self.player:getTag("HongfaTianbingData"):toPlayerNum()
-	if pn.m_toCalculate ~= self.player:getKingdom() then return "." end
+	if pn.m_toCalculate ~= self.player:getKingdom() then return {} end
 	if pn.m_reason == "wuxin" or "hongfa" == pn.m_reason or pn.m_reason == "PeaceSpell" then
-		return "@HongfaTianbingCard=" .. table.concat(ints, "+")
+		return ints
 	elseif pn.m_reason == "DragonPhoenix" or pn.m_reason == "xiongyi" then
-		return "."
+		return {}
 	elseif pn.m_reason == "fight_together" then
 		--@todo
-		return "."
+		return {}
 	elseif pn.m_reason == "IronArmor" then
-		return "."
+		return {}
 	else
 		self.room:writeToConsole("@@hongfa2 " .. pn.m_reason .. " is empty!")
 	end
-	return "."
+	return {}
 end
 
 sgs.ai_slash_prohibit.PeaceSpell = function(self, from, enemy, card)

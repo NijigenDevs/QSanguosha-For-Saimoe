@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #ifndef PLAYERCARDBOX_H
@@ -39,7 +39,7 @@ public:
     void chooseCard(const QString &reason, const ClientPlayer *player,
         const QString &flags = "hej", bool handcardVisible = false,
         Card::HandlingMethod method = Card::MethodNone,
-        const QList<int> &disabledIds = QList<int>());
+        const QList<int> &disabledIds = QList<int>(), const QList<int> &handcards = QList<int>());
     void clear();
 
 protected:
@@ -69,6 +69,7 @@ private:
     int intervalsBetweenAreas;
     int intervalsBetweenRows;
     int maxCardsInOneRow;
+    QList<int> handcards;
 
     static const int maxCardNumberInOneRow;
 

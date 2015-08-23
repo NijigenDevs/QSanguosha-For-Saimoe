@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #include "choosegeneralbox.h"
@@ -228,9 +228,8 @@ static bool sortByKingdom(const QString &gen1, const QString &gen2)
         QStringList kingdoms = Sanguosha->getKingdoms();
         //kingdoms << "god";
         int i = 0;
-        foreach (const QString &kingdom, kingdoms) {
+        foreach (const QString &kingdom, kingdoms)
             kingdom_priority_map[kingdom] = i++;
-        }
     }
     const General *g1 = Sanguosha->getGeneral(gen1);
     const General *g2 = Sanguosha->getGeneral(gen2);
@@ -472,7 +471,7 @@ void ChooseGeneralBox::adjustItems()
 void ChooseGeneralBox::_initializeItems()
 {
     QList<const General *> generals;
-    foreach(GeneralCardItem *item, items)
+    foreach (GeneralCardItem *item, items)
         generals << Sanguosha->getGeneral(item->objectName());
 
     int index = 0;
@@ -514,6 +513,7 @@ void ChooseGeneralBox::reply()
     if (progress_bar != NULL) {
         progress_bar->hide();
         progress_bar->deleteLater();
+        progress_bar = NULL;
     }
     ClientInstance->onPlayerChooseGeneral(generals);
 }

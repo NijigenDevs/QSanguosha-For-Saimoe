@@ -1,5 +1,5 @@
 --[[********************************************************************
-	Copyright (c) 2013-2014 - QSanguosha-Rara
+	Copyright (c) 2013-2015 Mogara
 
   This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
   See the LICENSE file for more details.
 
-  QSanguosha-Rara
+  Mogara
 *********************************************************************]]
 
 sgs.ai_skill_invoke["userdefine:halfmaxhp"] = function(self)
@@ -219,10 +219,21 @@ sgs.ai_skill_choice["GameRule:TriggerOrder"] = function(self, choices, data)
 
 	if skillTrigger then
 		if string.find(choices, "jieming") then return "jieming" end
+		if string.find(choices, "wangxi") and string.find(choices, "fankui") then 
+			local from = data:toDamage().from
+			if from and from:isNude() then return "wangxi" end
+		end
 		if string.find(choices, "fankui") and string.find(choices, "ganglie") then return "fankui" end
 		if string.find(choices, "wangxi") and string.find(choices, "ganglie") then return "ganglie" end
 		if string.find(choices, "luoshen") and string.find(choices, "guanxing") then return "guanxing" end
 		if string.find(choices, "wangxi") and string.find(choices, "fangzhu") then return "fangzhu" end
+
+		if table.contains(skillnames, "tiandu") then
+			local judge = data:toJudge()
+			if judge.card:isKindOf("Peach") or judge.card:isKindOf("Analeptic") then
+				return "tiandu"
+			end
+		end
 
 		local except = {}
 		for _, skillname in ipairs(skillnames) do

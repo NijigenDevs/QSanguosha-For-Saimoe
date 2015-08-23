@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #include "heroskincontainer.h"
@@ -263,9 +263,8 @@ void HeroSkinContainer::wheelEvent(QGraphicsSceneWheelEvent *event)
 void HeroSkinContainer::scrollBarValueChanged(int newValue)
 {
     int diff = newValue - m_oldScrollValue;
-    foreach (SkinItem *skinItem, m_skins) {
+    foreach (SkinItem *skinItem, m_skins)
         skinItem->moveBy(0, -diff);
-    }
 
     m_oldScrollValue = newValue;
 }

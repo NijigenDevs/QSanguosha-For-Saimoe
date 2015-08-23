@@ -1,5 +1,5 @@
 /********************************************************************
-    Copyright (c) 2013-2014 - QSanguosha-Rara
+    Copyright (c) 2013-2015 - Mogara
 
     This file is part of QSanguosha-Hegemony.
 
@@ -15,7 +15,7 @@
 
     See the LICENSE file for more details.
 
-    QSanguosha-Rara
+    Mogara
     *********************************************************************/
 
 #include "serverdialog.h"
@@ -24,6 +24,7 @@
 #include "engine.h"
 #include "customassigndialog.h"
 #include "banlistdialog.h"
+#include "scenario.h"
 
 #include <QTabWidget>
 #include <QFormLayout>
@@ -37,6 +38,7 @@
 #include <QLabel>
 #include <QRadioButton>
 #include <QHostInfo>
+#include <QComboBox>
 
 static QLayout *HLay(QWidget *left, QWidget *right)
 {
@@ -253,7 +255,7 @@ QWidget *ServerDialog::createAdvancedTab()
 
     port_edit = new QLineEdit;
     port_edit->setText(QString::number(Config.ServerPort));
-    port_edit->setValidator(new QIntValidator(1, 9999, port_edit));
+    port_edit->setValidator(new QIntValidator(1000, 65535, port_edit));
 
     layout->addLayout(HLay(forbid_same_ip_checkbox, disable_chat_checkbox));
     layout->addWidget(random_seat_checkbox);
@@ -460,16 +462,36 @@ QGroupBox *ServerDialog::createGameModeBox()
             button->setChecked(true);
     }
 
-    //jiange defense
-    QRadioButton *jiange_defense = new QRadioButton(tr("Jiange Defense"));
-    jiange_defense->setObjectName("jiange_defense");
-    mode_group->addButton(jiange_defense);
+    // add scenario modes
+    QRadioButton *scenario_button = new QRadioButton(tr("Scenario mode"));
+    scenario_button->setObjectName("scenario");
+    mode_group->addButton(scenario_button);
+    item_list << scenario_button;
 
-    if (Config.GameMode == "jiange_defense")
-        jiange_defense->setChecked(true);
+    scenario_ComboBox = new QComboBox;
+    scenario_ComboBox->setFocusPolicy(Qt::WheelFocus);
+    scenario_ComboBox->setEnabled(scenario_button->isDown());
+    connect(scenario_button,&QRadioButton::toggled,scenario_ComboBox,&QComboBox::setEnabled);
+    QStringList names = Sanguosha->getModScenarioNames();
+    foreach (QString name, names) {
+        QString scenario_name = Sanguosha->translate(name);
+        const Scenario *scenario = Sanguosha->getScenario(name);
+        if (scenario){ //crash,sometimes.
+            QString text = tr("%1 (%2 persons)").arg(scenario_name).arg(scenario->getPlayerCount());
+            scenario_ComboBox->addItem(text,name);
+        }
+    }
+    item_list << scenario_ComboBox;
 
-    item_list << jiange_defense;
-
+    if (mode_group->checkedButton() == NULL) {
+        int index = names.indexOf(Config.GameMode);
+        if (index != -1) {
+            scenario_button->setChecked(true);
+            scenario_ComboBox->setCurrentIndex(index);
+        } else 
+            mode_group->buttons().first()->setChecked(true); // for Lua Scenario.
+    }
+    
     // ============
 
     QVBoxLayout *left = new QVBoxLayout;
@@ -569,8 +591,14 @@ bool ServerDialog::config()
     Config.LuckCardLimitation = luck_card_spinbox->value();
 
     // game mode
-    QString objname = mode_group->checkedButton()->objectName();
-    Config.GameMode = objname;
+
+    if (mode_group->checkedButton()) {
+        QString objname = mode_group->checkedButton()->objectName();
+        if (objname == "scenario")
+            Config.GameMode = scenario_ComboBox->itemData(scenario_ComboBox->currentIndex()).toString();
+        else
+            Config.GameMode = objname;
+    }
 
     Config.setValue("ServerName", Config.ServerName);
     Config.setValue("GameMode", Config.GameMode);
