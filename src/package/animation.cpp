@@ -486,15 +486,16 @@ public:
 
 
     virtual bool cost(TriggerEvent event, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *ask_who) const{
-		if (event == TargetConfirmed){
-            if (room->askForSkillInvoke(ask_who, objectName(), data)){
-				ask_who->throwAllHandCards();
-				// sounds
-				return true;
-			}
-		}else {
-			return true;
-		}
+        if (event == TargetConfirmed){
+            if (room->askForDiscard(ask_who, objectName(), 2, 2, true, false, "@shiting-ask"))
+            {
+                // sounds
+                return true;
+            }
+        }
+        else {
+            return true;
+        }
 		return false;
 	}
 
@@ -2050,6 +2051,85 @@ public:
     }
 };
 
+class Qinyin : public TriggerSkill
+{
+public:
+    Qinyin() : TriggerSkill("qinyin")
+    {
+        frequency = NotFrequent;
+        events << CardUsed;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const
+    {
+        if (!TriggerSkill::triggerable(player))
+            return QStringList();
+        CardUseStruct use = data.value<CardUseStruct>();
+        if (use.card == NULL)
+            return QStringList();
+        int black = use.card->isBlack();
+        foreach(ServerPlayer *p, room->getOtherPlayers(player))
+        {
+            if (black && p->getHp() > player->getHp())
+            {
+                black++;
+                break;
+            }
+        }
+        if ((use.card->isRed() && !player->hasFlag("Qinyin_Red")) || (black == 2 && !player->hasFlag("Qinyin_Black")))
+            return QStringList(objectName());
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
+        const Card *card = data.value<CardUseStruct>().card;
+        bool red = card->isRed();
+        bool black = card->isBlack();
+        QList<ServerPlayer *> reds;
+        QList<ServerPlayer *> blacks;
+        foreach(ServerPlayer *p, room->getOtherPlayers(player))
+        {
+            if (black && p->getHp() > player->getHp() && player->canDiscard(p, "he"))
+            {
+                blacks << p;
+                continue;
+            } else if (red && p->getHp() >= player->getHp())
+            {
+                reds << p;
+            }
+
+        }
+        reds << player;
+        ServerPlayer *target = room->askForPlayerChosen(player, blacks.isEmpty() ? reds : blacks, objectName(), blacks.isEmpty() ? "@qinyin-red" : "@qinyin-black", true, false);
+        if (target != NULL)
+        {
+            player->tag["Qinyin_target"] = QVariant::fromValue(target);
+            player->tag["Qinyin_effect"] = QVariant::fromValue(blacks.isEmpty() ? true : false);
+            room->broadcastSkillInvoke(objectName());
+            player->setFlags(blacks.isEmpty() ? "Qinyin_Red" : "Qinyin_Black");
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        ServerPlayer *target = player->tag["Qinyin_target"].value<ServerPlayer *>();
+        bool red = player->tag["Qinyin_effect"].value<bool>();
+        if (target == NULL)
+            return false;
+        if (!red)
+        {
+            int id = room->askForCardChosen(player, target, "he", objectName(), false, Card::MethodDiscard);
+            if (id != -1)
+                room->throwCard(Sanguosha->getCard(id), target, player);
+        }
+        else
+            target->drawCards(1);
+        return false;
+    }
+};
 
 void MoesenPackage::addAnimationGenerals()
 {
@@ -2114,7 +2194,8 @@ void MoesenPackage::addAnimationGenerals()
     inori->addSkill(new Bajian);
     skills << new BajianViewAsSkill;
 
-    //General *n_maki = new General(this, "n_maki", "wei", 3, false); // A013
+    General *n_maki = new General(this, "n_maki", "wei", 3, false); // A013
+    n_maki->addSkill(new Qinyin);
     
     General *mayu = new General(this, "mayu", "wei", 3, false); // A014
     mayu->addSkill(new Pianxian);

@@ -841,8 +841,8 @@ enum TriggerEvent
 
     DrawNCards,
     AfterDrawNCards,
-    DiscardNCards
-    AfterDiscardNCards    
+    DiscardNCards,
+    AfterDiscardNCards,
 
     PreHpRecover,
     HpRecover,

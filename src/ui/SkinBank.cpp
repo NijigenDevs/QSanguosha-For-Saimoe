@@ -446,6 +446,7 @@ QPixmap QSanRoomSkin::getCardTinyPixmap(const QString &card_object_name) const
     key = QString(S_SKIN_KEY_CARD_TINY_ICON);
     if (isImageKeyDefined(key.arg(S_SKIN_KEY_DEFAULT)))
         return getPixmap(key, card_object_name);
+    return getPixmap(key, card_object_name);
 }
 
 QString QSanRoomSkin::getPlayerAudioEffectPath(const QString &eventName, const QString &category, int index, const Player *player) const

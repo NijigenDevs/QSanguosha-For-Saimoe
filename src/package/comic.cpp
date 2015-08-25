@@ -1849,6 +1849,7 @@ public:
 
 	static int view(Room *room, ServerPlayer *player, QList<int> &ids, QList<int> &enabled, QList<int> &disabled){
 		int result = -1, index = -1;
+        QList<int> &drawPile = room->getDrawPile();
 		LogMessage log;
 		log.type = "$ViewDrawPile";
 		log.from = player;
@@ -1856,36 +1857,81 @@ public:
 		room->sendLog(log);
 		room->broadcastSkillInvoke("laoyue");
 		room->notifySkillInvoked(player, "laoyue");
-		if (enabled.isEmpty()) {
-			JsonArray gongxinArgs;
-			gongxinArgs << player->objectName();
-			gongxinArgs << false;
-			gongxinArgs << JsonUtils::toJsonArray(ids);
-			room->doNotify(player, QSanProtocol::S_COMMAND_SHOW_ALL_CARDS, gongxinArgs);
-		}
-		else {
-			room->fillAG(ids, player, disabled);
-			int id = room->askForAG(player, enabled, true, "laoyue");
-			if (id != -1) {
-				index = ids.indexOf(id);
-				ids.removeOne(id);
-				result = id;
-			}
-			room->clearAG(player);
-		}
-		QList<int> &drawPile = room->getDrawPile();
-		for (int i = ids.length() - 1; i >= 0; i--)
-			drawPile.append(ids.at(i));
-		room->doBroadcastNotify(QSanProtocol::S_COMMAND_UPDATE_PILE, drawPile.length());
+        JsonArray gongxinArgs;
+        gongxinArgs << player->objectName();
+        gongxinArgs << false;
+        gongxinArgs << JsonUtils::toJsonArray(ids);
+        room->doNotify(player, QSanProtocol::S_COMMAND_SHOW_ALL_CARDS, gongxinArgs);
+        QString choice = player->getHandcardNum() >= 2 ? room->askForChoice(player, "laoyue", "use+put") : "use";
+        if (choice == "use")
+        {
+            if (enabled.isEmpty()) {
+                JsonArray gongxinArgs;
+                gongxinArgs << player->objectName();
+                gongxinArgs << false;
+                gongxinArgs << JsonUtils::toJsonArray(ids);
+                room->doNotify(player, QSanProtocol::S_COMMAND_SHOW_ALL_CARDS, gongxinArgs);
+            }
+            else {
+                room->fillAG(ids, player, disabled);
+                int id = room->askForAG(player, enabled, true, "laoyue");
+                if (id != -1) {
+                    index = ids.indexOf(id);
+                    ids.removeOne(id);
+                    result = id;
+                }
+                room->clearAG(player);
+            }
+            for (int i = ids.length() - 1; i >= 0; i--)
+                drawPile.append(ids.at(i));
+        }
+        else {
+            const Card *ex = room->askForExchange(player, "laoyue", 2, 2, "@laoyue-put", NULL, ".!");
+            if (ex->subcardsLength() == 2)
+            {
+                QList<int> exs = ex->getSubcards();
+                CardsMoveStruct move1(QList<int>(), player, NULL, Player::PlaceHand, Player::DrawPileBottom,
+                    CardMoveReason(CardMoveReason::S_REASON_OVERRIDE, player->objectName(), "laoyue", QString()));
+                CardsMoveStruct move2(QList<int>(), NULL, player, Player::DrawPileBottom, Player::PlaceHand,
+                    CardMoveReason(CardMoveReason::S_REASON_OVERRIDE, player->objectName(), "laoyue", QString()));
+                move2.card_ids.append(ids);
+                while (exs.length() > 0)
+                {
+                    room->fillAG(ex->getSubcards(), player);
+                    int id = room->askForAG(player, exs, false, "laoyue");
+                    if (id != -1)
+                    {
+                        move1.card_ids.append(id);
+                        exs.removeOne(id);
+                    }
+                    room->clearAG(player);
+                }
+                QList<CardsMoveStruct> moves;
+                moves.append(move2);
+                moves.append(move1);
+                room->moveCardsAtomic(moves, false);
+            }
+        }
+        room->doBroadcastNotify(QSanProtocol::S_COMMAND_UPDATE_PILE, drawPile.length());
 		if (result == -1)
 			room->setPlayerFlag(player, "Global_LaoyueFailed");
 		else {
-			LogMessage log;
-			log.type = "#LaoyueUse";
-			log.from = player;
-			log.arg = "laoyue";
-			log.arg2 = QString("CAPITAL(%1)").arg(index + 1);
-			room->sendLog(log);
+            if (choice == "use")
+            {
+                LogMessage log;
+                log.type = "#LaoyueUse";
+                log.from = player;
+                log.arg = "laoyue";
+                log.arg2 = QString("CAPITAL(%1)").arg(index + 1);
+                room->sendLog(log);
+            }
+            else {
+                LogMessage log;
+                log.type = "#LaoyuePut";
+                log.from = player;
+                log.arg = "laoyue";
+                room->sendLog(log);
+            }
 		}
 		return result;
 	}

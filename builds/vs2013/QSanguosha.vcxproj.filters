@@ -995,6 +995,15 @@
     <ClCompile Include="..\..\src\package\animation.cpp">
       <Filter>package</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\package\moesen-package.cpp">
+      <Filter>package</Filter>
+    </ClCompile>
+    <ClCompile Include="Debug\moc_moesen-package.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="Release\moc_moesen-package.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\..\src\server\ai.h">
@@ -1307,6 +1316,9 @@
       <Filter>package</Filter>
     </CustomBuild>
     <CustomBuild Include="..\..\src\package\novel.h">
+      <Filter>package</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\src\package\moesen-package.h">
       <Filter>package</Filter>
     </CustomBuild>
   </ItemGroup>
