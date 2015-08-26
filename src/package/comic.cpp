@@ -2019,11 +2019,94 @@ const Card *LaoyueCard::validate(CardUseStruct &cardUse) const{
 	return Sanguosha->getCard(id);
 }
 
+class Jiandao : public TriggerSkill
+{
+public:
+    Jiandao() : TriggerSkill("jiandao")
+    {
+        events << TargetChoosing;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const
+    {
+        if (!TriggerSkill::triggerable(player))
+            return QStringList();
+        CardUseStruct use = data.value<CardUseStruct>();
+        if (use.card->isKindOf("Slash") && use.to.length() == 1)
+        {
+            ServerPlayer *target = use.to.first();
+            if (target == NULL)
+                return QStringList();
+            QList<ServerPlayer *> others = room->getOtherPlayers(player);
+            if (others.contains(target))
+                others.removeOne(target);
+            int handcardNum = target->getHandcardNum();
+            int equipcardNum = target->getEquips().length();
+            foreach(ServerPlayer *p, others)
+                if (p->getHandcardNum() == handcardNum || p->getEquips().length() == equipcardNum)
+                    return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
+        CardUseStruct use = data.value<CardUseStruct>();
+        ServerPlayer *target = use.to.first();
+        QList<ServerPlayer *> others = room->getOtherPlayers(player);
+        QList<ServerPlayer *> handVictims;
+        QList<ServerPlayer *> equipVictims;
+        if (others.contains(target))
+            others.removeOne(target);
+        int handcardNum = target->getHandcardNum();
+        int equipcardNum = target->getEquips().length();
+        foreach(ServerPlayer *p, others)
+        {
+            if (p->getHandcardNum() == handcardNum && !use.to.contains(p))
+                handVictims.append(p);
+            else if (p->getEquips().length() == equipcardNum && !use.to.contains(p))
+                equipVictims.append(p);
+        }
+        if (!player->askForSkillInvoke(this))
+            return false;
+        QString choice;
+        if (handVictims.length() > 0)
+            choice = equipVictims.length() > 0 ? room->askForChoice(player, objectName(), "hand+equip", data) : "hand";
+        else if (equipVictims.length() > 0)
+            choice = "equip";
+        player->tag["Jiandao-tars"] = QVariant::fromValue(choice == "hand" ? handVictims : equipVictims);
+        room->broadcastSkillInvoke(objectName(), choice == "hand" ? 1 : 2);
+        return true;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
+        CardUseStruct use = data.value<CardUseStruct>();
+        QList<ServerPlayer *> targets = player->tag["Jiandao-tars"].value<QList<ServerPlayer *>>();
+        if (targets.length() > 0)
+        {
+            foreach(ServerPlayer *target, targets)
+            {
+                QList<const Player*> others;
+                foreach(ServerPlayer *other, use.to)
+                    others.append(other);
+                if (!use.to.contains(target) && player->canSlash(target, false, 0, others))
+                {
+                    use.to << target;
+                }
+            }
+            data.setValue(use);
+        }
+        return false;
+    }
+};
+
 void MoesenPackage::addComicGenerals(){
     
     //General *sakura = new General(this, "sakura", "shu", 3, false); // C001
 
-    //General *hinagiku = new General(this, "hinagiku", "shu", 5, false); // C002
+    General *hinagiku = new General(this, "hinagiku", "shu", 5, false); // C002
+    hinagiku->addSkill(new Jiandao);
 
     General *akari = new General(this, "akari", "shu", 3, false); // C003
     akari->addSkill(new Wucun);
