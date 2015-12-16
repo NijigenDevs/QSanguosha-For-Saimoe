@@ -485,7 +485,7 @@ public:
 	}
 
 
-    virtual bool cost(TriggerEvent event, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *ask_who) const{
+    virtual bool cost(TriggerEvent event, Room *room, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const{
         if (event == TargetConfirmed){
             if (room->askForDiscard(ask_who, objectName(), 2, 2, true, false, "@shiting-ask"))
             {

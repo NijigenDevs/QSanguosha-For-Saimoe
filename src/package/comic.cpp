@@ -2079,7 +2079,7 @@ public:
         return true;
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    virtual bool effect(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *) const
     {
         CardUseStruct use = data.value<CardUseStruct>();
         QList<ServerPlayer *> targets = player->tag["Jiandao-tars"].value<QList<ServerPlayer *>>();
