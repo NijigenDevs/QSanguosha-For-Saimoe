@@ -91,19 +91,14 @@ public:
 class Tianzi : public TriggerSkill {
 public:
 	Tianzi() : TriggerSkill("tianzi") {
-		events << DiscardNCards << DrawNCards;
+		events << DrawNCards;
 		frequency = NotFrequent;
 	}
 
 	virtual QStringList triggerable(TriggerEvent event, Room *, ServerPlayer *player, QVariant &, ServerPlayer* &) const{
 		if (!TriggerSkill::triggerable(player)) return QStringList();
-		if (event == DrawNCards){
+		if (event == DrawNCards)
 			return QStringList(objectName());
-		}
-		else{
-			if (player->getHandcardNum() >= qMax(1, player->getMaxCards(MaxCardsType::Normal)))
-				return QStringList(objectName());
-		}
 		return QStringList();
 	}
 
@@ -112,9 +107,6 @@ public:
 			int x;
 			if (event == DrawNCards){
 				x = 1;
-			}
-			else{
-				x = 2;
 			}
 			room->broadcastSkillInvoke(objectName(), x);
 			return true;

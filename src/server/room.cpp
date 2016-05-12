@@ -1981,6 +1981,7 @@ void Room::notifyMoveToPile(ServerPlayer *player, const QList<int> &cards, const
         move = CardsMoveStruct(cards, NULL, player, place, Player::PlaceSpecial,
             CardMoveReason(CardMoveReason::S_REASON_UNKNOWN, player->objectName()));
         move.to_pile_name = "#" + reason;
+        player->tag[reason + "_Pile"] = IntList2StringList(cards).join("+");
     } else {
         move = CardsMoveStruct(cards, player, NULL, Player::PlaceSpecial, place,
             CardMoveReason(CardMoveReason::S_REASON_UNKNOWN, player->objectName()));
@@ -5436,125 +5437,125 @@ bool Room::askForDiscard(ServerPlayer *player, const QString &reason, int discar
 }
 
 int Room::askForDiscardNum(ServerPlayer *player, const QString &reason, int discard_num, int min_num, bool optional, bool include_equip, const QString &prompt, bool notify_skill) {
-	if (!player->isAlive())
-		return 0;
-	tryPause();
-	notifyMoveFocus(player, S_COMMAND_DISCARD_CARD);
+    if (!player->isAlive())
+        return 0;
+    tryPause();
+    notifyMoveFocus(player, S_COMMAND_DISCARD_CARD);
 
-	if (!optional) {
-		DummyCard *dummy = new DummyCard;
-		dummy->deleteLater();
-		QList<int> jilei_list;
-		QList<const Card *> handcards = player->getHandcards();
-		foreach(const Card *card, handcards) {
-			if (!player->isJilei(card))
-				dummy->addSubcard(card);
-			else
-				jilei_list << card->getId();
-		}
-		if (include_equip) {
-			QList<const Card *> equips = player->getEquips();
-			foreach(const Card *card, equips) {
-				if (!player->isJilei(card))
-					dummy->addSubcard(card);
-			}
-		}
+    if (!optional) {
+        DummyCard *dummy = new DummyCard;
+        dummy->deleteLater();
+        QList<int> jilei_list;
+        QList<const Card *> handcards = player->getHandcards();
+        foreach(const Card *card, handcards) {
+            if (!player->isJilei(card))
+                dummy->addSubcard(card);
+            else
+                jilei_list << card->getId();
+        }
+        if (include_equip) {
+            QList<const Card *> equips = player->getEquips();
+            foreach(const Card *card, equips) {
+                if (!player->isJilei(card))
+                    dummy->addSubcard(card);
+            }
+        }
 
-		int card_num = dummy->subcardsLength();
-		if (card_num <= min_num) {
-			if (card_num > 0) {
-				CardMoveReason movereason;
-				movereason.m_playerId = player->objectName();
-				movereason.m_skillName = dummy->getSkillName();
-				if (reason == "gamerule")
-					movereason.m_reason = CardMoveReason::S_REASON_RULEDISCARD;
-				else
-					movereason.m_reason = CardMoveReason::S_REASON_THROW;
+        int card_num = dummy->subcardsLength();
+        if (card_num <= min_num) {
+            if (card_num > 0) {
+                CardMoveReason movereason;
+                movereason.m_playerId = player->objectName();
+                movereason.m_skillName = dummy->getSkillName();
+                if (reason == "gamerule")
+                    movereason.m_reason = CardMoveReason::S_REASON_RULEDISCARD;
+                else
+                    movereason.m_reason = CardMoveReason::S_REASON_THROW;
 
-				throwCard(dummy, movereason, player);
+                throwCard(dummy, movereason, player);
 
-				QVariant data;
-				data = QString("%1:%2").arg("cardDiscard").arg(dummy->toString());
-				thread->trigger(ChoiceMade, this, player, data);
-			}
+                QVariant data;
+                data = QString("%1:%2").arg("cardDiscard").arg(dummy->toString());
+                thread->trigger(ChoiceMade, this, player, data);
+            }
 
-			if (card_num < min_num && !jilei_list.isEmpty()) {
-				JsonArray gongxinArgs;
-				gongxinArgs << player->objectName();
-				gongxinArgs << false;
-				gongxinArgs << JsonUtils::toJsonArray(jilei_list);
+            if (card_num < min_num && !jilei_list.isEmpty()) {
+                JsonArray gongxinArgs;
+                gongxinArgs << player->objectName();
+                gongxinArgs << false;
+                gongxinArgs << JsonUtils::toJsonArray(jilei_list);
 
-				foreach(int cardId, jilei_list) {
-					WrappedCard *card = Sanguosha->getWrappedCard(cardId);
-					if (card->isModified())
-						broadcastUpdateCard(getOtherPlayers(player), cardId, card);
-					else
-						broadcastResetCard(getOtherPlayers(player), cardId);
-				}
+                foreach(int cardId, jilei_list) {
+                    WrappedCard *card = Sanguosha->getWrappedCard(cardId);
+                    if (card->isModified())
+                        broadcastUpdateCard(getOtherPlayers(player), cardId, card);
+                    else
+                        broadcastResetCard(getOtherPlayers(player), cardId);
+                }
 
-				LogMessage log;
-				log.type = "$JileiShowAllCards";
-				log.from = player;
+                LogMessage log;
+                log.type = "$JileiShowAllCards";
+                log.from = player;
 
-				foreach(int card_id, jilei_list)
-					Sanguosha->getCard(card_id)->setFlags("visible");
-				log.card_str = IntList2StringList(jilei_list).join("+");
-				sendLog(log);
+                foreach(int card_id, jilei_list)
+                    Sanguosha->getCard(card_id)->setFlags("visible");
+                log.card_str = IntList2StringList(jilei_list).join("+");
+                sendLog(log);
 
-				doBroadcastNotify(S_COMMAND_SHOW_ALL_CARDS, gongxinArgs);
-				return 0;
-			}
-			return card_num;
-		}
-	}
+                doBroadcastNotify(S_COMMAND_SHOW_ALL_CARDS, gongxinArgs);
+                return 0;
+            }
+            return card_num;
+        }
+    }
 
-	AI *ai = player->getAI();
-	QList<int> to_discard;
-	if (ai) {
-		to_discard = ai->askForDiscard(reason, discard_num, min_num, optional, include_equip);
-		if (optional && !to_discard.isEmpty())
-			thread->delay();
-	}
-	else {
-		JsonArray ask_str;
-		ask_str << discard_num;
-		ask_str << min_num;
-		ask_str << optional;
-		ask_str << include_equip;
-		ask_str << prompt;
-		ask_str << reason;
+    AI *ai = player->getAI();
+    QList<int> to_discard;
+    if (ai) {
+        to_discard = ai->askForDiscard(reason, discard_num, min_num, optional, include_equip);
+        if (optional && !to_discard.isEmpty())
+            thread->delay();
+    }
+    else {
+        JsonArray ask_str;
+        ask_str << discard_num;
+        ask_str << min_num;
+        ask_str << optional;
+        ask_str << include_equip;
+        ask_str << prompt;
+        ask_str << reason;
 
-		bool success = doRequest(player, S_COMMAND_DISCARD_CARD, ask_str, true);
+        bool success = doRequest(player, S_COMMAND_DISCARD_CARD, ask_str, true);
 
-		//@todo: also check if the player does have that card!!!
-		JsonArray clientReply = player->getClientReply().value<JsonArray>();
-		if (!success || ((int)clientReply.size() > discard_num || (int)clientReply.size() < min_num)
-			|| !JsonUtils::tryParse(clientReply, to_discard)) {
-			if (optional) return 0;
-			// time is up, and the server choose the cards to discard
-			to_discard = player->forceToDiscard(discard_num, include_equip);
-		}
-	}
+        //@todo: also check if the player does have that card!!!
+        JsonArray clientReply = player->getClientReply().value<JsonArray>();
+        if (!success || ((int)clientReply.size() > discard_num || (int)clientReply.size() < min_num)
+            || !JsonUtils::tryParse(clientReply, to_discard)) {
+            if (optional) return 0;
+            // time is up, and the server choose the cards to discard
+            to_discard = player->forceToDiscard(discard_num, include_equip);
+        }
+    }
 
-	if (to_discard.isEmpty()) return 0;
+    if (to_discard.isEmpty()) return 0;
 
-	DummyCard dummy_card(to_discard);
-	if (reason == "gamerule") {
-		CardMoveReason move_reason(CardMoveReason::S_REASON_RULEDISCARD, player->objectName(), QString(), dummy_card.getSkillName(), QString());
-		throwCard(&dummy_card, move_reason, player);
-	}
-	else {
-		CardMoveReason move_reason(CardMoveReason::S_REASON_THROW, player->objectName(), QString(), dummy_card.getSkillName(), QString());
-		if (notify_skill)
-			notifySkillInvoked(player, reason);
-		throwCard(&dummy_card, move_reason, player, NULL, notify_skill ? reason : QString());
-	}
+    DummyCard dummy_card(to_discard);
+    if (reason == "gamerule") {
+        CardMoveReason move_reason(CardMoveReason::S_REASON_RULEDISCARD, player->objectName(), QString(), dummy_card.getSkillName(), QString());
+        throwCard(&dummy_card, move_reason, player);
+    }
+    else {
+        CardMoveReason move_reason(CardMoveReason::S_REASON_THROW, player->objectName(), QString(), dummy_card.getSkillName(), QString());
+        if (notify_skill)
+            notifySkillInvoked(player, reason);
+        throwCard(&dummy_card, move_reason, player, NULL, notify_skill ? reason : QString());
+    }
 
-	QVariant data;
-	data = QString("%1:%2").arg("cardDiscard").arg(dummy_card.toString());
-	thread->trigger(ChoiceMade, this, player, data);
+    QVariant data;
+    data = QString("%1:%2").arg("cardDiscard").arg(dummy_card.toString());
+    thread->trigger(ChoiceMade, this, player, data);
 
-	return to_discard.length();
+    return to_discard.length();
 }
 
 const Card *Room::askForExchange(ServerPlayer *player, const QString &reason, int exchange_num, int min_num, const QString &prompt, const QString &_expand_pile, const QString &pattern)
@@ -5904,7 +5905,7 @@ AskForMoveCardsStruct Room::askForMoveCards(ServerPlayer *zhuge, const QList<int
         }
 
         bool isTrustAI = zhuge->getState() == "trust";
-        if (success) {
+        if (success && visible) {
             if (isTrustAI) {
                 stepArgs[1] = QVariant();
                 zhuge->notify(S_COMMAND_MIRROR_MOVECARDS_STEP, stepArgs);
@@ -5981,6 +5982,7 @@ AskForMoveCardsStruct Room::askForMoveCards(ServerPlayer *zhuge, const QList<int
                 }
 
                 for (int i = 0; i < bottom_cards.length() - 1; ++i) {
+                    fromPos = 0;
                     if (bottom_cards.at(i) != downs.at(i)) {
                         toPos = -i - 1;
                         foreach (int id, downs) {
@@ -6007,9 +6009,9 @@ AskForMoveCardsStruct Room::askForMoveCards(ServerPlayer *zhuge, const QList<int
                     }
                 }
             }
+            thread->delay();
+            thread->delay();
         }
-        thread->delay();
-        thread->delay();
 
         if (isTrustAI) {
             JsonArray stepArgs;

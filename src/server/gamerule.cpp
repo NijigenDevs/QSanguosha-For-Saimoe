@@ -216,12 +216,9 @@ void GameRule::onPhaseProceed(ServerPlayer *player) const
         QList<const Card *> tricks = player->getJudgingArea();
         while (!tricks.isEmpty() && player->isAlive()) {
             const Card *trick = tricks.takeLast();
-            if (!trick->isKindOf("Key"))
-            {
-                bool on_effect = room->cardEffect(trick, NULL, player);
-                if (!on_effect)
-                    trick->onNullified(player);
-            }
+            bool on_effect = room->cardEffect(trick, NULL, player);
+            if (!on_effect)
+                trick->onNullified(player);
         }
         break;
     }
@@ -254,19 +251,10 @@ void GameRule::onPhaseProceed(ServerPlayer *player) const
         break;
     }
     case Player::Discard: {
-		QVariant d_num;
         int discard_num = player->getHandcardNum() - player->getMaxCards(MaxCardsType::Normal);
-		d_num = discard_num;
-		Q_ASSERT(room->getThread() != NULL);
-		room->getThread()->trigger(DiscardNCards, room, player, d_num);
-		discard_num = d_num.toInt();
-		if (discard_num > 0){
-			if (!room->askForDiscard(player, "gamerule", discard_num, discard_num)){
-				d_num = discard_num;
-				room->getThread()->trigger(AfterDiscardNCards, room, player, d_num);
-				break;
-			}
-		}
+        if (discard_num > 0)
+            if (!room->askForDiscard(player, "gamerule", discard_num, discard_num))
+                break;
         break;
     }
     case Player::Finish: {

@@ -777,22 +777,22 @@ void Card::onUse(Room *room, const CardUseStruct &use) const
             }
         }
     }
-
     thread->trigger(CardUsed, room, player, data);
-    if (!card_use.card->hasFlag("cardNotTriggerCardFinished")){
+    if (!card_use.card->hasFlag("cardNotTriggerCardFinished")) {
         thread->trigger(CardFinished, room, player, data);
     }
     else {
-        room->clearCardFlag(card_use.card);
+        CardUseStruct use = data.value<CardUseStruct>();
+        room->clearCardFlag(use.card);
 
-        if (card_use.card->isNDTrick())
-            room->removeTag(card_use.card->toString() + "HegNullificationTargets");
+        if (use.card->isNDTrick())
+            room->removeTag(use.card->toString() + "HegNullificationTargets");
 
         foreach(ServerPlayer *p, room->getAlivePlayers())
             room->doNotify(p, QSanProtocol::S_COMMAND_NULLIFICATION_ASKED, QString("."));
-        if (card_use.card->isKindOf("Slash"))
-            card_use.from->tag.remove("Jink_" + card_use.card->toString());
-    }
+        if (use.card->isKindOf("Slash"))
+            use.from->tag.remove("Jink_" + use.card->toString());
+	}
 }
 
 void Card::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const

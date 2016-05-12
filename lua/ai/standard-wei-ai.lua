@@ -222,15 +222,34 @@ end
 
 function ganglie_discard(self, discard_num, min_num, optional, include_equip, skillName)
 	local xiahou = sgs.findPlayerByShownSkillName(skillName)
-
-	for _, card in sgs.qlist(self.player:getHandcards()) do
-		if isCard("Peach", card, self.player) then
-			return {}
-		end
-	end
-
 	if xiahou and (not self:damageIsEffective(self.player, sgs.DamageStruct_Normal, xiahou) or self:getDamagedEffects(self.player, xiahou)) then return {} end
 	if xiahou and self:needToLoseHp(self.player, xiahou) then return {} end
+	local to_discard = {} --copy from V2 
+	local cards = sgs.QList2Table(self.player:getHandcards())
+	local index = 0
+	local all_peaches = 0
+	for _, card in ipairs(cards) do
+		if isCard("Peach", card, self.player) then
+			all_peaches = all_peaches + 1
+		end
+	end
+	if all_peaches >= 2 and self:getOverflow() <= 0 then return {} end
+	self:sortByKeepValue(cards)
+	cards = sgs.reverse(cards)
+
+	for i = #cards, 1, -1 do
+		local card = cards[i]
+		if not isCard("Peach", card, self.player) and not self.player:isJilei(card) then
+			table.insert(to_discard, card:getEffectiveId())
+			table.remove(cards, i)
+			index = index + 1
+			if index == 2 then break end
+		end
+	end
+	if #to_discard < 2 then return {}
+	else
+		return to_discard
+	end
 end
 
 sgs.ai_skill_discard.ganglie = function(self, discard_num, min_num, optional, include_equip)
@@ -542,7 +561,6 @@ sgs.qingguo_suit_value = {
 sgs.ai_suit_priority.qingguo= "diamond|heart|club|spade"
 
 sgs.ai_skill_use["@@shensu1"] = function(self, prompt)
-
 	if not self:willShowForAttack() then return "." end
 
 	if self.player:containsTrick("lightning") and self.player:getCards("j"):length() == 1
@@ -562,8 +580,8 @@ sgs.ai_skill_use["@@shensu1"] = function(self, prompt)
 	
 	if dummy_use.card and not dummy_use.to:isEmpty() then
 		for _, enemy in sgs.qlist(dummy_use.to) do
-			if self:isEnemy(enemy) and sgs.getDefenseSlash(enemy, self) < 2.95 + self.player:getCards("j"):length() * 0.7 then
-				if  enemy:getHp() <= 1 and (not self.player:inMyAttackRange(enemy) or self:getCardsNum("Slash") == 0) then
+			if self:isEnemy(enemy) and sgs.getDefenseSlash(enemy, self) < 3 then
+				if  enemy:getHp() <= 1 and (not self.player:inMyAttackRange(enemy) or self:getCardsNum("Slash") == 0 or self.player:containsTrick("indulgence")) then
 					return "@ShensuCard=.->" .. enemy:objectName()
 				end
 				if enemy:getHp() <= 2 and self.player:inMyAttackRange(enemy) and self:getCardsNum("Slash") > 0 then
@@ -590,20 +608,30 @@ sgs.ai_skill_use["@@shensu1"] = function(self, prompt)
 					break
 				end
 			end
-			if not target then
-				local handcardsValue = 0
-				local cards = sgs.QList2Table(self.player:getCards("h"))
-				for _, c in ipairs(cards) do
-					handcardsValue = handcardsValue + self:getUseValue(c)
-				end
-				if handcardsValue > 16 or self:getOverflow(self.player, true) > 1 then
+		end
+		if not target then
+			local handcardsValue = 0
+			local cards = sgs.QList2Table(self.player:getCards("h"))
+			for _, c in ipairs(cards) do
+				handcardsValue = handcardsValue + self:getUseValue(c)
+			end
+			if handcardsValue > 16 or self:getOverflow(self.player, true) > 1 or (handcardsValue > 6 and self:isWeak()) then
+				if dummy_use.card and not dummy_use.to:isEmpty() then
 					local targets =  sgs.QList2Table(dummy_use.to)
 					self:sort(targets, "defenseSlash")
 					target = targets[1]
+				else
+					local targets = sgs.PlayerList()
+					for _, p in sgs.qlist(self.room:getOtherPlayers(self.player)) do
+						if slash:targetFilter(targets, p, self.player) and not self:slashIsEffective(slash, p) then
+							target = p
+							break
+						end
+					end
 				end
 			end
-			if target then return "@ShensuCard=.->" .. target:objectName() end
 		end
+		if target then return "@ShensuCard=.->" .. target:objectName() end
 	end
 	return "."
 end
