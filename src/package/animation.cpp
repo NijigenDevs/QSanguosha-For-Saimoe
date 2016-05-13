@@ -1869,6 +1869,7 @@ public:
 };
 
 //huixin by AK
+/* 
 class Huixin: public TriggerSkill {
 public:
     Huixin(): TriggerSkill("huixin") {
@@ -1933,8 +1934,159 @@ public:
         return false;
     }
 };
+*/
 
+//qiyuan for menma
+class Qiyuan : public TriggerSkill {
+public:
+	Qiyuan() : TriggerSkill("qiyuan") {
+		frequency = NotFrequent;
+		events << EventPhaseStart << DrawNCards << CardsMoveOneTime << EventPhaseEnd << EventPhaseChanging;
+	}
 
+	virtual TriggerList triggerable(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data) const
+	{
+		TriggerList skill_list;
+		if (player == NULL) return skill_list;
+		if (event == EventPhaseStart)
+		{
+			if (player->getPhase() != Player::Start) return skill_list;
+			QList<ServerPlayer *> menmas = room->findPlayersBySkillName(objectName());
+			foreach(ServerPlayer *menma, menmas) {
+				if (menma->canDiscard(menma, "h") && menma != player)
+					skill_list.insert(menma, QStringList(objectName()));
+			}
+		}
+		else if (event == DrawNCards)
+		{
+			if (player->getMark("@qiyuan-draw") > 0)
+			{
+				data = data.toInt() + player->getMark("@qiyuan-draw");
+				room->setPlayerMark(player, "@qiyuan-draw", 0);
+			}
+		}
+		else if (event == EventPhaseEnd)
+		{
+			if (player->getPhase() != Player::Discard) return skill_list;
+			QList<ServerPlayer *> menmas = room->findPlayersBySkillName(objectName());
+			foreach(ServerPlayer *menma, menmas) {
+				if (menma != player && player->getMark("qiyuan-discard") > menma->getHandcardNum())
+					skill_list.insert(menma, QStringList(objectName()));
+			}
+		}
+		else if (event == CardsMoveOneTime)
+		{
+			CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+			if (move.from != NULL && move.from == player && player->getPhase() == Player::Discard && (move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_DISCARD)
+				foreach(int id, move.card_ids)
+					room->setPlayerMark(player, "qiyuan-discard", player->getMark("qiyuan-discard") + 1);
+
+		}
+		else
+		{
+			PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+			if (change.from == Player::Discard)
+				room->setPlayerMark(player, "qiyuan-discard", 0);
+		}
+		return skill_list;
+	}
+
+	virtual bool cost(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const
+	{
+		if (event == EventPhaseStart)
+		{
+			ServerPlayer *menma = ask_who;
+			if (menma != NULL && room->askForDiscard(menma, objectName(), 1, 1, true, false, "@qiyuan-discard", true))
+			{
+				room->broadcastSkillInvoke(objectName(), 1, menma);
+				return true;
+			}
+		}
+		else if (event == EventPhaseEnd)
+		{
+			ServerPlayer *menma = ask_who;
+			if (menma != NULL && room->askForSkillInvoke(menma, objectName()))
+			{
+				room->broadcastSkillInvoke(objectName(), 2, menma);
+				return true;
+			}
+		}
+		return false;
+	}
+
+	virtual bool effect(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const
+	{
+		if (event == EventPhaseStart)
+		{
+			room->setPlayerMark(player, "@qiyuan-draw", player->getMark("@qiyuan-draw") + 1);
+		}
+		else if (event == EventPhaseEnd)
+		{
+			if (ask_who != NULL)
+				ask_who->drawCards(1, objectName());
+		}
+		return false;
+	}
+};
+
+// Huaming -- menma
+class Huaming : public TriggerSkill
+{
+public:
+    Huaming(): TriggerSkill("huaming")
+    {
+		events << Death;
+    }
+
+virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer * &) const
+{
+	if (!TriggerSkill::triggerable(player)) return QStringList();
+	DeathStruct death = data.value<DeathStruct>();
+	if (death.who != NULL && player == death.who)
+	{
+		QList<ServerPlayer *> alives = room->getAlivePlayers();
+		if (death.damage->from != NULL && death.damage->from->isAlive() && alives.contains(death.damage->from) && alives.removeOne(death.damage->from) && alives.length() > 0)
+			return QStringList(objectName());
+	}
+    return QStringList();
+}
+
+virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+{
+	QList<ServerPlayer *> alives = room->getAlivePlayers();
+	DeathStruct death = data.value<DeathStruct>();
+	if (death.damage->from != NULL && death.damage->from->isAlive() && alives.contains(death.damage->from))
+	{
+		alives.removeOne(death.damage->from);
+		ServerPlayer *target = room->askForPlayerChosen(player, alives, objectName(), "@huaming-choose", true, true);
+		if (target != NULL && target->isAlive())
+		{
+			player->tag["huaming-tar"] = QVariant::fromValue(target);
+			return true;
+		}
+	}
+    return false;
+}
+
+virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+{
+	ServerPlayer *target = player->tag["huaming-tar"].value<ServerPlayer *>();
+	DeathStruct death = data.value<DeathStruct>();
+	ServerPlayer *killer = death.damage->from;
+	if (target == NULL || !target->isAlive()) return false;
+	if (killer != NULL && killer->isAlive() && !killer->isNude())
+	{
+		int id = room->askForCardChosen(target, killer, "he", objectName(), false);
+		if (id != -1)
+			target->obtainCard(Sanguosha->getEngineCard(id), false);
+	}
+	RecoverStruct recover;
+	recover.who = player;
+	recover.recover = 1;
+	room->recover(target, recover);
+    return false;
+}   
+};
 // Chidun --ayanami 
 class Chidun: public TriggerSkill {
 public:
@@ -2131,6 +2283,8 @@ public:
     }
 };
 
+
+
 void MoesenPackage::addAnimationGenerals()
 {
     General *madoka = new General(this, "madoka", "wei", 4, false); // A001
@@ -2213,8 +2367,9 @@ void MoesenPackage::addAnimationGenerals()
     related_skills.insertMulti("tengyue", "#tengyue-trigger");
     related_skills.insertMulti("tengyue", "#tengyue-target");
 
-    General *erinoa = new General(this, "erinoa", "wei", 4, false); // A017
-    erinoa->addSkill(new Huixin);
+    General *menma = new General(this, "menma", "wei", 3, false); // A017
+	menma->addSkill(new Qiyuan);
+	menma->addSkill(new Huaming);
 
     General *miho = new General(this, "miho", "wei", 3, false); // A018
     miho->addSkill(new Mogai);
