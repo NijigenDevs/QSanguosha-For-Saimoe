@@ -959,10 +959,9 @@ public:
 		if (event == CardsMoveOneTime) {
 			if (!player || !player->isAlive() || !player->hasSkill("zhaihun")) return QStringList();
 			ServerPlayer *current = room->getCurrent();
-			CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
 			if (player != current)
 				return QStringList();
-
+			CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
 			if (move.reason.m_skillName == objectName() && move.reason.m_playerId == player->objectName() && Sanguosha->getEngineCard(move.card_ids.first()) && Sanguosha->getEngineCard(move.card_ids.first())->isRed() && player->isWounded())
 				return QStringList(objectName());
 
@@ -1728,13 +1727,13 @@ public:
 				room->retrial(card, player, judge, objectName(), true);
 			else{
 				const Card *oldJudge = judge->card;
-				judge->card = Sanguosha->getCard(card->getEffectiveId());
+				judge->card = Sanguosha->getCard(card->getId());
 				CardsMoveStruct move1(QList<int>(), judge->who, Player::PlaceJudge,
 					CardMoveReason(CardMoveReason::S_REASON_RETRIAL, player->objectName(), objectName(), QString()));
-				move1.card_ids.append(card->getEffectiveId());
+				move1.card_ids.append(card->getId());
 				CardsMoveStruct move2(QList<int>(), judge->who, NULL, Player::PlaceUnknown, Player::DrawPileBottom,
 					CardMoveReason(CardMoveReason::S_REASON_OVERRIDE, player->objectName(), objectName(), QString()));
-				move2.card_ids.append(oldJudge->getEffectiveId());
+				move2.card_ids.append(oldJudge->getId());
 
 				LogMessage log;
 				log.type = "$ChangedJudge";

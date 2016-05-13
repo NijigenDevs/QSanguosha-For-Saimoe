@@ -1977,13 +1977,14 @@ public:
 		else if (event == CardsMoveOneTime)
 		{
 			CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-			if (move.from != NULL && move.from == player && player->getPhase() == Player::Discard && (move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_DISCARD)
+			if (move.from != NULL && move.from == player && player->getPhase() == Player::Discard && move.to_place == Player::PlaceTable
+				&& (move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_DISCARD)
 				room->setPlayerMark(player, "qiyuan-discard", player->getMark("qiyuan-discard") + move.card_ids.length());
 		}
 		else
 		{
 			PhaseChangeStruct change = data.value<PhaseChangeStruct>();
-			if (change.from == Player::Discard)
+			if (change.to == Player::Discard || change.from == Player::Discard)
 				room->setPlayerMark(player, "qiyuan-discard", 0);
 		}
 		return skill_list;
