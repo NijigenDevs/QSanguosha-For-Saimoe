@@ -66,3 +66,4 @@ libGLESv2.dll
 OGLdpf.log
 QtQuick.2/
 src/bot_version.cpp
+builds/vs2015/QSanguosha.VC.VC.opendb
