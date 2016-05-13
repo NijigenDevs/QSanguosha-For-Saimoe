@@ -1978,9 +1978,7 @@ public:
 		{
 			CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
 			if (move.from != NULL && move.from == player && player->getPhase() == Player::Discard && (move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_DISCARD)
-				foreach(int id, move.card_ids)
-					room->setPlayerMark(player, "qiyuan-discard", player->getMark("qiyuan-discard") + 1);
-
+				room->setPlayerMark(player, "qiyuan-discard", player->getMark("qiyuan-discard") + move.card_ids.length());
 		}
 		else
 		{
@@ -1991,7 +1989,7 @@ public:
 		return skill_list;
 	}
 
-	virtual bool cost(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const
+	virtual bool cost(TriggerEvent event, Room *room, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const
 	{
 		if (event == EventPhaseStart)
 		{
@@ -2014,7 +2012,7 @@ public:
 		return false;
 	}
 
-	virtual bool effect(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const
+	virtual bool effect(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const
 	{
 		if (event == EventPhaseStart)
 		{

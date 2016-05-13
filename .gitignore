@@ -67,3 +67,4 @@ OGLdpf.log
 QtQuick.2/
 src/bot_version.cpp
 builds/vs2015/QSanguosha.VC.VC.opendb
+builds/vs2015/QSanguosha.VC.db
