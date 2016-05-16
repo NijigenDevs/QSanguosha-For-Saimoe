@@ -1961,7 +1961,7 @@ class Yetian : public TriggerSkill
 public:
     Yetian() : TriggerSkill("yetian")
     {
-        events << CardFinished << CardResponded << CardsMoveOneTime << EventPhaseStart;
+        events << CardFinished << CardUsed << CardsMoveOneTime << EventPhaseStart;
         frequency = NotFrequent;
     }
     
@@ -1969,22 +1969,29 @@ public:
     {
         if (player == NULL && !player->isAlive())
             return QStringList();
-        if (event == CardResponded)
+        if (event == CardUsed)
         {
-            CardResponseStruct resp = data.value<CardResponseStruct>();
-            if (resp.m_card->isKindOf("Nullification") && resp.m_isUse && TriggerSkill::triggerable(player))
-                player->setFlags("yetian_usenull");
+            CardUseStruct use = data.value<CardUseStruct>();
+            const Card *card = room->getTag("NullifyingCard").value<const Card *>();
+            if (use.from != NULL && use.card->isKindOf("Nullification") && TriggerSkill::triggerable(use.from) && card != NULL && card->isNDTrick())
+                use.from->setFlags("yetian_usenulli");
         }
         else if (event == CardFinished)
         {
             CardUseStruct use = data.value<CardUseStruct>();
-            if (use.from != NULL && use.card != NULL && use.card->isKindOf("TrickCard"))
+            if (use.from != NULL && use.card != NULL && use.card->isNDTrick())
             {
-                
+                foreach(ServerPlayer *p, room->getAlivePlayers())
+                {
+                    if (p->hasFlag("yetian_usenulli"))
+                    {
+                        room->setTag("yetian_card", QVariant::fromValue(use.card));
+                    }
+                }
             }
         }
     }
-}
+};
 
 void MoesenPackage::addGameGenerals()
 {
