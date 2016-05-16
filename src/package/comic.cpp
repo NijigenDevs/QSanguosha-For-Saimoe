@@ -91,39 +91,94 @@ public:
 class Tianzi : public TriggerSkill {
 public:
 	Tianzi() : TriggerSkill("tianzi") {
-		events << DrawNCards;
+		events << DrawNCards << EventPhaseEnd << CardsMoveOneTime;
+		view_as_skill = new TianziVS;
 		frequency = NotFrequent;
 	}
 
-	virtual QStringList triggerable(TriggerEvent event, Room *, ServerPlayer *player, QVariant &, ServerPlayer* &) const{
+	virtual QStringList triggerable(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const{
 		if (!TriggerSkill::triggerable(player)) return QStringList();
 		if (event == DrawNCards)
 			return QStringList(objectName());
+		else if (event == CardsMoveOneTime)
+		{
+			CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+			if (player->getMark("@tianzi_draw") > 0 && move.from != NULL && player->getPhase() == Player::Discard
+				&& move.to_place == Player::DiscardPile
+				&& (move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_DISCARD)
+			{
+				foreach(int id, move.card_ids)
+					if (Sanguosha->getEngineCard(id)->isKindOf("TrickCard"))
+						room->setPlayerMark(player, "tianzidiscards", player->getMark("tianzidiscards") + 1);
+			}
+		}
+		else if (event == EventPhaseEnd && player->getMark("tianzidiscards") > 0 && player->getPhase() == Player::Discard)
+		{
+			return QStringList(objectName());
+		}
 		return QStringList();
 	}
 
 	virtual bool cost(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const{
-		if (player->askForSkillInvoke(this)){
-			int x;
-			if (event == DrawNCards){
-				x = 1;
-			}
-			room->broadcastSkillInvoke(objectName(), x);
+		if (event == DrawNCards && ((player->hasShownSkill(this) && event == EventPhaseEnd) || player->askForSkillInvoke(this)))
+		{
+			room->broadcastSkillInvoke(objectName());
 			return true;
 		}
+		room->setPlayerMark(player, "tianzidiscards", 0);
 		return false;
 	}
 
-	virtual bool effect(TriggerEvent , Room *, ServerPlayer *, QVariant &data, ServerPlayer *) const{
-		data = data.toInt() + 1;
+	virtual bool effect(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
+		if (event == DrawNCards)
+			data = data.toInt() + 1;
+		else {
+			player->drawCards(player->getMark("tianzidiscards"), objectName());
+			room->setPlayerMark(player, "tianzidiscards", 0);
+		}
 		return false;
+	}
+};
+
+TianziCard::TianziCard() {
+	will_throw = true;
+	target_fixed = true;
+}
+
+void TianziCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const {
+	room->setPlayerMark(source, "@tianzi_draw", 1);
+}
+
+class TianziVS : public ZeroCardViewAsSkill {
+public:
+	TianziVS() : ZeroCardViewAsSkill("tianzi") {
+	}
+
+	virtual bool isEnabledAtPlay(const Player *player) const {
+		return !player->hasUsed("TianziCard");
+	}
+
+	virtual const Card *viewAs() const {
+		TianziCard *card = new TianziCard;
+		card->setShowSkill(objectName());
+		return card;
+	}
+};
+
+class TianziMaxCards : public MaxCardsSkill {
+public:
+	TianziMaxCards() : MaxCardsSkill("#tianzi-maxcard") {
+	}
+
+	virtual int getExtra(const ServerPlayer *target, MaxCardsType::MaxCardsCount) const {
+		return -target->getMark("@tianzi_draw");
 	}
 };
 
 class Yuzhai : public TriggerSkill {
 public:
 	Yuzhai() : TriggerSkill("yuzhai") {
-		events << EventPhaseEnd << CardsMoveOneTime;
+		events << EventPhaseStart << CardsMoveOneTime << EventPhaseChanging;
 		frequency = NotFrequent;
 	}
 
@@ -131,12 +186,12 @@ public:
 		if (!TriggerSkill::triggerable(player)) return QStringList();
 		if (event == CardsMoveOneTime){
 			CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-			if (player->getPhase() != Player::Discard || move.to_place != Player::DiscardPile || (move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) != CardMoveReason::S_REASON_DISCARD)
+			if (player->getPhase() == Player::NotActive || move.to_place != Player::DiscardPile || (move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) != CardMoveReason::S_REASON_DISCARD)
 				return QStringList();
 			player->setMark("@yuzhai_cards", player->getMark("@yuzhai_cards") + move.card_ids.length());
 		}
-		else{
-			if (player->getPhase() == Player::Discard && player->getMark("@yuzhai_cards") >= player->getHp()){
+		else if (event == EventPhaseStart) {
+			if (player->getPhase() == Player::Finish && player->getMark("@yuzhai_cards") >= player->getHp()){
 				player->setMark("@yuzhai_cards", 0);
 				QList<ServerPlayer *> others = room->getOtherPlayers(player);
 				bool invoke = true;
@@ -147,6 +202,10 @@ public:
 				if (invoke)
 					return QStringList(objectName());
 			}
+		} else {
+			PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+			if (change.to == Player::NotActive)
+				player->setMark("@yuzhai_cards", 0);
 		}
 		return QStringList();
 	}
@@ -2092,11 +2151,151 @@ public:
     }
 };
 
+class FengyinProhibit : public ProhibitSkill
+{
+public:
+	FengyinProhibit() : ProhibitSkill("#fengyin-prohibit")
+	{
+	}
+
+	virtual bool isProhibited(const Player *from, const Player *, const Card *card, const QList<const Player *> &) const
+	{
+		return from->hasFlag("fengyin_on") && card->getTypeId() != Card::TypeSkill && !card->hasFlag("clowcards");
+	}
+};
+
+class Fengyin : public TriggerSkill {
+public:
+	Fengyin() : TriggerSkill("fengyin") {
+		events << EventPhaseStart << CardsMoveOneTime;
+		frequency = NotFrequent;
+	}
+
+	virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data) const {
+		QMap<ServerPlayer *, QStringList> skill_list;
+		if (event == EventPhaseStart)
+		{
+			if (player != NULL && player->getPhase() == Player::Draw)
+			{
+				QList<ServerPlayer *> sakuras = room->findPlayersBySkillName(objectName());
+				foreach(ServerPlayer *sakura, sakuras)
+					if (player != sakura && !sakura->isNude())
+						skill_list.insert(sakura, QStringList(objectName()));
+			}
+		}
+		else
+		{
+			if (!TriggerSkill::triggerable(player)) return skill_list;
+			CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+			if (move.from != NULL && move.from->hasFlag("fengyin_on") && move.from->getPhase() == Player::Draw
+				&& (move.reason.m_reason == CardMoveReason::S_REASON_GOTCARD || move.reason.m_reason == CardMoveReason::S_REASON_DRAW))
+				foreach(int id, move.card_ids)
+					if (id != -1)
+						Sanguosha->getCard(id)->setFlags("clowcards");
+		}
+		return skill_list;
+	}
+
+	virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *ask_who) const {
+		const Card *card = room->askForCard(ask_who, "he", "@fengyin_put", QVariant(), objectName());
+		if (card != NULL)
+		{
+			CardsMoveStruct move(QList<int>(), NULL, ask_who, Player::DrawPile, Player::PlaceHand,
+				CardMoveReason(CardMoveReason::S_REASON_PUT, ask_who->objectName(), objectName(), QString()));
+			if (card->getEffectiveId() != -1)
+			{
+				move.card_ids.append(card->getEffectiveId());
+				room->moveCardsAtomic(move, false);
+				return true;
+			}
+		}
+		return false;
+	}
+
+	virtual bool effect(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *) const {
+		player->setFlags("fengyin-on");
+		return false;
+	}
+};
+
+class Jiechu : public TriggerSkill {
+public:
+	Jiechu() : TriggerSkill("jiechu") {
+		events << TargetChoosing << DrawNCards << EventPhaseChanging;
+		frequency = NotFrequent;
+	}
+
+	virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data) const {
+		QMap<ServerPlayer *, QStringList> skill_list;
+		if (event == TargetChoosing)
+		{
+			CardUseStruct use = data.value<CardUseStruct>();
+			if (use.from != NULL && use.to.contains(use.from) && !use.card->isKindOf("SkillCard"))
+			{
+                QList<ServerPlayer *> sakuras = room->findPlayersBySkillName(objectName());
+                foreach(ServerPlayer *sakura, sakuras)
+                    if (!sakura->hasFlag("jiechu_used"))
+                        skill_list.insert(sakura, QStringList(objectName()));
+			}
+        }
+        else if (event == DrawNCards)
+        {
+            if (TriggerSkill::triggerable(player) && player->getMark("@jiechu_times") > 0) {
+                if (data.toInt() > 0)
+                    skill_list.insert(player, QStringList(objectName()));
+                else 
+                    room->setPlayerMark(player, "@jiechu_times", 0);
+            }
+        }
+        else
+        {
+            if (player->hasFlag("jiechu_used"))
+                player->setFlags("-jiechu_used");
+        }
+		return skill_list;
+	}
+
+	virtual bool cost(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const {
+        if (event == TargetChoosing)
+        {
+            if (ask_who->askForSkillInvoke(objectName(), data))
+            {
+                room->drawCards(ask_who, 1, objectName());
+                room->broadcastSkillInvoke(objectName());
+            }
+            return true;
+        }
+        else if (event == DrawNCards)
+        {
+            if (data.toInt() > 0)
+                return true;
+            else 
+                room->setPlayerMark(player, "@jiechu_times", 0);
+        }
+		return false;
+	}
+
+	virtual bool effect(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const {
+        if (event == TargetChoosing)
+            room->setPlayerMark(ask_who, "@jiechu_times", ask_who->getMark("@jiechu_times") + 1);
+        else
+        {
+            data = qMax(data.toInt() - player->getMark("@jiechu_times"), 0);
+            room->setPlayerMark(player, "@jiechu_times", 0);
+        }
+		return false;
+	}
+};
+
 void MoesenPackage::addComicGenerals(){
     
-    //General *sakura = new General(this, "sakura", "shu", 3, false); // C001
+    General *sakura = new General(this, "sakura", "shu", 3, false); // C001
+    sakura->addSkill(new Fengyin);
+    sakura->addSkill(new FengyinProhibit);
+    sakura->addSkill(new Jiechu);
+    insertRelatedSkills("fengyin", "#fengyin-prohibit");
 
-    General *hinagiku = new General(this, "hinagiku", "shu", 5, false); // C002
+    General *hinagiku = new General(this, "hinagiku", "shu", 4, false); // C002
     hinagiku->addSkill(new Jiandao);
 
     General *akari = new General(this, "akari", "shu", 3, false); // C003
@@ -2106,6 +2305,8 @@ void MoesenPackage::addComicGenerals(){
     General *nagi = new General(this, "nagi", "shu", 3, false); // C004
 	nagi->addSkill(new Tianzi);
 	nagi->addSkill(new Yuzhai);
+	nagi->addSkill(new TianziMaxCards);
+	insertRelatedSkills("tianzi", "#tianzi-maxcard");
 	
 	General *izumi = new General(this, "izumi", "shu", 3, false); // C005
 	izumi->addSkill(new Mizou);
@@ -2142,7 +2343,7 @@ void MoesenPackage::addComicGenerals(){
 	konata->addSkill(new Xipin);
 	konata->addSkill(new Zhaihun);
 
-    General *ika = new General(this, "ika", "shu", 4, false); // C013
+    General *ika = new General(this, "ika", "shu", 5, false); // C013
 	ika->addSkill(new Qinlve);
 
     General *toki = new General(this, "toki", "shu", 3, false); // C014
@@ -2177,4 +2378,5 @@ void MoesenPackage::addComicGenerals(){
 	addMetaObject<KaihuaCard>();
 	addMetaObject<SuanlvCard>();
 	addMetaObject<LaoyueCard>();
+	addMetaObject<TianziCard>();
 }

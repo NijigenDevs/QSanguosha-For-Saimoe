@@ -94,4 +94,12 @@ public:
 	virtual const Card *validate(CardUseStruct &cardUse) const;
 };
 
+class TianziCard : public SkillCard {
+	Q_OBJECT
+
+public:
+	Q_INVOKABLE TianziCard();
+	virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const;
+};
+
 #endif

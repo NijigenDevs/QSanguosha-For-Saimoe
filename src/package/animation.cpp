@@ -1977,7 +1977,7 @@ public:
 		else if (event == CardsMoveOneTime)
 		{
 			CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-			if (move.from != NULL && move.from == player && player->getPhase() == Player::Discard && move.to_place == Player::PlaceTable
+			if (move.from != NULL && move.from == player && player->getPhase() == Player::Discard && move.to_place == Player::DiscardPile
 				&& (move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_DISCARD)
 				room->setPlayerMark(player, "qiyuan-discard", player->getMark("qiyuan-discard") + move.card_ids.length());
 		}
@@ -2064,6 +2064,7 @@ virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data
 			return true;
 		}
 	}
+	player->tag["huaming-tar"] = QVariant();
     return false;
 }
 
@@ -2083,6 +2084,7 @@ virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &da
 	recover.who = player;
 	recover.recover = 1;
 	room->recover(target, recover);
+	player->tag["huaming-tar"] = QVariant();
     return false;
 }   
 };
