@@ -1234,7 +1234,6 @@ public:
             judge->pattern = QString::number(int(judge->card->getSuit()));
 			if (judge->reason == objectName() && room->getCardPlace(judge->card->getEffectiveId()) == Player::PlaceJudge && judge->who->getPile("gem").length() < 10)
 				judge->who->addToPile("gem", judge->card);
-            return skill_list;
         }
         return skill_list;
     }
@@ -1961,36 +1960,211 @@ class Yetian : public TriggerSkill
 public:
     Yetian() : TriggerSkill("yetian")
     {
-        events << CardFinished << CardUsed << CardsMoveOneTime << EventPhaseStart;
+        events << CardUsed << CardsMoveOneTime << EventPhaseStart;
         frequency = NotFrequent;
     }
     
-    virtual QStringList triggerable(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const
-    {
-        if (player == NULL && !player->isAlive())
-            return QStringList();
-        if (event == CardUsed)
-        {
-            CardUseStruct use = data.value<CardUseStruct>();
-            const Card *card = room->getTag("NullifyingCard").value<const Card *>();
-            if (use.from != NULL && use.card->isKindOf("Nullification") && TriggerSkill::triggerable(use.from) && card != NULL && card->isNDTrick())
-                use.from->setFlags("yetian_usenulli");
-        }
-        else if (event == CardFinished)
-        {
-            CardUseStruct use = data.value<CardUseStruct>();
-            if (use.from != NULL && use.card != NULL && use.card->isNDTrick())
-            {
-                foreach(ServerPlayer *p, room->getAlivePlayers())
-                {
-                    if (p->hasFlag("yetian_usenulli"))
-                    {
-                        room->setTag("yetian_card", QVariant::fromValue(use.card));
-                    }
-                }
-            }
-        }
+	virtual QStringList triggerable(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const
+	{
+		if (!TriggerSkill::triggerable(player))
+			return QStringList();
+		if (event == CardUsed)
+		{
+			CardUseStruct use = data.value<CardUseStruct>();
+			const Card *card = room->getTag("NullifyingCard").value<const Card *>();
+			QMap<int, ServerPlayer *> yetians = room->getTag("yetians").value<QMap<int, ServerPlayer *>>();
+			if (use.from != NULL && use.card->isKindOf("Nullification") && card != NULL && card->isNDTrick())
+				yetians.insert(card->getEffectiveId(), use.from);
+		}
+		else if (event == CardsMoveOneTime) {
+			CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+			if (move.from != NULL && move.to_place == Player::DiscardPile && move.card_ids.length() > 0
+				&& ((move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_USE)
+				&& move.from_places.contains(Player::PlaceTable)) {
+				QMap<int, ServerPlayer *> yetians = room->getTag("yetians").value<QMap<int, ServerPlayer *>>();
+				QList<int> ids;
+				foreach(int id, move.card_ids)
+				{
+					if (yetians.contains(id) && yetians.value(id) == player)
+					{
+						if (id != -1)
+							ids << id;
+						yetians.remove(id);
+					}
+				}
+				room->setTag("yetians", QVariant::fromValue(yetians));
+				if (ids.length() > 0)
+				{
+					player->tag["yetian_ids"] = QVariant::fromValue(ids);
+					QStringList list;
+					for (int i = 1; i <= ids.length(); i++)
+						list << objectName();
+					return list;
+				}
+				player->tag["yetian_ids"] = NULL;
+			}
+		}
+		else
+		{
+			if (player->getPhase() == Player::Start && player->getHandcardNum() == 0)
+				return QStringList(objectName());
+		}
+		return QStringList(objectName());
     }
+
+	virtual bool cost(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+	{
+		if (event == CardsMoveOneTime)
+		{
+			QList<int> ids = player->tag["yetian_ids"].value<QList<int>>();
+			if (player->askForSkillInvoke(this))
+			{
+				player->tag["yetian_current_id"] = ids.first();
+				ids.removeFirst();
+				player->tag["yetian_ids"] = QVariant::fromValue(ids);
+				room->broadcastSkillInvoke(objectName());
+				return true;
+			}
+			ids.removeFirst();
+			player->tag["yetian_ids"] = QVariant::fromValue(ids);
+		}
+		else if (player->hasShownSkill(this) || player->askForSkillInvoke(this))
+		{
+			room->broadcastSkillInvoke(objectName());
+			return true;
+		}
+		return false;
+	}
+
+	virtual bool effect(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+	{
+		if (event == CardsMoveOneTime)
+		{
+			bool canConvert = false;
+			int id = player->tag["yetian_current_id"].toInt(&canConvert);
+			if (canConvert && id != -1)
+				player->obtainCard(Sanguosha->getCard(id));
+			player->tag["yetian_current_id"] = NULL;
+		}
+		else
+			room->loseHp(player, 1);
+		return false;
+	}
+};
+
+TianjianCard::TianjianCard()
+{
+	mute = true;
+}
+
+const Card *TianjianCard::validate(CardUseStruct &use) const {
+	ServerPlayer *source = use.from;
+	Room *room = source->getRoom();
+	Card *card = Sanguosha->cloneCard(user_string);
+	card->setSkillName("tianjian");
+	bool validate_a = true;
+
+	return card;
+}
+
+bool TianjianCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
+{
+	Duel *duel = new Duel(Card::NoSuit, 0);
+	duel->deleteLater();
+	if (targets.isEmpty() && Self->isProhibited(to_select, duel))
+		return false;
+
+	if (targets.length() == 1 && to_select->isCardLimited(duel, Card::MethodUse))
+		return false;
+
+	return targets.length() < 2 && to_select != Self;
+}
+
+bool TianjianCard::targetsFeasible(const QList<const Player *> &targets, const Player *) const
+{
+	return targets.length() == 2;
+}
+
+void TianjianCard::onUse(Room *room, const CardUseStruct &card_use) const
+{
+	ServerPlayer *diaochan = card_use.from;
+
+	LogMessage log;
+	log.from = diaochan;
+	log.to << card_use.to;
+	log.type = "#UseCard";
+	log.card_str = toString();
+	room->sendLog(log);
+
+	QVariant data = QVariant::fromValue(card_use);
+	RoomThread *thread = room->getThread();
+
+	thread->trigger(PreCardUsed, room, diaochan, data);
+	room->broadcastSkillInvoke("lijian", diaochan);
+
+	CardMoveReason reason(CardMoveReason::S_REASON_THROW, diaochan->objectName(), QString(), "lijian", QString());
+	room->moveCardTo(this, diaochan, NULL, Player::PlaceTable, reason, true);
+
+	if (diaochan->ownSkill("lijian") && !diaochan->hasShownSkill("lijian"))
+		diaochan->showGeneral(diaochan->inHeadSkills("lijian"));
+
+	QList<int> table_ids = room->getCardIdsOnTable(this);
+	if (!table_ids.isEmpty()) {
+		DummyCard dummy(table_ids);
+		room->moveCardTo(&dummy, diaochan, NULL, Player::DiscardPile, reason, true);
+	}
+
+	thread->trigger(CardUsed, room, diaochan, data);
+	thread->trigger(CardFinished, room, diaochan, data);
+}
+
+void TianjianCard::use(Room *room, ServerPlayer *, QList<ServerPlayer *> &targets) const
+{
+	ServerPlayer *to = targets.at(0);
+	ServerPlayer *from = targets.at(1);
+
+	Duel *duel = new Duel(Card::NoSuit, 0);
+	duel->setSkillName(QString("_%1").arg(getSkillName()));
+	if (!from->isCardLimited(duel, Card::MethodUse) && !from->isProhibited(to, duel))
+		room->useCard(CardUseStruct(duel, from, to));
+	else
+		delete duel;
+}
+
+class Tianjian : public ZeroCardViewAsSkill
+{
+public:
+	Tianjian() : ZeroCardViewAsSkill("tianjian")
+	{
+		response_pattern = "nullification";
+		response_or_use = true;
+	}
+
+	virtual const Card *viewAs(const Card *originalCard) const
+	{
+		Card *card;
+		if (Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_PLAY)
+		{
+		}
+		else
+		{
+			card = new Nullification(originalCard->getSuit(), originalCard->getNumber());
+			card->addSubcard(originalCard);
+			card->setSkillName(objectName());
+			card->setShowSkill(objectName());
+		}
+		return card;
+	}
+
+	virtual bool isEnabledAtPlay(const Player *player) const
+	{
+		return !player->hasFlag("tianjian_used") && player->faceUp();
+	}
+
+	virtual bool isEnabledAtNullification(const ServerPlayer *player) const
+	{
+		return !player->hasFlag("tianjian_used") && player->faceUp();
+	}
 };
 
 void MoesenPackage::addGameGenerals()
