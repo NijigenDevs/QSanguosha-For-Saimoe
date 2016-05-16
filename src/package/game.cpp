@@ -1955,6 +1955,37 @@ public:
     }
 };
 
+//夜天: 每当一名角色使用的非延时锦囊牌因结算完毕而置入弃牌堆后，若你于此牌结算时对之使用了【无懈可击】，你可以获得之。锁定技，准备阶段开始时，若你没有手牌，你失去1点体力。
+class Yetian : public TriggerSkill
+{
+public:
+    Yetian() : TriggerSkill("yetian")
+    {
+        events << CardFinished << CardResponded << CardsMoveOneTime << EventPhaseStart;
+        frequency = NotFrequent;
+    }
+    
+    virtual QStringList triggerable(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const
+    {
+        if (player == NULL && !player->isAlive())
+            return QStringList();
+        if (event == CardResponded)
+        {
+            CardResponseStruct resp = data.value<CardResponseStruct>();
+            if (resp.m_card->isKindOf("Nullification") && resp.m_isUse && TriggerSkill::triggerable(player))
+                player->setFlags("yetian_usenull");
+        }
+        else if (event == CardFinished)
+        {
+            CardUseStruct use = data.value<CardUseStruct>();
+            if (use.from != NULL && use.card != NULL && use.card->isKindOf("TrickCard"))
+            {
+                
+            }
+        }
+    }
+}
+
 void MoesenPackage::addGameGenerals()
 {
     skills << new keyCardGlobalManagement;
