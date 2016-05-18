@@ -263,6 +263,13 @@ Nullification::Nullification(Suit suit, int number)
 
 void Nullification::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const
 {
+    // dirty hack for tianjian
+    if (getSkillName() == "tianjian")
+    {
+        source->turnOver();
+        source->setFlags("tianjian_used");
+    }
+
     // does nothing, just throw it
     QList<int> table_cardids = room->getCardIdsOnTable(this);
     if (!table_cardids.isEmpty()) {

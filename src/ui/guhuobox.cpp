@@ -119,17 +119,19 @@ GuhuoBox::GuhuoBox(const QString &skillname, const QString &flag, bool playonly)
     this->play_only = playonly;
     title = QString("%1 %2").arg(Sanguosha->translate(skill_name)).arg(tr("Please choose:"));;
     //collect Cards' objectNames
-    if (flags.contains("b")) {
+    QStringList split_origin = flags.split("|");
+    QString cards_list = split_origin.first();
+    if (cards_list.contains("b")) {
         QList<const BasicCard*> basics = Sanguosha->findChildren<const BasicCard*>();
-        foreach (const BasicCard *card, basics) {
+        foreach(const BasicCard *card, basics) {
             if (!card_list["BasicCard"].contains(card->objectName())
                 && !ServerInfo.Extensions.contains("!" + card->getPackage()))
                 card_list["BasicCard"].append(card->objectName());
         }
     }
-    if (flags.contains("t")) {
+    if (cards_list.contains("t")) {
         QList<const TrickCard*> tricks = Sanguosha->findChildren<const TrickCard*>();
-        foreach (const TrickCard *card, tricks) {
+        foreach(const TrickCard *card, tricks) {
             if (!ServerInfo.Extensions.contains("!" + card->getPackage()) && card->isNDTrick()) {
                 if (card_list["SingleTargetTrick"].contains(card->objectName()) || card_list["MultiTarget"].contains(card->objectName()))
                     continue;
@@ -141,12 +143,33 @@ GuhuoBox::GuhuoBox(const QString &skillname, const QString &flag, bool playonly)
             }
         }
     }
-    if (flags.contains("d")) {
+    if (cards_list.contains("d")) {
         QList<const DelayedTrick*> delays = Sanguosha->findChildren<const DelayedTrick*>();
-        foreach (const DelayedTrick *card, delays) {
+        foreach(const DelayedTrick *card, delays) {
             if (!card_list["DelayedTrick"].contains(card->objectName())
                 && !ServerInfo.Extensions.contains("!" + card->getPackage()))
                 card_list["DelayedTrick"].append(card->objectName());
+        }
+    }
+    if (split_origin.length() > 1)
+    {
+        QString bancards_list = split_origin.last();
+        QStringList bancards = bancards_list.split(",");
+        if (bancards.length() > 0)
+        {
+            foreach(QString bancard, bancards)
+            {
+                if (bancard.length() == 0)
+                    continue;
+                if (cards_list.contains("b") && card_list["BasicCard"].contains(bancard))
+                    card_list["BasicCard"].removeOne(bancard);
+                else if (cards_list.contains("t") && card_list["SingleTargetTrick"].contains(bancard))
+                    card_list["SingleTargetTrick"].removeOne(bancard);
+                else if (cards_list.contains("t") && card_list["MultiTarget"].contains(bancard))
+                    card_list["MultiTarget"].removeOne(bancard);
+                else if (cards_list.contains("d") && card_list["DelayedTrick"].contains(bancard))
+                    card_list["DelayedTrick"].removeOne(bancard);
+            }
         }
     }
 }

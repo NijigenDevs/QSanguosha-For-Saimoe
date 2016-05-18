@@ -13,9 +13,27 @@ public:
 
 	virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
 	virtual bool targetsFeasible(const QList<const Player *> &targets, const Player *Self) const;
-	virtual void onUse(Room *room, const CardUseStruct &card_use) const;
-	virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
-	virtual const Card *validate(CardUseStruct &card_use) const;
+    virtual const Card *validateInResponse(ServerPlayer * player) const;
+    virtual bool targetFixed() const;
+    virtual const Card *validate(CardUseStruct &card_use) const;
+};
+
+class XiquArrayCard : public SkillCard {
+	Q_OBJECT
+
+public:
+	Q_INVOKABLE XiquArrayCard();
+
+	virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+	virtual const Card *validate(CardUseStruct &use) const;
+};
+
+class XiquSummon : public ArraySummonCard
+{
+	Q_OBJECT
+
+public:
+	Q_INVOKABLE XiquSummon();
 };
 
 class HaixingCard: public SkillCard {

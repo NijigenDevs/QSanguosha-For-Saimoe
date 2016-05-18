@@ -1288,8 +1288,6 @@ public:
     HongfaSlash() : OneCardViewAsSkill("hongfa_slash")
     {
         attached_lord_skill = true;
-        expand_pile = "heavenly_army,%heavenly_army";
-        filter_pattern = ".|.|.|heavenly_army,%heavenly_army";
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const

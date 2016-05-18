@@ -88,6 +88,22 @@ public:
     }
 };
 
+class TianziVS : public ZeroCardViewAsSkill {
+public:
+    TianziVS() : ZeroCardViewAsSkill("tianzi") {
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const {
+        return !player->hasUsed("TianziCard");
+    }
+
+    virtual const Card *viewAs() const {
+        TianziCard *card = new TianziCard;
+        card->setShowSkill(objectName());
+        return card;
+    }
+};
+
 class Tianzi : public TriggerSkill {
 public:
 	Tianzi() : TriggerSkill("tianzi") {
@@ -148,22 +164,6 @@ TianziCard::TianziCard() {
 void TianziCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const {
 	room->setPlayerMark(source, "@tianzi_draw", 1);
 }
-
-class TianziVS : public ZeroCardViewAsSkill {
-public:
-	TianziVS() : ZeroCardViewAsSkill("tianzi") {
-	}
-
-	virtual bool isEnabledAtPlay(const Player *player) const {
-		return !player->hasUsed("TianziCard");
-	}
-
-	virtual const Card *viewAs() const {
-		TianziCard *card = new TianziCard;
-		card->setShowSkill(objectName());
-		return card;
-	}
-};
 
 class TianziMaxCards : public MaxCardsSkill {
 public:
@@ -2160,7 +2160,7 @@ public:
 
 	virtual bool isProhibited(const Player *from, const Player *, const Card *card, const QList<const Player *> &) const
 	{
-		return from->hasFlag("fengyin_on") && card->getTypeId() != Card::TypeSkill && !card->hasFlag("clowcards");
+		return from != NULL && from->hasFlag("fengyin_on") && card->getTypeId() != Card::TypeSkill && !card->hasFlag("clowcards");
 	}
 };
 
