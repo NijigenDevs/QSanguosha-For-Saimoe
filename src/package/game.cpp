@@ -618,11 +618,7 @@ public:
         frequency = Compulsory;
         events << EventPhaseStart;
     }
-
-    virtual bool canPreshow() const{
-        return true;
-    }
-
+    
     virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent , Room *room, ServerPlayer *player, QVariant &) const{
         QMap<ServerPlayer *, QStringList> skill_list;
         if (player != NULL && player->getPhase() == Player::Draw) {
@@ -2221,6 +2217,61 @@ public:
         return QStringList();
     }
 };
+
+/*
+古手梨花 G006 1.5
+鬼渊: 其他角色的准备阶段开始时，你可以将你与其的副将的武将牌横置，然后声明两种基本牌使该角色手牌中两种基本牌的效果交换，直到回合结束。若如此做，你可以选择一项：“皆杀”或“祭囃”：
+“皆杀”：限定技，你可以令该效果适用于所有角色，直到回合结束。
+“祭囃”：限定技，你可以令该效果适用于所有副将的武将牌横置的角色，直到回合结束。
+
+罪灭: 每当一名角色使用【杀】时，你可以弃置一张牌，然后令该角色的武器牌失效，直到回合结束。
+*/
+
+class Guiyuan : public TriggerSkill
+{
+public:
+    Guiyuan() : TriggerSkill("guiyuan")
+    {
+        events << EventPhaseStart << EventPhaseChanging;
+    }
+    
+    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data) const{
+        QMap<ServerPlayer *, QStringList> skill_list;
+        if (event == EventPhaseStart)
+        {
+            if (player != NULL && player->getPhase() == Player::Start)
+            {
+                QList<ServerPlayer *> rikas = room->findPlayersBySkillName(objectName());
+                foreach (ServerPlayer *rika, rikas)
+                    if (player != rika && !player->isChained() && !rika->isChained() && player->canBeChainedBy(rika))
+                        skill_list.insert(rika, QStringList(objectName()));
+            }
+        }
+
+        return skill_list;
+    }
+
+    virtual bool cost(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const{
+        if (event == EventPhaseStart)
+        {
+               if (ask_who->askForSkillInvoke(this))
+               {
+                   room->setPlayerProperty(player, "chained", true);
+                   room->broadcastSkillInvoke(objectName(), 1);
+                   return true;
+               }
+        }
+
+        return false;
+    }
+    
+    virtual bool effect(TriggerEvent , Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const{
+        if (!player->hasSkill("guiyuan_viewas"))
+            room->attachSkillToPlayer(p, "guiyuan_viewas");
+        return false;
+    }
+    
+}
 
 void MoesenPackage::addGameGenerals()
 {
