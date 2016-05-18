@@ -2222,128 +2222,6 @@ public:
     }
 };
 
-XiquArrayCard::XiquArrayCard() {
-}
-
-bool XiquArrayCard::targetFilter(const QList<const Player *> &, const Player *to_select, const Player *) const {
-	return to_select->hasShownSkill("xiqu") && !to_select->isKongcheng();
-}
-
-const Card *XiquArrayCard::validate(CardUseStruct &use) const {
-	ServerPlayer *arrays = use.from;
-	Room *room = arrays->getRoom();
-	room->broadcastSkillInvoke("xiqu_array");
-	int to_discard = room->askForCardChosen(arrays, use.to.first(), "h", "xiqu_array", false, Card::MethodDiscard);
-	if (to_discard != -1)
-	{
-		room->throwCard(Sanguosha->getCard(to_discard), use.to.first(), arrays, "xiqu_array");
-		SavageAssault *sa = new SavageAssault(Card::NoSuit, 0);
-		sa->setSkillName("xiqu_array");
-		sa->setShowSkill("xiqu_array");
-		room->useCard(CardUseStruct(sa, use.to.first(), room->getAllPlayers()), true);
-	}
-	return NULL;
-}
-
-class XiquArray : public ZeroCardViewAsSkill
-{
-public:
-	XiquArray() : ZeroCardViewAsSkill("xiqu_array")
-	{
-	}
-
-	virtual bool isEnabledAtPlay(const Player *player) const
-	{
-		if (!player->hasShownOneGeneral())
-			return false;
-		QString hayate_name = player->tag["xiqu_source"].toString();
-		QList<const Player *> alives = player->getAliveSiblings();
-		Player *hayate = NULL;
-		foreach(const Player *p, alives)
-		{
-			if (p->objectName() == hayate_name)
-			{
-				hayate = const_cast<Player *>(p);
-				break;
-			}
-		}
-		if (hayate == NULL || hayate->getHandcardNum() == 0)
-			return false;
-		SavageAssault *sa = new SavageAssault(Card::NoSuit, 0);
-		sa->deleteLater();
-		return sa->isAvailable(hayate);
-	}
-
-	virtual const Card *viewAs() const
-	{
-		XiquArrayCard *xiqu = new XiquArrayCard;
-		xiqu->setSkillName("xiqu_array");
-		return xiqu;
-	}
-};
-
-XiquSummon::XiquSummon()
-	: ArraySummonCard("xiqu")
-{
-}
-
-class Xiqu : public BattleArraySkill
-{
-public:
-	Xiqu() : BattleArraySkill("xiqu", HegemonyMode::Formation)
-	{
-		events << EventPhaseStart << Death << EventLoseSkill << EventAcquireSkill
-			<< GeneralShown << GeneralHidden << GeneralRemoved << RemoveStateChanged;
-	}
-
-	virtual bool canPreshow() const
-	{
-		return false;
-	}
-
-	virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const
-	{
-		if (player == NULL) return QStringList();
-		if (triggerEvent == Death) {
-			DeathStruct death = data.value<DeathStruct>();
-			if (death.who->hasSkill(objectName())) {
-				foreach(ServerPlayer *p, room->getAllPlayers()) {
-					if (p->getMark("xiquarray") > 0) {
-						room->setPlayerMark(p, "xiquarray", 0);
-						room->detachSkillFromPlayer(p, "xiqu_array", true, true);
-					}
-				}
-				return QStringList();
-			}
-			if (death.who->getMark("xiquarray") > 0) {
-				room->setPlayerMark(death.who, "xiquarray", 0);
-				room->detachSkillFromPlayer(death.who, "xiqu_array", true, true);
-			}
-		}
-		foreach(ServerPlayer *p, room->getAllPlayers()) {
-			if (p->getMark("xiquarray") > 0) {
-				room->setPlayerMark(p, "xiquarray", 0);
-				room->detachSkillFromPlayer(p, "xiqu_array", true, true);
-			}
-		}
-		if (room->alivePlayerCount() < 4)
-			return QStringList();
-		QList<ServerPlayer *> hayates = room->findPlayersBySkillName(objectName());
-		foreach(ServerPlayer *hayate, hayates) {
-			if (hayate->hasShownSkill(this)) {
-				foreach(ServerPlayer *p, room->getOtherPlayers(hayate)) {
-					if (hayate->inFormationRalation(p)) {
-						room->setPlayerMark(p, "xiquarray", 1);
-						p->tag["xiqu_source"].setValue(hayate->objectName());
-						room->attachSkillToPlayer(p, "xiqu_array");
-					}
-				}
-			}
-		}
-		return QStringList();
-	}
-};
-
 void MoesenPackage::addGameGenerals()
 {
     skills << new keyCardGlobalManagement;
@@ -2360,7 +2238,6 @@ void MoesenPackage::addGameGenerals()
     hayate->addSkill(new Yetian);
     hayate->addSkill(new Tianjian);
     hayate->addSkill(new TianjianClear);
-	hayate->addSkill(new Xiqu);
     insertRelatedSkills("tianjian", "#tianjian-clear");
 
     General *altria = new General(this, "altria", "wu", 4, false); // G004
