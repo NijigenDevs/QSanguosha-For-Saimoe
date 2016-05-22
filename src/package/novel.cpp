@@ -783,7 +783,7 @@ public:
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const {
         CardUseStruct use = data.value<CardUseStruct>();
-        if (player->hasShownSkill(this) && player->askForSkillInvoke(objectName(), QVariant::fromValue(use.to))) {
+        if (player->askForSkillInvoke(objectName(), QVariant::fromValue(use.to))) {
             room->broadcastSkillInvoke(objectName());
             return true;
         }
@@ -801,8 +801,6 @@ public:
         return false;
     }
 };
-
-//Duotian
 
 //shanguang
 class Shanguang : public MasochismSkill {
