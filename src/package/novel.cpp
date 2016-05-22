@@ -25,7 +25,7 @@ public:
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{
-        return player->getMaxHp();//need Changed! should be getMaxCards but it does not exist.
+        return player->getMark("azusa_maxcards") > 0; //need Changed! should be getMaxCards but it does not exist.
     }
 
     virtual const Card *viewAs() const{
@@ -97,14 +97,18 @@ public:
 class AzusaTrigger: public TriggerSkill {
 public:
     AzusaTrigger(): TriggerSkill("#azusa-cardHandle") {
-        events << EventPhaseEnd;
+        events << EventPhaseEnd << EventPhaseChanging << CardsMoveOneTime << ChoiceMade << GeneralShown << GeneralHidden
+        << GeneralRemoved << EventLoseSkill << EventAcquireSkill;
     }
 
     virtual QStringList triggerable(TriggerEvent , Room *, ServerPlayer *player, QVariant &, ServerPlayer * &) const {
-        if (player->getPhase() == Player::Finish){
+        if (player->getPhase() == Player::Finish)
+        {
             player->loseAllMarks("@weihao");
             player->loseAllMarks("@zhenhao");
         }
+        if (player->ownSkill(this))
+            room->setPlayerMark(player, "azusa_maxcards", player->getMaxCards(MaxCardsType::Normal));
         return QStringList();
     }
 };
