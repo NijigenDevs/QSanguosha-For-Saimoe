@@ -4,6 +4,15 @@
 #include "moesen-package.h"
 #include "card.h"
 
+class QiangqiCard : public SkillCard {
+	Q_OBJECT
+
+public:
+	Q_INVOKABLE QiangqiCard();
+	virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+	virtual const Card *validate(CardUseStruct &use) const;
+};
+
 class TianjianCard : public SkillCard
 {
 	Q_OBJECT
@@ -18,24 +27,6 @@ public:
     virtual const Card *validate(CardUseStruct &card_use) const;
 };
 
-class XiquArrayCard : public SkillCard {
-	Q_OBJECT
-
-public:
-	Q_INVOKABLE XiquArrayCard();
-
-	virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
-	virtual const Card *validate(CardUseStruct &use) const;
-};
-
-class XiquSummon : public ArraySummonCard
-{
-	Q_OBJECT
-
-public:
-	Q_INVOKABLE XiquSummon();
-};
-
 class HaixingCard: public SkillCard {
     Q_OBJECT
 
@@ -43,6 +34,15 @@ public:
     Q_INVOKABLE HaixingCard();
     virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+};
+
+class ShenaiCard : public SkillCard {
+	Q_OBJECT
+
+public:
+	Q_INVOKABLE ShenaiCard();
+	virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+	virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
 class TaozuiCard : public SkillCard {

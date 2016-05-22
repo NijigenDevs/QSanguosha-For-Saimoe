@@ -373,10 +373,11 @@ const Card *WuweiCard::validate(CardUseStruct &use) const{
     ServerPlayer *sayaka = use.from;
     Room *room = sayaka->getRoom();
     room->loseHp(sayaka);
-    room->broadcastSkillInvoke(objectName());
+    room->broadcastSkillInvoke("wuwei");
     Card *card = Sanguosha->getCard(getSubcards().first());
     Slash *slash = new Slash(card->getSuit(), card->getNumber());
     slash->setSkillName("wuwei");
+	slash->setShowSkill("wuwei");
     slash->addSubcard(card);
     return slash;
 }
@@ -1633,7 +1634,9 @@ public:
         CardUseStruct use = data.value<CardUseStruct>();
         room->notifySkillInvoked(ask_who, objectName());
         //log
-        if (room->askForCard(use.from, "slash", "@pinghe", QVariant(), Card::MethodDiscard)){
+		const Card *card = room->askForCard(use.from, "slash", "@pinghe", QVariant(), Card::MethodNone);
+        if (card != NULL) {
+			room->showCard(use.from, card->getEffectiveId());
             room->detachSkillFromPlayer(use.from, objectName());
         }
         return true;
