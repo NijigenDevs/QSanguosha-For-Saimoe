@@ -101,8 +101,8 @@ public:
         << GeneralRemoved << EventLoseSkill << EventAcquireSkill;
     }
 
-    virtual QStringList triggerable(TriggerEvent , Room *, ServerPlayer *player, QVariant &, ServerPlayer * &) const {
-        if (player->getPhase() == Player::Finish)
+    virtual QStringList triggerable(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &, ServerPlayer * &) const {
+        if (event == EventPhaseEnd && player->getPhase() == Player::Finish)
         {
             player->loseAllMarks("@weihao");
             player->loseAllMarks("@zhenhao");
