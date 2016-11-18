@@ -1126,6 +1126,133 @@ public:
     }
 };
 
+class Duran : public TriggerSkill
+{
+public:
+    Duran() : TriggerSkill("duran")
+    {
+        events << EventPhaseStart;
+        frequency = Compulsory;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer * &) const
+    {
+        if (!TriggerSkill::triggerable(player) || !player->getPhase() == Player::Play)
+            return QStringList();
+
+        QList<ServerPlayer *> players = room->getOtherPlayers(player);
+        foreach(ServerPlayer *p , players)
+        {
+            if (!p->inMyAttackRange(player) && !player->willBeFriendWith(p))
+                return QStringList(objectName());
+        }
+
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        bool invoke = player->hasShownSkill(this) ? true : room->askForSkillInvoke(player, objectName());
+        if (invoke) {
+            room->broadcastSkillInvoke("duran");
+            if (player->hasShownSkill(this)) {
+                room->notifySkillInvoked(player, "duran");
+                LogMessage log;
+                log.type = "#TriggerSkill";
+                log.from = player;
+                log.arg = "duran";
+                room->sendLog(log);
+            }
+            return true;
+        }
+
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const {
+        auto players = room->getOtherPlayers(player);
+        auto drawNum = 0;
+        QStringList kingdoms;
+        foreach(ServerPlayer *p, players)
+        {
+            if (!p->inMyAttackRange(player) && !player->willBeFriendWith(p) && p->hasShownOneGeneral())
+            {
+                if (p->getRole() == "careerist")
+                    drawNum++;
+                else if (!kingdoms.contains(p->getKingdom()))
+                {
+                    kingdoms << p->getKingdom();
+                    drawNum++;
+                }
+            }
+        }
+
+        if (drawNum > 0)
+            player->drawCards(drawNum, objectName());
+
+        return false;
+    }
+
+};
+
+class DuranDis : public DistanceSkill {
+public:
+    DuranDis() : DistanceSkill("#duran-dis") {
+    }
+
+    virtual int getCorrect(const Player *from, const Player *to) const {
+        if (from->getMaxHp() > to->getMaxHp())
+        {
+            if (from->hasShownSkill("duran"))
+                return 1;
+            if (to->hasShownSkill("duran"))
+                return 1;
+        }
+        return 0;
+    }
+};
+
+class Jieao : public TriggerSkill
+{
+public:
+    Jieao() : TriggerSkill("jieao")
+    {
+        events << BuryVictim;
+        frequency = Compulsory;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer * &ask_who) const
+    {
+        DeathStruct death = data.value<DeathStruct>();
+        if ((death.damage == NULL) || !TriggerSkill::triggerable(death.damage->from))
+            return QStringList();
+        ask_who = death.damage->from;
+        return QStringList(objectName());
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const
+    {
+        auto invoke = ask_who->hasShownSkill(this) ? true : room->askForSkillInvoke(ask_who, objectName());
+        if (invoke) {
+            room->broadcastSkillInvoke("jieao");
+            if (ask_who->hasShownSkill(this)) {
+                room->notifySkillInvoked(ask_who, "jieao");
+                LogMessage log;
+                log.type = "#TriggerSkill";
+                log.from = ask_who;
+                log.arg = "jieao";
+                room->sendLog(log);
+            }
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *, ServerPlayer *, QVariant &, ServerPlayer *) const {
+        return false;
+    }
+};
+
 
 void MoesenPackage::addNovelGenerals()
 {
@@ -1169,7 +1296,11 @@ void MoesenPackage::addNovelGenerals()
     rikka->addSkill(new Xieyu);
     skills << new XieyuTargetMod;
     
-    //General *yukino = new General(this, "yukino", "qun", 3, false); // N010
+    General *yukino = new General(this, "yukino", "qun", 3, false); // N010
+    yukino->addSkill(new Duran);
+    yukino->addSkill(new DuranDis);
+    yukino->addSkill(new Jieao);
+    insertRelatedSkills("duran", "#duran-dis");
     
     //General *y_yui = new General(this, "y_yui", "qun", 3, false); // N011
     

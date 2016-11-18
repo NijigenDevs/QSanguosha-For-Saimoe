@@ -752,7 +752,7 @@ bool GameRule::effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *playe
             return false;
 
         ServerPlayer *killer = death.damage ? death.damage->from : NULL;
-        if (killer)
+        if (killer != NULL)
             rewardAndPunish(killer, player);
 
         if (player->getGeneral()->isLord() && player == data.value<DeathStruct>().who) {
@@ -920,6 +920,12 @@ void GameRule::rewardAndPunish(ServerPlayer *killer, ServerPlayer *victim) const
 
     Q_ASSERT(killer->getRoom() != NULL);
     Room *room = killer->getRoom();
+
+    if (killer->hasShownSkill("jieao")) // don't remove this for Jieao(yukino)
+    {
+        killer->drawCards(1);
+        return;
+    }
 
     if (!killer->isFriendWith(victim)) {
         int n = 1;
