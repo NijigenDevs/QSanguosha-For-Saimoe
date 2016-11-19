@@ -22,7 +22,7 @@
     <ProjectGuid>{ED0EA6EF-703C-3334-B884-72B72FA2B610}</ProjectGuid>
     <RootNamespace>QSanguosha</RootNamespace>
     <Keyword>Qt4VSv1.0</Keyword>
-    <WindowsTargetPlatformVersion>10.0.10586.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.14393.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -214,6 +214,9 @@
     <PostBuildEvent>
       <Command>copy $(ProjectDir)..\sanguosha.qm $(ProjectDir)..\..\</Command>
     </PostBuildEvent>
+    <CustomBuildStep>
+      <Command>..\..\swig\cxx-creator.bat</Command>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>

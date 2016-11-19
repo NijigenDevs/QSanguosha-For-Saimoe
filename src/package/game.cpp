@@ -1091,9 +1091,12 @@ public:
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const{
     	CardUseStruct use = data.value<CardUseStruct>();
 		if (use.to.first()->canDiscard(use.to.first(), "he")
-            && room->askForDiscard(use.to.first(), objectName(), 1, 1, true, true, "@leiguang_effect")) {
+            && room->askForDiscard(use.to.first(), objectName(), 1, 1, true, true, "@leiguang_effect"))
+        {
     		return false;
-    	} else if (use.m_addHistory){
+    	}
+        else if (use.m_addHistory)
+        {
 			room->addPlayerHistory(player, use.card->getClassName(), -1);
 			LogMessage log;
             log.type = "#leiguang_more_slash";

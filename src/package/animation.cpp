@@ -1700,15 +1700,15 @@ public:
     TengyueTargetMod(): TargetModSkill("#tengyue-target") {
     }
 
-    virtual int getResidueNum(const Player *from, const Card *) const{
-        if (from->getMark("@TengyueExtraSlashes") > 0)
+    virtual int getResidueNum(const Player *from, const Card *card) const{
+        if (card->isKindOf("Slash") && from->getMark("@TengyueExtraSlashes") > 0)
             return (from->getMark("@TengyueExtraSlashes"));
         else
             return 0;
     }
 
-    virtual int getExtraTargetNum(const Player *from, const Card *) const{
-        if (from->getMark("@TengyueExtraSlashes") > 0)
+    virtual int getExtraTargetNum(const Player *from, const Card *card) const{
+        if (card->isKindOf("Slash") && from->getMark("@TengyueExtraSlashes") > 0)
             return 1;
         else
             return 0;

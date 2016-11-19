@@ -2196,7 +2196,7 @@ public:
 		return skill_list;
 	}
 
-	virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *ask_who) const {
+	virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const {
 		const Card *card = room->askForCard(ask_who, "he", "@fengyin_put", QVariant(), objectName());
 		if (card != NULL)
 		{

@@ -1126,6 +1126,7 @@ public:
     }
 };
 
+//Duran for Yukino
 class Duran : public TriggerSkill
 {
 public:
@@ -1137,7 +1138,7 @@ public:
 
     virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer * &) const
     {
-        if (!TriggerSkill::triggerable(player) || !player->getPhase() == Player::Play)
+        if (!TriggerSkill::triggerable(player) || player->getPhase() != Player::Play)
             return QStringList();
 
         QList<ServerPlayer *> players = room->getOtherPlayers(player);
@@ -1212,6 +1213,7 @@ public:
     }
 };
 
+//Jieao for yukino
 class Jieao : public TriggerSkill
 {
 public:
@@ -1221,7 +1223,7 @@ public:
         frequency = Compulsory;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer * &ask_who) const
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *, QVariant &data, ServerPlayer * &ask_who) const
     {
         DeathStruct death = data.value<DeathStruct>();
         if ((death.damage == NULL) || !TriggerSkill::triggerable(death.damage->from))
@@ -1253,6 +1255,129 @@ public:
     }
 };
 
+//Duanzui for shana
+class DuanzuiVS : public OneCardViewAsSkill
+{
+public:
+    DuanzuiVS() : OneCardViewAsSkill("duanzui")
+    {
+        filter_pattern = "EquipCard";
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const
+    {
+        return !player->hasFlag("duanzui_used");
+    }
+
+    virtual const Card *viewAs(const Card *originalCard) const
+    {
+        auto *fs = new FireSlash(originalCard->getSuit(), originalCard->getNumber());
+        fs->addSubcard(originalCard);
+        fs->setSkillName(objectName());
+        fs->setShowSkill(objectName());
+        return fs;
+    }
+};
+
+class Duanzui : public TriggerSkill
+{
+public:
+    Duanzui() : TriggerSkill("duanzui")
+    {
+        view_as_skill = new DuanzuiVS;
+        events << PreCardUsed << CardUsed << EventPhaseChanging;
+    }
+
+    virtual QStringList triggerable(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const
+    {
+        if (!TriggerSkill::triggerable(player))
+            return QStringList();
+
+        if (event == PreCardUsed)
+        {
+            auto use = data.value<CardUseStruct>();
+            if (use.card != NULL && use.card->getSkillName() == "duanzui" && player->getPhase() == Player::Play)
+            {
+                room->addPlayerHistory(player, use.card->getClassName(), -1);
+                use.m_addHistory = false;
+                data = QVariant::fromValue(use);
+            }
+        }
+        else if (event == CardUsed)
+        {
+            auto use = data.value<CardUseStruct>();
+            if (use.card != NULL && use.card->getSkillName() == "duanzui" && player->getPhase() == Player::Play && !player->hasFlag("duanzui_used"))
+                player->setFlags("duanzui_used");
+        }
+        else
+        {
+            auto change = data.value<PhaseChangeStruct>();
+            if (change.from == Player::Play && player->hasFlag("duanzui_used"))
+                player->setFlags("-duanzui_used");
+        }
+        return QStringList();
+    }
+};
+
+class DuanzuiTM : public TargetModSkill
+{
+public:
+    DuanzuiTM() : TargetModSkill("#duanzui-target"){}
+
+    virtual int getExtraTargetNum(const Player *from, const Card *card) const
+    {
+        if (from->hasShownSkill("duanzui") && card->getSkillName() == "duanzui")
+            return 1;
+        else
+            return 0;
+    }
+};
+
+//Honglian for shana
+class Honglian : public TriggerSkill
+{
+public:
+    Honglian() : TriggerSkill("honglian")
+    {
+        events << CardsMoveOneTime << Damaged;
+        frequency = Frequent;
+    }
+
+    virtual QStringList triggerable(TriggerEvent event, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const
+    {
+        if (!TriggerSkill::triggerable(player))
+            return QStringList();
+
+        if (event == CardsMoveOneTime)
+        {
+            auto move = data.value<CardsMoveOneTimeStruct>();
+            if (move.from == player && move.from_places.contains(Player::PlaceEquip))
+                return QStringList(objectName());
+        }
+        else
+        {
+            auto damage = data.value<DamageStruct>();
+            if (damage.to != NULL && damage.to == player && damage.nature != DamageStruct::Normal)
+                return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        if (room->askForSkillInvoke(player, objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        room->drawCards(player, 1, objectName());
+        return false;
+    }
+};
 
 void MoesenPackage::addNovelGenerals()
 {
@@ -1261,7 +1386,11 @@ void MoesenPackage::addNovelGenerals()
     taiga->addSkill(new Huxiao);
     taiga->addSkill(new Yexi);
     
-    //General *shana = new General(this, "shana", "qun", 4, false); // N002
+    General *shana = new General(this, "shana", "qun", 4, false); // N002
+    shana->addSkill(new Duanzui);
+    shana->addSkill(new DuanzuiTM);
+    shana->addSkill(new Honglian);
+    insertRelatedSkills("duanzui", "#duanzui-target");
 
     General *louise = new General(this, "louise", "qun", 3, false); // N003
     louise->addSkill(new Bianchi);
