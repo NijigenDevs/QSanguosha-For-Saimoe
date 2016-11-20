@@ -47,7 +47,7 @@ public:
     void play(const bool doubleVolume = false)
     {
         if (sound) {
-            FMOD_RESULT result = FMOD_System_PlaySound(System, FMOD_CHANNEL_FREE, sound, false, &channel);
+            FMOD_RESULT result = FMOD_System_PlaySound(System, sound, NULL, false, &channel);
 
             if (result == FMOD_OK) {
                 FMOD_Channel_SetVolume(channel, (doubleVolume ? 2 : 1) * Config.EffectVolume);
@@ -110,7 +110,7 @@ void Audio::stop()
     if (System == NULL) return;
 
     int n;
-    FMOD_System_GetChannelsPlaying(System, &n);
+    FMOD_System_GetChannelsPlaying(System, &n, NULL);
 
     QList<FMOD_CHANNEL *> channels;
     for (int i = 0; i < n; i++) {
@@ -133,7 +133,7 @@ void Audio::playBGM(const QString &filename)
 
     if (result == FMOD_OK) {
         FMOD_Sound_SetLoopCount(BGM, -1);
-        FMOD_System_PlaySound(System, FMOD_CHANNEL_FREE, BGM, false, &BGMChannel);
+        FMOD_System_PlaySound(System, BGM, NULL, false, &BGMChannel);
 
         FMOD_Channel_SetVolume(BGMChannel, Config.BGMVolume);
         FMOD_System_Update(System);
