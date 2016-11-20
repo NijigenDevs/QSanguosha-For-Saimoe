@@ -18,10 +18,6 @@
     Mogara
     *********************************************************************/
 
-#if defined(WIN32) && !defined(GPP) && !defined(QT_NO_DEBUG) && !defined(WINRT)
-#include <vld/vld.h>
-#endif
-
 #include <QFile>
 #include <QCoreApplication>
 #include <QApplication>
