@@ -60,6 +60,10 @@ struct RoomLayout;
 #include <QHBoxLayout>
 #include <QMutex>
 #include <QStack>
+#include <QQmlEngine>
+#include <QQmlContext>
+#include <QQmlComponent>
+
 class ScriptExecutor : public QDialog
 {
     Q_OBJECT
@@ -396,6 +400,10 @@ private:
     int _m_currentStage;
 
     QRectF _m_infoPlane;
+
+    QQmlEngine *_m_animationEngine;
+    QQmlContext *_m_animationContext;
+    QQmlComponent *_m_animationComponent;
 
     QSet<HeroSkinContainer *> m_heroSkinContainers;
 

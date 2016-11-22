@@ -410,6 +410,9 @@ RoomScene::RoomScene(QMainWindow *main_window)
 
     pindian_from_card = NULL;
     pindian_to_card = NULL;
+    _m_animationEngine = new QQmlEngine(this);
+    _m_animationContext = new QQmlContext(_m_animationEngine->rootContext(), this);
+    _m_animationComponent = new QQmlComponent(_m_animationEngine, QUrl::fromLocalFile("ui-script/animation.qml"), this);
 }
 
 void RoomScene::handleGameEvent(const QVariant &args)
@@ -4062,6 +4065,19 @@ void RoomScene::doLightboxAnimation(const QString &, const QStringList &args)
             pma->moveBy(-sceneRect().width() * _m_roomLayout->m_infoPlaneWidthPercentage / 2, 0);
             connect(pma, &PixmapAnimation::finished, this, &RoomScene::removeLightBox);
         }
+    } else if (word.startsWith("skill=")) {
+        const QString hero = word.mid(6);
+        const QString skill = args.value(1, QString());
+
+        _m_animationContext->setContextProperty("sceneWidth", sceneRect().width());
+        _m_animationContext->setContextProperty("sceneHeight", sceneRect().height());
+        _m_animationContext->setContextProperty("tableWidth", m_tableCenterPos.x() * 2);
+        _m_animationContext->setContextProperty("hero", hero);
+        _m_animationContext->setContextProperty("skill", Sanguosha->translate(skill));
+        QGraphicsObject *object = qobject_cast<QGraphicsObject *>(_m_animationComponent->create(_m_animationContext));
+        connect(object, SIGNAL(animationCompleted()), object, SLOT(deleteLater()));
+        addItem(object);
+        bringToFront(object);
     }
     else {
         QFont font = Config.BigFont;
