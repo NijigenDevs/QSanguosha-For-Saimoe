@@ -3215,7 +3215,7 @@
         <location filename="../src/ui/roomscene.cpp" line="3395"/>
         <location filename="../src/ui/roomscene.cpp" line="3406"/>
         <location filename="../src/ui/roomscene.cpp" line="3421"/>
-        <location filename="../src/ui/roomscene.cpp" line="4211"/>
+        <location filename="../src/ui/roomscene.cpp" line="4210"/>
         <source>Warning</source>
         <translation>警告</translation>
     </message>
@@ -3246,7 +3246,7 @@
     </message>
     <message>
         <location filename="../src/ui/roomscene.cpp" line="403"/>
-        <location filename="../src/ui/roomscene.cpp" line="4404"/>
+        <location filename="../src/ui/roomscene.cpp" line="4403"/>
         <source>pindian</source>
         <translation>拼点</translation>
     </message>
@@ -3493,27 +3493,27 @@
         <translation>&lt;font color=&apos;%1&apos;&gt;---------- 游戏开始 ----------&lt;/font&gt;</translation>
     </message>
     <message>
-        <location filename="../src/ui/roomscene.cpp" line="4197"/>
+        <location filename="../src/ui/roomscene.cpp" line="4196"/>
         <source>Server information</source>
         <translation>服务器信息</translation>
     </message>
     <message>
-        <location filename="../src/ui/roomscene.cpp" line="4211"/>
+        <location filename="../src/ui/roomscene.cpp" line="4210"/>
         <source>You can only initiate a surrender poll at your play phase!</source>
         <translation>只有在你的出牌阶段才能请求投降!</translation>
     </message>
     <message>
-        <location filename="../src/ui/roomscene.cpp" line="4216"/>
+        <location filename="../src/ui/roomscene.cpp" line="4215"/>
         <source>Surrender</source>
         <translation>投降</translation>
     </message>
     <message>
-        <location filename="../src/ui/roomscene.cpp" line="4216"/>
+        <location filename="../src/ui/roomscene.cpp" line="4215"/>
         <source>Are you sure to surrender ?</source>
         <translation>您真的要投降吗 ?</translation>
     </message>
     <message>
-        <location filename="../src/ui/roomscene.cpp" line="4322"/>
+        <location filename="../src/ui/roomscene.cpp" line="4321"/>
         <source>Complete</source>
         <translation>完成</translation>
     </message>
