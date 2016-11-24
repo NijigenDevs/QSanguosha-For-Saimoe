@@ -87,9 +87,11 @@ VS2015(Windows)
 1. Download the following packages:
 (1) QT libraries for Windows (Visual Studio 2015, 5.6.0+)
 
-3. Open Qsanguosha.sln right under ~/builds/vs2015, change the Configuration to Release Qt5|Win32.
+(2) Swigwin binaries (3.0.10)
 
-3.1. [optional] Right click project "QSanguosha", select "lrelease all .ts files in project".
+2. Open Qsanguosha.sln right under ~/builds/vs2015, change the Configuration to Release Qt5|Win32.
+
+3. Right click project "QSanguosha", select "lrelease all .ts files in project".
 
 4. You are now able to build the solution. When compilation succeeded, the QSanguosha.exe is in ~/Bin folder. You should move this file to ~ folder.
 
