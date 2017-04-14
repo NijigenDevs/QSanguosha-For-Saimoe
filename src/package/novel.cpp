@@ -1379,6 +1379,31 @@ public:
     }
 };
 
+//Dianji for mikoto
+class Dianji : public TriggerSkill
+{
+public:
+    Dianji() : TriggerSkill("dianji")
+    {
+        events << EventPhaseEnd;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer * &) const
+    {
+        if (!TriggerSkill::triggerable(player))
+            return QStringList();
+
+        if (player->getPhase() == Player::Play  && player->hasUsed("Slash"))
+            return QStringList(objectName());
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        return false;
+    }
+}
+
 void MoesenPackage::addNovelGenerals()
 {
     
