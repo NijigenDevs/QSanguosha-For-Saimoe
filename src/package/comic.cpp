@@ -1426,7 +1426,7 @@ void KaihuaCard::onEffect(const CardEffectStruct &effect) const{
 	Room *room = effect.to->getRoom();
 
 	const Card *equip = room->askForCard(effect.to, "EquipCard", QString("@kaihua_pass:" + effect.from->objectName()), QVariant(), Card::MethodNone, 0, false, objectName());
-	if (equip)
+	if (equip != NULL)
 		room->obtainCard(effect.from, equip, CardMoveReason(CardMoveReason::S_REASON_GIVE, effect.to->objectName(), effect.from->objectName(), "kaihua", ""), true);
 	else{
 		QString choice = "kaihuaDamage";
