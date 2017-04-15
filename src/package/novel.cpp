@@ -1558,6 +1558,7 @@ class Xianli: public ZeroCardViewAsSkill
 public:
     Xianli(): ZeroCardViewAsSkill("xianli")
     {
+        relate_to_place = "head";
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const
