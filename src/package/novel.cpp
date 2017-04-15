@@ -1444,7 +1444,7 @@ public:
         events << TurnedOver;
     }
 
-    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const
+    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent, Room *room, ServerPlayer *target, QVariant &) const
     {
         QMap<ServerPlayer *, QStringList> skill_list;
 
