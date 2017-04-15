@@ -1465,7 +1465,7 @@ public:
         return skill_list;
     }
 
-    virtual bool cost(TriggerEvent , Room *room, ServerPlayer *target, QVariant &data, ServerPlayer *ask_who) const
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *target, QVariant &data, ServerPlayer *ask_who) const
     {
         const Card *card = room->askForCard(ask_who, "BasicCard", QString("@cichang_discard"), QVariant(), Card::MethodDiscard);
         ask_who->tag["cichang-card"] = QVariant::fromValue(card);
@@ -1478,7 +1478,7 @@ public:
         return false;
     }
 
-    virtual bool effect(TriggerEvent , Room *room, ServerPlayer *target, QVariant &, ServerPlayer *ask_who) const
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *target, QVariant &, ServerPlayer *ask_who) const
     {
         const Card *card = ask_who->tag["cichang-card"].value<const Card *>();
 
@@ -1574,6 +1574,71 @@ public:
     }
 };
 
+//Yuanxin for Yui
+class Yuanxin : public TriggerSkill
+{
+public:
+    Yuanxin() : TriggerSkill("yuanxin")
+    {
+        relate_to_place = "deputy";
+        event << EventPhaseStart << HpRecover;
+    }
+
+    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &) const
+    {
+        QMap<ServerPlayer *, QStringList> skill_list;
+
+        if (player == NULL || !player->isAlive())
+            return skill_list;
+
+        if (event == HpRecover)
+        {
+            if (!player->hasSkill(objectName()))
+                return skill_list;
+            
+            player->setFlags("yuanxin_turnrecover");
+        }
+        else
+        {
+            if (player->getPhase() == Player::Finish)
+            {
+                QList<ServerPlayer *> yuis = room->findPlayersBySkillName(objectName());
+                foreach (ServerPlayer *yui, yuis)
+                {
+                    if (yui->hasFlag("yuanxin_turnrecover"))
+                        skill_list.insert(yui, QStringList(objectName()));
+                }
+            }
+        }
+        return skill_list;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const
+    {
+        if (ask_who->askForSkillInvoke(objectName()))
+        {
+            room->broadcastSkillInvoke(objectName());
+            room->loseHp(ask_who);
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const
+    {
+        ServerPlayer *luckyDog = room->askForPlayerChosen(ask_who, room->getOtherPlayers(ask_who), objectName(), "@yuanxin_choosetarget", false);
+        if (luckyDog != NULL)
+        {
+            RecoverStruct recover;
+            recover.recover = 1;
+            recover.who = ask_who;
+            room->recover(luckyDog, recover);
+            ask_who->drawCards(2, objectName());
+        }
+        return false;
+    }
+}
+
 void MoesenPackage::addNovelGenerals()
 {
     
@@ -1626,7 +1691,10 @@ void MoesenPackage::addNovelGenerals()
     yukino->addSkill(new Jieao);
     insertRelatedSkills("duran", "#duran-dis");
     
-    //General *y_yui = new General(this, "y_yui", "qun", 3, false); // N011
+    General *y_yui = new General(this, "y_yui", "qun", 3, false); // N011
+    y_yui->addSkill(new Xianli);
+    y_yui->setHeadMaxHpAdjustedValue(1);
+    y_yui->addSkill(new Yuanxin);
     
     General *mikoto = new General(this, "mikoto", "qun", 3, false); // N012
     mikoto->addSkill(new Dianji);
