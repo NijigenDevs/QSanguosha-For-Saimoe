@@ -1511,6 +1511,68 @@ public:
     }
 }
 
+//Xianli for Yui
+XianliCard::XianliCard()
+{
+    will_throw = false;
+    handling_method = Card::MethodNone;
+}
+
+bool XianliCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *) const
+{
+    return (targets.isEmpty() && !to_select->hasShownAllGenerals());
+}
+
+void XianliCard::onEffect(const CardEffectStruct &effect) const
+{
+    Room *room = effect.to->getRoom();
+    QStringList choices;
+    choices << "drawonecard";
+    choices << "showonegeneral";
+    KnownBoth *kb = new KnownBoth(Card::NoSuit, 0);
+    kb->setSkillName("xianli");
+    QList<const Player *> empty;
+    if (kb->isAvailable(effect.from) && kb->targetFilter(empty, effect.to, effect.from) && !effect.from->isProhibited(effect.to, kb, empty))
+        choices << "knownboth";
+    delete kb;
+    switch (room->askForChoice(effect.to, objectName(), choices.join("+")))
+    {
+        case "drawonecard":
+            effect.from->drawCards(1, "xianli");
+            break;
+        case "showonegeneral":
+            effect.to->askForGeneralShow(true, false);
+            break;
+        case "knownboth":
+            KnownBoth *knownBoth = new KnownBoth(Card::NoSuit, 0);
+            knownBoth->setSkillName("xianli");
+            room->useCard(CardUseStruct(knownBoth, effect.from, effect.to), false);
+            break;
+        default:
+            break;
+    }
+}
+
+class Xianli: public ZeroCardViewAsSkill
+{
+public:
+    Xianli(): ZeroCardViewAsSkill("xianli")
+    {
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const
+    {
+        return !player->hasUsed("XianliCard");
+    }
+
+    virtual const Card *viewAs() const
+    {
+        XianliCard *card = new XianliCard();
+        card->setShowSkill(objectName());
+        return card;
+    }
+};
+
 void MoesenPackage::addNovelGenerals()
 {
     
@@ -1595,4 +1657,5 @@ void MoesenPackage::addNovelGenerals()
     addMetaObject<ZhuanyuCard>();
     addMetaObject<XianqunCard>();
     addMetaObject<XieyuSummon>();
+    addMetaObject<XianliCard>();
 }
