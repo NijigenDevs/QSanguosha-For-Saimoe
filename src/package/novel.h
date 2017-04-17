@@ -4,6 +4,14 @@
 #include "moesen-package.h"
 #include "card.h"
 
+class BaoyanCard : public SkillCard {
+    Q_OBJECT
+public:
+    Q_INVOKABLE BaoyanCard();
+    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+    virtual void onEffect(const CardEffectStruct &effect) const;
+};
+
 class XianliCard: public SkillCard {
     Q_OBJECT
 

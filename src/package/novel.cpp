@@ -1639,6 +1639,120 @@ public:
     }
 }
 
+//Qingyou for Hitagi
+class Qingyou : public MasochismSkill
+{
+public:
+    Qingyou() : MasochismSkill("qingyou")
+    {
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const
+    {
+        if (!TriggerSkill::triggerable(player))
+        {
+            return QStringList();
+        }
+
+        ServerPlayer *from = data.value<DamageStruct>().from;
+        if (from != NULL)
+        {
+            return QStringList(objectName());
+        }
+
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant & data, ServerPlayer *) const
+    {
+        ServerPlayer *from = data.value<DamageStruct>().from;
+        if (from != NULL && player->askForSkillInvoke(this, QVariant::fromValue(current)))
+        {
+            if (player->hasShownSkill("zhongxie") && player->hasShownAllGenerals() && player->getMark("HalfMaxHpLeft") == 1)
+            from->drawCards(1, objectName());
+            room->broadcastSkillInvoke(objectName(), player);
+            return true;
+        }
+
+        return false;
+    }
+
+    virtual void onDamaged(ServerPlayer *player, const DamageStruct &damage) const
+    {
+        Room *room = player->getRoom();
+        ServerPlayer *from = data.value<DamageStruct>().from;
+        if (from == NULL) return;
+        
+        foreach (ServerPlayer *p, room->getAlivePlayers())
+        {
+            // one by one discard will reduce the amount of p, different from getting list first, due to design purpose 
+            if (p->getHandcardNum() < from->getHandcardNum())
+            {
+                auto id = room->askForCardChosen(p, from, "he", objectName(), false, Card::MethodDiscard, QList<int>());
+                if (id != -1)
+                {
+                    room->throwCard(id, from, p, objectName());
+                }
+            }
+        }
+
+        return;
+    }
+};
+
+BaoyanCard::BaoyanCard() {
+    will_throw = false;
+    handling_method = Card::MethodNone;
+}
+
+bool BaoyanCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *self) const{
+    return targets.isEmpty() && to_select != self;
+}
+
+void BaoyanCard::onEffect(const CardEffectStruct &effect) const{
+    CardMoveReason reason(CardMoveReason::S_REASON_GIVE, effect.from->objectName(), effect.to->objectName(), "baoyan", QString());
+    effect.from->getRoom()->obtainCard(effect.to, this, reason, true);
+    effect.from->drawCards(1, "baoyan");
+}
+
+//Baoyan for Hitagi
+class Baoyan : public OneCardViewAsSkill{
+public:
+    Baoyan() : OneCardViewAsSkill("baoyan"){
+        filter_pattern = ".|.|.|hand!";
+    }
+
+    virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const{
+        return selected.isEmpty() && to_select->isKindOf("Slash");
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const{
+        return (!player->isKongcheng() && (player->getMark("HalfMaxHpLeft") == 0 || !player->hasUsed("BaoyanCard")));
+    }
+
+    virtual const Card *viewAs(const Card *originalCard) const{
+        BaoyanCard *by = new BaoyanCard;
+        by->addSubcard(originalCard->getId());
+        by->setShowSkill(objectName());
+        return by;
+    }
+};
+
+//Zhongxie for Hitagi (Highly Coupling)
+class Zhongxie : public TriggerSkill
+{
+public:
+    Zhongxie() : TriggerSkill("zhongxie")
+    {
+        frequency = Compulsory;
+        events << NonTrigger;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *, QVariant &, ServerPlayer * &) const
+    {
+    }
+}
+
 void MoesenPackage::addNovelGenerals()
 {
     
@@ -1709,7 +1823,10 @@ void MoesenPackage::addNovelGenerals()
     insertRelatedSkills("shanguang", "#shanguang-maxcard");
     asuna->addSkill(new Zhuanyu);
     
-    //General *hitagi = new General(this, "hitagi", "qun", 3, false); // N015
+    General *hitagi = new General(this, "hitagi", "qun", 3, false); // N015
+    hitagi->addSkill(new Baoyan);
+    hitagi->addSkill(new Qingyou);
+    hitagi->addSkill(new Zhongxie);
     
     //General *watashi = new General(this, "watashi", "qun", 3, false); // N016
     
@@ -1727,4 +1844,5 @@ void MoesenPackage::addNovelGenerals()
     addMetaObject<XianqunCard>();
     addMetaObject<XieyuSummon>();
     addMetaObject<XianliCard>();
+    addMetaObject<BaoyanCard>();
 }
