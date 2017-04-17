@@ -74,3 +74,4 @@ QSanguosha.lib
 QSanguosha.pdb
 lib/breakpad.pdb
 lib/lua.pdb
+fmod*.dll
