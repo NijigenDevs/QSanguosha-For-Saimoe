@@ -1691,7 +1691,7 @@ void MoesenPackage::addNovelGenerals()
     yukino->addSkill(new Jieao);
     insertRelatedSkills("duran", "#duran-dis");
     
-    General *y_yui = new General(this, "y_yui", "qun", 3, false); // N011
+    General *y_yui = new General(this, "y_yui", "qun", 4, false); // N011
     y_yui->addSkill(new Xianli);
     y_yui->setHeadMaxHpAdjustedValue(1);
     y_yui->addSkill(new Yuanxin);
