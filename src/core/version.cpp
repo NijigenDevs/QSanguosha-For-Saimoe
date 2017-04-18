@@ -37,7 +37,8 @@ QSanVersionNumber::QSanVersionNumber(int major, int minor, int sub, VersionType 
 bool QSanVersionNumber::tryParse(const QString &str)
 {
     QRegExp regexp("(\\d+)\\.(\\d+)\\.(\\d+)\\-([a-z]+)(\\d+)?");
-    if (regexp.exactMatch(str)) {
+    if (regexp.exactMatch(str))
+    {
         QStringList l = regexp.capturedTexts();
         m_major = l[1].toInt();
         m_minor = l[2].toInt();
@@ -65,22 +66,23 @@ QString QSanVersionNumber::toString() const
 {
     QString str = "%1.%2.%3-%4";
     QString type_str;
-    switch (m_type) {
-    case alpha:
-        type_str = "alpha";
-        break;
-    case beta:
-        type_str = "beta";
-        break;
-    case offical:
-        type_str = "offical";
-        break;
-    case other:
-        type_str = "other";
-        break;
-    default:
-        type_str = "unknown";
-        break;
+    switch (m_type)
+    {
+        case alpha:
+            type_str = "alpha";
+            break;
+        case beta:
+            type_str = "beta";
+            break;
+        case offical:
+            type_str = "offical";
+            break;
+        case other:
+            type_str = "other";
+            break;
+        default:
+            type_str = "unknown";
+            break;
     }
     str = str.arg(m_major).arg(m_minor).arg(m_sub).arg(type_str);
     if (m_step != 0)
@@ -105,15 +107,24 @@ bool QSanVersionNumber::operator ==(const QSanVersionNumber &arg2) const
 
 bool QSanVersionNumber::operator <(const QSanVersionNumber &arg2) const
 {
-    if (m_major < arg2.m_major) {
+    if (m_major < arg2.m_major)
+    {
         return true;
-    } else if (m_major == arg2.m_major) {
-        if (m_minor < arg2.m_minor) {
+    }
+    else if (m_major == arg2.m_major)
+    {
+        if (m_minor < arg2.m_minor)
+        {
             return true;
-        } else if (m_minor == arg2.m_minor) {
-            if (m_sub < arg2.m_sub) {
+        }
+        else if (m_minor == arg2.m_minor)
+        {
+            if (m_sub < arg2.m_sub)
+            {
                 return true;
-            } else if (m_sub == arg2.m_sub) {
+            }
+            else if (m_sub == arg2.m_sub)
+            {
                 if (m_type < arg2.m_type)
                     return true;
                 else

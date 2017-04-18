@@ -384,9 +384,11 @@ public:
     {
         if (strcmp(cardType, "LuaCard") == 0 || QString(cardType) == class_name)
             return true;
-        else {
+        else
+        {
             if (Card::isKindOf(cardType)) return true;
-            switch (subclass) {
+            switch (subclass)
+            {
                 case TypeSingleTargetTrick: return strcmp(cardType, "SingleTargetTrick") == 0; break;
                 case TypeDelayedTrick: return strcmp(cardType, "DelayedTrick") == 0; break;
                 case TypeAOE: return strcmp(cardType, "AOE") == 0; break;

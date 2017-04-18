@@ -38,22 +38,22 @@ struct CardUseStruct;
 class Card : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(QString suit READ getSuitString CONSTANT)
-    Q_PROPERTY(bool red READ isRed STORED false CONSTANT)
-    Q_PROPERTY(bool black READ isBlack STORED false CONSTANT)
-    Q_PROPERTY(int id READ getId CONSTANT)
-    Q_PROPERTY(int number READ getNumber WRITE setNumber)
-    Q_PROPERTY(QString number_string READ getNumberString CONSTANT)
-    Q_PROPERTY(QString type READ getType CONSTANT)
-    Q_PROPERTY(bool target_fixed READ targetFixed)
-    Q_PROPERTY(bool mute READ isMute CONSTANT)
-    Q_PROPERTY(bool equipped READ isEquipped)
-    Q_PROPERTY(Color color READ getColor)
-    Q_PROPERTY(bool transferable READ isTransferable WRITE setTransferable)
+        Q_PROPERTY(QString suit READ getSuitString CONSTANT)
+        Q_PROPERTY(bool red READ isRed STORED false CONSTANT)
+        Q_PROPERTY(bool black READ isBlack STORED false CONSTANT)
+        Q_PROPERTY(int id READ getId CONSTANT)
+        Q_PROPERTY(int number READ getNumber WRITE setNumber)
+        Q_PROPERTY(QString number_string READ getNumberString CONSTANT)
+        Q_PROPERTY(QString type READ getType CONSTANT)
+        Q_PROPERTY(bool target_fixed READ targetFixed)
+        Q_PROPERTY(bool mute READ isMute CONSTANT)
+        Q_PROPERTY(bool equipped READ isEquipped)
+        Q_PROPERTY(Color color READ getColor)
+        Q_PROPERTY(bool transferable READ isTransferable WRITE setTransferable)
 
-    Q_ENUMS(Suit)
-    Q_ENUMS(CardType)
-    Q_ENUMS(HandlingMethod)
+        Q_ENUMS(Suit)
+        Q_ENUMS(CardType)
+        Q_ENUMS(HandlingMethod)
 
 public:
     // enumeration type

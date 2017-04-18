@@ -24,7 +24,8 @@
 
 RoomState::~RoomState()
 {
-    foreach (WrappedCard *card, m_cards) {
+    foreach(WrappedCard *card, m_cards)
+    {
         delete card;
     }
     m_cards.clear();
@@ -50,13 +51,15 @@ void RoomState::resetCard(int cardId)
 // Reset all cards, generals' states of the room instance
 void RoomState::reset()
 {
-    foreach (WrappedCard *card, m_cards) {
+    foreach(WrappedCard *card, m_cards)
+    {
         delete card;
     }
     m_cards.clear();
 
     int n = Sanguosha->getCardCount();
-    for (int i = 0; i < n; i++) {
+    for (int i = 0; i < n; i++)
+    {
         Card *newCard = Card::Clone(Sanguosha->getEngineCard(i));
         m_cards[i] = new WrappedCard(newCard);
     }

@@ -54,7 +54,7 @@ private:
     QListWidget *list;
     QTextBrowser *content_box;
 
-private slots:
+    private slots:
     void loadContent(int row);
 };
 

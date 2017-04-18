@@ -39,14 +39,16 @@ QVariant AvatarModel::data(const QModelIndex &index, int role) const
 
     const General *general = list.at(row);
 
-    switch (role) {
-    case Qt::UserRole: return general->objectName();
-    case Qt::DisplayRole: return Sanguosha->translate(general->objectName());
-    case Qt::DecorationRole: {
-        QIcon icon(G_ROOM_SKIN.getGeneralPixmap(general->objectName(),
-            QSanRoomSkin::S_GENERAL_ICON_SIZE_LARGE));
-        return icon;
-    }
+    switch (role)
+    {
+        case Qt::UserRole: return general->objectName();
+        case Qt::DisplayRole: return Sanguosha->translate(general->objectName());
+        case Qt::DecorationRole:
+        {
+            QIcon icon(G_ROOM_SKIN.getGeneralPixmap(general->objectName(),
+                QSanRoomSkin::S_GENERAL_ICON_SIZE_LARGE));
+            return icon;
+        }
     }
 
     return QVariant();

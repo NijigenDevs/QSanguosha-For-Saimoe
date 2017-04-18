@@ -24,7 +24,7 @@
 #include <QVariantList>
 #include <QVariantMap>
 
-//Directly apply two containers of Qt here. Reimplement the 2 classes if necessary.
+    //Directly apply two containers of Qt here. Reimplement the 2 classes if necessary.
 typedef QVariantList JsonArray;
 typedef QVariantMap JsonObject;
 

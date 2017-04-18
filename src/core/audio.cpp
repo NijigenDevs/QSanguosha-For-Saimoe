@@ -46,10 +46,12 @@ public:
 
     void play(const bool doubleVolume = false)
     {
-        if (sound) {
+        if (sound)
+        {
             FMOD_RESULT result = FMOD_System_PlaySound(System, sound, NULL, false, &channel);
 
-            if (result == FMOD_OK) {
+            if (result == FMOD_OK)
+            {
                 FMOD_Channel_SetVolume(channel, (doubleVolume ? 2 : 1) * Config.EffectVolume);
                 FMOD_System_Update(System);
             }
@@ -78,7 +80,8 @@ void Audio::init()
 
 void Audio::quit()
 {
-    if (System) {
+    if (System)
+    {
         SoundCache.clear();
         FMOD_System_Release(System);
 
@@ -89,10 +92,13 @@ void Audio::quit()
 void Audio::play(const QString &filename)
 {
     Sound *sound = SoundCache[filename];
-    if (sound == NULL) {
+    if (sound == NULL)
+    {
         sound = new Sound(filename);
         SoundCache.insert(filename, sound);
-    } else if (sound->isPlaying()) {
+    }
+    else if (sound->isPlaying())
+    {
         return;
     }
 
@@ -113,13 +119,14 @@ void Audio::stop()
     FMOD_System_GetChannelsPlaying(System, &n, NULL);
 
     QList<FMOD_CHANNEL *> channels;
-    for (int i = 0; i < n; i++) {
+    for (int i = 0; i < n; i++)
+    {
         FMOD_CHANNEL *channel;
         FMOD_RESULT result = FMOD_System_GetChannel(System, i, &channel);
         if (result == FMOD_OK) channels << channel;
     }
 
-    foreach (FMOD_CHANNEL * const &channel, channels)
+    foreach(FMOD_CHANNEL * const &channel, channels)
         FMOD_Channel_Stop(channel);
 
     stopBGM();
@@ -131,7 +138,8 @@ void Audio::playBGM(const QString &filename)
 {
     FMOD_RESULT result = FMOD_System_CreateStream(System, filename.toLocal8Bit(), FMOD_LOOP_NORMAL, NULL, &BGM);
 
-    if (result == FMOD_OK) {
+    if (result == FMOD_OK)
+    {
         FMOD_Sound_SetLoopCount(BGM, -1);
         FMOD_System_PlaySound(System, BGM, NULL, false, &BGMChannel);
 

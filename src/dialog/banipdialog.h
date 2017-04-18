@@ -44,7 +44,7 @@ private:
     void loadIPList();
     void loadBannedList();
 
-private slots:
+    private slots:
     void addPlayer(ServerPlayer *player);
     void removePlayer();
 

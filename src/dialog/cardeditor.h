@@ -45,7 +45,7 @@ public:
     void setOutline(int outline);
     void toCenter(const QRectF &rect);
 
-public slots:
+    public slots:
     void setText(const QString &text);
     void setFont(const QFont &font);
     void setSkip(int skip);
@@ -86,7 +86,7 @@ public:
 
     virtual QRectF boundingRect() const;
 
-public slots:
+    public slots:
     void removeSkill();
     void setSkillTitleFont(const QFont &font);
     void setSkillDescriptionFont(const QFont &font);
@@ -142,7 +142,7 @@ public:
     void loadConfig();
     void setMenu(QMenu *menu);
 
-public slots:
+    public slots:
     void setRatio(int ratio);
     void setMaxHp(int max_hp);
     void setTransMaxHp(int trans_max_hp);
@@ -205,7 +205,7 @@ private:
         const QFont &font,
         int skip,
         BlackEdgeTextItem *item
-        );
+    );
     QWidget *createPropertiesBox();
     QWidget *createSkillBox();
 
@@ -215,7 +215,7 @@ protected:
 private:
     void setMapping(QFontDialog *dialog, QPushButton *button);
 
-private slots:
+    private slots:
     void setCardFrame();
     void import();
     void saveImage();

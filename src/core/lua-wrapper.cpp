@@ -112,9 +112,11 @@ LuaSkillCard::LuaSkillCard(const char *name, const char *skillName)
     on_validate(0), on_validate_in_response(0),
     extra_cost(0), on_turn_broken(0)
 {
-    if (name) {
+    if (name)
+    {
         LuaSkillCards.insert(name, this);
-        if (skillName) {
+        if (skillName)
+        {
             m_skillName = skillName;
             LuaSkillCardsSkillName.insert(name, skillName);
         }
@@ -154,7 +156,8 @@ LuaSkillCard *LuaSkillCard::Parse(const QString &str)
     QRegExp e_rx("#(\\w*)\\[(\\w+):(.+)\\]:(.*):(.*)&(.*)");
 
     static QMap<QString, Card::Suit> suit_map;
-    if (suit_map.isEmpty()) {
+    if (suit_map.isEmpty())
+    {
         suit_map.insert("spade", Card::Spade);
         suit_map.insert("club", Card::Club);
         suit_map.insert("heart", Card::Heart);
@@ -170,13 +173,16 @@ LuaSkillCard *LuaSkillCard::Parse(const QString &str)
     QString user_string;
     QString show_skill;
 
-    if (rx.exactMatch(str)) {
+    if (rx.exactMatch(str))
+    {
         texts = rx.capturedTexts();
         name = texts.at(1);
         subcard_str = texts.at(2);
         user_string = texts.at(3);
         show_skill = texts.at(4);
-    } else if (e_rx.exactMatch(str)) {
+    }
+    else if (e_rx.exactMatch(str))
+    {
         texts = e_rx.capturedTexts();
         name = texts.at(1);
         suit = texts.at(2);
@@ -184,7 +190,8 @@ LuaSkillCard *LuaSkillCard::Parse(const QString &str)
         subcard_str = texts.at(4);
         user_string = texts.at(5);
         show_skill = texts.at(6);
-    } else
+    }
+    else
         return NULL;
 
     const LuaSkillCard *c = LuaSkillCards.value(name, NULL);
@@ -198,7 +205,8 @@ LuaSkillCard *LuaSkillCard::Parse(const QString &str)
 
     if (!suit.isEmpty())
         new_card->setSuit(suit_map.value(suit, Card::NoSuit));
-    if (!number.isEmpty()) {
+    if (!number.isEmpty())
+    {
         int num = 0;
         if (number == "A")
             num = 1;

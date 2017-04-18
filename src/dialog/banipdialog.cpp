@@ -82,10 +82,13 @@ BanIpDialog::BanIpDialog(QWidget *parent, Server *server)
     connect(remove, &QPushButton::clicked, this, &BanIpDialog::removeClicked);
     connect(kick, &QPushButton::clicked, this, &BanIpDialog::kickClicked);
 
-    if (server) {
+    if (server)
+    {
         connect(server, &Server::newPlayer, this, &BanIpDialog::addPlayer);
         loadIPList();
-    } else {
+    }
+    else
+    {
         QMessageBox::warning(this, tr("Warning!"), tr("There is no server running!"));
     }
 
@@ -98,8 +101,10 @@ void BanIpDialog::loadIPList()
 {
     left->clear();
 
-    foreach (Room *room, server->rooms) {
-        foreach (ServerPlayer *p, room->getPlayers()) {
+    foreach(Room *room, server->rooms)
+    {
+        foreach(ServerPlayer *p, room->getPlayers())
+        {
             if (p->getState() != "offline" && p->getState() != "robot")
                 addPlayer(p);
         }
@@ -117,10 +122,12 @@ void BanIpDialog::loadBannedList()
 void BanIpDialog::insertClicked()
 {
     int row = left->currentRow();
-    if (row != -1) {
+    if (row != -1)
+    {
         QString ip = left->currentItem()->text().split("::").last();
 
-        if (ip.startsWith("127.")) {
+        if (ip.startsWith("127."))
+        {
             QMessageBox::warning(this, tr("Warning!"), tr("This is your local Loopback Address and can't be banned!"));
             return;
         }
@@ -139,7 +146,8 @@ void BanIpDialog::removeClicked()
 void BanIpDialog::kickClicked()
 {
     int row = left->currentRow();
-    if (row != -1) {
+    if (row != -1)
+    {
         ServerPlayer *p = sp_list[row];
         QStringList split_data = left->currentItem()->text().split("::");
         QString ip = split_data.takeLast();
@@ -172,9 +180,11 @@ void BanIpDialog::addPlayer(ServerPlayer *player)
 void BanIpDialog::removePlayer()
 {
     ServerPlayer *player = qobject_cast<ServerPlayer *>(sender());
-    if (player) {
+    if (player)
+    {
         int row = sp_list.indexOf(player);
-        if (row != -1) {
+        if (row != -1)
+        {
             delete left->takeItem(row);
             sp_list.removeAt(row);
         }

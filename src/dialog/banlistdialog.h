@@ -41,7 +41,7 @@ private:
     QStringList ban_list;
     QMap<QString, QStringList> banned_items;
 
-private slots:
+    private slots:
     void addGeneral(const QString &name);
     void addPair(const QString &first, const QString &second);
     void doAddButton();

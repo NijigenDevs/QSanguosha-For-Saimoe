@@ -35,14 +35,14 @@ class QSize;
 class General : public QObject
 {
     Q_OBJECT
-    Q_ENUMS(Gender)
-    Q_PROPERTY(QString kingdom READ getKingdom CONSTANT)
-    Q_PROPERTY(int maxhp READ getDoubleMaxHp CONSTANT)
-    Q_PROPERTY(bool male READ isMale STORED false CONSTANT)
-    Q_PROPERTY(bool female READ isFemale STORED false CONSTANT)
-    Q_PROPERTY(Gender gender READ getGender CONSTANT)
-    Q_PROPERTY(bool lord READ isLord CONSTANT)
-    Q_PROPERTY(bool hidden READ isHidden CONSTANT)
+        Q_ENUMS(Gender)
+        Q_PROPERTY(QString kingdom READ getKingdom CONSTANT)
+        Q_PROPERTY(int maxhp READ getDoubleMaxHp CONSTANT)
+        Q_PROPERTY(bool male READ isMale STORED false CONSTANT)
+        Q_PROPERTY(bool female READ isFemale STORED false CONSTANT)
+        Q_PROPERTY(Gender gender READ getGender CONSTANT)
+        Q_PROPERTY(bool lord READ isLord CONSTANT)
+        Q_PROPERTY(bool hidden READ isHidden CONSTANT)
 
 public:
     explicit General(Package *package, const QString &name, const QString &kingdom,
@@ -99,7 +99,7 @@ public:
     void tryLoadingSkinTranslation(const int skinId) const;
     QString getTitle(const int skinId = 0) const;
 
-public slots:
+    public slots:
     void lastWord(const int skinId) const;
 
 private:

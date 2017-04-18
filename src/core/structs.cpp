@@ -31,11 +31,14 @@ bool CardsMoveStruct::tryParse(const QVariant &arg)
     if ((!JsonUtils::isNumber(args[0]) && !args[0].canConvert<JsonArray>()) ||
         !JsonUtils::isNumberArray(args, 1, 2) || !JsonUtils::isStringArray(args, 3, 6)) return false;
 
-    if (JsonUtils::isNumber(args[0])) {
+    if (JsonUtils::isNumber(args[0]))
+    {
         int size = args[0].toInt();
         for (int i = 0; i < size; i++)
             card_ids.append(Card::S_UNKNOWN_CARD_ID);
-    } else if (!JsonUtils::tryParse(args[0], card_ids)) {
+    }
+    else if (!JsonUtils::tryParse(args[0], card_ids))
+    {
         return false;
     }
 
@@ -52,9 +55,12 @@ bool CardsMoveStruct::tryParse(const QVariant &arg)
 QVariant CardsMoveStruct::toVariant() const
 {
     JsonArray arg;
-    if (open) {
+    if (open)
+    {
         arg << JsonUtils::toJsonArray(card_ids);
-    } else {
+    }
+    else
+    {
         arg << card_ids.size();
     }
 
@@ -102,7 +108,7 @@ LogMessage::LogMessage()
 QString LogMessage::toString() const
 {
     QStringList tos;
-    foreach (ServerPlayer *player, to)
+    foreach(ServerPlayer *player, to)
         if (player != NULL) tos << player->objectName();
 
     return QString("%1:%2->%3:%4:%5:%6")
@@ -115,7 +121,7 @@ QString LogMessage::toString() const
 QVariant LogMessage::toVariant() const
 {
     QStringList tos;
-    foreach (ServerPlayer *player, to)
+    foreach(ServerPlayer *player, to)
         if (player != NULL) tos << player->objectName();
 
     QStringList log;
@@ -313,7 +319,8 @@ bool CardUseStruct::tryParse(const QVariant &usage, Room *room)
     card = Card::Parse(use[0].toString());
     JsonArray targets = use[1].value<JsonArray>();
 
-    foreach (const QVariant &target, targets) {
+    foreach(const QVariant &target, targets)
+    {
         if (!JsonUtils::isString(target)) return false;
         this->to << room->findChild<ServerPlayer *>(target.toString());
     }
@@ -333,9 +340,10 @@ void CardUseStruct::parse(const QString &str, Room *room)
 
     card = Card::Parse(card_str);
 
-    if (target_str != ".") {
+    if (target_str != ".")
+    {
         QStringList target_names = target_str.split("+");
-        foreach (const QString &target_name, target_names)
+        foreach(const QString &target_name, target_names)
             to << room->findChild<ServerPlayer *>(target_name);
     }
 }

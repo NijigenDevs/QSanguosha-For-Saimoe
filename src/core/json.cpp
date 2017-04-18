@@ -62,7 +62,8 @@ bool JsonUtils::isStringArray(const QVariant &var, unsigned from, unsigned to)
 
     if ((unsigned)array.length() <= to)
         return false;
-    for (unsigned int i = from; i <= to; i++) {
+    for (unsigned int i = from; i <= to; i++)
+    {
         if (!array.at(i).canConvert<QString>())
             return false;
     }
@@ -78,7 +79,8 @@ bool JsonUtils::isNumberArray(const QVariant &var, unsigned from, unsigned to)
 
     if ((unsigned)array.length() <= to)
         return false;
-    for (unsigned int i = from; i <= to; i++) {
+    for (unsigned int i = from; i <= to; i++)
+    {
         if (!array.at(i).canConvert<int>())
             return false;
     }
@@ -88,7 +90,7 @@ bool JsonUtils::isNumberArray(const QVariant &var, unsigned from, unsigned to)
 QVariant JsonUtils::toJsonArray(const QList<int> &intArray)
 {
     JsonArray json;
-    foreach (int number, intArray)
+    foreach(int number, intArray)
         json << number;
     return json;
 }
@@ -132,12 +134,13 @@ bool JsonUtils::tryParse(const QVariant &var, QStringList &list)
 
     JsonArray array = var.value<JsonArray>();
 
-    foreach (const QVariant &var, array) {
-        if (!var.canConvert<QString>()) 
+    foreach(const QVariant &var, array)
+    {
+        if (!var.canConvert<QString>())
             return false;
     }
 
-    foreach (const QVariant &var, array)
+    foreach(const QVariant &var, array)
         list << var.toString();
 
     return true;
@@ -150,12 +153,13 @@ bool JsonUtils::tryParse(const QVariant &var, QList<int> &list)
 
     JsonArray array = var.value<JsonArray>();
 
-    foreach (const QVariant &var, array) {
+    foreach(const QVariant &var, array)
+    {
         if (!var.canConvert<int>())
             return false;
     }
 
-    foreach (const QVariant &var, array)
+    foreach(const QVariant &var, array)
         list << var.toInt();
 
     return true;
@@ -230,13 +234,17 @@ QByteArray clearComment(const QByteArray &src)
 {
     QByteArray result(src);
     int max = result.size() - 1;
-    for (int i = 0; i < max; i++) {
-        switch (result.at(i)) {
+    for (int i = 0; i < max; i++)
+    {
+        switch (result.at(i))
+        {
             case '/':
-                if (result.at(i + 1) == '*') { // multi-line comment
+                if (result.at(i + 1) == '*')
+                { // multi-line comment
                     int offset = i;
                     i++;
-                    while (i < max && (result.at(i) != '*' || result.at(i + 1) != '/')) {
+                    while (i < max && (result.at(i) != '*' || result.at(i + 1) != '/'))
+                    {
                         i++;
                     }
 
@@ -245,10 +253,13 @@ QByteArray clearComment(const QByteArray &src)
                     i = offset - 1;
                     max -= length;
 
-                } else if (result.at(i + 1) == '/') { // single-line comment
+                }
+                else if (result.at(i + 1) == '/')
+                { // single-line comment
                     int offset = i;
                     i++;
-                    while (i < max + 1 && result.at(i) != '\n') {
+                    while (i < max + 1 && result.at(i) != '\n')
+                    {
                         i++;
                     }
 
@@ -259,10 +270,14 @@ QByteArray clearComment(const QByteArray &src)
                 }
                 break;
             case '"': // string
-                while (i < max + 1 && result.at(i) != '"') {
-                    if (result.at(i) == '\\') {
+                while (i < max + 1 && result.at(i) != '"')
+                {
+                    if (result.at(i) == '\\')
+                    {
                         i += 2;
-                    } else {
+                    }
+                    else
+                    {
                         i++;
                     }
                 }
@@ -285,10 +300,13 @@ JsonDocument JsonDocument::fromJson(const QByteArray &json, bool allowComment)
     QJsonDocument jsondoc = QJsonDocument::fromJson(allowComment ? clearComment(json) : json, &error);
 
     JsonDocument doc;
-    if (error.error == QJsonParseError::NoError) {
+    if (error.error == QJsonParseError::NoError)
+    {
         doc.value = jsondoc.toVariant();
         doc.valid = true;
-    } else {
+    }
+    else
+    {
         doc.valid = false;
         doc.error = error.errorString();
     }

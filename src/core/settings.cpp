@@ -59,15 +59,19 @@ Settings::Settings()
 
 void Settings::init()
 {
-    if (!qApp->arguments().contains("-server")) {
+    if (!qApp->arguments().contains("-server"))
+    {
         QString font_path = value("DefaultFontPath", "font/simli.ttf").toString();
         int font_id = QFontDatabase::addApplicationFont(font_path);
-        if (font_id != -1) {
+        if (font_id != -1)
+        {
             QString font_family = QFontDatabase::applicationFontFamilies(font_id).first();
             BigFont.setFamily(font_family);
             SmallFont.setFamily(font_family);
             TinyFont.setFamily(font_family);
-        } else {
+        }
+        else
+        {
             QMessageBox::warning(NULL, tr("Warning"), tr("Font file %1 could not be loaded!").arg(font_path));
         }
 
@@ -160,7 +164,8 @@ void Settings::init()
     Config.RemovedHiddenGenerals = GetConfigFromLuaState(lua, "removed_hidden_generals").toStringList();
 
     QStringList forbid_packages = value("ForbidPackages").toStringList();
-    if (forbid_packages.isEmpty()) {
+    if (forbid_packages.isEmpty())
+    {
         forbid_packages << "test" << "jiange-defense";
         setValue("ForbidPackages", forbid_packages);
     }
