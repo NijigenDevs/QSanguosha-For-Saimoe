@@ -30,7 +30,7 @@ class QAbstractButton;
 class FreeChooseDialog : public FlatDialog
 {
     Q_OBJECT
-    Q_ENUMS(ButtonGroupType)
+        Q_ENUMS(ButtonGroupType)
 
 public:
     enum ButtonGroupType
@@ -45,7 +45,7 @@ private:
     ButtonGroupType type;
     QWidget *createTab(const QList<const General *> &generals);
 
-private slots:
+    private slots:
     void chooseGeneral();
     void disableButtons(QAbstractButton *button);
 

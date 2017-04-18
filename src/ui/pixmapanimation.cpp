@@ -37,7 +37,8 @@ PixmapAnimation::PixmapAnimation()
 void PixmapAnimation::advance(int phase)
 {
     if (phase) current++;
-    if (current >= frames.size()) {
+    if (current >= frames.size())
+    {
         current = 0;
         emit finished();
     }
@@ -51,7 +52,8 @@ void PixmapAnimation::setPath(const QString &path)
 
     int i = 0;
     QString pic_path = QString("%1%2%3").arg(path).arg(i++).arg(".png");
-    do {
+    do
+    {
         frames << G_ROOM_SKIN.getPixmapFromFileName(pic_path);
         pic_path = QString("%1%2%3").arg(path).arg(i++).arg(".png");
     } while (QFile::exists(pic_path));
@@ -99,16 +101,21 @@ PixmapAnimation *PixmapAnimation::GetPixmapAnimation(QGraphicsItem *parent, cons
 {
     PixmapAnimation *pma = new PixmapAnimation();
     pma->setPath(QString("image/system/emotion/%1/").arg(emotion));
-    if (pma->valid()) {
-        if (emotion == "no-success") {
+    if (pma->valid())
+    {
+        if (emotion == "no-success")
+        {
             pma->moveBy(pma->boundingRect().width() * 0.25,
                 pma->boundingRect().height() * 0.25);
             pma->setScale(0.5);
-        } else if (emotion == "success") {
+        }
+        else if (emotion == "success")
+        {
             pma->moveBy(pma->boundingRect().width() * 0.1,
                 pma->boundingRect().height() * 0.1);
             pma->setScale(0.8);
-        } else if (emotion.contains("double_sword"))
+        }
+        else if (emotion.contains("double_sword"))
             pma->moveBy(13, -20);
         else if (emotion.contains("fan") || emotion.contains("guding_blade"))
             pma->moveBy(0, -20);
@@ -120,15 +127,19 @@ PixmapAnimation *PixmapAnimation::GetPixmapAnimation(QGraphicsItem *parent, cons
 
         pma->setParentItem(parent);
         pma->setZValue(20002.0);
-        if (emotion.contains("weapon")) {
+        if (emotion.contains("weapon"))
+        {
             pma->hide();
             QTimer::singleShot(600, pma, SLOT(preStart()));
-        } else
+        }
+        else
             pma->startTimer(S_DEFAULT_INTERVAL);
 
         connect(pma, &PixmapAnimation::finished, pma, &PixmapAnimation::deleteLater);
         return pma;
-    } else {
+    }
+    else
+    {
         delete pma;
         return NULL;
     }
@@ -137,7 +148,8 @@ PixmapAnimation *PixmapAnimation::GetPixmapAnimation(QGraphicsItem *parent, cons
 QPixmap PixmapAnimation::GetFrameFromCache(const QString &filename)
 {
     QPixmap pixmap;
-    if (!QPixmapCache::find(filename, &pixmap)) {
+    if (!QPixmapCache::find(filename, &pixmap))
+    {
         pixmap.load(filename);
         if (!pixmap.isNull()) QPixmapCache::insert(filename, pixmap);
     }

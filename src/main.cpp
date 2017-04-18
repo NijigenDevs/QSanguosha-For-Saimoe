@@ -45,7 +45,8 @@ using namespace google_breakpad;
 
 static bool callback(const wchar_t *, const wchar_t *id, void *, EXCEPTION_POINTERS *, MDRawAssertionInfo *, bool succeeded)
 {
-    if (succeeded && QFile::exists("QSanSMTPClient.exe")) {
+    if (succeeded && QFile::exists("QSanSMTPClient.exe"))
+    {
         char ID[16000];
         memset(ID, 0, sizeof(ID));
 #ifdef _MSC_VER
@@ -79,7 +80,8 @@ int main(int argc, char *argv[])
 #define SPLASH_DISABLED
 #else
     QSplashScreen *splash = NULL;
-    if (!noGui) {
+    if (!noGui)
+    {
         QPixmap raraLogo;
         QDate currentDate = QDate::currentDate();
         if (currentDate.month() == 11 && currentDate.day() == 30)
@@ -113,9 +115,12 @@ int main(int argc, char *argv[])
 #ifdef Q_OS_LINUX
     showSplashMessage(QSplashScreen::tr("Checking game path..."));
     QDir dir(QString("lua"));
-    if (dir.exists() && (dir.exists(QString("config.lua")))) {
+    if (dir.exists() && (dir.exists(QString("config.lua"))))
+    {
         // things look good and use current dir
-    } else {
+    }
+    else
+    {
         showSplashMessage(QSplashScreen::tr("Setting game path..."));
 #ifndef Q_OS_ANDROID
         QDir::setCurrent(qApp->applicationFilePath().replace("games", "share"));
@@ -123,24 +128,29 @@ int main(int argc, char *argv[])
         bool found = false;
         QDir storageDir("/storage");
         QStringList sdcards = storageDir.entryList(QDir::Dirs | QDir::NoDotAndDotDot);
-        foreach (const QString &sdcard, sdcards) {
+        foreach(const QString &sdcard, sdcards)
+        {
             QDir root(QString("/storage/%1/Android/data/org.qsgsrara.qsanguosha").arg(sdcard));
-            if (root.exists("lua/config.lua")) {
+            if (root.exists("lua/config.lua"))
+            {
                 QDir::setCurrent(root.absolutePath());
                 found = true;
                 break;
             }
         }
-        if (!found) {
+        if (!found)
+        {
             QDir root("/sdcard/Android/data/org.qsgsrara.qsanguosha");
-            if (root.exists("lua/config.lua")) {
+            if (root.exists("lua/config.lua"))
+            {
                 QDir::setCurrent(root.absolutePath());
                 found = true;
             }
         }
 
 
-        if (!found) {
+        if (!found)
+        {
             QString m = QObject::tr("Game data not found, please download QSanguosha-For-Hegemony PC version, and put the files and folders into /sdcard/Android/data/org.qsgsrara.qsanguosha");
             if (!noGui)
                 QMessageBox::critical(NULL, QObject::tr("Error"), m);
@@ -175,7 +185,8 @@ int main(int argc, char *argv[])
     if (!noGui)
         qApp->setFont(Config.AppFont);
 
-    if (qApp->arguments().contains("-server")) {
+    if (qApp->arguments().contains("-server"))
+    {
         Server *server = new Server(qApp);
         printf("Server is starting on port %u\n", Config.ServerPort);
 
@@ -190,14 +201,16 @@ int main(int argc, char *argv[])
     showSplashMessage(QSplashScreen::tr("Loading style sheet..."));
     QFile file("style-sheet/sanguosha.qss");
     QString styleSheet;
-    if (file.open(QIODevice::ReadOnly)) {
+    if (file.open(QIODevice::ReadOnly))
+    {
         QTextStream stream(&file);
         styleSheet = stream.readAll();
     }
 
 #ifdef Q_OS_WIN
     QFile winFile("style-sheet/windows-extra.qss");
-    if (winFile.open(QIODevice::ReadOnly)) {
+    if (winFile.open(QIODevice::ReadOnly))
+    {
         QTextStream winStream(&winFile);
         styleSheet += winStream.readAll();
     }
@@ -219,15 +232,18 @@ int main(int argc, char *argv[])
     Sanguosha->setParent(&main_window);
     main_window.show();
 #ifndef SPLASH_DISABLED
-    if (splash != NULL) {
+    if (splash != NULL)
+    {
         splash->finish(&main_window);
         delete splash;
     }
 #endif
 
-    foreach (const QString &_arg, qApp->arguments()) {
+    foreach(const QString &_arg, qApp->arguments())
+    {
         QString arg = _arg;
-        if (arg.startsWith("-connect:")) {
+        if (arg.startsWith("-connect:"))
+        {
             arg.remove("-connect:");
             Config.HostAddress = arg;
             Config.setValue("HostAddress", arg);

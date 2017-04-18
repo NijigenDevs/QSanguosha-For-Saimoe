@@ -106,7 +106,7 @@ public:
 
     void setFirstState(bool isFirstState);
 
-public slots:
+    public slots:
     void click();
 
 protected:
@@ -183,7 +183,7 @@ protected:
     const Skill *_m_skill;
     const ViewAsSkill *_m_viewAsSkill;
 
-protected slots:
+    protected slots:
     void onMouseClick();
 
 signals:

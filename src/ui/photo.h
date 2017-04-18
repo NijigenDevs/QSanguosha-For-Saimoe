@@ -67,7 +67,7 @@ public:
     virtual QRectF boundingRect() const;
     QGraphicsItem *getMouseClickReceiver();
 
-public slots:
+    public slots:
     void updatePhase();
     void hideEmotion();
     void hideSkillName();

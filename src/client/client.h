@@ -36,9 +36,9 @@ class QTextDocument;
 class Client : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(Client::Status status READ getStatus WRITE setStatus)
+        Q_PROPERTY(Client::Status status READ getStatus WRITE setStatus)
 
-    Q_ENUMS(Status)
+        Q_ENUMS(Status)
 
 public:
     enum Status
@@ -264,7 +264,7 @@ public:
     QString exchange_expand_pile;
     QString exchange_reason;
 
-public slots:
+    public slots:
     void signup();
     void onPlayerChooseGeneral(const QString &_name);
     void onPlayerMakeChoice(const QString &choice);
@@ -317,7 +317,7 @@ private:
     bool _loseSingleCard(int card_id, CardsMoveStruct move);
     bool _getSingleCard(int card_id, CardsMoveStruct move);
 
-private slots:
+    private slots:
     void processServerPacket(const QByteArray &cmd);
     bool processServerRequest(const QSanProtocol::Packet &packet);
     void processObsoleteServerPacket(const QString &cmd);

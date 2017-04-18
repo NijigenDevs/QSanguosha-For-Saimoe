@@ -45,7 +45,7 @@ public:
     void addScrollTexts(const QStringList &texts);
     void setScrollText(int index, const QString &text);
 
-protected slots:
+    protected slots:
     void scrollToNextContent();
 
 protected:

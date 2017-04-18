@@ -45,7 +45,7 @@ public:
 protected:
     virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
 
-public slots:
+    public slots:
     void appear();
     void disappear();
 

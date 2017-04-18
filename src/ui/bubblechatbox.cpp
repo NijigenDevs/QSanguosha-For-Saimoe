@@ -83,7 +83,8 @@ void BubbleChatBox::setText(const QString &text)
     chatLabel->setHtml(text);
 
     QString plainText = chatLabel->toPlainText();
-    if (plainText.isEmpty()) {
+    if (plainText.isEmpty())
+    {
         return;
     }
 
@@ -91,11 +92,15 @@ void BubbleChatBox::setText(const QString &text)
     int imageCount = text.count("</img>");
     int width = qAbs(fontMetrics.width(plainText)) + imageCount * ChatFaceWidth;
     int lineCount = 1;
-    if (width > PixelsPerLine) {
+    if (width > PixelsPerLine)
+    {
         lineCount = width / PixelsPerLine;
-        if (lineCount >= MaxLineCount) {
+        if (lineCount >= MaxLineCount)
+        {
             lineCount = MaxLineCount;
-        } else if (width % PixelsPerLine != 0) {
+        }
+        else if (width % PixelsPerLine != 0)
+        {
             ++lineCount;
         }
 
@@ -103,10 +108,13 @@ void BubbleChatBox::setText(const QString &text)
     }
 
     int boxWidth = width + fontMetrics.maxWidth();
-    if (boxWidth <= BoxMinWidth) {
+    if (boxWidth <= BoxMinWidth)
+    {
         boxWidth = BoxMinWidth;
         chatLabel->setAlignment(Qt::AlignHCenter);
-    } else {
+    }
+    else
+    {
         chatLabel->setAlignment(Qt::AlignLeft);
     }
     chatLabel->setTextWidth(boxWidth);
@@ -122,15 +130,19 @@ void BubbleChatBox::setText(const QString &text)
 
     updatePos();
 
-    if (opacity() != 1) {
+    if (opacity() != 1)
+    {
         appearAndDisappear->setDirection(QAbstractAnimation::Forward);
         appearAndDisappear->start();
     }
 
-    if (oldRect.width() > rect.width()) {
+    if (oldRect.width() > rect.width())
+    {
         QRectF sceneRect = mapRectToScene(oldRect);
         scene()->update(sceneRect);
-    } else {
+    }
+    else
+    {
         update();
     }
 

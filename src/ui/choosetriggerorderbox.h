@@ -42,7 +42,7 @@ signals:
     void clicked();
     void hovered(bool entering);
 
-public slots:
+    public slots:
     void needDisabled(bool disabled);
 
 protected:
@@ -70,7 +70,7 @@ private:
 class GeneralButton : public QGraphicsObject
 {
     Q_OBJECT
-    friend class ChooseTriggerOrderBox;
+        friend class ChooseTriggerOrderBox;
 
 signals:
     void clicked();
@@ -101,7 +101,7 @@ public:
     void chooseOption(const QString &reason, const QStringList &options, const bool optional);
     void clear();
 
-public slots:
+    public slots:
     void reply();
 
 private:

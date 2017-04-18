@@ -49,7 +49,7 @@ private:
     int _id;
     CardItem *_cardItem;
 
-private slots:
+    private slots:
     void onClicked();
 
 signals:
@@ -197,10 +197,10 @@ signals:
     void general_changed();
     void hoverChanged(const bool &enter);
 
-private slots:
+    private slots:
     void currentAnimationDestroyed();
 
-public slots:
+    public slots:
     virtual void changeGeneral(const QString &generalName);
     void onTransferEnabledChanged();
 };

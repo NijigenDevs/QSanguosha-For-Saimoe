@@ -127,7 +127,8 @@ void ConfigDialog::showFont(QLineEdit *lineedit, const QFont &font)
 
 void ConfigDialog::doCallback(ConfigDialog::Callback callback, const QVariant &oldValue, const QVariant &newValue)
 {
-    if (!resetCallbacks.contains(callback)) {
+    if (!resetCallbacks.contains(callback))
+    {
         resetCallbacks << callback;
         callbackArgs << oldValue;
     }
@@ -158,15 +159,18 @@ void ConfigDialog::setTooltipBackgroundColor(const QVariant &color)
 
     QFile file("style-sheet/sanguosha.qss");
     static QString styleSheet;
-    if (styleSheet.isEmpty()) {
-        if (file.open(QIODevice::ReadOnly)) {
+    if (styleSheet.isEmpty())
+    {
+        if (file.open(QIODevice::ReadOnly))
+        {
             QTextStream stream(&file);
             styleSheet = stream.readAll();
         }
 
 #ifdef Q_OS_WIN
         QFile winFile("style-sheet/windows-extra.qss");
-        if (winFile.open(QIODevice::ReadOnly)) {
+        if (winFile.open(QIODevice::ReadOnly))
+        {
             QTextStream winStream(&winFile);
             styleSheet += winStream.readAll();
         }
@@ -247,12 +251,16 @@ void ConfigDialog::setLastWordEnabled(const QVariant &enabled)
 void ConfigDialog::setBGMEnabled(const QVariant &enabled)
 {
 #ifdef AUDIO_SUPPORT
-    if (RoomSceneInstance != NULL) {
+    if (RoomSceneInstance != NULL)
+    {
         bool play = enabled.toBool();
-        if (play) {
+        if (play)
+        {
             Audio::playBGM(Config.value("BackgroundMusic",
                 "audio/system/background.ogg").toString());
-        } else {
+        }
+        else
+        {
             Audio::stopBGM();
         }
     }
@@ -428,7 +436,8 @@ void ConfigDialog::on_browseBgMusicButton_clicked()
         tr("Select a background music"),
         "audio/system",
         tr("Audio files (*.wav *.mp3 *.ogg)"));
-    if (!fileName.isEmpty() && fileName != ui->bgMusicPathLineEdit->text()) {
+    if (!fileName.isEmpty() && fileName != ui->bgMusicPathLineEdit->text())
+    {
         doCallback(&ConfigDialog::setBgMusic, Config.value("BackgroundMusic"), fileName);
     }
 }
@@ -436,7 +445,8 @@ void ConfigDialog::on_browseBgMusicButton_clicked()
 void ConfigDialog::on_resetBgMusicButton_clicked()
 {
     QString defaultMusic = "audio/system/background.ogg";
-    if (defaultMusic != ui->bgMusicPathLineEdit->text()) {
+    if (defaultMusic != ui->bgMusicPathLineEdit->text())
+    {
         doCallback(&ConfigDialog::setBgMusic, Config.value("BackgroundMusic"), defaultMusic);
     }
 }
@@ -467,7 +477,8 @@ void ConfigDialog::on_setTextEditColorButton_clicked()
 void ConfigDialog::on_toolTipFontColorButton_clicked()
 {
     QColor color = QColorDialog::getColor(Config.SkillDescriptionInToolTipColor, this);
-    if (color.isValid() && color != Config.SkillDescriptionInToolTipColor) {
+    if (color.isValid() && color != Config.SkillDescriptionInToolTipColor)
+    {
         doCallback(&ConfigDialog::setTooltipFontColor, Config.SkillDescriptionInToolTipColor, color);
     }
 }
@@ -475,7 +486,8 @@ void ConfigDialog::on_toolTipFontColorButton_clicked()
 void ConfigDialog::on_overviewFontColorButton_clicked()
 {
     QColor color = QColorDialog::getColor(QColor(Config.SkillDescriptionInOverviewColor), this);
-    if (color.isValid() && color != Config.SkillDescriptionInOverviewColor) {
+    if (color.isValid() && color != Config.SkillDescriptionInOverviewColor)
+    {
         doCallback(&ConfigDialog::setOverviewFontColor, Config.SkillDescriptionInOverviewColor, color);
     }
 }
@@ -483,7 +495,8 @@ void ConfigDialog::on_overviewFontColorButton_clicked()
 void ConfigDialog::on_toolTipBackgroundColorButton_clicked()
 {
     QColor color = QColorDialog::getColor(QColor(Config.ToolTipBackgroundColor), this);
-    if (color.isValid() && color != Config.ToolTipBackgroundColor) {
+    if (color.isValid() && color != Config.ToolTipBackgroundColor)
+    {
         doCallback(&ConfigDialog::setTooltipBackgroundColor, Config.ToolTipBackgroundColor, color);
     }
 }

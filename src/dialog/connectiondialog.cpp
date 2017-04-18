@@ -81,10 +81,12 @@ void ConnectionDialog::showAvatarList()
 {
     if (ui->avatarList->isVisible()) return;
 
-    if (ui->avatarList->model() == NULL) {
+    if (ui->avatarList->model() == NULL)
+    {
         QList<const General *> generals = Sanguosha->getGeneralList();
         QMutableListIterator<const General *> itor = generals;
-        while (itor.hasNext()) {
+        while (itor.hasNext())
+        {
             if (itor.next()->isTotallyHidden())
                 itor.remove();
         }
@@ -100,7 +102,8 @@ void ConnectionDialog::on_connectButton_clicked()
 {
     QString username = ui->nameLineEdit->text();
 
-    if (username.isEmpty()) {
+    if (username.isEmpty())
+    {
         QMessageBox::warning(this, tr("Warning"), tr("The user name can not be empty!"));
         return;
     }
@@ -117,15 +120,21 @@ void ConnectionDialog::on_connectButton_clicked()
 
 void ConnectionDialog::on_changeAvatarButton_clicked()
 {
-    if (ui->avatarList->isVisible()) {
+    if (ui->avatarList->isVisible())
+    {
         QModelIndex index = ui->avatarList->currentIndex();
-        if (index.isValid()) {
+        if (index.isValid())
+        {
             on_avatarList_doubleClicked(index);
-        } else {
+        }
+        else
+        {
             hideAvatarList();
             resize(ShrinkWidth, height());
         }
-    } else {
+    }
+    else
+    {
         showAvatarList();
         //Avoid violating the constraints
         //setFixedWidth(ExpandWidth);

@@ -153,7 +153,7 @@ private:
 
     QComboBox *scenario_ComboBox;
 
-private slots:
+    private slots:
     void onOkButtonClicked();
     void onDetectButtonClicked();
     void editBanlist();

@@ -43,7 +43,7 @@ class GraphicsPixmapHoverItem;
 class Dashboard : public PlayerCardContainer
 {
     Q_OBJECT
-    Q_ENUMS(SortType)
+        Q_ENUMS(SortType)
 
 public:
     enum SortType
@@ -164,7 +164,7 @@ public:
     void addTransferButton(TransferButton *button);
     QList<TransferButton *> getTransferButtons() const;
 
-public slots:
+    public slots:
     void sortCards();
     void beginSorting();
     void reverseSelection();
@@ -333,10 +333,10 @@ private:
 
     int maxCardsNumInFirstLine() const;
 
-protected slots:
+    protected slots:
     virtual void _onEquipSelectChanged();
 
-private slots:
+    private slots:
     void onCardItemClicked();
     void onCardItemDoubleClicked();
     void onCardItemThrown();

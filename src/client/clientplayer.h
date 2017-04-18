@@ -30,7 +30,7 @@ class QTextDocument;
 class ClientPlayer : public Player
 {
     Q_OBJECT
-    Q_PROPERTY(int handcard READ getHandcardNum WRITE setHandcardNum)
+        Q_PROPERTY(int handcard READ getHandcardNum WRITE setHandcardNum)
 
 public:
     explicit ClientPlayer(Client *client);

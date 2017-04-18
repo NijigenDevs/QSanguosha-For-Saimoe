@@ -26,7 +26,7 @@
 class PixmapAnimation : public QObject, public QGraphicsItem
 {
     Q_OBJECT
-    Q_INTERFACES(QGraphicsItem)
+        Q_INTERFACES(QGraphicsItem)
 
 public:
     PixmapAnimation();
@@ -52,7 +52,7 @@ signals:
     void finished();
     void frame_loaded();
 
-public slots:
+    public slots:
     void preStart();
 
 private:

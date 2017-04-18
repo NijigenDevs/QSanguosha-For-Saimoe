@@ -36,7 +36,8 @@ FlatDialog::FlatDialog(QWidget *parent, bool initialLayoutWithTitle)
     setAttribute(Qt::WA_TranslucentBackground);
     mousePressed = false;
 
-    if (initialLayoutWithTitle) {
+    if (initialLayoutWithTitle)
+    {
         layout = new QVBoxLayout;
         title = new QLabel;
         title->setAlignment(Qt::AlignTop | Qt::AlignLeft);
@@ -46,7 +47,8 @@ FlatDialog::FlatDialog(QWidget *parent, bool initialLayoutWithTitle)
         setLayout(layout);
     }
 
-    if (StyleHelper::backgroundColorOfFlatDialog().alpha() <= 100) {
+    if (StyleHelper::backgroundColorOfFlatDialog().alpha() <= 100)
+    {
         QGraphicsDropShadowEffect *effect = new QGraphicsDropShadowEffect(this);
         effect->setBlurRadius(18);
         QColor color = StyleHelper::backgroundColorOfFlatDialog();
@@ -56,7 +58,8 @@ FlatDialog::FlatDialog(QWidget *parent, bool initialLayoutWithTitle)
         setGraphicsEffect(effect);
     }
 #else
-    if (initialLayoutWithTitle) {
+    if (initialLayoutWithTitle)
+    {
         layout = new QVBoxLayout;
         setLayout(layout);
     }
@@ -88,7 +91,8 @@ void FlatDialog::paintEvent(QPaintEvent *)
 
 void FlatDialog::mousePressEvent(QMouseEvent *event)
 {
-    if (event->button() & Qt::LeftButton) {
+    if (event->button() & Qt::LeftButton)
+    {
         mousePressedPoint = event->globalPos() - frameGeometry().topLeft();
         mousePressed = true;
     }

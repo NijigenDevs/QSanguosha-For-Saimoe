@@ -33,9 +33,9 @@
 class Sprite : public QObject, public QGraphicsPixmapItem
 {
     Q_OBJECT
-    Q_INTERFACES(QGraphicsItem)
-    Q_PROPERTY(qreal opacity READ opacity WRITE setOpacity)
-    Q_PROPERTY(qreal scale READ scale WRITE setScale)
+        Q_INTERFACES(QGraphicsItem)
+        Q_PROPERTY(qreal opacity READ opacity WRITE setOpacity)
+        Q_PROPERTY(qreal scale READ scale WRITE setScale)
 
 public:
     Sprite(QGraphicsItem *parent = NULL) : QGraphicsPixmapItem(parent)
@@ -46,7 +46,7 @@ public:
 class AnimatedEffect : public QGraphicsEffect
 {
     Q_OBJECT
-    Q_PROPERTY(int index READ getIndex WRITE setIndex)
+        Q_PROPERTY(int index READ getIndex WRITE setIndex)
 
 public:
     void setStay(bool stay);
@@ -84,7 +84,7 @@ public:
     void effectOut(QGraphicsItem *map);
     void deleteEffect(AnimatedEffect *effect);
 
-public slots:
+    public slots:
     void deleteEffect();
 
 private:

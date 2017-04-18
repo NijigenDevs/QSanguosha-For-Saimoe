@@ -67,17 +67,20 @@ void PlayerCardBox::chooseCard(const QString &reason, const ClientPlayer *player
     bool equip = false;
     bool judging = false;
 
-    if (flags.contains(handcardFlag) && !player->isKongcheng()) {
+    if (flags.contains(handcardFlag) && !player->isKongcheng())
+    {
         updateNumbers(player->getHandcardNum());
         handcard = true;
     }
 
-    if (flags.contains(equipmentFlag) && player->hasEquip()) {
+    if (flags.contains(equipmentFlag) && player->hasEquip())
+    {
         updateNumbers(player->getEquips().length());
         equip = true;
     }
 
-    if (flags.contains(judgingFlag) && !player->getJudgingArea().isEmpty()) {
+    if (flags.contains(judgingFlag) && !player->getJudgingArea().isEmpty())
+    {
         updateNumbers(player->getJudgingArea().length());
         judging = true;
     }
@@ -98,7 +101,8 @@ void PlayerCardBox::chooseCard(const QString &reason, const ClientPlayer *player
     const int startX = verticalBlankWidth + placeNameAreaWidth + intervalBetweenNameAndCard;
     int index = 0;
 
-    if (handcard) {
+    if (handcard)
+    {
         QList<const Card *> cards;
         for (int i = 0; i < handcards.length(); ++i)
             cards << Sanguosha->getCard(handcards.at(i));
@@ -107,7 +111,8 @@ void PlayerCardBox::chooseCard(const QString &reason, const ClientPlayer *player
         ++index;
     }
 
-    if (equip) {
+    if (equip)
+    {
         arrangeCards(player->getEquips(), QPoint(startX, nameRects.at(index).y()));
 
         ++index;
@@ -116,8 +121,10 @@ void PlayerCardBox::chooseCard(const QString &reason, const ClientPlayer *player
     if (judging)
         arrangeCards(player->getJudgingArea(), QPoint(startX, nameRects.at(index).y()));
 
-    if (ServerInfo.OperationTimeout != 0) {
-        if (!progressBar) {
+    if (ServerInfo.OperationTimeout != 0)
+    {
+        if (!progressBar)
+        {
             progressBar = new QSanCommandProgressBar();
             progressBar->setMaximumWidth(qMin(boundingRect().width() - 16, (qreal)150));
             progressBar->setMaximumHeight(12);
@@ -145,10 +152,13 @@ QRectF PlayerCardBox::boundingRect() const
 
     int width = verticalBlankWidth * 2 + placeNameAreaWidth + intervalBetweenNameAndCard;
 
-    if (maxCardsInOneRow > maxCardNumberInOneRow / 2) {
+    if (maxCardsInOneRow > maxCardNumberInOneRow / 2)
+    {
         width += cardWidth * maxCardNumberInOneRow / 2
             + intervalBetweenCards * (maxCardNumberInOneRow / 2 - 1);
-    } else {
+    }
+    else
+    {
         width += cardWidth * maxCardsInOneRow
             + intervalBetweenCards * (maxCardsInOneRow - 1);
     }
@@ -174,19 +184,22 @@ void PlayerCardBox::paintLayout(QPainter *painter)
 
     int index = 0;
 
-    if (flags.contains(handcardFlag) && !player->isKongcheng()) {
+    if (flags.contains(handcardFlag) && !player->isKongcheng())
+    {
         G_COMMON_LAYOUT.playerCardBoxPlaceNameText.paintText(painter, nameRects.at(index),
             Qt::AlignCenter,
             tr("Handcard area"));
         ++index;
     }
-    if (flags.contains(equipmentFlag) && player->hasEquip()) {
+    if (flags.contains(equipmentFlag) && player->hasEquip())
+    {
         G_COMMON_LAYOUT.playerCardBoxPlaceNameText.paintText(painter, nameRects.at(index),
             Qt::AlignCenter,
             tr("Equip area"));
         ++index;
     }
-    if (flags.contains(judgingFlag) && !player->getJudgingArea().isEmpty()) {
+    if (flags.contains(judgingFlag) && !player->getJudgingArea().isEmpty())
+    {
         G_COMMON_LAYOUT.playerCardBoxPlaceNameText.paintText(painter, nameRects.at(index),
             Qt::AlignCenter,
             tr("Judging area"));
@@ -195,7 +208,8 @@ void PlayerCardBox::paintLayout(QPainter *painter)
 
 void PlayerCardBox::clear()
 {
-    if (progressBar != NULL) {
+    if (progressBar != NULL)
+    {
         progressBar->hide();
         progressBar->deleteLater();
         progressBar = NULL;
@@ -240,7 +254,8 @@ void PlayerCardBox::arrangeCards(const CardList &cards, const QPoint &topLeft)
 {
     QList<CardItem *> areaItems;
 
-    foreach (const Card *card, cards) {
+    foreach(const Card *card, cards)
+    {
         CardItem *item = new CardItem(card);
         if (handcards.contains(card->getId()) && !handcardVisible && Self != player && !player->getVisiblecards().contains(card))
             item = new CardItem(NULL);
@@ -265,14 +280,17 @@ void PlayerCardBox::arrangeCards(const CardList &cards, const QPoint &topLeft)
     const int cardHeight = G_COMMON_LAYOUT.m_cardNormalHeight;
     const int min = qMin(maxCardsInOneRow, maxCardNumberInOneRow / 2);
     const int maxWidth = min * cardWidth + intervalBetweenCards * (min - 1);
-    for (int row = 0; row < rows; ++row) {
+    for (int row = 0; row < rows; ++row)
+    {
         int count = qMin(maxCardNumberInOneRow, areaItems.size());
         double step = 0;
-        if (count > 1) {
+        if (count > 1)
+        {
             step = qMin((double)cardWidth + intervalBetweenCards,
                 (double)(maxWidth - cardWidth) / qMax(count - 1, 0));
         }
-        for (int i = 0; i < count; ++i) {
+        for (int i = 0; i < count; ++i)
+        {
             CardItem *item = areaItems.takeFirst();
             const double x = topLeft.x() + step * i;
             const double y = topLeft.y() + (cardHeight + intervalBetweenRows) * row;

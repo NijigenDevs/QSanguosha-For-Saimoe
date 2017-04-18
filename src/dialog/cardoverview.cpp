@@ -83,14 +83,16 @@ void CardOverview::loadFromAll()
 #if !defined(Q_OS_IOS)
     ui->tableWidget->setRowCount(n);
 #endif
-    for (int i = 0; i < n; i++) {
+    for (int i = 0; i < n; i++)
+    {
         const Card *card = Sanguosha->getEngineCard(i);
         addCard(i, card);
     }
 #ifdef Q_OS_IOS
     connect(ui->cardComboBox, &QComboBox::currentTextChanged, this, &CardOverview::comboBoxChanged);
 #endif
-    if (n > 0) {
+    if (n > 0)
+    {
         //SE
 #ifdef Q_OS_IOS
         ui->cardComboBox->setCurrentIndex(0);
@@ -100,11 +102,14 @@ void CardOverview::loadFromAll()
 #endif
 
         const Card *card = Sanguosha->getEngineCard(0);
-        if (card->getTypeId() == Card::TypeEquip) {
+        if (card->getTypeId() == Card::TypeEquip)
+        {
             ui->playAudioEffectButton->show();
             ui->malePlayButton->hide();
             ui->femalePlayButton->hide();
-        } else {
+        }
+        else
+        {
             ui->playAudioEffectButton->hide();
             ui->malePlayButton->show();
             ui->femalePlayButton->show();
@@ -123,7 +128,8 @@ void CardOverview::loadFromList(const QList<const Card *> &list)
     for (int i = 0; i < n; i++)
         addCard(i, list.at(i));
 
-    if (n > 0) {
+    if (n > 0)
+    {
 #ifdef Q_OS_IOS
         ui->cardComboBox->setCurrentIndex(0);
         comboBoxChanged();
@@ -132,11 +138,14 @@ void CardOverview::loadFromList(const QList<const Card *> &list)
 #endif
 
         const Card *card = list.first();
-        if (card->getTypeId() == Card::TypeEquip) {
+        if (card->getTypeId() == Card::TypeEquip)
+        {
             ui->playAudioEffectButton->show();
             ui->malePlayButton->hide();
             ui->femalePlayButton->hide();
-        } else {
+        }
+        else
+        {
             ui->playAudioEffectButton->hide();
             ui->malePlayButton->show();
             ui->femalePlayButton->show();
@@ -166,7 +175,8 @@ void CardOverview::addCard(int i, const Card *card)
     ui->tableWidget->setItem(i, 4, new QTableWidgetItem(subtype));
 
     QTableWidgetItem *package_item = new QTableWidgetItem(package);
-    if (Config.value("LuaPackages", QString()).toString().split("+").contains(card->getPackage())) {
+    if (Config.value("LuaPackages", QString()).toString().split("+").contains(card->getPackage()))
+    {
         package_item->setBackgroundColor(QColor(0x66, 0xCC, 0xFF));
         package_item->setToolTip(tr("<font color=%1>This is an Lua extension</font>").arg(Config.SkillDescriptionInToolTipColor.name()));
     }
@@ -182,7 +192,8 @@ CardOverview::~CardOverview()
 }
 
 #ifdef Q_OS_IOS
-void CardOverview::comboBoxChanged() {
+void CardOverview::comboBoxChanged()
+{
     int card_id = ui->cardComboBox->currentData().toInt();
     const Card *card = Sanguosha->getEngineCard(card_id);
     QString pixmap_path = QString("image/card/%1.png").arg(card->objectName());
@@ -194,11 +205,14 @@ void CardOverview::comboBoxChanged() {
     ui->subtypeLine->setText(Sanguosha->translate(card->getSubtype()));
     ui->typeLine->setText(Sanguosha->translate(card->getType()));
 
-    if (card->getTypeId() == Card::TypeEquip) {
+    if (card->getTypeId() == Card::TypeEquip)
+    {
         ui->playAudioEffectButton->show();
         ui->malePlayButton->hide();
         ui->femalePlayButton->hide();
-    } else {
+    }
+    else
+    {
         ui->playAudioEffectButton->hide();
         ui->malePlayButton->show();
         ui->femalePlayButton->show();
@@ -218,11 +232,14 @@ void CardOverview::on_tableWidget_itemSelectionChanged()
     ui->cardDescriptionBox->setText(card->getDescription(false));
 
 
-    if (card->getTypeId() == Card::TypeEquip) {
+    if (card->getTypeId() == Card::TypeEquip)
+    {
         ui->playAudioEffectButton->show();
         ui->malePlayButton->hide();
         ui->femalePlayButton->hide();
-    } else {
+    }
+    else
+    {
         ui->playAudioEffectButton->hide();
         ui->malePlayButton->show();
         ui->femalePlayButton->show();
@@ -248,13 +265,15 @@ void CardOverview::askCard()
 #else
     int row = ui->tableWidget->currentRow();
 #endif
-    if (row >= 0) {
+    if (row >= 0)
+    {
 #ifdef Q_OS_IOS
         int card_id = ui->cardComboBox->currentData().toInt();
 #else
         int card_id = ui->tableWidget->item(row, 0)->data(Qt::UserRole).toInt();
 #endif
-        if (!ClientInstance->getAvailableCards().contains(card_id)) {
+        if (!ClientInstance->getAvailableCards().contains(card_id))
+        {
             QMessageBox::warning(this, tr("Warning"), tr("These packages don't contain this card"));
             return;
         }
@@ -271,7 +290,8 @@ void CardOverview::on_malePlayButton_clicked()
 #else
     int row = ui->tableWidget->currentRow();
 #endif
-    if (row >= 0) {
+    if (row >= 0)
+    {
 #ifdef Q_OS_IOS
         int card_id = ui->cardComboBox->currentData().toInt();
 #else
@@ -289,7 +309,8 @@ void CardOverview::on_femalePlayButton_clicked()
 #else
     int row = ui->tableWidget->currentRow();
 #endif
-    if (row >= 0) {
+    if (row >= 0)
+    {
 #ifdef Q_OS_IOS
         int card_id = ui->cardComboBox->currentData().toInt();
 #else
@@ -307,14 +328,16 @@ void CardOverview::on_playAudioEffectButton_clicked()
 #else
     int row = ui->tableWidget->currentRow();
 #endif
-    if (row >= 0) {
+    if (row >= 0)
+    {
 #ifdef Q_OS_IOS
         int card_id = ui->cardComboBox->currentData().toInt();
 #else
         int card_id = ui->tableWidget->item(row, 0)->data(Qt::UserRole).toInt();
 #endif
         const Card *card = Sanguosha->getEngineCard(card_id);
-        if (card->getTypeId() == Card::TypeEquip) {
+        if (card->getTypeId() == Card::TypeEquip)
+        {
             QString effectName = card->getEffectName();
             if (effectName == "vscrossbow")
                 effectName = "crossbow";
@@ -328,9 +351,12 @@ void CardOverview::on_playAudioEffectButton_clicked()
 
 void CardOverview::showEvent(QShowEvent *)
 {
-    if (ServerInfo.EnableCheat && ClientInstance) {
+    if (ServerInfo.EnableCheat && ClientInstance)
+    {
         ui->getCardButton->show();
-    } else {
+    }
+    else
+    {
         ui->getCardButton->hide();
     }
 }

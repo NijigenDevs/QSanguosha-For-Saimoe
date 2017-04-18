@@ -160,7 +160,7 @@ private:
 
     QMap<QString, int> m_kingdomIndex;
 
-private slots:
+    private slots:
     void updateKingdom(int index);
     void updateNumber(int num);
     void updateListItems();
@@ -216,7 +216,7 @@ private slots:
     void doPlayerShows(bool toggled);
     void doPlayerShows2(bool toggled);
 
-public slots:
+    public slots:
     void getChosenGeneral(QString generalName);
     void getEquipCard(int card_id);
     void getHandCard(int card_id);
@@ -239,7 +239,7 @@ private:
     QButtonGroup *group;
     QWidget *createTab(const QList<const General *> &generals);
 
-private slots:
+    private slots:
     void chooseGeneral();
     void clearGeneral();
 
@@ -263,7 +263,7 @@ private:
     QString m_className;
     QList<int> m_excludedCards;
 
-private slots:
+    private slots:
     void askCard();
     void updateCardList();
     void updateExcluded(int cardId);
@@ -288,7 +288,7 @@ private:
 
     QStringList m_updatedSkills;
 
-private slots:
+    private slots:
     void selectSkill();
     void deleteSkill();
     void addSkill();

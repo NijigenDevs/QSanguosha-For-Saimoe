@@ -40,9 +40,11 @@ StyleHelper::StyleHelper(QObject *)
 StyleHelper *StyleHelper::getInstance()
 {
     static QMutex mutex;
-    if (!instance) {
+    if (!instance)
+    {
         QMutexLocker locker(&mutex);
-        if (!instance) {
+        if (!instance)
+        {
             instance = new StyleHelper;
         }
     }
@@ -52,9 +54,12 @@ StyleHelper *StyleHelper::getInstance()
 QFont StyleHelper::getFontByFileName(const QString &fileName)
 {
     static QMap<QString, QFont> loadedFonts;
-    if (loadedFonts.contains(fileName)) {
+    if (loadedFonts.contains(fileName))
+    {
         return loadedFonts.value(fileName);
-    } else {
+    }
+    else
+    {
         int fontId = QFontDatabase::addApplicationFont("font/" + fileName);
         Q_ASSERT(fontId != -1);
         QString fontName = QFontDatabase::applicationFontFamilies(fontId).at(0);
@@ -67,9 +72,11 @@ QFont StyleHelper::getFontByFileName(const QString &fileName)
 QString StyleHelper::styleSheetOfScrollBar()
 {
     static QString style;
-    if (style.isEmpty()) {
+    if (style.isEmpty())
+    {
         QFile file("style-sheet/scroll.qss");
-        if (file.open(QIODevice::ReadOnly)) {
+        if (file.open(QIODevice::ReadOnly))
+        {
             QTextStream stream(&file);
             style = stream.readAll();
         }
@@ -81,11 +88,13 @@ QColor StyleHelper::backgroundColorOfFlatDialog()
 {
     static QColor color;
     static bool loaded = false;
-    if (!loaded) {
+    if (!loaded)
+    {
         lua_State *L = Sanguosha->getLuaState();
         const QString colorString = GetConfigFromLuaState(L, "dialog_background_color").toString();
         color.setNamedColor(colorString);
-        if (!color.isValid()) {
+        if (!color.isValid())
+        {
             qWarning("Invalid color for dialog background");
             color.setRgb(214, 231, 239);
         }

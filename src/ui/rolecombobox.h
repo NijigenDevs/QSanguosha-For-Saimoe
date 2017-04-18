@@ -51,7 +51,7 @@ private:
 protected:
     virtual void mousePressEvent(QGraphicsSceneMouseEvent *event);
 
-public slots:
+    public slots:
     void fix(const QString &role);
     void mouseClickedOutside();
 };

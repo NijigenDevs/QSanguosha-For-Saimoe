@@ -41,7 +41,8 @@ struct PindianStruct;
 #ifndef QT_NO_DEBUG
 #include <QEvent>
 
-class ServerPlayerEvent: public QEvent {
+class ServerPlayerEvent : public QEvent
+{
 public:
     ServerPlayerEvent(char *property_name, QVariant &value);
 
@@ -53,7 +54,7 @@ public:
 class ServerPlayer : public Player
 {
     Q_OBJECT
-    Q_PROPERTY(QString ip READ getIp)
+        Q_PROPERTY(QString ip READ getIp)
 
 public:
     explicit ServerPlayer(Room *room);
@@ -85,7 +86,7 @@ public:
     bool askForSkillInvoke(const QString &skill_name, const QVariant &data = QVariant());
     bool askForSkillInvoke(const Skill *skill, const QVariant &data = QVariant());
     QList<int> forceToDiscard(int discard_num, bool include_equip, bool is_discard = true);
-    QList<int> forceToDiscard(int discard_num, const QString &pattern, const QString &expand_pile , bool is_discard);
+    QList<int> forceToDiscard(int discard_num, const QString &pattern, const QString &expand_pile, bool is_discard);
     QList<int> handCards() const;
     virtual QList<const Card *> getHandcards() const;
     QList<const Card *> getCards(const QString &flags) const;
@@ -183,12 +184,14 @@ public:
     }
     inline void drainLock(SemaphoreType type)
     {
-        while (semas[type]->tryAcquire()) {
+        while (semas[type]->tryAcquire())
+        {
         }
     }
     inline void drainAllLocks()
     {
-        for (int i = 0; i < S_NUM_SEMAPHORES; i++) {
+        for (int i = 0; i < S_NUM_SEMAPHORES; i++)
+        {
             drainLock((SemaphoreType)i);
         }
     }
@@ -254,7 +257,7 @@ private:
     QDateTime test_time;
     QVariant _m_clientResponse;
 
-private slots:
+    private slots:
     void getMessage(QByteArray request);
     void sendMessage(const QByteArray &message);
 

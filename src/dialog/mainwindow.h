@@ -26,7 +26,8 @@
 
 #include "version.h"
 
-namespace Ui {
+namespace Ui
+{
     class MainWindow;
 }
 
@@ -122,10 +123,10 @@ private:
     void fetchUpdateInformation();
     void roundCorners();
 
-public slots:
+    public slots:
     void startConnection();
 
-private slots:
+    private slots:
     void on_actionAbout_GPLv3_triggered();
     void on_actionAbout_Lua_triggered();
     void on_actionAbout_fmod_triggered();

@@ -75,7 +75,8 @@ Photo::Photo() : PlayerCardContainer()
 
 Photo::~Photo()
 {
-    if (emotion_item) {
+    if (emotion_item)
+    {
         delete emotion_item;
         emotion_item = NULL;
     }
@@ -86,7 +87,8 @@ void Photo::refresh()
     PlayerCardContainer::refresh();
     if (!m_player) return;
     QString state_str = m_player->getState();
-    if (!state_str.isEmpty() && state_str != "online") {
+    if (!state_str.isEmpty() && state_str != "online")
+    {
         QRect rect = G_PHOTO_LAYOUT.m_onlineStatusArea;
         QImage image(rect.size(), QImage::Format_ARGB32);
         image.fill(Qt::transparent);
@@ -99,7 +101,8 @@ void Photo::refresh()
         _paintPixmap(_m_onlineStatusItem, rect, pixmap, _m_groupMain);
         _layBetween(_m_onlineStatusItem, _m_mainFrame, _m_chainIcon);
         if (!_m_onlineStatusItem->isVisible()) _m_onlineStatusItem->show();
-    } else if (_m_onlineStatusItem != NULL && state_str == "online")
+    }
+    else if (_m_onlineStatusItem != NULL && state_str == "online")
         _m_onlineStatusItem->hide();
 
 }
@@ -134,13 +137,15 @@ void Photo::_adjustComponentZValues()
 
 void Photo::setEmotion(const QString &emotion, bool permanent)
 {
-    if (emotion == ".") {
+    if (emotion == ".")
+    {
         hideEmotion();
         return;
     }
 
     QString path = QString("image/system/emotion/%1.png").arg(emotion);
-    if (QFile::exists(path)) {
+    if (QFile::exists(path))
+    {
         QPixmap pixmap = QPixmap(path);
         emotion_item->setPixmap(pixmap);
         emotion_item->setPos((G_PHOTO_LAYOUT.m_normalWidth - pixmap.width()) / 2,
@@ -149,17 +154,22 @@ void Photo::setEmotion(const QString &emotion, bool permanent)
 
         QPropertyAnimation *appear = new QPropertyAnimation(emotion_item, "opacity");
         appear->setStartValue(0.0);
-        if (permanent) {
+        if (permanent)
+        {
             appear->setEndValue(1.0);
             appear->setDuration(500);
-        } else {
+        }
+        else
+        {
             appear->setKeyValueAt(0.25, 1.0);
             appear->setKeyValueAt(0.75, 1.0);
             appear->setEndValue(0.0);
             appear->setDuration(2000);
         }
         appear->start(QAbstractAnimation::DeleteWhenStopped);
-    } else {
+    }
+    else
+    {
         PixmapAnimation::GetPixmapAnimation(this, emotion);
     }
 }
@@ -214,7 +224,8 @@ void Photo::speak(const QString &)
 void Photo::updateSmallAvatar()
 {
     updateAvatar();
-    if (_m_smallAvatarIcon == NULL) {
+    if (_m_smallAvatarIcon == NULL)
+    {
         _m_smallAvatarIcon = new GraphicsPixmapHoverItem(this, _getAvatarParent());
         _m_smallAvatarIcon->setTransformationMode(Qt::SmoothTransformation);
     }
@@ -222,7 +233,8 @@ void Photo::updateSmallAvatar()
     const General *general = NULL;
     if (m_player) general = m_player->getGeneral2();
 
-    if (general != NULL) {
+    if (general != NULL)
+    {
         QPixmap smallAvatarIcon = G_ROOM_SKIN.getGeneralPixmap(general->objectName(),
             QSanRoomSkin::GeneralIconSize(_m_layout->m_smallAvatarSize),
             m_player->getDeputySkinId());
@@ -241,7 +253,9 @@ void Photo::updateSmallAvatar()
             _m_layout->m_secondaryAvatarNameArea,
             Qt::AlignLeft | Qt::AlignJustify, name);
         _m_smallAvatarIcon->show();
-    } else {
+    }
+    else
+    {
         _clearPixmap(_m_smallAvatarIcon);
         _clearPixmap(_m_circleItem);
         _m_layout->m_smallAvatarNameFont.paintText(_m_secondaryAvatarNameItem,
@@ -255,12 +269,17 @@ void Photo::updateSmallAvatar()
 QList<CardItem *> Photo::removeCardItems(const QList<int> &card_ids, Player::Place place)
 {
     QList<CardItem *> result;
-    if (place == Player::PlaceHand || place == Player::PlaceSpecial) {
+    if (place == Player::PlaceHand || place == Player::PlaceSpecial)
+    {
         result = _createCards(card_ids);
         updateHandcardNum();
-    } else if (place == Player::PlaceEquip) {
+    }
+    else if (place == Player::PlaceEquip)
+    {
         result = removeEquips(card_ids);
-    } else if (place == Player::PlaceDelayedTrick) {
+    }
+    else if (place == Player::PlaceDelayedTrick)
+    {
         result = removeDelayedTricks(card_ids);
     }
 
@@ -283,13 +302,18 @@ bool Photo::_addCardItems(QList<CardItem *> &card_items, const CardsMoveStruct &
 
     foreach(CardItem *card_item, card_items)
         card_item->setHomeOpacity(homeOpacity);
-    if (place == Player::PlaceEquip) {
+    if (place == Player::PlaceEquip)
+    {
         addEquips(card_items);
         destroy = false;
-    } else if (place == Player::PlaceDelayedTrick) {
+    }
+    else if (place == Player::PlaceDelayedTrick)
+    {
         addDelayedTricks(card_items);
         destroy = false;
-    } else if (place == Player::PlaceHand) {
+    }
+    else if (place == Player::PlaceHand)
+    {
         updateHandcardNum();
     }
     return destroy;
@@ -298,8 +322,10 @@ bool Photo::_addCardItems(QList<CardItem *> &card_items, const CardsMoveStruct &
 void Photo::setFrame(FrameType type)
 {
     _m_frameType = type;
-    if (type == S_FRAME_NO_FRAME) {
-        if (_m_focusFrame) {
+    if (type == S_FRAME_NO_FRAME)
+    {
+        if (_m_focusFrame)
+        {
             if (_m_saveMeIcon && _m_saveMeIcon->isVisible())
                 setFrame(S_FRAME_SOS);
             else if (m_player->getPhase() != Player::NotActive)
@@ -307,7 +333,9 @@ void Photo::setFrame(FrameType type)
             else
                 _m_focusFrame->hide();
         }
-    } else {
+    }
+    else
+    {
         _paintPixmap(_m_focusFrame, G_PHOTO_LAYOUT.m_focusFrameArea,
             _getPixmap(QSanRoomSkin::S_SKIN_KEY_FOCUS_FRAME, QString::number(type)),
             _m_groupMain);

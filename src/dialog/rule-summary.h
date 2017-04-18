@@ -37,7 +37,7 @@ private:
     QListWidget *list;
     QTextEdit *content_box;
 
-private slots:
+    private slots:
     void loadContent(int row);
 };
 

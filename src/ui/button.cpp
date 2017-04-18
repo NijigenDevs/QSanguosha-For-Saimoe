@@ -62,7 +62,8 @@ Button::Button(const QPixmap &pixmap, const QSizeF &size)
 
 void Button::setText(const QString &text)
 {
-    if (label != text) {
+    if (label != text)
+    {
         label = text;
         delete m_icon;
         delete m_colorReversedIcon;
@@ -142,7 +143,8 @@ void Button::hoverLeaveEvent(QGraphicsSceneHoverEvent *)
 
 void Button::setTextColorReversed(bool reversed)
 {
-    if (m_colorReversedIcon != NULL) {
+    if (m_colorReversedIcon != NULL)
+    {
         m_icon->setVisible(!reversed);
         m_colorReversedIcon->setVisible(reversed);
     }

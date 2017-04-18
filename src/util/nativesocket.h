@@ -35,7 +35,7 @@ public:
     virtual bool listen();
     virtual void daemonize();
 
-private slots:
+    private slots:
     void processNewConnection();
     void processNewDatagram();
 
@@ -63,7 +63,7 @@ public:
     virtual QString peerAddress() const;
     virtual ushort peerPort() const;
 
-private slots:
+    private slots:
     void getMessage();
     void raiseError(QAbstractSocket::SocketError socket_error);
 

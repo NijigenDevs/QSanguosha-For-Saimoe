@@ -26,14 +26,16 @@
 #include <QRect>
 #include <QPainter>
 
-namespace QSanUiUtils {
+namespace QSanUiUtils
+{
     // This is in no way a generic diation fuction. It is some dirty trick that
     // produces a shadow image for a pixmap whose foreground mask is binaryImage
     void paintShadow(QPainter *painter, const QImage &image, QColor shadowColor, int radius, double decade, const QRect boundingBox);
     void paintShadow(QPainter *painter, const QImage &image, QColor shadowColor, int radius, double decade, const int x, const int y);
     void makeGray(QPixmap &pixmap);
 
-    namespace QSanFreeTypeFont {
+    namespace QSanFreeTypeFont
+    {
         bool init();
         void quit();
 

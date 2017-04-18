@@ -60,10 +60,10 @@ protected:
     void _playMoveCardsAnimation(QList<CardItem *> &cards, bool destroyCards);
     int _m_highestZ;
 
-protected slots:
+    protected slots:
     virtual void onAnimationFinished();
 
-private slots:
+    private slots:
     void _doUpdate();
     void _destroyCard();
 
@@ -131,7 +131,7 @@ public:
 
     void stopHeroSkinChangingAnimation();
 
-public slots:
+    public slots:
     virtual void updateAvatar();
     virtual void updateSmallAvatar();
     virtual void updatePhase();
@@ -303,7 +303,7 @@ protected:
     // The following stuffs for showing seat
     QGraphicsPixmapItem *_m_seatItem;
 
-protected slots:
+    protected slots:
     virtual void _onEquipSelectChanged();
 
 private:

@@ -37,7 +37,7 @@ public:
 private:
     QString bold(const QString &str, QColor color) const;
 
-public slots:
+    public slots:
     void appendLog(const QStringList &log_str);
     void append(const QString &text);
 };

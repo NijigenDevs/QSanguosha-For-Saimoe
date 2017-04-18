@@ -70,14 +70,16 @@ RuleSummary::RuleSummary(QWidget *parent)
     layout->addLayout(hLayout);
 
     QStringList names = Sanguosha->getModScenarioNames();
-    for (int i = 0; i < names.size(); ++i) {
+    for (int i = 0; i < names.size(); ++i)
+    {
         QString fileName = QString("rule/%1.html").arg(names.at(i));
         if (!QFile::exists(fileName))
             names.removeAt(i);
     }
 
     names << "hegemony" << "rule1-card" << "rule2-wording" << "rule3-extras";
-    foreach (const QString &name, names) {
+    foreach(const QString &name, names)
+    {
         QString text = Sanguosha->translate(name);
         QListWidgetItem *item = new QListWidgetItem(text, list);
         item->setData(Qt::UserRole, name);
@@ -98,7 +100,8 @@ void RuleSummary::loadContent(int row)
     QString name = list->item(row)->data(Qt::UserRole).toString();
     QString filename = QString("rule/%1.html").arg(name);
     QFile file(filename);
-    if (file.open(QIODevice::ReadOnly)) {
+    if (file.open(QIODevice::ReadOnly))
+    {
         QTextStream stream(&file);
         stream.setCodec("UTF-8");
         QString content = stream.readAll();

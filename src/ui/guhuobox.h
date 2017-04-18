@@ -11,13 +11,13 @@ class GuhuoButton : public QGraphicsObject
 public:
     static QFont defaultFont();
 
-    GuhuoButton(QGraphicsObject *parent,const QString &card, const int width, const QColor &color);
+    GuhuoButton(QGraphicsObject *parent, const QString &card, const int width, const QColor &color);
 
 signals:
     void clicked();
     void hovered(bool entering);
 
-public slots:
+    public slots:
     void needDisabled(bool disabled);
 protected:
     virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *);
@@ -46,7 +46,7 @@ public:
 signals:
     void onButtonClick();
 
-public slots:
+    public slots:
     void popup();
     void reply();
     void clear();

@@ -135,22 +135,27 @@ bool IQSanComponentSkin::QSanSimpleTextFont::tryParse(const QVariant &args)
     if (arg.size() < 4) return false;
     m_vertical = false;
     QString fontPath = arg[0].toString();
-    if (fontPath.startsWith("@")) {
+    if (fontPath.startsWith("@"))
+    {
         m_vertical = true;
         fontPath.remove(0, 1);
     }
     if (_m_fontBank.contains(fontPath))
         m_fontFace = _m_fontBank[fontPath];
-    else {
+    else
+    {
         m_fontFace = QSanUiUtils::QSanFreeTypeFont::loadFont(fontPath);
         _m_fontBank[fontPath] = m_fontFace;
     }
-    if (JsonUtils::isNumber(arg[1])) {
+    if (JsonUtils::isNumber(arg[1]))
+    {
         int size = arg[1].toInt();
         m_fontSize.setWidth(size);
         m_fontSize.setHeight(size);
         m_spacing = 0;
-    } else {
+    }
+    else
+    {
         JsonArray arg1 = arg[1].value<JsonArray>();
         m_fontSize.setWidth(arg1[0].toInt());
         m_fontSize.setHeight(arg1[1].toInt());
@@ -166,14 +171,17 @@ bool IQSanComponentSkin::QSanShadowTextFont::tryParse(const QVariant &arg)
     JsonArray args = arg.value<JsonArray>();
     if (args.size() < 4) return false;
     if (!QSanSimpleTextFont::tryParse(arg)) return false;
-    if (args.size() >= 8) {
+    if (args.size() >= 8)
+    {
         m_shadowRadius = args[4].toInt();
         m_shadowDecadeFactor = args[5].toDouble();
         JsonUtils::tryParse(args[6], m_shadowOffset);
 
         JsonArray color = args[7].value<JsonArray>();
         m_shadowColor = QColor(color[0].toInt(), color[1].toInt(), color[2].toInt(), color[3].toInt());
-    } else {
+    }
+    else
+    {
         m_shadowRadius = -1;
     }
     return true;
@@ -192,11 +200,11 @@ void IQSanComponentSkin::QSanSimpleTextFont::paintText(QPainter *painter, const 
     QSize actualSize = m_fontSize;
     if ((align & Qt::TextWrapAnywhere) && !m_vertical)
         QSanUiUtils::QSanFreeTypeFont::paintQStringMultiLine(painter, text, m_fontFace, m_color,
-        actualSize, m_spacing, pos, align);
+            actualSize, m_spacing, pos, align);
     else
         QSanUiUtils::QSanFreeTypeFont::paintQString(painter, text, m_fontFace, m_color,
-        actualSize, m_spacing, m_weight, pos,
-        m_vertical ? Qt::Vertical : Qt::Horizontal, align);
+            actualSize, m_spacing, m_weight, pos,
+            m_vertical ? Qt::Vertical : Qt::Horizontal, align);
 }
 
 
@@ -222,7 +230,8 @@ void IQSanComponentSkin::QSanShadowTextFont::paintText(QPainter *painter, const 
     QSanSimpleTextFont::paintText(&imagePainter, QRect(m_shadowRadius, m_shadowRadius,
         pos.width() - m_shadowRadius * 2, pos.height() - m_shadowRadius * 2),
         align, text);
-    if (m_shadowRadius < 0 || (m_shadowRadius == 0 && m_shadowOffset.x() == 0 && m_shadowOffset.y() == 0)) {
+    if (m_shadowRadius < 0 || (m_shadowRadius == 0 && m_shadowOffset.x() == 0 && m_shadowOffset.y() == 0))
+    {
         painter->drawImage(pos.topLeft(), image);
         return;
     }
@@ -263,31 +272,37 @@ QString QSanRoomSkin::getButtonPixmapPath(const QString &groupName,
     QString path = _m_imageConfig[key].toString();
 
     QString stateKey;
-    switch (state) {
-    case QSanButton::S_STATE_DISABLED:{
-        stateKey = "disabled";
-        break;
-    }
-    case QSanButton::S_STATE_DOWN:{
-        stateKey = "down";
-        break;
-    }
-    case QSanButton::S_STATE_HOVER:{
-        stateKey = "hover";
-        break;
-    }
-    case QSanButton::S_STATE_UP:{
-        stateKey = "normal";
-        break;
-    }
-    case QSanButton::S_STATE_CANPRESHOW:{
-        //use codes to make button lighter than other states
-        stateKey = "disabled";
-        break;
-    }
+    switch (state)
+    {
+        case QSanButton::S_STATE_DISABLED:
+        {
+            stateKey = "disabled";
+            break;
+        }
+        case QSanButton::S_STATE_DOWN:
+        {
+            stateKey = "down";
+            break;
+        }
+        case QSanButton::S_STATE_HOVER:
+        {
+            stateKey = "hover";
+            break;
+        }
+        case QSanButton::S_STATE_UP:
+        {
+            stateKey = "normal";
+            break;
+        }
+        case QSanButton::S_STATE_CANPRESHOW:
+        {
+            //use codes to make button lighter than other states
+            stateKey = "disabled";
+            break;
+        }
 
-    default:
-        return QString();
+        default:
+            return QString();
     }
     return path.arg(buttonName).arg(stateKey);
 }
@@ -301,7 +316,8 @@ QPixmap QSanRoomSkin::getSkillButtonPixmap(QSanButton::ButtonState state,
         state);
     if (path.isNull())
         return QPixmap(1, 1); // older Qt version cries for non-zero QPixmap...
-    else {
+    else
+    {
         QString arg2;
         if (width == QSanInvokeSkillButton::S_WIDTH_NARROW)
             arg2 = "3";
@@ -334,11 +350,13 @@ QPixmap QSanRoomSkin::getProgressBarPixmap(int percentile) const
 {
     if (!_m_imageConfig[S_SKIN_KEY_PROGRESS_BAR_IMAGE].canConvert<JsonArray>()) return QPixmap();
     JsonArray allMaps = _m_imageConfig[S_SKIN_KEY_PROGRESS_BAR_IMAGE].value<JsonArray>();
-    foreach (const QVariant &_map, allMaps) {
+    foreach(const QVariant &_map, allMaps)
+    {
         JsonArray map = _map.value<JsonArray>();
         if (map.size() < 2 || !JsonUtils::isNumber(map[0])) continue;
         int thred = map[0].toInt();
-        if (thred >= percentile) {
+        if (thred >= percentile)
+        {
             if (!JsonUtils::isString(map[1])) continue;
             return getPixmapFromFileName(map[1].toString());
         }
@@ -383,9 +401,12 @@ QPixmap QSanRoomSkin::getGeneralCardPixmap(const QString generalName, const int 
     const QString id = QString::number(skinId);
     const QString key = S_SKIN_KEY_GENERAL_CARD;
     if (isImageKeyDefined(key.arg(id).arg(generalName))
-        || isImageKeyDefined(key.arg(id).arg(S_SKIN_KEY_DEFAULT))) {
+        || isImageKeyDefined(key.arg(id).arg(S_SKIN_KEY_DEFAULT)))
+    {
         return getPixmap(key.arg(id), generalName);
-    } else {
+    }
+    else
+    {
         return getPixmap(key, generalName, id, true);
     }
 }
@@ -456,14 +477,21 @@ QString QSanRoomSkin::getPlayerAudioEffectPath(const QString &eventName, const Q
     QString fileName;
     QString key = QString(QSanRoomSkin::S_SKIN_KEY_PLAYER_AUDIO_EFFECT).arg(category).arg(eventName);
 
-    if (index < 0) {
+    if (index < 0)
+    {
         fileName = getRandomAudioFileName(key);
-    } else {
+    }
+    else
+    {
         QStringList fileNames = getAudioFileNames(key);
-        if (!fileNames.isEmpty()) {
-            if (fileNames.length() >= index) {
+        if (!fileNames.isEmpty())
+        {
+            if (fileNames.length() >= index)
+            {
                 return fileNames[index - 1];
-            } else {
+            }
+            else
+            {
                 while (index > fileNames.length())
                     index -= fileNames.length();
                 return fileNames[index - 1];
@@ -471,28 +499,40 @@ QString QSanRoomSkin::getPlayerAudioEffectPath(const QString &eventName, const Q
         }
     }
 
-    if (fileName.isEmpty()) {
+    if (fileName.isEmpty())
+    {
         const Skill *skill = Sanguosha->getSkill(eventName);
         QStringList fileNames;
         QString general;
         int skinId = 0;
-        if (player != NULL) {
-            if (player->inHeadSkills(skill)) {
+        if (player != NULL)
+        {
+            if (player->inHeadSkills(skill))
+            {
                 general = player->getGeneralName();
                 skinId = player->getHeadSkinId();
-            } else if (player->inDeputySkills(skill)) {
+            }
+            else if (player->inDeputySkills(skill))
+            {
                 general = player->getGeneral2Name();
                 skinId = player->getDeputySkinId();
             }
         }
         if (skill) fileNames = skill->getSources(general, skinId);
-        if (!fileNames.isEmpty()) {
-            if (index < 0) {
+        if (!fileNames.isEmpty())
+        {
+            if (index < 0)
+            {
                 fileName = fileNames.at(qrand() % fileNames.length());
-            } else {
-                if (fileNames.length() >= index) {
+            }
+            else
+            {
+                if (fileNames.length() >= index)
+                {
                     return fileNames[index - 1];
-                } else {
+                }
+                else
+                {
                     while (index > fileNames.length())
                         index -= fileNames.length();
                     return fileNames[index - 1];
@@ -501,7 +541,8 @@ QString QSanRoomSkin::getPlayerAudioEffectPath(const QString &eventName, const Q
         }
     }
 
-    if (fileName.isEmpty()) {
+    if (fileName.isEmpty())
+    {
         fileName = _m_audioConfig[QString(S_SKIN_KEY_PLAYER_AUDIO_EFFECT)
             .arg(category).arg("default")].toString().arg(eventName);
     }
@@ -568,7 +609,8 @@ bool IQSanComponentSkin::AnchoredRect::tryParse(const QVariant &var)
     m_useFixedSize = false;
     m_anchorChild = m_anchorParent = Qt::AlignLeft | Qt::AlignTop;
     JsonArray value = var.value<JsonArray>();
-    if (JsonUtils::isNumberArray(value, 0, 3)) {
+    if (JsonUtils::isNumberArray(value, 0, 3))
+    {
         QRect rect;
         bool success = JsonUtils::tryParse(value, rect);
         if (!success) return false;
@@ -576,10 +618,13 @@ bool IQSanComponentSkin::AnchoredRect::tryParse(const QVariant &var)
         m_fixedSize = rect.size();
         m_offset = rect.topLeft();
 
-    } else if (JsonUtils::isStringArray(value, 0, 0) && value.size() >= 3 && JsonUtils::isNumberArray(value[2], 0, 1)) {
+    }
+    else if (JsonUtils::isStringArray(value, 0, 0) && value.size() >= 3 && JsonUtils::isNumberArray(value[2], 0, 1))
+    {
         if (JsonUtils::tryParse(value[0], m_anchorChild)
             && JsonUtils::tryParse(value[1], m_anchorParent)
-            && JsonUtils::tryParse(value[2], m_offset)) {
+            && JsonUtils::tryParse(value[2], m_offset))
+        {
             if (value.size() >= 4 && JsonUtils::isNumberArray(value[3].value<JsonArray>(), 0, 1)
                 && JsonUtils::tryParse(value[3], m_fixedSize))
                 m_useFixedSize = true;
@@ -595,20 +640,27 @@ QPixmap QSanPixmapCache::getPixmap(const QString &key, const QString &fileName)
 {
     static QPixmap empty;
     QPixmap pixmap;
-    if (QPixmapCache::find(key, &pixmap)) {
+    if (QPixmapCache::find(key, &pixmap))
+    {
         return pixmap;
     }
 
-    if (fileName == "deprecated") {
+    if (fileName == "deprecated")
+    {
         QPixmapCache::insert(key, empty);
-    } else {
+    }
+    else
+    {
         bool success = !fileName.isEmpty() && pixmap.load(fileName);
-        if (!success) {
+        if (!success)
+        {
             /*qWarning("Unable to open resource file \"%s\" for key \"%s\"\n",
                      fileName.toLatin1().constData(),
                      key.toLatin1().constData());*/
             QPixmapCache::insert(key, empty); // make Qt happy
-        } else {
+        }
+        else
+        {
             QPixmapCache::insert(key, pixmap);
             return pixmap;
         }
@@ -634,16 +686,20 @@ bool IQSanComponentSkin::_loadImageConfig(const QVariant &config)
         return false;
     if (_m_imageConfig.isEmpty())
         _m_imageConfig = config.value<JsonObject>();
-    else {
+    else
+    {
         JsonObject object = config.value<JsonObject>();
         const QList<QString> &keys = object.keys();
-        foreach (const QString &key, keys) {
+        foreach(const QString &key, keys)
+        {
             _m_imageConfig[key] = object[key];
             S_IMAGE_KEY2FILE.remove(key);
             S_IMAGE_KEY2PIXMAP.remove(key);
-            if (S_IMAGE_GROUP_KEYS.contains(key)) {
+            if (S_IMAGE_GROUP_KEYS.contains(key))
+            {
                 const QList<QString> &mappedKeys = S_IMAGE_GROUP_KEYS[key];
-                foreach (const QString &mkey, mappedKeys) {
+                foreach(const QString &mkey, mappedKeys)
+                {
                     S_IMAGE_KEY2FILE.remove(mkey);
                     S_IMAGE_KEY2PIXMAP.remove(mkey);
                 }
@@ -660,9 +716,11 @@ bool IQSanComponentSkin::load(const QString &layoutConfigName, const QString &im
     bool success = true;
     QString errorMsg;
 
-    if (!layoutConfigName.isNull()) {
+    if (!layoutConfigName.isNull())
+    {
         JsonDocument layoutDoc = JsonDocument::fromFilePath(layoutConfigName);
-        if (!layoutDoc.isValid() || !layoutDoc.isObject()) {
+        if (!layoutDoc.isValid() || !layoutDoc.isObject())
+        {
             errorMsg = QString("Error when reading layout config file \"%1\": \n%2")
                 .arg(layoutConfigName).arg(layoutDoc.errorString());
             QMessageBox::warning(NULL, "Config Error", errorMsg);
@@ -671,9 +729,11 @@ bool IQSanComponentSkin::load(const QString &layoutConfigName, const QString &im
         success = _loadLayoutConfig(layoutDoc.toVariant());
     }
 
-    if (!imageConfigName.isNull()) {
+    if (!imageConfigName.isNull())
+    {
         JsonDocument imageDoc = JsonDocument::fromFilePath(imageConfigName);
-        if (!imageDoc.isValid() || !imageDoc.isObject()) {
+        if (!imageDoc.isValid() || !imageDoc.isObject())
+        {
             errorMsg = QString("Error when reading image config file \"%1\": \n%2")
                 .arg(imageConfigName).arg(imageDoc.errorString());
             QMessageBox::warning(NULL, "Config Error", errorMsg);
@@ -682,9 +742,11 @@ bool IQSanComponentSkin::load(const QString &layoutConfigName, const QString &im
         success = _loadImageConfig(imageDoc.toVariant());
     }
 
-    if (!audioConfigName.isNull()) {
+    if (!audioConfigName.isNull())
+    {
         JsonDocument audioDoc = JsonDocument::fromFilePath(audioConfigName);
-        if (!audioDoc.isValid() || !audioDoc.isObject()) {
+        if (!audioDoc.isValid() || !audioDoc.isObject())
+        {
             errorMsg = QString("Error when reading audio config file \"%1\": \n%2")
                 .arg(audioConfigName).arg(audioDoc.errorString());
             QMessageBox::warning(NULL, "Config Error", errorMsg);
@@ -693,9 +755,11 @@ bool IQSanComponentSkin::load(const QString &layoutConfigName, const QString &im
         _m_audioConfig = audioDoc.object();
     }
 
-    if (!animationConfigName.isNull()) {
+    if (!animationConfigName.isNull())
+    {
         JsonDocument animDoc = JsonDocument::fromFilePath(animationConfigName);
-        if (!animDoc.isValid() || !animDoc.isObject()) {
+        if (!animDoc.isValid() || !animDoc.isObject())
+        {
             errorMsg = QString("Error when reading animation config file \"%1\": \n%2")
                 .arg(animationConfigName).arg(animDoc.errorString());
             QMessageBox::warning(NULL, "Config Error", errorMsg);
@@ -714,7 +778,8 @@ QStringList IQSanComponentSkin::getAudioFileNames(const QString &key) const
         return QStringList();
     else if (JsonUtils::isString(result))
         return QStringList(result.toString());
-    else if (result.canConvert<JsonArray>()) {
+    else if (result.canConvert<JsonArray>())
+    {
         QStringList audios;
         tryParse(result, audios);
         return audios;
@@ -745,10 +810,13 @@ QString IQSanComponentSkin::_readConfig(const QVariant &dict, const QString &key
     if (!dict.canConvert<JsonObject>()) return defaultValue;
     JsonObject dictMap = dict.value<JsonObject>();
     const QVariant &val = dictMap[key];
-    if (!JsonUtils::isString(val)) {
+    if (!JsonUtils::isString(val))
+    {
         qWarning("Unable to read configuration: %s", key.toLatin1().constData());
         return defaultValue;
-    } else {
+    }
+    else
+    {
         return val.toString();
     }
 }
@@ -763,17 +831,23 @@ QString IQSanComponentSkin::_readImageConfig(const QString &key, QRect &rect,
         return defaultValue;
     const QVariant &val = _m_imageConfig[key];
     QString result;
-    if (JsonUtils::isString(val)) {
+    if (JsonUtils::isString(val))
+    {
         result = val.toString();
-    } else if (val.canConvert<JsonArray>()) {
+    }
+    else if (val.canConvert<JsonArray>())
+    {
         JsonArray arr = val.value<JsonArray>();
-        if (arr.size() >= 2 && JsonUtils::isString(arr[0]) && tryParse(arr[1], rect)) {
+        if (arr.size() >= 2 && JsonUtils::isString(arr[0]) && tryParse(arr[1], rect))
+        {
             clipping = true;
             result = arr[0].toString();
             if (arr.size() > 3 && tryParse(arr[3], newScale))
                 scaled = true;
         }
-    } else {
+    }
+    else
+    {
         qWarning("Unable to read configuration: %s", key.toLatin1().constData());
         return defaultValue;
     }
@@ -816,22 +890,29 @@ QPixmap IQSanComponentSkin::getPixmap(const QString &key, const QString &arg, co
         cacheKey = key.arg(arg).arg(arg2);
 
     //bool from_cache = false;
-    if (S_IMAGE_KEY2FILE.contains(cacheKey)) { // first, search cache
+    if (S_IMAGE_KEY2FILE.contains(cacheKey))
+    { // first, search cache
         fileName = S_IMAGE_KEY2FILE[cacheKey];
         //from_cache = true;
-    } else if (isImageKeyDefined(totalKey)) { // then, read from config file
+    }
+    else if (isImageKeyDefined(totalKey))
+    { // then, read from config file
         fileName = _readImageConfig(totalKey, clipRegion, clipping, scaleRegion, scaled);
         S_IMAGE_KEY2FILE[cacheKey].append(fileName);
-    } else { // case 3: use default
+    }
+    else
+    { // case 3: use default
         Q_ASSERT(!arg.isNull());
         groupKey = initialKey.arg(S_SKIN_KEY_DEFAULT);
         S_IMAGE_GROUP_KEYS[groupKey].append(totalKey);
         QString fileNameToResolve = _readImageConfig(groupKey, clipRegion, clipping, scaleRegion, scaled);
         fileName = fileNameToResolve.arg(arg);
-        if (!QFile::exists(fileName)) {
+        if (!QFile::exists(fileName))
+        {
             if (!arg2.isNull() && fileName.contains("%2"))
                 fileName = fileName.arg(arg2);
-            if (!QFile::exists(fileName)) {
+            if (!QFile::exists(fileName))
+            {
                 groupKey = initialKey.arg(S_SKIN_KEY_DEFAULT_SECOND);
                 S_IMAGE_GROUP_KEYS[groupKey].append(totalKey);
                 QString fileNameToResolve = _readImageConfig(groupKey, clipRegion, clipping, scaleRegion, scaled);
@@ -842,9 +923,11 @@ QPixmap IQSanComponentSkin::getPixmap(const QString &key, const QString &arg, co
         }
     }
 
-    if (!S_IMAGE_KEY2PIXMAP.contains(cacheKey)) {
+    if (!S_IMAGE_KEY2PIXMAP.contains(cacheKey))
+    {
         QPixmap pixmap = QSanPixmapCache::getPixmap(fileName);
-        if (clipping) {
+        if (clipping)
+        {
             QRect actualClip = clipRegion;
             if (actualClip.right() > pixmap.width())
                 actualClip.setRight(pixmap.width());
@@ -859,7 +942,9 @@ QPixmap IQSanComponentSkin::getPixmap(const QString &key, const QString &arg, co
             if (scaled)
                 clipped = clipped.scaled(scaleRegion, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
             pixmap = clipped;
-        } else if (pixmap.isNull()) {
+        }
+        else if (pixmap.isNull())
+        {
             if (scaleRegion.isValid())
                 pixmap = QPixmap(scaleRegion);
             else if (clipRegion.isValid())
@@ -910,8 +995,8 @@ const QSanRoomSkin::CommonLayout &QSanRoomSkin::getCommonLayout() const
 
 QSanRoomSkin::QSanShadowTextFont
 QSanRoomSkin::DashboardLayout::getSkillTextFont(QSanButton::ButtonState state,
-QSanInvokeSkillButton::SkillType type,
-QSanInvokeSkillButton::SkillButtonWidth width) const
+    QSanInvokeSkillButton::SkillType type,
+    QSanInvokeSkillButton::SkillButtonWidth width) const
 {
     int i = QSanButton::S_NUM_BUTTON_STATES * (int)type + (int)state;
     QSanShadowTextFont font = m_skillTextFonts[width];
@@ -944,14 +1029,16 @@ bool QSanRoomSkin::_loadLayoutConfig(const QVariant &layout)
     _m_commonLayout.m_cardFootnoteFont.tryParse(config["cardFootnoteFont"]);
 
     JsonArray magatamaFont = config["magatamaFont"].value<JsonArray>();
-    for (int i = 0; i < 6 && i < magatamaFont.size(); i++) {
+    for (int i = 0; i < 6 && i < magatamaFont.size(); i++)
+    {
         _m_commonLayout.m_hpFont[i].tryParse(magatamaFont[i]);
     }
 
     tryParse(config["roleNormalBgSize"], _m_commonLayout.m_roleNormalBgSize);
     QStringList kingdoms = Sanguosha->getKingdoms();
     kingdoms.removeAll("god");
-    foreach (const QString &kingdom, kingdoms) {
+    foreach(const QString &kingdom, kingdoms)
+    {
         tryParse(config[QString(S_SKIN_KEY_ROLE_BOX_RECT).arg(kingdom)], _m_commonLayout.m_rolesRect[kingdom]);
         tryParse(config[QString(S_SKIN_KEY_ROLE_BOX_COLOR).arg(kingdom)], _m_commonLayout.m_rolesColor[kingdom]);
     }
@@ -991,13 +1078,17 @@ bool QSanRoomSkin::_loadLayoutConfig(const QVariant &layout)
     tryParse(config["roleBoxHeight"], _m_roomLayout.m_roleBoxHeight);
     tryParse(config["scenePadding"], _m_roomLayout.m_scenePadding);
 
-    for (int i = 0; i < 2; i++) {
+    for (int i = 0; i < 2; i++)
+    {
         JsonObject playerConfig;
         PlayerCardContainerLayout *layout;
-        if (i == 0) {
+        if (i == 0)
+        {
             layout = &_m_photoLayout;
             playerConfig = layoutConfig[S_SKIN_KEY_PHOTO].value<JsonObject>();
-        } else {
+        }
+        else
+        {
             layout = &_m_dashboardLayout;
             playerConfig = layoutConfig[S_SKIN_KEY_DASHBOARD].value<JsonObject>();
         }
@@ -1022,8 +1113,10 @@ bool QSanRoomSkin::_loadLayoutConfig(const QVariant &layout)
         tryParse(playerConfig["roleComboBoxPos"], layout->m_roleComboBoxPos);
 
         tryParse(playerConfig["secondaryAvatarArea"], layout->m_secondaryAvatarArea);
-        if (!tryParse(playerConfig["avatarArea"], layout->m_avatarArea)) {
-            if (i) {
+        if (!tryParse(playerConfig["avatarArea"], layout->m_avatarArea))
+        {
+            if (i)
+            {
                 QRect ava = layout->m_secondaryAvatarArea;
                 layout->m_avatarArea = QRect(ava.left() - 1 - ava.width(),
                     ava.top(), ava.width(),
@@ -1054,7 +1147,8 @@ bool QSanRoomSkin::_loadLayoutConfig(const QVariant &layout)
         tryParse(playerConfig["magatamasHorizontal"], layout->m_magatamasHorizontal);
         tryParse(playerConfig["magatamasBgVisible"], layout->m_magatamasBgVisible);
         JsonArray magatamasAnchor = playerConfig["magatamasAnchor"].value<JsonArray>();
-        if (!magatamasAnchor.isEmpty()) {
+        if (!magatamasAnchor.isEmpty())
+        {
             if (magatamasAnchor.size() > 1)
                 tryParse(magatamasAnchor[1], layout->m_magatamasAnchor);
             if (JsonUtils::isString(magatamasAnchor[0]))
@@ -1093,7 +1187,8 @@ bool QSanRoomSkin::_loadLayoutConfig(const QVariant &layout)
 
     tryParse(config["normalWidth"], _m_photoLayout.m_normalWidth);
     if (!tryParse(config["focusFrameArea"], _m_photoLayout.m_focusFrameArea)
-        && JsonUtils::isNumber(config["borderWidth"])) {
+        && JsonUtils::isNumber(config["borderWidth"]))
+    {
         int borderWidth = 0;
         tryParse(config["borderWidth"], borderWidth);
         _m_photoLayout.m_focusFrameArea = QRect(-borderWidth, -borderWidth,
@@ -1135,7 +1230,8 @@ bool QSanRoomSkin::_loadLayoutConfig(const QVariant &layout)
     JsonArray configTextArea = config["textArea"].value<JsonArray>();
     JsonArray configTextAreaDown = config["textAreaDown"].value<JsonArray>();
     JsonArray configTextFont = config["textFont"].value<JsonArray>();
-    for (int i = 0; i < 3; i++) {
+    for (int i = 0; i < 3; i++)
+    {
         int height = 0;
         if (tryParse(config["height"], height))
             _m_dashboardLayout.m_skillButtonsSize[i].setHeight(height);
@@ -1149,20 +1245,23 @@ bool QSanRoomSkin::_loadLayoutConfig(const QVariant &layout)
         if (i < configTextFont.size())
             _m_dashboardLayout.m_skillTextFonts[i].tryParse(configTextFont[i]);
     }
-    for (int i = 0; i < QSanInvokeSkillButton::S_NUM_SKILL_TYPES; i++) {
+    for (int i = 0; i < QSanInvokeSkillButton::S_NUM_SKILL_TYPES; i++)
+    {
         QString key;
-        switch ((QSanInvokeSkillButton::SkillType)i) {
-        case QSanInvokeSkillButton::S_SKILL_ARRAY: key = "arrayFontColor"; break;
-        case QSanInvokeSkillButton::S_SKILL_COMPULSORY: key = "compulsoryFontColor"; break;
-        case QSanInvokeSkillButton::S_SKILL_ONEOFF_SPELL: key = "oneoffFontColor"; break;
-        case QSanInvokeSkillButton::S_SKILL_PROACTIVE: key = "proactiveFontColor"; break;
-        default:
-            Q_ASSERT(false);
-            break;
+        switch ((QSanInvokeSkillButton::SkillType)i)
+        {
+            case QSanInvokeSkillButton::S_SKILL_ARRAY: key = "arrayFontColor"; break;
+            case QSanInvokeSkillButton::S_SKILL_COMPULSORY: key = "compulsoryFontColor"; break;
+            case QSanInvokeSkillButton::S_SKILL_ONEOFF_SPELL: key = "oneoffFontColor"; break;
+            case QSanInvokeSkillButton::S_SKILL_PROACTIVE: key = "proactiveFontColor"; break;
+            default:
+                Q_ASSERT(false);
+                break;
         }
 
         JsonArray subconfig = config[key].value<JsonArray>();
-        for (int j = 0; j < 5 && j < subconfig.size(); j++) {
+        for (int j = 0; j < 5 && j < subconfig.size(); j++)
+        {
             int index = i * 5 + j;
             JsonArray config = subconfig[j].value<JsonArray>();
             if (config.size() < 2)
@@ -1193,7 +1292,8 @@ const QSanRoomSkin &QSanSkinScheme::getRoomSkin() const
 
 QSanSkinFactory &QSanSkinFactory::getInstance()
 {
-    if (_sm_singleton == NULL) {
+    if (_sm_singleton == NULL)
+    {
 #ifdef Q_OS_WIN
         _sm_singleton = new QSanSkinFactory("skins/skinList.json");
 #else
@@ -1205,7 +1305,8 @@ QSanSkinFactory &QSanSkinFactory::getInstance()
 
 void QSanSkinFactory::destroyInstance()
 {
-    if (_sm_singleton != NULL) {
+    if (_sm_singleton != NULL)
+    {
         delete _sm_singleton;
         _sm_singleton = NULL;
     }
@@ -1220,7 +1321,8 @@ bool QSanSkinFactory::switchSkin(QString skinName)
 {
     if (skinName == _m_skinName) return false;
     bool success = false;
-    if (_m_skinName != S_DEFAULT_SKIN_NAME) {
+    if (_m_skinName != S_DEFAULT_SKIN_NAME)
+    {
         success = _sm_currentSkin.load(_m_skinList[S_DEFAULT_SKIN_NAME]);
         if (!success) qWarning("Cannot load default skin!");
     }

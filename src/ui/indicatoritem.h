@@ -28,7 +28,7 @@
 class IndicatorItem : public QGraphicsObject
 {
     Q_OBJECT
-    Q_PROPERTY(QPointF finish READ getFinish WRITE setFinish)
+        Q_PROPERTY(QPointF finish READ getFinish WRITE setFinish)
 
 public:
     IndicatorItem(const QPointF &start, const QPointF &real_finish, Player *from);

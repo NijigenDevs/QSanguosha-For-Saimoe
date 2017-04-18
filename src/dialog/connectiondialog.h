@@ -27,7 +27,8 @@
 
 #include "flatdialog.h"
 
-namespace Ui {
+namespace Ui
+{
     class ConnectionDialog;
 }
 
@@ -44,7 +45,7 @@ public:
 private:
     Ui::ConnectionDialog *ui;
 
-private slots:
+    private slots:
     void on_detectLANButton_clicked();
     void on_clearHistoryButton_clicked();
     void on_avatarList_doubleClicked(const QModelIndex &index);

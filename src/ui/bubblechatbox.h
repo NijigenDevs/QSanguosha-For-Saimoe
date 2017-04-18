@@ -78,7 +78,7 @@ private:
 
     QPropertyAnimation *appearAndDisappear;
 
-private slots:
+    private slots:
     void clear();
 };
 

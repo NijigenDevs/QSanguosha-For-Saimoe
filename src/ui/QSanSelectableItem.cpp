@@ -49,24 +49,32 @@ bool QSanSelectableItem::_load(const QString &filename, QSize size, bool useNewS
 {
     bool success = _m_mainPixmap.load(filename);
 
-    if (!success) {
+    if (!success)
+    {
         QImageReader reader(filename);
         QString error_string = reader.errorString();
         QString warning = tr("Can not load image %1[%2], error string is %3")
             .arg(filename).arg(metaObject()->className()).arg(error_string);
         QMessageBox::warning(NULL, tr("Warning"), warning);
-    } else {
-        if (useNewSize) {
+    }
+    else
+    {
+        if (useNewSize)
+        {
             _m_width = size.width();
             _m_height = size.height();
-        } else {
+        }
+        else
+        {
             _m_width = _m_mainPixmap.width();
             _m_height = _m_mainPixmap.height();
         }
-        if (center_as_origin) {
+        if (center_as_origin)
+        {
             resetTransform();
             setTransform(QTransform::fromTranslate(-_m_width / 2, -_m_height / 2), true);
-        } else
+        }
+        else
             this->prepareGeometryChange();
     }
     return success;
@@ -81,7 +89,8 @@ void QSanSelectableItem::setPixmap(const QPixmap &pixmap)
 QSanSelectableItem::QSanSelectableItem(bool center_as_origin)
     : markable(false), marked(false)
 {
-    if (center_as_origin) {
+    if (center_as_origin)
+    {
         resetTransform();
         setTransform(QTransform::fromTranslate(-_m_mainPixmap.width() / 2, -_m_mainPixmap.height() / 2), true);
     }
@@ -112,16 +121,21 @@ void QSanSelectableItem::paint(QPainter *painter, const QStyleOptionGraphicsItem
 
 QVariant QSanSelectableItem::itemChange(GraphicsItemChange change, const QVariant &value)
 {
-    if (change == ItemSelectedHasChanged) {
-        if (value.toBool()) {
+    if (change == ItemSelectedHasChanged)
+    {
+        if (value.toBool())
+        {
             QGraphicsColorizeEffect *effect = new QGraphicsColorizeEffect(this);
             effect->setColor(QColor(0xCC, 0x00, 0x00));
             setGraphicsEffect(effect);
-        } else
+        }
+        else
             setGraphicsEffect(NULL);
 
         emit selected_changed();
-    } else if (change == ItemEnabledHasChanged) {
+    }
+    else if (change == ItemEnabledHasChanged)
+    {
         emit enable_changed();
     }
 
@@ -140,8 +154,10 @@ bool QSanSelectableItem::isMarkable() const
 
 void QSanSelectableItem::mark(bool marked)
 {
-    if (markable) {
-        if (this->marked != marked) {
+    if (markable)
+    {
+        if (this->marked != marked)
+        {
             this->marked = marked;
             emit mark_changed();
         }

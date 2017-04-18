@@ -47,8 +47,10 @@ Window::Window(const QString &title, const QSizeF &size, const QString &path)
 
     qreal xc = (w - 2 * pad) / (tw - 2 * pad), yc = (h - 2 * pad) / (th - 2 * pad);
 
-    for (int i = 0; i < tw; i++) {
-        for (int j = 0; j < th; j++) {
+    for (int i = 0; i < tw; i++)
+    {
+        for (int j = 0; j < th; j++)
+        {
             int x = i, y = j;
 
             if (x >= pad && x <= (tw - pad))

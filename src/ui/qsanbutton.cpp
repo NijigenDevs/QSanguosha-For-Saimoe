@@ -46,7 +46,8 @@ QSanButton::QSanButton(const QString &groupName, const QString &buttonName, QGra
     multi_state(multi_state), m_isFirstState(true)
 {
     const int state_count = multi_state ? (int)S_NUM_BUTTON_STATES * 2 : (int)S_NUM_BUTTON_STATES;
-    for (int i = 0; i < state_count; i++) {
+    for (int i = 0; i < state_count; i++)
+    {
         const bool state1 = i < S_NUM_BUTTON_STATES;
         _m_bgPixmap[i] = G_ROOM_SKIN.getButtonPixmap(groupName, buttonName, (QSanButton::ButtonState)(state1 ? i : (i - S_NUM_BUTTON_STATES)), state1);
     }
@@ -75,7 +76,8 @@ void QSanButton::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWid
 void QSanButton::setSize(QSize newSize)
 {
     _m_size = newSize;
-    if (_m_size.width() == 0 || _m_size.height() == 0) {
+    if (_m_size.width() == 0 || _m_size.height() == 0)
+    {
         _m_mask = QRegion();
         return;
     }
@@ -99,7 +101,8 @@ void QSanButton::setEnabled(bool enabled)
 {
     bool changed = (enabled != isEnabled());
     if (!changed) return;
-    if (enabled) {
+    if (enabled)
+    {
         setState(S_STATE_UP);
         _m_mouseEntered = false;
     }
@@ -111,7 +114,8 @@ void QSanButton::setEnabled(bool enabled)
 
 void QSanButton::setState(QSanButton::ButtonState state)
 {
-    if (this->_m_state != state) {
+    if (this->_m_state != state)
+    {
         this->_m_state = state;
         update();
     }
@@ -125,14 +129,17 @@ bool QSanButton::insideButton(QPointF pos) const
 bool QSanButton::isMouseInside() const
 {
     QGraphicsScene *scenePtr = scene();
-    if (NULL == scenePtr) {
+    if (NULL == scenePtr)
+    {
         return false;
     }
 
     QPoint cursorPos = QCursor::pos();
-    foreach (QGraphicsView *view, scenePtr->views()) {
+    foreach(QGraphicsView *view, scenePtr->views())
+    {
         QPointF pos = mapFromScene(view->mapToScene(view->mapFromGlobal(cursorPos)));
-        if (insideButton(pos)) {
+        if (insideButton(pos))
+        {
             return true;
         }
     }
@@ -166,9 +173,12 @@ void QSanButton::hoverLeaveEvent(QGraphicsSceneHoverEvent *)
 void QSanButton::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
 {
     QPointF point = event->pos();
-    if (insideButton(point)) {
+    if (insideButton(point))
+    {
         if (!_m_mouseEntered) hoverEnterEvent(event);
-    } else {
+    }
+    else
+    {
         if (_m_mouseEntered) hoverLeaveEvent(event);
     }
 }
@@ -187,7 +197,8 @@ void QSanButton::mousePressEvent(QGraphicsSceneMouseEvent *event)
 void QSanButton::_onMouseClick(bool inside)
 {
     bool changeState = true;
-    if (inherits("QSanSkillButton")) {
+    if (inherits("QSanSkillButton"))
+    {
         const Skill * skill = qobject_cast<const QSanSkillButton *>(this)->getSkill();
         if (skill->canPreshow() && !Self->hasShownSkill(skill)) changeState = false;
     }
@@ -195,22 +206,28 @@ void QSanButton::_onMouseClick(bool inside)
         m_isFirstState = !m_isFirstState;
     if (_m_style == S_STYLE_PUSH && changeState)
         setState(S_STATE_UP);
-    else if (_m_style == S_STYLE_TOGGLE) {
+    else if (_m_style == S_STYLE_TOGGLE)
+    {
         if (_m_state == S_STATE_HOVER)
             _m_state = S_STATE_UP; // temporarily set, do not use setState!
-        if (_m_state == S_STATE_DOWN) {
+        if (_m_state == S_STATE_DOWN)
+        {
             if (inside)
                 _m_state = S_STATE_HOVER;
             else
                 _m_state = S_STATE_UP;
-        } else if (_m_state == S_STATE_UP && inside)
+        }
+        else if (_m_state == S_STATE_UP && inside)
             _m_state = S_STATE_DOWN;
     }
     update();
 
-    if (inside) {
+    if (inside)
+    {
         emit clicked();
-    } else {
+    }
+    else
+    {
         _m_mouseEntered = false;
         emit clicked_outside();
     }
@@ -230,7 +247,8 @@ bool QSanButton::isDown()
 
 void QSanButton::setFirstState(bool isFirstState)
 {
-    if (m_isFirstState != isFirstState) {
+    if (m_isFirstState != isFirstState)
+    {
         m_isFirstState = isFirstState;
         update();
     }
@@ -257,18 +275,26 @@ void QSanSkillButton::onMouseClick()
 {
     if (_m_skill == NULL) return;
 
-    if (!Self->hasPreshowedSkill(_m_skill) && _m_state == QSanButton::S_STATE_CANPRESHOW) {
+    if (!Self->hasPreshowedSkill(_m_skill) && _m_state == QSanButton::S_STATE_CANPRESHOW)
+    {
         setState(S_STATE_DISABLED);
         ClientInstance->preshow(_m_skill->objectName(), true);
-    } else if (Self->hasPreshowedSkill(_m_skill) && _m_state == QSanButton::S_STATE_DISABLED
-        && _m_skill->canPreshow() && !Self->hasShownSkill(_m_skill)) {
+    }
+    else if (Self->hasPreshowedSkill(_m_skill) && _m_state == QSanButton::S_STATE_DISABLED
+        && _m_skill->canPreshow() && !Self->hasShownSkill(_m_skill))
+    {
         setState(QSanButton::S_STATE_CANPRESHOW);
         ClientInstance->preshow(_m_skill->objectName(), false);
-    } else {
-        if ((_m_style == S_STYLE_TOGGLE && isDown() && _m_emitActivateSignal) || _m_style == S_STYLE_PUSH) {
+    }
+    else
+    {
+        if ((_m_style == S_STYLE_TOGGLE && isDown() && _m_emitActivateSignal) || _m_style == S_STYLE_PUSH)
+        {
             emit skill_activated();
             emit skill_activated(_m_skill);
-        } else if (!isDown() && _m_emitDeactivateSignal) {
+        }
+        else if (!isDown() && _m_emitDeactivateSignal)
+        {
             emit skill_deactivated();
             emit skill_deactivated(_m_skill);
         }
@@ -289,21 +315,26 @@ void QSanSkillButton::setSkill(const Skill *skill)
     if (skill == NULL) skill = _m_skill;
 
     Skill::Frequency freq = skill->getFrequency();
-    if (skill->inherits("BattleArraySkill")) {
+    if (skill->inherits("BattleArraySkill"))
+    {
         setStyle(QSanButton::S_STYLE_TOGGLE);
         setState(QSanButton::S_STATE_DISABLED);
         _setSkillType(QSanInvokeSkillButton::S_SKILL_ARRAY);
         _m_emitActivateSignal = true;
         _m_emitDeactivateSignal = true;
-    } else if ((freq == Skill::Frequent || freq == Skill::NotFrequent)
+    }
+    else if ((freq == Skill::Frequent || freq == Skill::NotFrequent)
         && skill->inherits("TriggerSkill") && !skill->inherits("WeaponSkill")
-        && !skill->inherits("ArmorSkill") && _m_viewAsSkill == NULL) {
+        && !skill->inherits("ArmorSkill") && _m_viewAsSkill == NULL)
+    {
         setStyle(QSanButton::S_STYLE_TOGGLE);
         setState(QSanButton::S_STATE_DISABLED);
         _setSkillType(QSanInvokeSkillButton::S_SKILL_PROACTIVE);
         _m_emitActivateSignal = false;
         _m_emitDeactivateSignal = false;
-    } else if (freq == Skill::Limited || freq == Skill::NotFrequent || ((skill->inherits("WeaponSkill") || skill->inherits("ArmorSkill")) && _m_viewAsSkill != NULL)) {
+    }
+    else if (freq == Skill::Limited || freq == Skill::NotFrequent || ((skill->inherits("WeaponSkill") || skill->inherits("ArmorSkill")) && _m_viewAsSkill != NULL))
+    {
         setState(QSanButton::S_STATE_DISABLED);
         if (freq == Skill::Limited)
             _setSkillType(QSanInvokeSkillButton::S_SKILL_ONEOFF_SPELL);
@@ -313,13 +344,16 @@ void QSanSkillButton::setSkill(const Skill *skill)
         setStyle(QSanButton::S_STYLE_TOGGLE);
         _m_emitDeactivateSignal = true;
         _m_emitActivateSignal = true;
-    } else if (freq == Skill::Compulsory) {
+    }
+    else if (freq == Skill::Compulsory)
+    {
         setState(QSanButton::S_STATE_DISABLED);
         setStyle(QSanButton::S_STYLE_PUSH);
         _setSkillType(QSanInvokeSkillButton::S_SKILL_COMPULSORY);
         _m_emitActivateSignal = false;
         _m_emitDeactivateSignal = false;
-    } else return;
+    }
+    else return;
     QString desc = skill->getDescription();
     desc = desc.simplified();
     setToolTip(desc);
@@ -353,20 +387,25 @@ void QSanSkillButton::mousePressEvent(QGraphicsSceneMouseEvent *event)
 void QSanSkillButton::setEnabled(bool enabled)
 {
     if (!enabled && _m_skill->canPreshow()
-        && (!Self->hasShownSkill(_m_skill) || Self->hasFlag("hiding"))) {
+        && (!Self->hasShownSkill(_m_skill) || Self->hasFlag("hiding")))
+    {
         setState(Self->hasPreshowedSkill(_m_skill) ? S_STATE_DISABLED : S_STATE_CANPRESHOW);
-    } else {
+    }
+    else
+    {
         QSanButton::setEnabled(enabled);
     }
 }
 
 void QSanInvokeSkillButton::_repaint()
 {
-    for (int i = 0; i < (int)S_NUM_BUTTON_STATES; i++) {
+    for (int i = 0; i < (int)S_NUM_BUTTON_STATES; i++)
+    {
         _m_bgPixmap[i] = G_ROOM_SKIN.getSkillButtonPixmap((ButtonState)i, _m_skillType, _m_enumWidth);
         if (_m_bgPixmap[i].isNull()) continue;
 
-        if (i == S_STATE_CANPRESHOW) {
+        if (i == S_STATE_CANPRESHOW)
+        {
             QPixmap temp(_m_bgPixmap[i]);
             temp.fill(Qt::transparent);
             QPainter painter(&temp);
@@ -430,18 +469,21 @@ void QSanInvokeSkillDock::update()
     int rowH = G_DASHBOARD_LAYOUT.m_skillButtonsSize[0].height();
     int *btnNum = new int[rows + 1]; // we allocate one more row in case we need it.
     int remainingBtns = numButtons;
-    for (int i = 0; i < rows; i++) {
+    for (int i = 0; i < rows; i++)
+    {
         btnNum[i] = qMin(2, remainingBtns);
         remainingBtns -= 2;
     }
 
     int m = 0;
-    for (int i = 0; i < rows; i++) {
+    for (int i = 0; i < rows; i++)
+    {
         int rowTop = (RoomSceneInstance->m_skillButtonSank) ? (-rowH - 2 * (rows - i - 1)) :
             ((-rows + i + 1) * rowH - 8);
         int btnWidth = _m_width / btnNum[i];
         int pix_wid = G_DASHBOARD_LAYOUT.m_skillButtonsSize[btnNum[i] - 1].width();
-        for (int j = 0; j < btnNum[i]; j++) {
+        for (int j = 0; j < btnNum[i]; j++)
+        {
             int adj_value = (btnWidth - pix_wid) / 2;
             QSanInvokeSkillButton *button = _m_buttons[m++];
             button->setButtonWidth((QSanInvokeSkillButton::SkillButtonWidth)(btnNum[i] - 1));
@@ -461,7 +503,8 @@ void QSanInvokeSkillDock::paint(QPainter *, const QStyleOptionGraphicsItem *, QW
 
 QSanInvokeSkillButton *QSanInvokeSkillDock::getSkillButtonByName(const QString &skillName) const
 {
-    foreach (QSanInvokeSkillButton *button, _m_buttons) {
+    foreach(QSanInvokeSkillButton *button, _m_buttons)
+    {
         if (button->getSkill()->objectName() == skillName)
             return button;
     }

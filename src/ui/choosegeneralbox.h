@@ -46,7 +46,7 @@ private:
 
     bool hasCompanion;
 
-public slots:
+    public slots:
     virtual void changeGeneral(const QString &generalName);
 };
 
@@ -61,7 +61,7 @@ public:
     QRectF boundingRect() const;
     void clear();
 
-public slots:
+    public slots:
     void chooseGeneral(const QStringList &generals, bool m_viewOnly = false, bool single_result = false, const QString &reason = QString(), const Player *player = NULL);
     void reply();
     void adjustItems();
@@ -88,7 +88,7 @@ private:
 
     void _initializeItems();
 
-private slots:
+    private slots:
     void _adjust();
     void _onItemClicked();
 };

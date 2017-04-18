@@ -30,7 +30,7 @@ class Detector : public QObject
 {
     Q_OBJECT
 
-public slots:
+        public slots:
     virtual void detect() = 0;
     virtual void stop() = 0;
 
@@ -47,7 +47,7 @@ public:
     virtual void detect();
     virtual void stop();
 
-private slots:
+    private slots:
     void onReadReady();
 
 private:

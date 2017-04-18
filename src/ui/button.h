@@ -88,7 +88,7 @@ protected:
 signals:
     void clicked();
 
-private slots:
+    private slots:
     void onEnabledChanged();
     void onVisibleChanged();
 

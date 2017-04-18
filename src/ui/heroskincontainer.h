@@ -36,7 +36,8 @@ public:
 
     ~HeroSkinContainer()
     {
-        if (this == m_currentTopMostContainer) {
+        if (this == m_currentTopMostContainer)
+        {
             m_currentTopMostContainer = NULL;
         }
     }
@@ -80,7 +81,7 @@ private:
 
     static HeroSkinContainer *m_currentTopMostContainer;
 
-private slots:
+    private slots:
     void close();
     void skinSelected(const int skinId);
     void scrollBarValueChanged(int newValue);

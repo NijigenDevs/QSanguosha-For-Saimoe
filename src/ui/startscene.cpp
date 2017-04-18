@@ -39,13 +39,16 @@ StartScene::StartScene(QObject *parent)
 {
     // game logo
     QDate date = QDate::currentDate();
-    if (date.month() == 8 && date.day() >= 19 && date.day() <= 26) {
+    if (date.month() == 8 && date.day() >= 19 && date.day() <= 26)
+    {
         logo = new QSanSelectableItem("image/logo/logo-moxuan.png", true);
         QString tip = "<img src='image/system/developers/moxuan.jpg' height = 125/><br/>";
         tip.append(QString("<font color=%1><b>%2</b></font>").arg(Config.SkillDescriptionInToolTipColor.name()).arg(tr("At 10:40 a.m., August 19, 2014, Moxuanyanyun, a developer of QSanguosha, passed away peacefully in Dalian Medical College. He was 18 and had struggled with leukemia for more than 4 years. May there is no pain in Heaven.")));
         logo->setToolTip(tip);
         shouldMourn = true;
-    } else {
+    }
+    else
+    {
         logo = new QSanSelectableItem("image/logo/logo.png", true);
         shouldMourn = false;
     }
@@ -82,7 +85,7 @@ void StartScene::addButton(QAction *action)
     qreal center_x, top_y;
 #ifdef Q_OS_IOS
     center_x = Config.Rect.width() / 6;
-    top_y = - (1.5 * rect.height()) - (4 * 3);
+    top_y = -(1.5 * rect.height()) - (4 * 3);
     if (n < 3)
         button->setPos(center_x - rect.width() - 4, top_y + n * (rect.height() + 8));
     else if (n < 6)
@@ -103,7 +106,8 @@ void StartScene::addButton(QAction *action)
 
 void StartScene::setServerLogBackground()
 {
-    if (serverLog) {
+    if (serverLog)
+    {
         // make its background the same as background, looks transparent
         QPalette palette;
         palette.setBrush(QPalette::Base, backgroundBrush());
@@ -233,7 +237,8 @@ void StartScene::showOrganization()
 void StartScene::onSceneRectChanged(const QRectF &rect)
 {
     QRectF newRect(rect);
-    if (rect.width() < 1024 || rect.height() < 706) {
+    if (rect.width() < 1024 || rect.height() < 706)
+    {
         qreal sx = 1024 / rect.width();
         qreal sy = 706 / rect.height();
         qreal scale = sx > sy ? sx : sy;
@@ -250,7 +255,8 @@ static bool isLanAddress(const QString &address)
 {
     if (address.startsWith("192.168.") || address.startsWith("10."))
         return true;
-    else if (address.startsWith("172.")) {
+    else if (address.startsWith("172."))
+    {
         bool ok = false;
         int n = address.split(".").value(1).toInt(&ok);
         if (ok && (n >= 16 && n < 32))
@@ -264,7 +270,8 @@ void StartScene::printServerInfo()
 {
     QStringList items;
     QList<QHostAddress> addresses = QNetworkInterface::allAddresses();
-    foreach (const QHostAddress &address, addresses) {
+    foreach(const QHostAddress &address, addresses)
+    {
         quint32 ipv4 = address.toIPv4Address();
         if (ipv4)
             items << address.toString();
@@ -272,7 +279,8 @@ void StartScene::printServerInfo()
 
     items.sort();
 
-    foreach (const QString &item, items) {
+    foreach(const QString &item, items)
+    {
         if (isLanAddress(item))
             serverLog->append(tr("Your LAN address: %1, this address is available only for hosts that in the same LAN").arg(item));
         else if (item == "127.0.0.1")
@@ -296,9 +304,12 @@ void StartScene::printServerInfo()
     if (Config.RewardTheFirstShowingPlayer)
         serverLog->append(tr("The reward of showing general first is enabled"));
 
-    if (!Config.ForbidAddingRobot) {
+    if (!Config.ForbidAddingRobot)
+    {
         serverLog->append(tr("This server is AI enabled, AI delay is %1 milliseconds").arg(Config.AIDelay));
-    } else {
+    }
+    else
+    {
         serverLog->append(tr("This server is AI disabled"));
     }
 }

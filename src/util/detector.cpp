@@ -47,7 +47,8 @@ void UdpDetector::stop()
 
 void UdpDetector::onReadReady()
 {
-    while (socket->hasPendingDatagrams()) {
+    while (socket->hasPendingDatagrams())
+    {
         QHostAddress from;
         QByteArray data;
         data.resize(socket->pendingDatagramSize());

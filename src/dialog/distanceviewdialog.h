@@ -36,7 +36,7 @@ public:
 private:
     DistanceViewDialogUI *ui;
 
-private slots:
+    private slots:
     void showDistance();
 };
 

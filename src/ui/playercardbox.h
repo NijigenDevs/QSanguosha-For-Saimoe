@@ -82,7 +82,7 @@ private:
     static const int intervalBetweenRows;
     static const int intervalBetweenCards;
 
-public slots:
+    public slots:
     void reply();
 };
 

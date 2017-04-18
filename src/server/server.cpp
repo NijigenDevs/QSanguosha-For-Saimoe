@@ -85,17 +85,22 @@ Room *Server::createNewRoom()
 void Server::processNewConnection(ClientSocket *socket)
 {
     QString address = socket->peerAddress();
-    if (Config.ForbidSIMC) {
-        if (addresses.contains(address)) {
+    if (Config.ForbidSIMC)
+    {
+        if (addresses.contains(address))
+        {
             socket->disconnectFromHost();
             emit server_message(tr("Forbid the connection of address %1").arg(address));
             return;
-        } else {
+        }
+        else
+        {
             addresses.append(address);
         }
     }
 
-    if (Config.value("BannedIP").toStringList().contains(address)) {
+    if (Config.value("BannedIP").toStringList().contains(address))
+    {
         socket->disconnectFromHost();
         emit server_message(tr("Forbid the connection of address %1").arg(address));
         return;
@@ -116,17 +121,19 @@ void Server::processRequest(const QByteArray &request)
     ClientSocket *socket = qobject_cast<ClientSocket *>(sender());
 
     Packet packet;
-    if (!packet.parse(request)) {
+    if (!packet.parse(request))
+    {
         emit server_message(tr("Invalid message %1 from %2").arg(QString::fromUtf8(request)).arg(socket->peerAddress()));
         return;
     }
 
-    switch (packet.getPacketSource()) {
-    case S_SRC_CLIENT:
-        processClientRequest(socket, packet);
-        break;
-    default:
-        emit server_message(tr("Packet %1 from an unknown source %2").arg(QString::fromUtf8(request)).arg(socket->peerAddress()));
+    switch (packet.getPacketSource())
+    {
+        case S_SRC_CLIENT:
+            processClientRequest(socket, packet);
+            break;
+        default:
+            emit server_message(tr("Packet %1 from an unknown source %2").arg(QString::fromUtf8(request)).arg(socket->peerAddress()));
     }
 }
 
@@ -141,7 +148,8 @@ void Server::processClientRequest(ClientSocket *socket, const Packet &signup)
 {
     disconnect(socket, &ClientSocket::message_got, this, &Server::processRequest);
 
-    if (signup.getCommandType() != S_COMMAND_SIGNUP) {
+    if (signup.getCommandType() != S_COMMAND_SIGNUP)
+    {
         emit server_message(tr("Invalid signup string: %1").arg(signup.toString()));
         notifyClient(socket, S_COMMAND_WARN, "INVALID_FORMAT");
         socket->disconnectFromHost();
@@ -153,10 +161,13 @@ void Server::processClientRequest(ClientSocket *socket, const Packet &signup)
     QString screen_name = body[1].toString();
     QString avatar = body[2].toString();
 
-    if (is_reconnection) {
-        foreach (const QString &objname, name2objname.values(screen_name)) {
+    if (is_reconnection)
+    {
+        foreach(const QString &objname, name2objname.values(screen_name))
+        {
             ServerPlayer *player = players.value(objname);
-            if (player && player->getState() == "offline" && !player->getRoom()->isFinished()) {
+            if (player && player->getState() == "offline" && !player->getRoom()->isFinished())
+            {
                 player->getRoom()->reconnect(player, socket);
                 return;
             }
@@ -170,7 +181,8 @@ void Server::processClientRequest(ClientSocket *socket, const Packet &signup)
     current->signup(player, screen_name, avatar, false);
     emit newPlayer(player);
 
-    if (current->getPlayers().length() == 1 && current->getScenario() && current->getScenario()->objectName() == "jiange_defense") {
+    if (current->getPlayers().length() == 1 && current->getScenario() && current->getScenario()->objectName() == "jiange_defense")
+    {
         for (int i = 0; i < 4; ++i)
             current->addRobotCommand(player, QVariant());
     }

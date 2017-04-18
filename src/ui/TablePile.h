@@ -59,7 +59,7 @@ public:
     virtual QRectF boundingRect() const;
     void showJudgeResult(int cardId, bool takeEffect);
 
-public slots:
+    public slots:
     void clear();
     void clear(bool delayRequest);
 

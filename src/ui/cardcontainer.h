@@ -60,7 +60,7 @@ public:
     virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
     bool retained();
 
-public slots:
+    public slots:
     void fillCards(const QList<int> &card_ids = QList<int>(), const QList<int> &disabled_ids = QList<int>());
     void clear();
     void freezeCards(bool is_disable);
@@ -81,7 +81,7 @@ private:
 
     void _addCardItem(int card_id, const QPointF &pos);
 
-private slots:
+    private slots:
     void grabItem();
     void chooseItem();
     void gongxinItem();

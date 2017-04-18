@@ -26,11 +26,13 @@
 void TimedProgressBar::show()
 {
     m_mutex.lock();
-    if (!m_hasTimer || m_max <= 0) {
+    if (!m_hasTimer || m_max <= 0)
+    {
         m_mutex.unlock();
         return;
     }
-    if (m_timer != 0) {
+    if (m_timer != 0)
+    {
         killTimer(m_timer);
         m_timer = 0;
     }
@@ -44,7 +46,8 @@ void TimedProgressBar::show()
 void TimedProgressBar::hide()
 {
     m_mutex.lock();
-    if (m_timer != 0) {
+    if (m_timer != 0)
+    {
         killTimer(m_timer);
         m_timer = 0;
     }
@@ -59,11 +62,13 @@ void TimedProgressBar::timerEvent(QTimerEvent *)
     int val = 0;
     m_mutex.lock();
     m_val += m_step;
-    if (m_val >= m_max) {
+    if (m_val >= m_max)
+    {
         m_val = m_max;
         if (m_autoHide)
             doHide = true;
-        else {
+        else
+        {
             killTimer(m_timer);
             m_timer = 0;
         }
@@ -101,7 +106,8 @@ void QSanCommandProgressBar::paintEvent(QPaintEvent *)
     int width = this->width();
     int height = this->height();
     QPainter painter(this);
-    if (orientation() == Qt::Vertical) {
+    if (orientation() == Qt::Vertical)
+    {
         painter.translate(0, height);
         qSwap(width, height);
         painter.rotate(-90);

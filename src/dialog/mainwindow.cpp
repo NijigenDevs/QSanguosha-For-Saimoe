@@ -81,14 +81,15 @@ public:
         setRenderHints(QPainter::TextAntialiasing | QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
 
 #if !defined(QT_NO_OPENGL) && defined(USING_OPENGL)
-        if (QGLFormat::hasOpenGL()) {
+        if (QGLFormat::hasOpenGL())
+        {
             QGLWidget *widget = new QGLWidget(QGLFormat(QGL::SampleBuffers));
             widget->makeCurrent();
             setViewport(widget);
             setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
-        }
-#endif
     }
+#endif
+}
 
 #if defined(Q_OS_WIN) || (defined(Q_OS_LINUX) && !defined(Q_OS_ANDROID))
     virtual void mousePressEvent(QMouseEvent *event)
@@ -120,16 +121,20 @@ public:
     {
         QGraphicsView::resizeEvent(event);
         QGraphicsScene *scene = this->scene();
-        if (scene) {
+        if (scene)
+        {
             QRectF newSceneRect(0, 0, event->size().width(), event->size().height());
             scene->setSceneRect(newSceneRect);
-            if (scene->sceneRect().size() != event->size()) {
+            if (scene->sceneRect().size() != event->size())
+            {
                 QSizeF from(scene->sceneRect().size());
                 QSizeF to(event->size());
                 QTransform transform;
                 transform.scale(to.width() / from.width(), to.height() / from.height());
                 setTransform(transform);
-            } else {
+            }
+            else
+            {
                 resetTransform();
             }
             setSceneRect(scene->sceneRect());
@@ -187,7 +192,7 @@ MainWindow::MainWindow(QWidget *parent)
 #ifdef Q_OS_IOS
     actions << ui->actionRule_Summary;//SE
 #endif
-    foreach (QAction *action, actions)
+    foreach(QAction *action, actions)
         start_scene->addButton(action);
 
 #if defined(Q_OS_WIN) || defined(Q_OS_LINUX)
@@ -275,21 +280,28 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
 {
     if (windowState() & (Qt::WindowMaximized | Qt::WindowFullScreen))
         return;
-    if (event->button() == Qt::LeftButton) {
-        if (isZoomReady) {
+    if (event->button() == Qt::LeftButton)
+    {
+        if (isZoomReady)
+        {
             isLeftPressDown = true;
-            if (direction != None) {
+            if (direction != None)
+            {
                 releaseMouse();
                 setCursor(QCursor(Qt::ArrowCursor));
             }
-        } else {
+        }
+        else
+        {
             bool can_move = true;
-            if (view && view->scene()) {
+            if (view && view->scene())
+            {
                 QPointF pos = view->mapToScene(event->pos());
                 if (scene->itemAt(pos, QTransform()))
                     can_move = false;
             }
-            if (can_move) {
+            if (can_move)
+            {
                 isLeftPressDown = true;
                 movePosition = event->globalPos() - frameGeometry().topLeft();
                 event->accept();
@@ -303,68 +315,74 @@ void MainWindow::mouseMoveEvent(QMouseEvent *event)
     if (windowState() & (Qt::WindowMaximized | Qt::WindowFullScreen))
         return;
     QPoint globalPoint = event->globalPos();
-    if (isZoomReady && isLeftPressDown) {
+    if (isZoomReady && isLeftPressDown)
+    {
         QRect rect = this->rect();
         QPoint topLeft = mapToGlobal(rect.topLeft());
         QPoint bottomRight = mapToGlobal(rect.bottomRight());
 
         QRect rMove(topLeft, bottomRight);
 
-        switch (direction) {
-        case Left:
-            if (bottomRight.x() - globalPoint.x() <= minimumWidth())
-                rMove.setX(topLeft.x());
-            else
-                rMove.setX(globalPoint.x());
-            break;
-        case Right:
-            rMove.setWidth(globalPoint.x() - topLeft.x());
-            break;
-        case Up:
-            if (bottomRight.y() - globalPoint.y() <= minimumHeight())
-                rMove.setY(topLeft.y());
-            else
-                rMove.setY(globalPoint.y());
-            break;
-        case Down:
-            rMove.setHeight(globalPoint.y() - topLeft.y());
-            break;
-        case LeftTop:
-            if (bottomRight.x() - globalPoint.x() <= minimumWidth())
-                rMove.setX(topLeft.x());
-            else
-                rMove.setX(globalPoint.x());
-            if (bottomRight.y() - globalPoint.y() <= minimumHeight())
-                rMove.setY(topLeft.y());
-            else
-                rMove.setY(globalPoint.y());
-            break;
-        case RightTop:
-            rMove.setWidth(globalPoint.x() - topLeft.x());
-            if (bottomRight.y() - globalPoint.y() <= minimumHeight())
-                rMove.setY(topLeft.y());
-            else
-                rMove.setY(globalPoint.y());
-            break;
-        case LeftBottom:
-            if (bottomRight.x() - globalPoint.x() <= minimumWidth())
-                rMove.setX(topLeft.x());
-            else
-                rMove.setX(globalPoint.x());
-            rMove.setHeight(globalPoint.y() - topLeft.y());
-            break;
-        case RightBottom:
-            rMove.setWidth(globalPoint.x() - topLeft.x());
-            rMove.setHeight(globalPoint.y() - topLeft.y());
-            break;
-        default:
-            break;
+        switch (direction)
+        {
+            case Left:
+                if (bottomRight.x() - globalPoint.x() <= minimumWidth())
+                    rMove.setX(topLeft.x());
+                else
+                    rMove.setX(globalPoint.x());
+                break;
+            case Right:
+                rMove.setWidth(globalPoint.x() - topLeft.x());
+                break;
+            case Up:
+                if (bottomRight.y() - globalPoint.y() <= minimumHeight())
+                    rMove.setY(topLeft.y());
+                else
+                    rMove.setY(globalPoint.y());
+                break;
+            case Down:
+                rMove.setHeight(globalPoint.y() - topLeft.y());
+                break;
+            case LeftTop:
+                if (bottomRight.x() - globalPoint.x() <= minimumWidth())
+                    rMove.setX(topLeft.x());
+                else
+                    rMove.setX(globalPoint.x());
+                if (bottomRight.y() - globalPoint.y() <= minimumHeight())
+                    rMove.setY(topLeft.y());
+                else
+                    rMove.setY(globalPoint.y());
+                break;
+            case RightTop:
+                rMove.setWidth(globalPoint.x() - topLeft.x());
+                if (bottomRight.y() - globalPoint.y() <= minimumHeight())
+                    rMove.setY(topLeft.y());
+                else
+                    rMove.setY(globalPoint.y());
+                break;
+            case LeftBottom:
+                if (bottomRight.x() - globalPoint.x() <= minimumWidth())
+                    rMove.setX(topLeft.x());
+                else
+                    rMove.setX(globalPoint.x());
+                rMove.setHeight(globalPoint.y() - topLeft.y());
+                break;
+            case RightBottom:
+                rMove.setWidth(globalPoint.x() - topLeft.x());
+                rMove.setHeight(globalPoint.y() - topLeft.y());
+                break;
+            default:
+                break;
         }
         setGeometry(rMove);
-    } else if (isLeftPressDown && (event->buttons() & Qt::LeftButton)) {
+    }
+    else if (isLeftPressDown && (event->buttons() & Qt::LeftButton))
+    {
         move(event->globalPos() - movePosition);
         event->accept();
-    } else if (!isLeftPressDown) {
+    }
+    else if (!isLeftPressDown)
+    {
         region(globalPoint);
     }
 }
@@ -372,7 +390,8 @@ void MainWindow::mouseMoveEvent(QMouseEvent *event)
 void MainWindow::mouseReleaseEvent(QMouseEvent *)
 {
     isLeftPressDown = false;
-    if (direction != None) {
+    if (direction != None)
+    {
         releaseMouse();
         setCursor(QCursor(Qt::ArrowCursor));
     }
@@ -381,12 +400,14 @@ void MainWindow::mouseReleaseEvent(QMouseEvent *)
 void MainWindow::mouseDoubleClickEvent(QMouseEvent *event)
 {
     bool can_change = true;
-    if (view && view->scene()) {
+    if (view && view->scene())
+    {
         QPointF pos = view->mapToScene(event->pos());
         if (scene->itemAt(pos, QTransform()))
             can_change = false;
     }
-    if (can_change) {
+    if (can_change)
+    {
         if (windowState() & Qt::WindowMaximized)
             showNormal();
         else
@@ -397,7 +418,8 @@ void MainWindow::mouseDoubleClickEvent(QMouseEvent *event)
 
 void MainWindow::changeEvent(QEvent *event)
 {
-    if (event->type() == QEvent::WindowStateChange) {
+    if (event->type() == QEvent::WindowStateChange)
+    {
         repaintButtons();
         roundCorners();
     }
@@ -435,31 +457,48 @@ void MainWindow::region(const QPoint &cursorGlobalPoint)
     int x = cursorGlobalPoint.x();
     int y = cursorGlobalPoint.y();
 
-    if (topLeft.x() + S_PADDING >= x && topLeft.x() <= x && topLeft.y() + S_PADDING >= y && topLeft.y() <= y) {
+    if (topLeft.x() + S_PADDING >= x && topLeft.x() <= x && topLeft.y() + S_PADDING >= y && topLeft.y() <= y)
+    {
         direction = LeftTop;
         setCursor(QCursor(Qt::SizeFDiagCursor));
-    } else if (x >= bottomRight.x() - S_PADDING && x <= bottomRight.x() && y >= bottomRight.y() - S_PADDING && y <= bottomRight.y()) {
+    }
+    else if (x >= bottomRight.x() - S_PADDING && x <= bottomRight.x() && y >= bottomRight.y() - S_PADDING && y <= bottomRight.y())
+    {
         direction = RightBottom;
         setCursor(QCursor(Qt::SizeFDiagCursor));
-    } else if (x <= topLeft.x() + S_PADDING && x >= topLeft.x() && y >= bottomRight.y() - S_PADDING && y <= bottomRight.y()) {
+    }
+    else if (x <= topLeft.x() + S_PADDING && x >= topLeft.x() && y >= bottomRight.y() - S_PADDING && y <= bottomRight.y())
+    {
         direction = LeftBottom;
         setCursor(QCursor(Qt::SizeBDiagCursor));
-    } else if (x <= bottomRight.x() && x >= bottomRight.x() - S_PADDING && y >= topLeft.y() && y <= topLeft.y() + S_PADDING) {
+    }
+    else if (x <= bottomRight.x() && x >= bottomRight.x() - S_PADDING && y >= topLeft.y() && y <= topLeft.y() + S_PADDING)
+    {
         direction = RightTop;
         setCursor(QCursor(Qt::SizeBDiagCursor));
-    } else if (x <= topLeft.x() + S_PADDING && x >= topLeft.x()) {
+    }
+    else if (x <= topLeft.x() + S_PADDING && x >= topLeft.x())
+    {
         direction = Left;
         setCursor(QCursor(Qt::SizeHorCursor));
-    } else if (x <= bottomRight.x() && x >= bottomRight.x() - S_PADDING) {
+    }
+    else if (x <= bottomRight.x() && x >= bottomRight.x() - S_PADDING)
+    {
         direction = Right;
         setCursor(QCursor(Qt::SizeHorCursor));
-    } else if (y >= topLeft.y() && y <= topLeft.y() + S_PADDING) {
+    }
+    else if (y >= topLeft.y() && y <= topLeft.y() + S_PADDING)
+    {
         direction = Up;
         setCursor(QCursor(Qt::SizeVerCursor));
-    } else if (y <= bottomRight.y() && y >= bottomRight.y() - S_PADDING) {
+    }
+    else if (y <= bottomRight.y() && y >= bottomRight.y() - S_PADDING)
+    {
         direction = Down;
         setCursor(QCursor(Qt::SizeVerCursor));
-    } else {
+    }
+    else
+    {
         direction = None;
         setCursor(QCursor(Qt::ArrowCursor));
     }
@@ -467,7 +506,7 @@ void MainWindow::region(const QPoint &cursorGlobalPoint)
         isZoomReady = true;
     else
         isZoomReady = false;
-}
+    }
 
 void MainWindow::fetchUpdateInformation()
 {
@@ -491,9 +530,12 @@ void MainWindow::roundCorners()
 {
 #ifndef Q_OS_ANDROID
     QBitmap mask(size());
-    if (windowState() & (Qt::WindowMaximized | Qt::WindowFullScreen)) {
+    if (windowState() & (Qt::WindowMaximized | Qt::WindowFullScreen))
+    {
         mask.fill(Qt::black);
-    } else {
+    }
+    else
+    {
         mask.fill();
         QPainter painter(&mask);
         QPainterPath path;
@@ -520,17 +562,22 @@ void MainWindow::repaintButtons()
     closeButton->setGeometry(width - 50, 0, 40, 33);
 
     Qt::WindowStates state = windowState();
-    if (state & Qt::WindowMaximized) {
+    if (state & Qt::WindowMaximized)
+    {
         maxButton->setVisible(false);
         normalButton->setVisible(true);
         minButton->setVisible(true);
         menu->setGeometry(width - 170, 0, 40, 33);
-    } else if (state & Qt::WindowFullScreen) {
+    }
+    else if (state & Qt::WindowFullScreen)
+    {
         maxButton->setVisible(false);
         normalButton->setVisible(false);
         minButton->setVisible(false);
         menu->setGeometry(width - 90, 0, 40, 33);
-    } else {
+    }
+    else
+    {
         maxButton->setVisible(true);
         normalButton->setVisible(false);
         minButton->setVisible(true);
@@ -544,7 +591,8 @@ void MainWindow::repaintButtons()
 
 void MainWindow::closeEvent(QCloseEvent *)
 {
-    if (!isFullScreen() && !isMaximized()) {
+    if (!isFullScreen() && !isMaximized())
+    {
         Config.setValue("WindowSize", size());
         Config.setValue("WindowPosition", pos());
     }
@@ -561,9 +609,11 @@ MainWindow::~MainWindow()
 
 void MainWindow::gotoScene(QGraphicsScene *scene)
 {
-    if (this->scene) {
+    if (this->scene)
+    {
         this->scene->deleteLater();
-        if (about_window) {
+        if (about_window)
+        {
             about_window->deleteLater();
             about_window = NULL;
         }
@@ -582,7 +632,8 @@ void MainWindow::on_actionExit_triggered()
         tr("Sanguosha"),
         tr("Are you sure to exit?"),
         QMessageBox::Ok | QMessageBox::Cancel);
-    if (result == QMessageBox::Ok) {
+    if (result == QMessageBox::Ok)
+    {
         delete systray;
         systray = NULL;
         close();
@@ -596,7 +647,8 @@ void MainWindow::on_actionStart_Server_triggered()
         return;
 
     server = new Server(this);
-    if (!server->listen()) {
+    if (!server->listen())
+    {
         QMessageBox::warning(this, tr("Warning"), tr("Can not start server!"));
         return;
     }
@@ -610,7 +662,8 @@ void MainWindow::on_actionStart_Server_triggered()
     connect(ui->actionStart_Game, &QAction::triggered, this, &MainWindow::startGameInAnotherInstance);
 #endif
     StartScene *start_scene = qobject_cast<StartScene *>(scene);
-    if (start_scene) {
+    if (start_scene)
+    {
         start_scene->switchToServer(server);
         if (Config.value("EnableMinimizeDialog", false).toBool())
             this->on_actionMinimize_to_system_tray_triggered();
@@ -620,7 +673,8 @@ void MainWindow::on_actionStart_Server_triggered()
 void MainWindow::checkVersion(const QString &server_version_str, const QString &server_mod)
 {
     QString client_mod = Sanguosha->getMODName();
-    if (client_mod != server_mod) {
+    if (client_mod != server_mod)
+    {
         QMessageBox::warning(this, tr("Warning"), tr("Client MOD name is not same as the server!"));
         return;
     }
@@ -629,7 +683,8 @@ void MainWindow::checkVersion(const QString &server_version_str, const QString &
     const QSanVersionNumber &client_version = Sanguosha->getVersionNumber();
     QSanVersionNumber server_version(server_version_str);
 
-    if (server_version == client_version) {
+    if (server_version == client_version)
+    {
         client->signup();
         connect(client, &Client::server_connected, this, &MainWindow::enterRoom);
         return;
@@ -685,7 +740,8 @@ void MainWindow::networkError(const QString &error_msg)
     if (isVisible())
         QMessageBox::warning(this, tr("Network error"), error_msg);
 
-    if (NULL != RoomSceneInstance) {
+    if (NULL != RoomSceneInstance)
+    {
         RoomSceneInstance->stopHeroSkinChangingAnimations();
     }
 }
@@ -694,9 +750,11 @@ void BackLoader::preload()
 {
     QStringList emotions = G_ROOM_SKIN.getAnimationFileNames();
 
-    foreach (const QString &emotion, emotions) {
+    foreach(const QString &emotion, emotions)
+    {
         int n = PixmapAnimation::GetFrameCount(emotion);
-        for (int i = 0; i < n; i++) {
+        for (int i = 0; i < n; i++)
+        {
             QString filename = QString("image/system/emotion/%1/%2.png").arg(emotion).arg(QString::number(i));
             G_ROOM_SKIN.getPixmapFromFileName(filename);
         }
@@ -706,7 +764,8 @@ void BackLoader::preload()
 void MainWindow::enterRoom()
 {
     // add current ip to history
-    if (!Config.HistoryIPs.contains(Config.HostAddress)) {
+    if (!Config.HistoryIPs.contains(Config.HostAddress))
+    {
         Config.HistoryIPs << Config.HostAddress;
         Config.HistoryIPs.sort();
         Config.setValue("HistoryIPs", Config.HistoryIPs);
@@ -731,7 +790,8 @@ void MainWindow::enterRoom()
     connect(ui->actionSurrender, &QAction::triggered, room_scene, &RoomScene::surrender);
     connect(ui->actionSaveRecord, &QAction::triggered, room_scene, (void (RoomScene::*)())(&RoomScene::saveReplayRecord));
 
-    if (ServerInfo.EnableCheat) {
+    if (ServerInfo.EnableCheat)
+    {
 #if !defined(Q_OS_IOS)
         ui->menuCheat->setEnabled(true);
 #endif
@@ -739,7 +799,9 @@ void MainWindow::enterRoom()
         connect(ui->actionDamage_maker, &QAction::triggered, room_scene, &RoomScene::makeDamage);
         connect(ui->actionRevive_wand, &QAction::triggered, room_scene, &RoomScene::makeReviving);
         connect(ui->actionExecute_script_at_server_side, &QAction::triggered, room_scene, &RoomScene::doScript);
-    } else {
+    }
+    else
+    {
 #if !defined(Q_OS_IOS)
         ui->menuCheat->setEnabled(false);
 #endif
@@ -758,12 +820,14 @@ void MainWindow::enterRoom()
 
 void MainWindow::gotoStartScene()
 {
-    if (server != NULL) {
+    if (server != NULL)
+    {
         server->deleteLater();
         server = NULL;
     }
 
-    if (Self) {
+    if (Self)
+    {
         delete Self;
         Self = NULL;
     }
@@ -783,7 +847,7 @@ void MainWindow::gotoStartScene()
     actions << ui->actionRule_Summary;
 #endif
 
-    foreach (QAction *action, actions)
+    foreach(QAction *action, actions)
         start_scene->addButton(action);
 
     setCentralWidget(view);
@@ -803,7 +867,8 @@ void MainWindow::gotoStartScene()
 
     delete systray;
     systray = NULL;
-    if (ClientInstance) {
+    if (ClientInstance)
+    {
         delete ClientInstance;
         ClientInstance = NULL;
     }
@@ -832,7 +897,8 @@ void MainWindow::on_actionCard_Overview_triggered()
 
 void MainWindow::on_actionEnable_Hotkey_toggled(bool checked)
 {
-    if (Config.EnableHotKey != checked) {
+    if (Config.EnableHotKey != checked)
+    {
         Config.EnableHotKey = checked;
         Config.setValue("EnableHotKey", checked);
     }
@@ -840,7 +906,8 @@ void MainWindow::on_actionEnable_Hotkey_toggled(bool checked)
 
 void MainWindow::on_actionNever_nullify_my_trick_toggled(bool checked)
 {
-    if (Config.NeverNullifyMyTrick != checked) {
+    if (Config.NeverNullifyMyTrick != checked)
+    {
         Config.NeverNullifyMyTrick = checked;
         Config.setValue("NeverNullifyMyTrick", checked);
     }
@@ -851,7 +918,8 @@ void MainWindow::on_actionAbout_triggered()
     if (scene == NULL)
         return;
 
-    if (about_window == NULL) {
+    if (about_window == NULL)
+    {
         // Cao Cao's pixmap
         QString content = "<center><img src='image/system/shencc.png'> <br /> </center>";
 
@@ -914,7 +982,8 @@ void MainWindow::on_actionAbout_Us_triggered()
 
 void MainWindow::fitBackgroundBrush()
 {
-    if (scene) {
+    if (scene)
+    {
         QBrush brush(scene->backgroundBrush());
         QPixmap pixmap(brush.texture());
 
@@ -932,7 +1001,8 @@ void MainWindow::changeBackground()
     scene->setBackgroundBrush(QBrush(QPixmap(scene->inherits("RoomScene") ? Config.TableBgImage : Config.BackgroundImage)));
     fitBackgroundBrush();
 
-    if (scene->inherits("StartScene")) {
+    if (scene->inherits("StartScene"))
+    {
         StartScene *start_scene = qobject_cast<StartScene *>(scene);
         start_scene->setServerLogBackground();
     }
@@ -948,7 +1018,8 @@ void MainWindow::on_actionFullscreen_triggered()
 
 void MainWindow::on_actionMinimize_to_system_tray_triggered()
 {
-    if (systray == NULL) {
+    if (systray == NULL)
+    {
         QIcon icon("image/system/magatamas/3.png");
         systray = new QSystemTrayIcon(icon, this);
 
@@ -1012,7 +1083,8 @@ void BroadcastBox::accept()
 void MainWindow::on_actionBroadcast_triggered()
 {
     Server *server = findChild<Server *>();
-    if (server == NULL) {
+    if (server == NULL)
+    {
         QMessageBox::warning(this, tr("Warning"), tr("Server is not started yet!"));
         return;
     }
@@ -1044,7 +1116,8 @@ void MainWindow::on_actionPC_Console_Start_triggered()
         return;
 
     server = new Server(this);
-    if (!server->listen()) {
+    if (!server->listen())
+    {
         QMessageBox::warning(this, tr("Warning"), tr("Can not start server!"));
         return;
     }
@@ -1066,15 +1139,18 @@ void MainWindow::on_actionReplay_file_convert_triggered()
     if (filenames.isEmpty())
         return;
 
-    foreach (const QString &filename, filenames) {
+    foreach(const QString &filename, filenames)
+    {
         QFile file(filename);
-        if (file.open(QIODevice::ReadOnly)) {
+        if (file.open(QIODevice::ReadOnly))
+        {
             QFileInfo info(filename);
             QString tosave = info.absoluteDir().absoluteFilePath(info.baseName());
 
             char header;
             file.getChar(&header);
-            if (header == '\0') {
+            if (header == '\0')
+            {
                 QByteArray content = file.readAll();
                 content = qUncompress(content);
 
@@ -1082,14 +1158,17 @@ void MainWindow::on_actionReplay_file_convert_triggered()
                 QFile file(tosave);
                 if (file.open(QFile::WriteOnly | QFile::Text))
                     file.write(content);
-            } else {
+            }
+            else
+            {
                 file.ungetChar(header);
                 QByteArray content = file.readAll();
                 content = qCompress(content);
 
                 tosave.append("-compressed.qsgs");
                 QFile file(tosave);
-                if (file.open(QFile::WriteOnly)) {
+                if (file.open(QFile::WriteOnly))
+                {
                     file.putChar('\0');
                     file.write(content);
                 }
@@ -1124,7 +1203,8 @@ void MainWindow::on_actionRecord_analysis_triggered()
     table->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
     static QStringList labels;
-    if (labels.isEmpty()) {
+    if (labels.isEmpty())
+    {
         labels << tr("ScreenName") << tr("General") << tr("Role") << tr("Living") << tr("WinOrLose") << tr("TurnCount")
             << tr("Recover") << tr("Damage") << tr("Damaged") << tr("Kill") << tr("Designation");
     }
@@ -1132,7 +1212,8 @@ void MainWindow::on_actionRecord_analysis_triggered()
     table->setSelectionBehavior(QTableWidget::SelectRows);
 
     int i = 0;
-    foreach (PlayerRecordStruct *rec, record_map) {
+    foreach(PlayerRecordStruct *rec, record_map)
+    {
         QTableWidgetItem *item = new QTableWidgetItem;
         QString screen_name = Sanguosha->translate(rec->m_screenName);
         if (rec->m_statue == "robot")
@@ -1300,7 +1381,8 @@ void MainWindow::on_actionManage_Ban_IP_triggered()
 
 void MainWindow::onVersionInfomationGotten()
 {
-    while (!versionInfomationReply->atEnd()) {
+    while (!versionInfomationReply->atEnd())
+    {
         QString line = versionInfomationReply->readLine();
         line.remove('\n');
 
@@ -1311,12 +1393,16 @@ void MainWindow::onVersionInfomationGotten()
 
         QString key = texts.at(0);
         QString value = texts.at(1);
-        if ("VersionNumber" == key) {
+        if ("VersionNumber" == key)
+        {
             QString v = value;
-            if (value.contains("Patch")) {
+            if (value.contains("Patch"))
+            {
                 updateInfomation.is_patch = true;
                 v.chop(6);
-            } else {
+            }
+            else
+            {
                 updateInfomation.is_patch = false;
             }
 
@@ -1327,7 +1413,9 @@ void MainWindow::onVersionInfomationGotten()
             updateInfomation.version_number = v;
             if (Sanguosha->getVersionNumber() < latest_version)
                 setWindowTitle(tr("New Version Available") + "  " + windowTitle());
-        } else if ("Address" == key) {
+        }
+        else if ("Address" == key)
+        {
             updateInfomation.address = value;
         }
         if (!updateInfomation.address.isNull() && !updateInfomation.version_number.isNull())
@@ -1340,7 +1428,8 @@ void MainWindow::onChangeLogGotten()
 {
     QString fileName = "info.html";
     QFile file(fileName);
-    if (!file.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Truncate)) {
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Truncate))
+    {
         qDebug() << "Cannot open the file: " << fileName;
         return;
     }

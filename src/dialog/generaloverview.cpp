@@ -153,7 +153,8 @@ QWidget *GeneralSearch::createInfoTab()
     kingdom_box->setLayout(kingdom_layout);
 
     int i = 0;
-    foreach (const QString &kingdom, Sanguosha->getKingdoms()) {
+    foreach(const QString &kingdom, Sanguosha->getKingdoms())
+    {
         QCheckBox *checkbox = new QCheckBox;
         checkbox->setObjectName(kingdom);
         checkbox->setIcon(QIcon(QString("image/kingdom/icon/%1.png").arg(kingdom)));
@@ -190,7 +191,8 @@ QWidget *GeneralSearch::createInfoTab()
     QGridLayout *packages_layout = new QGridLayout;
 
     i = 0;
-    foreach (const QString &extension, extensions) {
+    foreach(const QString &extension, extensions)
+    {
         const Package *package = Sanguosha->findChild<const Package *>(extension);
         if (package == NULL || package->getType() != Package::GeneralPack)
             continue;
@@ -241,17 +243,20 @@ void GeneralSearch::accept()
     detail.include_hidden = include_hidden_checkbox->isChecked();
     detail.nickname = nickname_edit->text();
     detail.name = name_edit->text();
-    foreach (QAbstractButton *button, gender_buttons->buttons()) {
+    foreach(QAbstractButton *button, gender_buttons->buttons())
+    {
         if (button->isChecked())
             detail.genders << button->objectName();
     }
-    foreach (QAbstractButton *button, kingdom_buttons->buttons()) {
+    foreach(QAbstractButton *button, kingdom_buttons->buttons())
+    {
         if (button->isChecked())
             detail.kingdoms << button->objectName();
     }
     detail.lower = maxhp_lower_spinbox->value();
     detail.upper = qMax(detail.lower, maxhp_upper_spinbox->value());
-    foreach (QAbstractButton *button, package_buttons->buttons()) {
+    foreach(QAbstractButton *button, package_buttons->buttons())
+    {
         if (button->isChecked())
             detail.packages << button->objectName();
     }
@@ -264,25 +269,25 @@ void GeneralSearch::clearAll()
     include_hidden_checkbox->setChecked(true);
     nickname_edit->clear();
     name_edit->clear();
-    foreach (QAbstractButton *button, gender_buttons->buttons())
+    foreach(QAbstractButton *button, gender_buttons->buttons())
         button->setChecked(false);
-    foreach (QAbstractButton *button, kingdom_buttons->buttons())
+    foreach(QAbstractButton *button, kingdom_buttons->buttons())
         button->setChecked(false);
     maxhp_lower_spinbox->setValue(0);
     maxhp_upper_spinbox->setValue(0);
-    foreach (QAbstractButton *button, package_buttons->buttons())
+    foreach(QAbstractButton *button, package_buttons->buttons())
         button->setChecked(false);
 }
 
 void GeneralSearch::selectAllPackages()
 {
-    foreach (QAbstractButton *button, package_buttons->buttons())
+    foreach(QAbstractButton *button, package_buttons->buttons())
         button->setChecked(true);
 }
 
 void GeneralSearch::unselectAllPackages()
 {
-    foreach (QAbstractButton *button, package_buttons->buttons())
+    foreach(QAbstractButton *button, package_buttons->buttons())
         button->setChecked(false);
 }
 
@@ -336,10 +341,13 @@ void GeneralOverview::fillGenerals(const QList<const General *> &generals, bool 
 {
     QList<const General *> generalsCopy = generals;
     QMap<const General *, int> tempGeneralMap;
-    foreach (const General *general, generalsCopy) {
-        if (!general->isTotallyHidden()) {
+    foreach(const General *general, generalsCopy)
+    {
+        if (!general->isTotallyHidden())
+        {
             int skinId = 0;
-            if (Self && Self->getGeneral()) {
+            if (Self && Self->getGeneral())
+            {
                 if (general == Self->getGeneral())
                     skinId = Self->getHeadSkinId();
                 else if (general == Self->getGeneral2())
@@ -351,7 +359,9 @@ void GeneralOverview::fillGenerals(const QList<const General *> &generals, bool 
 #ifdef Q_OS_IOS
             ui->comboBox->addItem(general->getTitle() + " " + Sanguosha->translate(general->objectName()), QVariant::fromValue(general->objectName()));
 #endif
-        } else {
+        }
+        else
+        {
             generalsCopy.removeOne(general);
         }
     }
@@ -361,7 +371,8 @@ void GeneralOverview::fillGenerals(const QList<const General *> &generals, bool 
 
     GeneralModel *model = new GeneralModel(tempGeneralMap, generalsCopy);
 
-    if (init) {
+    if (init)
+    {
         ui->returnButton->hide();
         setWindowTitle(origin_window_title);
         all_generals = model->generalMap();
@@ -389,7 +400,8 @@ void GeneralOverview::fillGenerals(const QList<const General *> &generals, bool 
 void GeneralOverview::resetButtons()
 {
     QLayoutItem *child;
-    while ((child = button_layout->takeAt(0))) {
+    while ((child = button_layout->takeAt(0)))
+    {
         QWidget *widget = child->widget();
         if (widget)
             delete widget;
@@ -416,9 +428,12 @@ QString GeneralOverview::getIllustratorInfo(const QString &generalName)
     const int skinId = all_generals->value(Sanguosha->getGeneral(generalName));
     QString prefix = (skinId > 0) ? QString::number(skinId) : QString();
     QString illustratorText = Sanguosha->translate(QString("illustrator:%1%2").arg(prefix).arg(generalName));
-    if (!illustratorText.startsWith("illustrator:")) {
+    if (!illustratorText.startsWith("illustrator:"))
+    {
         return illustratorText;
-    } else {
+    }
+    else
+    {
         illustratorText = Sanguosha->translate("illustrator:" + generalName);
         if (!illustratorText.startsWith("illustrator:"))
             return illustratorText;
@@ -430,7 +445,8 @@ QString GeneralOverview::getIllustratorInfo(const QString &generalName)
 QList<const Skill *> qsgs_allSkillsOf(const General *general)
 {
     QList<const Skill *> skills = general->getVisibleSkillList();
-    foreach (const QString &skill_name, general->getRelatedSkillNames()) {
+    foreach(const QString &skill_name, general->getRelatedSkillNames())
+    {
         const Skill *skill = Sanguosha->getSkill(skill_name);
         if (skill && skill->isVisible()) skills << skill;
     }
@@ -442,9 +458,12 @@ QString GeneralOverview::getCvInfo(const QString &generalName)
     const int skinId = all_generals->value(Sanguosha->getGeneral(generalName));
     QString prefix = (skinId > 0) ? QString::number(skinId) : QString();
     QString cvText = Sanguosha->translate(QString("cv:%1%2").arg(prefix).arg(generalName));
-    if (!cvText.startsWith("cv:")) {
+    if (!cvText.startsWith("cv:"))
+    {
         return cvText;
-    } else {
+    }
+    else
+    {
         cvText = Sanguosha->translate("cv:" + generalName);
         if (!cvText.startsWith("cv:"))
             return cvText;
@@ -462,19 +481,24 @@ void GeneralOverview::addLines(const General *general, const Skill *skill)
 
     bool usingDefault = false;
 
-    if (skinId != 0 && sources.isEmpty()) {
+    if (skinId != 0 && sources.isEmpty())
+    {
         sources = skill->getSources();
         usingDefault = true;
     }
 
-    if (sources.isEmpty()) {
+    if (sources.isEmpty())
+    {
         QCommandLinkButton *button = new QCommandLinkButton(skill_name);
 
         button->setEnabled(false);
         button_layout->addWidget(button);
-    } else {
+    }
+    else
+    {
         QRegExp rx(".+/(\\w+\\d?).ogg");
-        for (int i = 0; i < sources.length(); i++) {
+        for (int i = 0; i < sources.length(); i++)
+        {
             QString source = sources[i];
             if (!rx.exactMatch(source))
                 continue;
@@ -513,22 +537,30 @@ void GeneralOverview::addDeathLine(const General *general)
     else
         last_word = Sanguosha->translate("~" + id + general->objectName());
 
-    if (last_word.startsWith("~")) {
-        if (general->objectName().contains("_")) {
+    if (last_word.startsWith("~"))
+    {
+        if (general->objectName().contains("_"))
+        {
             const QString generalName = general->objectName().split("_").last();
-            if (skinId == 0) {
+            if (skinId == 0)
+            {
                 last_word = Sanguosha->translate(("~") + generalName);
-            } else {
+            }
+            else
+            {
                 last_word = Sanguosha->translate(("~") + id + generalName);
                 if (last_word.startsWith("~"))
                     last_word = Sanguosha->translate(("~") + generalName);
             }
-        } else if (skinId != 0) {
+        }
+        else if (skinId != 0)
+        {
             last_word = Sanguosha->translate("~" + general->objectName());
         }
     }
 
-    if (!last_word.startsWith("~")) {
+    if (!last_word.startsWith("~"))
+    {
         QCommandLinkButton *death_button = new QCommandLinkButton(tr("Death"), last_word);
         button_layout->addWidget(death_button);
 
@@ -544,9 +576,9 @@ void GeneralOverview::addWinLineOfCaoCao()
 {
     QCommandLinkButton *win_button = new QCommandLinkButton(tr("Victory"),
         tr("Six dragons lead my chariot, "
-        "I will ride the wind with the greatest speed."
-        "With all of the feudal lords under my command,"
-        "to rule the world with one name!"));
+            "I will ride the wind with the greatest speed."
+            "With all of the feudal lords under my command,"
+            "to rule the world with one name!"));
 
     button_layout->addWidget(win_button);
     addCopyAction(win_button);
@@ -569,7 +601,8 @@ void GeneralOverview::addCopyAction(QCommandLinkButton *button)
 void GeneralOverview::copyLines()
 {
     QAction *action = qobject_cast<QAction *>(sender());
-    if (action) {
+    if (action)
+    {
         QClipboard *clipboard = QApplication::clipboard();
         clipboard->setText(action->data().toString());
     }
@@ -588,7 +621,7 @@ void GeneralOverview::comboBoxChanged(const QString &)
 
     resetButtons();
 
-    foreach (const Skill *skill, qsgs_allSkillsOf(general))
+    foreach(const Skill *skill, qsgs_allSkillsOf(general))
         addLines(general, skill);
 
     addDeathLine(general);
@@ -628,7 +661,7 @@ void GeneralOverview::on_tableView_clicked(const QModelIndex &index)
 
     resetButtons();
 
-    foreach (const Skill *skill, qsgs_allSkillsOf(general))
+    foreach(const Skill *skill, qsgs_allSkillsOf(general))
         addLines(general, skill);
 
     addDeathLine(general);
@@ -666,7 +699,8 @@ void GeneralOverview::playDeathAudio()
 void GeneralOverview::playAudioEffect()
 {
     QObject *button = sender();
-    if (button) {
+    if (button)
+    {
         QString source = button->objectName();
         if (!source.isEmpty())
             Sanguosha->playAudioEffect(source);
@@ -685,10 +719,13 @@ void GeneralOverview::showNextSkin()
     int skinId = ++(*all_generals)[general];
 
     QPixmap pixmap;
-    if (G_ROOM_SKIN.generalHasSkin(generalName, skinId, true)) {
+    if (G_ROOM_SKIN.generalHasSkin(generalName, skinId, true))
+    {
         pixmap = G_ROOM_SKIN.getGeneralCardPixmap(generalName, skinId);
         general->tryLoadingSkinTranslation(skinId);
-    } else {
+    }
+    else
+    {
         pixmap = G_ROOM_SKIN.getGeneralCardPixmap(generalName);
         (*all_generals)[general] = 0;
     }
@@ -699,7 +736,7 @@ void GeneralOverview::showNextSkin()
     ui->cvLineEdit->setText(getCvInfo(generalName));
     ui->illustratorLineEdit->setText(getIllustratorInfo(generalName));
     resetButtons();
-    foreach (const Skill *skill, qsgs_allSkillsOf(general))
+    foreach(const Skill *skill, qsgs_allSkillsOf(general))
         addLines(general, skill);
 
     addDeathLine(general);
@@ -722,11 +759,13 @@ void GeneralOverview::startSearch(bool include_hidden, const QString &nickname, 
         return;
 
     QList<const General *> generals;
-    foreach (const General *general, all_generals->keys()) {
+    foreach(const General *general, all_generals->keys())
+    {
         QString general_name = general->objectName();
         if (!include_hidden && Sanguosha->isGeneralHidden(general_name))
             continue;
-        if (!nickname.isEmpty()) {
+        if (!nickname.isEmpty())
+        {
             QString v_nickname = nickname;
             v_nickname.replace("?", ".");
             v_nickname.replace("*", ".*");
@@ -738,7 +777,8 @@ void GeneralOverview::startSearch(bool include_hidden, const QString &nickname, 
             if (!rx.exactMatch(g_nickname))
                 continue;
         }
-        if (!name.isEmpty()) {
+        if (!name.isEmpty())
+        {
             QString v_name = name;
             v_name.replace("?", ".");
             v_name.replace("*", ".*");
@@ -748,7 +788,8 @@ void GeneralOverview::startSearch(bool include_hidden, const QString &nickname, 
             if (!rx.exactMatch(g_name))
                 continue;
         }
-        if (!genders.isEmpty()) {
+        if (!genders.isEmpty())
+        {
             if (general->isMale() && !genders.contains("male"))
                 continue;
             if (general->isFemale() && !genders.contains("female"))
@@ -764,9 +805,12 @@ void GeneralOverview::startSearch(bool include_hidden, const QString &nickname, 
             continue;
         generals << general;
     }
-    if (generals.isEmpty()) {
+    if (generals.isEmpty())
+    {
         QMessageBox::warning(this, tr("Warning"), tr("No generals are found"));
-    } else {
+    }
+    else
+    {
         ui->returnButton->show();
         if (windowTitle() == origin_window_title)
             setWindowTitle(windowTitle() + " " + tr("Search..."));

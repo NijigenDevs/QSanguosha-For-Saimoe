@@ -40,7 +40,7 @@ private:
     QPushButton *detect_button;
     QPushButton *cancel_button;
 
-private slots:
+    private slots:
     void startDetection();
     void stopDetection();
     void chooseAddress(QListWidgetItem *item);

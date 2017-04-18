@@ -35,14 +35,14 @@ public:
 protected:
     virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
 
-public slots:
+    public slots:
     void doGuanxing(const QList<int> &card_ids, bool up_only);
     void clear();
 
     void mirrorGuanxingStart(const QString &who, bool up_only, const QList<int> &cards);
     void mirrorGuanxingMove(int from, int to);
 
-private slots:
+    private slots:
     void onItemReleased();
     void onItemClicked();
 

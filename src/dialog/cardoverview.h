@@ -26,7 +26,8 @@
 class Card;
 class QTableWidgetItem;
 
-namespace Ui {
+namespace Ui
+{
     class CardOverview;
 }
 
@@ -48,7 +49,7 @@ private:
 
     void addCard(int i, const Card *card);
 
-private slots:
+    private slots:
     void on_femalePlayButton_clicked();
     void on_malePlayButton_clicked();
     void on_playAudioEffectButton_clicked();

@@ -36,7 +36,8 @@ GraphicsPixmapHoverItem::GraphicsPixmapHoverItem(PlayerCardContainer *playerCard
 {
     setAcceptHoverEvents(true);
 
-    if (m_skinChangingFrames.isEmpty()) {
+    if (m_skinChangingFrames.isEmpty())
+    {
         initSkinChangingFrames();
     }
 }
@@ -71,27 +72,28 @@ static void qt_graphicsItem_highlightSelected(
         return;
 
     qreal itemPenWidth;
-    switch (item->type()) {
-    case QGraphicsEllipseItem::Type:
-        itemPenWidth = static_cast<QGraphicsEllipseItem *>(item)->pen().widthF();
-        break;
-    case QGraphicsPathItem::Type:
-        itemPenWidth = static_cast<QGraphicsPathItem *>(item)->pen().widthF();
-        break;
-    case QGraphicsPolygonItem::Type:
-        itemPenWidth = static_cast<QGraphicsPolygonItem *>(item)->pen().widthF();
-        break;
-    case QGraphicsRectItem::Type:
-        itemPenWidth = static_cast<QGraphicsRectItem *>(item)->pen().widthF();
-        break;
-    case QGraphicsSimpleTextItem::Type:
-        itemPenWidth = static_cast<QGraphicsSimpleTextItem *>(item)->pen().widthF();
-        break;
-    case QGraphicsLineItem::Type:
-        itemPenWidth = static_cast<QGraphicsLineItem *>(item)->pen().widthF();
-        break;
-    default:
-        itemPenWidth = 1.0;
+    switch (item->type())
+    {
+        case QGraphicsEllipseItem::Type:
+            itemPenWidth = static_cast<QGraphicsEllipseItem *>(item)->pen().widthF();
+            break;
+        case QGraphicsPathItem::Type:
+            itemPenWidth = static_cast<QGraphicsPathItem *>(item)->pen().widthF();
+            break;
+        case QGraphicsPolygonItem::Type:
+            itemPenWidth = static_cast<QGraphicsPolygonItem *>(item)->pen().widthF();
+            break;
+        case QGraphicsRectItem::Type:
+            itemPenWidth = static_cast<QGraphicsRectItem *>(item)->pen().widthF();
+            break;
+        case QGraphicsSimpleTextItem::Type:
+            itemPenWidth = static_cast<QGraphicsSimpleTextItem *>(item)->pen().widthF();
+            break;
+        case QGraphicsLineItem::Type:
+            itemPenWidth = static_cast<QGraphicsLineItem *>(item)->pen().widthF();
+            break;
+        default:
+            itemPenWidth = 1.0;
     }
     const qreal pad = itemPenWidth / 2;
 
@@ -115,7 +117,8 @@ static void qt_graphicsItem_highlightSelected(
 void GraphicsPixmapHoverItem::paint(QPainter *painter,
     const QStyleOptionGraphicsItem *option, QWidget *)
 {
-    if (pixmap().isNull()) {
+    if (pixmap().isNull())
+    {
         return;
     }
 
@@ -126,7 +129,8 @@ void GraphicsPixmapHoverItem::paint(QPainter *painter,
     tempPainter.setRenderHint(QPainter::SmoothPixmapTransform,
         (transformationMode() == Qt::SmoothTransformation));
 
-    if (m_val > 0) {
+    if (m_val > 0)
+    {
         tempPainter.drawPixmap(offset(), m_heroSkinPixmap);
 
         double percent = 1 - (double)m_val / (double)m_max;
@@ -143,14 +147,18 @@ void GraphicsPixmapHoverItem::paint(QPainter *painter,
         // For tempPix may be processed outside, we should call tempPainter.end() to
         // release its control of tempPix, or an exception will occur
         tempPainter.end();
-        if (!isAvatarOfDashboard() && isSecondaryAvartarItem()) {
+        if (!isAvatarOfDashboard() && isSecondaryAvartarItem())
+        {
             tempPix = m_playerCardContainer->paintByMask(tempPix);
         }
-    } else {
+    }
+    else
+    {
         tempPainter.drawPixmap(offset(), pixmap());
     }
 
-    if (option->state & QStyle::State_Selected) {
+    if (option->state & QStyle::State_Selected)
+    {
         qt_graphicsItem_highlightSelected(this, &tempPainter, option);
     }
 
@@ -160,12 +168,14 @@ void GraphicsPixmapHoverItem::paint(QPainter *painter,
 void GraphicsPixmapHoverItem::timerEvent(QTimerEvent *)
 {
     ++m_currentSkinChangingFrameIndex;
-    if (m_currentSkinChangingFrameIndex >= m_skinChangingFrameCount) {
+    if (m_currentSkinChangingFrameIndex >= m_skinChangingFrameCount)
+    {
         m_currentSkinChangingFrameIndex = 0;
     }
 
     m_val += m_step;
-    if (m_val >= m_max) {
+    if (m_val >= m_max)
+    {
         stopChangeHeroSkinAnimation();
         setPixmap(m_heroSkinPixmap);
         return;
@@ -176,21 +186,27 @@ void GraphicsPixmapHoverItem::timerEvent(QTimerEvent *)
 
 void GraphicsPixmapHoverItem::startChangeHeroSkinAnimation(const QString &generalName)
 {
-    if (m_timer != 0) {
+    if (m_timer != 0)
+    {
         return;
     }
 
     emit skin_changing_start();
 
-    if (NULL != m_playerCardContainer) {
-        if (isPrimaryAvartarItem()) {
+    if (NULL != m_playerCardContainer)
+    {
+        if (isPrimaryAvartarItem())
+        {
             m_heroSkinPixmap = m_playerCardContainer->getHeadAvatarIcon(generalName);
-        } else {
+        }
+        else
+        {
             m_heroSkinPixmap = m_playerCardContainer->getDeputyAvatarIcon(generalName);
         }
 
         QSize itemSize = boundingRect().size().toSize();
-        if (m_heroSkinPixmap.size() != itemSize) {
+        if (m_heroSkinPixmap.size() != itemSize)
+        {
             m_heroSkinPixmap = m_heroSkinPixmap.scaled(itemSize, Qt::IgnoreAspectRatio,
                 Qt::SmoothTransformation);
         }
@@ -201,7 +217,8 @@ void GraphicsPixmapHoverItem::startChangeHeroSkinAnimation(const QString &genera
 
 void GraphicsPixmapHoverItem::stopChangeHeroSkinAnimation()
 {
-    if (m_timer != 0) {
+    if (m_timer != 0)
+    {
         killTimer(m_timer);
         m_timer = 0;
     }
@@ -214,7 +231,8 @@ void GraphicsPixmapHoverItem::stopChangeHeroSkinAnimation()
 void GraphicsPixmapHoverItem::initSkinChangingFrames()
 {
     m_skinChangingFrameCount = PixmapAnimation::GetFrameCount(CHANGE_SKIN_EMOTION_NAME);
-    for (int i = 0; i < m_skinChangingFrameCount; ++i) {
+    for (int i = 0; i < m_skinChangingFrameCount; ++i)
+    {
         QString fileName = QString("image/system/emotion/%1/%2.png")
             .arg(CHANGE_SKIN_EMOTION_NAME).arg(QString::number(i));
 

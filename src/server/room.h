@@ -47,7 +47,7 @@ typedef int LuaFunction;
 class Room : public QThread
 {
     Q_OBJECT
-    Q_ENUMS(GuanxingType)
+        Q_ENUMS(GuanxingType)
 
 public:
     enum GuanxingType
@@ -126,7 +126,7 @@ public:
     ServerPlayer *getLord(const QString &kingdom, bool include_death = false) const;
     void askForGuanxing(ServerPlayer *zhuge, const QList<int> &cards, GuanxingType guanxing_type = GuanxingBothSides);
     AskForMoveCardsStruct askForMoveCards(ServerPlayer *zhuge, const QList<int> &upcards, const QList<int> &downcards, bool visible, const QString &reason,
-        const QString &pattern, const QString &skillName, int min_num, int max_num, bool can_refuse = true, bool moverestricted = false,const QList<int> &notify_visible_list = QList<int>());
+        const QString &pattern, const QString &skillName, int min_num, int max_num, bool can_refuse = true, bool moverestricted = false, const QList<int> &notify_visible_list = QList<int>());
     int doGongxin(ServerPlayer *shenlvmeng, ServerPlayer *target, QList<int> enabled_ids = QList<int>(), const QString &skill_name = "shangyi");
     int drawCard();
     void fillAG(const QList<int> &card_ids, ServerPlayer *who = NULL, const QList<int> &disabled_ids = QList<int>());
@@ -299,7 +299,7 @@ public:
     void installEquip(ServerPlayer *player, const QString &equip_name);
     void resetAI(ServerPlayer *player);
     void doDragonPhoenix(ServerPlayer *target, const QString &general1_name, const QString &general2_name, bool full_state = true,
-                         const QString &kingdom = QString(), bool sendLog = true, const QString &show_flags = QString(), bool resetHp = false);
+        const QString &kingdom = QString(), bool sendLog = true, const QString &show_flags = QString(), bool resetHp = false);
     void swapSeat(ServerPlayer *a, ServerPlayer *b);
     lua_State *getLuaState() const;
     void setFixedDistance(Player *from, const Player *to, int distance);
@@ -366,7 +366,7 @@ public:
     int askForCardChosen(ServerPlayer *player, ServerPlayer *who, const QString &flags, const QString &reason,
         bool handcard_visible = false, Card::HandlingMethod method = Card::MethodNone, const QList<int> &disabled_ids = QList<int>());
 
-    QList<int> askForCardsChosen(ServerPlayer *chooser, ServerPlayer *choosee, const QStringList &handle_list,const QString &reason);
+    QList<int> askForCardsChosen(ServerPlayer *chooser, ServerPlayer *choosee, const QStringList &handle_list, const QString &reason);
     QList<const Card*> askForCardsChosen(ServerPlayer *chooser, ServerPlayer *choosee, const QString &handle_string, const QString &reason);
 
     const Card *askForCard(ServerPlayer *player, const QString &pattern, const QString &prompt, const QVariant &data, const QString &skill_name);
@@ -384,15 +384,15 @@ public:
     bool askForYiji(ServerPlayer *guojia, QList<int> &cards, const QString &skill_name = QString(),
         bool is_preview = false, bool visible = false, bool optional = true, int max_num = -1,
         QList<ServerPlayer *> players = QList<ServerPlayer *>(), CardMoveReason reason = CardMoveReason(),
-        const QString &prompt = QString(),const QString &expand_pile = QString(), bool notify_skill = false);
+        const QString &prompt = QString(), const QString &expand_pile = QString(), bool notify_skill = false);
     const Card *askForPindian(ServerPlayer *player, ServerPlayer *from, ServerPlayer *to, const QString &reason);
     QList<const Card *> askForPindianRace(ServerPlayer *from, ServerPlayer *to, const QString &reason);
     ServerPlayer *askForPlayerChosen(ServerPlayer *player, const QList<ServerPlayer *> &targets, const QString &reason,
         const QString &prompt = QString(), bool optional = false, bool notify_skill = false);
 
     QList<ServerPlayer *> askForPlayersChosen(ServerPlayer *player, const QList<ServerPlayer *> &targets,
-                                              const QString &reason,int min_num = 0, int max_num = 2, const QString &prompt = QString(),
-                                              bool notify_skill = false);
+        const QString &reason, int min_num = 0, int max_num = 2, const QString &prompt = QString(),
+        bool notify_skill = false);
 
     QString askForGeneral(ServerPlayer *player, const QStringList &generals, const QString &default_choice = QString(), bool single_result = true, const QString &skill_name = QString(), const QVariant &data = QVariant());
     QString askForGeneral(ServerPlayer *player, const QString &generals, const QString &default_choice = QString(), bool single_result = true, const QString &skill_name = QString(), const QVariant &data = QVariant());
@@ -402,12 +402,12 @@ public:
 
     //just for convenience
 
-    void notifyMoveToPile(ServerPlayer *player, const QList<int> &cards,const QString &reason, Player::Place place, bool in, bool is_visible);
+    void notifyMoveToPile(ServerPlayer *player, const QList<int> &cards, const QString &reason, Player::Place place, bool in, bool is_visible);
 
     QList <int> notifyChooseCards(ServerPlayer *player, const QList<int> &cards,
-                                  const QString &reason, Player::Place notify_from_place,
-                                  Player::Place notify_to_place, int max_num,
-                                  int min_num = 0, const QString &prompt = QString(),const QString &pattern = QString());
+        const QString &reason, Player::Place notify_from_place,
+        Player::Place notify_to_place, int max_num,
+        int min_num = 0, const QString &prompt = QString(), const QString &pattern = QString());
 
     //notification callbacks
     void toggleReadyCommand(ServerPlayer *player, const QVariant &);
@@ -638,7 +638,7 @@ private:
     bool _askForNullification(const Card *trick, ServerPlayer *from, ServerPlayer *to, bool positive, _NullificationAiHelper helper);
     QList<CardsMoveStruct> _breakDownCardMoves(QList<CardsMoveStruct> &cards_moves);
 
-private slots:
+    private slots:
     void reportDisconnection();
     void processClientPacket(const QSanProtocol::Packet &packet);
     void reportInvalidPacket(const QByteArray &message);

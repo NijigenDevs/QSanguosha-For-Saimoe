@@ -78,9 +78,11 @@ int MyPixmapItem::mouseCanClick(int x, int y)
 int MyPixmapItem::mouseOnIcon(int x, int y)
 {
     int result = -1;
-    for (int i = 0; i < faceboardPos.size(); i++) {
+    for (int i = 0; i < faceboardPos.size(); i++)
+    {
         QRect rect = faceboardPos.at(i);
-        if (rect.contains(x, y)) {
+        if (rect.contains(x, y))
+        {
             result = i;
             break;
         }
@@ -92,9 +94,11 @@ int MyPixmapItem::mouseOnIcon(int x, int y)
 int MyPixmapItem::mouseOnText(int x, int y)
 {
     int result = -1;
-    for (int i = 0; i < easytextPos.size(); i++) {
+    for (int i = 0; i < easytextPos.size(); i++)
+    {
         QRect rect = easytextPos.at(i);
-        if (rect.contains(x, y)) {
+        if (rect.contains(x, y))
+        {
             result = i;
             break;
         }
@@ -120,9 +124,11 @@ void MyPixmapItem::initFaceBoardPos()
     int x_offset = 6, y_offset = 6;
 
     // total 7 x 8 icons in QList <QRect> faceboardPos;
-    for (int j = 0; j < 8; j++) {
+    for (int j = 0; j < 8; j++)
+    {
         y = j * (icon_h + y_offset) + start_y;
-        for (int i = 0; i < 7; i++) {
+        for (int i = 0; i < 7; i++)
+        {
             x = i * (icon_w + x_offset) + start_x;
             faceboardPos << QRect(x, y, icon_w, icon_h);
         }
@@ -137,7 +143,8 @@ void MyPixmapItem::initEasyTextPos()
     int y_offset = 10;
 
     // only 10 text QList <QRect> easytextPos;
-    for (int j = 0; j < 10; j++) {
+    for (int j = 0; j < 10; j++)
+    {
         y = j * (icon_h + y_offset) + start_y;
         easytextPos << QRect(start_x, y, icon_w, icon_h);
     }

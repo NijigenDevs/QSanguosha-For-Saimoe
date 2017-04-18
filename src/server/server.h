@@ -62,7 +62,7 @@ private:
     QStringList addresses;
     QMultiHash<QString, QString> name2objname;
 
-private slots:
+    private slots:
     void processNewConnection(ClientSocket *socket);
     void processRequest(const QByteArray &request);
     void cleanup();

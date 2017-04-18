@@ -66,11 +66,13 @@ bool DiscardSkill::viewFilter(const QList<const Card *> &selected, const Card *c
 
 const Card *DiscardSkill::viewAs(const QList<const Card *> &cards) const
 {
-    if (cards.length() >= minnum) {
+    if (cards.length() >= minnum)
+    {
         card->clearSubcards();
         card->addSubcards(cards);
         return card;
-    } else
+    }
+    else
         return NULL;
 }
 
@@ -96,9 +98,11 @@ bool ResponseSkill::matchPattern(const Player *player, const Card *card) const
 {
     if (request != Card::MethodNone && player->isCardLimited(card, request))
         return false;
-    if (pattern) {
+    if (pattern)
+    {
         QString pat = pattern->getPatternString();
-        if ((request == Card::MethodUse || request == Card::MethodResponse) && pat.contains("hand")) {
+        if ((request == Card::MethodUse || request == Card::MethodResponse) && pat.contains("hand"))
+        {
             pat.replace("hand", player->getHandPileList().join(","));
         }
         ExpPattern exp_pattern(pat);
@@ -291,10 +295,12 @@ bool ExchangeSkill::viewFilter(const QList<const Card *> &selected, const Card *
 const Card *ExchangeSkill::viewAs(const QList<const Card *> &cards) const
 {
     if (cards.length() == 0) return NULL;
-    if (cards.length() >= minnum) {
+    if (cards.length() >= minnum)
+    {
         card->clearSubcards();
         card->addSubcards(cards);
         return card;
-    } else
+    }
+    else
         return NULL;
 }

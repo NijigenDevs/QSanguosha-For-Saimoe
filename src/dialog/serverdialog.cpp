@@ -166,7 +166,8 @@ QWidget *ServerDialog::createPackageTab()
     int i = 0, j = 0;
     int row = 0, column = 0;
     const QList<const Package *> &packages = Sanguosha->getPackages();
-    foreach (const Package *package, packages) {
+    foreach(const Package *package, packages)
+    {
         if (package->inherits("Scenario"))
             continue;
 
@@ -180,25 +181,28 @@ QWidget *ServerDialog::createPackageTab()
 
         extension_group->addButton(checkbox);
 
-        switch (package->getType()) {
-        case Package::GeneralPack: {
-            row = i / 5;
-            column = i % 5;
-            i++;
+        switch (package->getType())
+        {
+            case Package::GeneralPack:
+            {
+                row = i / 5;
+                column = i % 5;
+                i++;
 
-            layout1->addWidget(checkbox, row, column + 1);
-            break;
-        }
-        case Package::CardPack: {
-            row = j / 5;
-            column = j % 5;
-            j++;
+                layout1->addWidget(checkbox, row, column + 1);
+                break;
+            }
+            case Package::CardPack:
+            {
+                row = j / 5;
+                column = j % 5;
+                j++;
 
-            layout2->addWidget(checkbox, row, column + 1);
-            break;
-        }
-        default:
-            break;
+                layout2->addWidget(checkbox, row, column + 1);
+                break;
+            }
+            default:
+                break;
         }
     }
 
@@ -449,7 +453,8 @@ QGroupBox *ServerDialog::createGameModeBox()
     // normal modes
     QMap<QString, QString> modes = Sanguosha->getAvailableModes();
     QMapIterator<QString, QString> itor(modes);
-    while (itor.hasNext()) {
+    while (itor.hasNext())
+    {
         itor.next();
 
         QRadioButton *button = new QRadioButton(itor.value());
@@ -471,41 +476,50 @@ QGroupBox *ServerDialog::createGameModeBox()
     scenario_ComboBox = new QComboBox;
     scenario_ComboBox->setFocusPolicy(Qt::WheelFocus);
     scenario_ComboBox->setEnabled(scenario_button->isDown());
-    connect(scenario_button,&QRadioButton::toggled,scenario_ComboBox,&QComboBox::setEnabled);
+    connect(scenario_button, &QRadioButton::toggled, scenario_ComboBox, &QComboBox::setEnabled);
     QStringList names = Sanguosha->getModScenarioNames();
-    foreach (QString name, names) {
+    foreach(QString name, names)
+    {
         QString scenario_name = Sanguosha->translate(name);
         const Scenario *scenario = Sanguosha->getScenario(name);
-        if (scenario){ //crash,sometimes.
+        if (scenario)
+        { //crash,sometimes.
             QString text = tr("%1 (%2 persons)").arg(scenario_name).arg(scenario->getPlayerCount());
-            scenario_ComboBox->addItem(text,name);
+            scenario_ComboBox->addItem(text, name);
         }
     }
     item_list << scenario_ComboBox;
 
-    if (mode_group->checkedButton() == NULL) {
+    if (mode_group->checkedButton() == NULL)
+    {
         int index = names.indexOf(Config.GameMode);
-        if (index != -1) {
+        if (index != -1)
+        {
             scenario_button->setChecked(true);
             scenario_ComboBox->setCurrentIndex(index);
-        } else 
+        }
+        else
             mode_group->buttons().first()->setChecked(true); // for Lua Scenario.
     }
-    
+
     // ============
 
     QVBoxLayout *left = new QVBoxLayout;
     QVBoxLayout *right = new QVBoxLayout;
 
-    for (int i = 0; i < item_list.length(); i++) {
+    for (int i = 0; i < item_list.length(); i++)
+    {
         QObject *item = item_list.at(i);
 
         QVBoxLayout *side = i < (item_list.length() + 1) / 2 ? left : right;
 
-        if (item->isWidgetType()) {
+        if (item->isWidgetType())
+        {
             QWidget *widget = qobject_cast<QWidget *>(item);
             side->addWidget(widget);
-        } else {
+        }
+        else
+        {
             QLayout *item_layout = qobject_cast<QLayout *>(item);
             side->addLayout(item_layout);
         }
@@ -545,9 +559,11 @@ void ServerDialog::onDetectButtonClicked()
 {
     QHostInfo vHostInfo = QHostInfo::fromName(QHostInfo::localHostName());
     QList<QHostAddress> vAddressList = vHostInfo.addresses();
-    foreach (const QHostAddress &address, vAddressList) {
+    foreach(const QHostAddress &address, vAddressList)
+    {
         if (!address.isNull() && address != QHostAddress::LocalHost
-            && address.protocol() == QAbstractSocket::IPv4Protocol) {
+            && address.protocol() == QAbstractSocket::IPv4Protocol)
+        {
             address_edit->setText(address.toString());
             return;
         }
@@ -592,7 +608,8 @@ bool ServerDialog::config()
 
     // game mode
 
-    if (mode_group->checkedButton()) {
+    if (mode_group->checkedButton())
+    {
         QString objname = mode_group->checkedButton()->objectName();
         if (objname == "scenario")
             Config.GameMode = scenario_ComboBox->itemData(scenario_ComboBox->currentIndex()).toString();
@@ -628,8 +645,10 @@ bool ServerDialog::config()
 
     QSet<QString> ban_packages;
     QList<QAbstractButton *> checkboxes = extension_group->buttons();
-    foreach (QAbstractButton *checkbox, checkboxes) {
-        if (!checkbox->isChecked()) {
+    foreach(QAbstractButton *checkbox, checkboxes)
+    {
+        if (!checkbox->isChecked())
+        {
             QString package_name = checkbox->objectName();
             Sanguosha->addBanPackage(package_name);
             ban_packages.insert(package_name);

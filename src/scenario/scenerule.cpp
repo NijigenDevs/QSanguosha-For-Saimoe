@@ -37,13 +37,16 @@ bool SceneRule::effect(TriggerEvent triggerEvent, Room* room, ServerPlayer *play
     QStringList extensions = Sanguosha->getExtensions();
     QSet<QString> ban_packages = Config.BanPackages.toSet();
 
-    if (!player && triggerEvent == GameStart) {
-        foreach (const QString &extension, extensions) {
+    if (!player && triggerEvent == GameStart)
+    {
+        foreach(const QString &extension, extensions)
+        {
             bool forbid_package = Config.value("ForbidPackages").toStringList().contains(extension);
             if (ban_packages.contains(extension) || forbid_package) continue;
 
             QString skill = QString("#%1").arg(extension);
-            if (extension.startsWith("scene") && Sanguosha->getSkill(skill)) {
+            if (extension.startsWith("scene") && Sanguosha->getSkill(skill))
+            {
                 foreach(ServerPlayer *p, room->getPlayers())
                     room->acquireSkill(p, skill);
             }

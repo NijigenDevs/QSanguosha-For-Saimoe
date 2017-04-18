@@ -50,7 +50,7 @@ QRectF ChooseOptionsBox::boundingRect() const
     const int width = getButtonWidth()* (qMax(options.length(), 1)) + outerBlankWidth * 2 + (qMax(options.length(), 1) - 1) * interval;
 
     int max = 0;
-    foreach (const QString &str, options)
+    foreach(const QString &str, options)
         max = qMax(max, str.split("+").length());
 
     int height = topBlankWidth + max * defaultButtonHeight + (max - 1) * interval + bottomBlankWidth;
@@ -72,10 +72,12 @@ void ChooseOptionsBox::chooseOption(const QStringList &options)
     QMap<Button *, QPoint> pos;
     int x = 0;
     int y = 0;
-    foreach (const QString &option, options) {
+    foreach(const QString &option, options)
+    {
         y = 0;
         ++x;
-        foreach (const QString &choice, option.split("+")) {
+        foreach(const QString &choice, option.split("+"))
+        {
             ++y;
             Button *button = new Button(translate(choice), QSizeF(buttonWidth,
                 defaultButtonHeight));
@@ -86,15 +88,16 @@ void ChooseOptionsBox::chooseOption(const QStringList &options)
 
             QString original_tooltip = QString(":%1").arg(title);
             QString tooltip = Sanguosha->translate(original_tooltip);
-            if (tooltip == original_tooltip) {
+            if (tooltip == original_tooltip)
+            {
                 original_tooltip = QString(":%1").arg(choice);
                 tooltip = Sanguosha->translate(original_tooltip);
             }
             connect(button, &Button::clicked, this, &ChooseOptionsBox::reply);
             if (tooltip != original_tooltip)
                 button->setToolTip(QString("<font color=%1>%2</font>")
-                .arg(Config.SkillDescriptionInToolTipColor.name())
-                .arg(tooltip));
+                    .arg(Config.SkillDescriptionInToolTipColor.name())
+                    .arg(tooltip));
 
         }
 
@@ -103,7 +106,8 @@ void ChooseOptionsBox::chooseOption(const QStringList &options)
     moveToCenter();
     show();
 
-    for (int i = 0; i < buttons.length(); ++i) {
+    for (int i = 0; i < buttons.length(); ++i)
+    {
         Button *button = buttons.at(i);
 
         QPoint p = pos[button];
@@ -115,8 +119,10 @@ void ChooseOptionsBox::chooseOption(const QStringList &options)
         button->setPos(pos);
     }
 
-    if (ServerInfo.OperationTimeout != 0) {
-        if (!progressBar) {
+    if (ServerInfo.OperationTimeout != 0)
+    {
+        if (!progressBar)
+        {
             progressBar = new QSanCommandProgressBar();
             progressBar->setMaximumWidth(boundingRect().width() - 16);
             progressBar->setMaximumHeight(12);
@@ -146,8 +152,10 @@ int ChooseOptionsBox::getButtonWidth() const
 
     QFontMetrics fontMetrics(Button::defaultFont());
     int biggest = 0;
-    foreach (const QString &section, options) {
-        foreach (const QString &choice, section.split("+")) {
+    foreach(const QString &section, options)
+    {
+        foreach(const QString &choice, section.split("+"))
+        {
             const int width = fontMetrics.width(translate(choice));
             if (width > biggest)
                 biggest = width;
@@ -172,13 +180,14 @@ QString ChooseOptionsBox::translate(const QString &option) const
 
 void ChooseOptionsBox::clear()
 {
-    if (progressBar != NULL) {
+    if (progressBar != NULL)
+    {
         progressBar->hide();
         progressBar->deleteLater();
         progressBar = NULL;
     }
 
-    foreach (Button *button, buttons)
+    foreach(Button *button, buttons)
         button->deleteLater();
 
     buttons.clear();

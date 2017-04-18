@@ -71,7 +71,7 @@ class ScriptExecutor : public QDialog
 public:
     ScriptExecutor(QWidget *parent);
 
-public slots:
+    public slots:
     void doScript();
 };
 
@@ -107,7 +107,7 @@ private:
 
     void fillComboBox(QComboBox *ComboBox);
 
-private slots:
+    private slots:
     void disableSource(const QString &currentNature);
 };
 
@@ -120,7 +120,7 @@ public:
     static QString FormatTime(int secs);
     virtual QRectF boundingRect() const;
 
-public slots:
+    public slots:
     void setTime(int secs);
     void setSpeed(qreal speed);
 
@@ -169,7 +169,7 @@ public:
 
     GuhuoBox *current_guhuo_box;
 
-public slots:
+    public slots:
     void addPlayer(ClientPlayer *player);
     void removePlayer(const QString &player_name);
     void loseCards(int moveId, QList<CardsMoveStruct> moves);
@@ -407,7 +407,7 @@ private:
 
     QSet<HeroSkinContainer *> m_heroSkinContainers;
 
-private slots:
+    private slots:
     void onSceneRectChanged(const QRectF &rect);
 
     void fillCards(const QList<int> &card_ids, const QList<int> &disabled_ids = QList<int>());

@@ -86,7 +86,7 @@ private:
     QPushButton *addButton(const QString &name, int x);
     QPushButton *createButton(const QString &name);
 
-private slots:
+    private slots:
     void showEasyTextBoard();
     void showFaceBoard();
     void sendText();

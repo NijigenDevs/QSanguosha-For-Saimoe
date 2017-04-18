@@ -53,32 +53,41 @@ void UpdateChecker::fill(UpdateInfoStruct info)
 {
     QString state;
     bool lastest = false;
-    if (info.version_number > Sanguosha->getVersionNumber()) {
+    if (info.version_number > Sanguosha->getVersionNumber())
+    {
         QString postfix = " : " + info.version_number;
         if (info.is_patch)
             state = tr("New Patch Available") + postfix;
         else
             state = tr("New Client Available") + postfix;
-    } else {
+    }
+    else
+    {
         state = tr("Lastest Version Already");
         lastest = true;
     }
     state_label->setText(state);
 
-    if (lastest) {
+    if (lastest)
+    {
         address_label->setText(tr("Lastest Version Already"));
-    } else {
+    }
+    else
+    {
         address_label->setOpenExternalLinks(true);
         address_label->setText(QString("<a href='%1' style = \"color:#0072c1; \">%1</a> <br/>").arg(info.address));
     }
 
     QFile file("info.html");
-    if (!lastest && file.open(QIODevice::ReadOnly)) {
+    if (!lastest && file.open(QIODevice::ReadOnly))
+    {
         QTextStream stream(&file);
         stream.setCodec("UTF-8");
         QString content = stream.readAll();
         page->setHtml(content);
-    } else {
+    }
+    else
+    {
         page->setText(tr("Lastest Version Already"));
     }
 }

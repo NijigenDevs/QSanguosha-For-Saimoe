@@ -39,7 +39,7 @@ typedef int LuaFunction;
 class AI : public QObject
 {
     Q_OBJECT
-    Q_ENUMS(Relation)
+        Q_ENUMS(Relation)
 
 public:
     AI(ServerPlayer *player);
@@ -104,7 +104,7 @@ public:
     virtual int askForAG(const QList<int> &card_ids, bool refusable, const QString &reason);
     virtual const Card *askForCardShow(ServerPlayer *requestor, const QString &reason);
     virtual const Card *askForPindian(ServerPlayer *requestor, const QString &reason);
-    virtual QList<ServerPlayer *> askForPlayersChosen(const QList<ServerPlayer *> &targets, const QString &reason,int max_num, int min_num);
+    virtual QList<ServerPlayer *> askForPlayersChosen(const QList<ServerPlayer *> &targets, const QString &reason, int max_num, int min_num);
     virtual const Card *askForSinglePeach(ServerPlayer *dying);
     virtual ServerPlayer *askForYiji(const QList<int> &cards, const QString &reason, int &card_id);
     virtual void askForGuanxing(const QList<int> &cards, QList<int> &up, QList<int> &bottom, int guanxing_type);
@@ -134,7 +134,7 @@ public:
     virtual QString askForChoice(const QString &skill_name, const QString &choices, const QVariant &data);
     virtual int askForCardChosen(ServerPlayer *who, const QString &flags, const QString &reason, Card::HandlingMethod method, const QList<int> &disabled_ids);
     virtual const Card *askForCard(const QString &pattern, const QString &prompt, const QVariant &data);
-    virtual QList<ServerPlayer *> askForPlayersChosen(const QList<ServerPlayer *> &targets, const QString &reason,int max,int min);
+    virtual QList<ServerPlayer *> askForPlayersChosen(const QList<ServerPlayer *> &targets, const QString &reason, int max, int min);
     virtual int askForAG(const QList<int> &card_ids, bool refusable, const QString &reason);
     virtual const Card *askForSinglePeach(ServerPlayer *dying);
     virtual const Card *askForPindian(ServerPlayer *requestor, const QString &reason);

@@ -43,7 +43,7 @@ public:
 
     void showOrganization();
 
-private slots:
+    private slots:
     void onSceneRectChanged(const QRectF &rect);
 
 private:

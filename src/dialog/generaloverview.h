@@ -65,13 +65,14 @@ private:
     QWidget *createInfoTab();
     QLayout *createButtonLayout();
 
-private slots:
+    private slots:
     void clearAll();
     void selectAllPackages();
     void unselectAllPackages();
 };
 
-namespace Ui {
+namespace Ui
+{
     class GeneralOverview;
 }
 
@@ -104,11 +105,11 @@ private:
     QString getCvInfo(const QString &generalName);
     QString getIllustratorInfo(const QString &generalName);
 
-public slots:
+    public slots:
     void startSearch(const SearchDetails &detail);
     void startSearch(bool include_hidden, const QString &nickname, const QString &name, const QStringList &genders, const QStringList &kingdoms, int lower, int upper, const QStringList &packages);
 
-private slots:
+    private slots:
     void playAudioEffect();
     void copyLines();
     void showNextSkin();

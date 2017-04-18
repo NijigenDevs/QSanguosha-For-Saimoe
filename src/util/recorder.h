@@ -39,7 +39,7 @@ public:
     bool save(const QString &filename) const;
     QList<QByteArray> getRecords() const;
 
-public slots:
+    public slots:
     void recordLine(const QByteArray &line);
 
 private:
@@ -65,7 +65,7 @@ public:
 
     int m_commandSeriesCounter;
 
-public slots:
+    public slots:
     void uniform();
     void toggle();
     void speedUp();

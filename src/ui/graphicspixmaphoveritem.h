@@ -41,7 +41,7 @@ public:
 
     virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *);
 
-public slots:
+    public slots:
     void startChangeHeroSkinAnimation(const QString &generalName);
 
 protected:
