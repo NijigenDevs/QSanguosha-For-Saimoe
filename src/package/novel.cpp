@@ -1250,7 +1250,8 @@ public:
         return false;
     }
 
-    virtual bool effect(TriggerEvent, Room *, ServerPlayer *, QVariant &, ServerPlayer *) const {
+    virtual bool effect(TriggerEvent, Room *, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const {
+        ask_who->setFlags("Jieao_flag");
         return false;
     }
 };
@@ -1700,6 +1701,7 @@ public:
     }
 };
 
+//Baoyan for Hitagi
 BaoyanCard::BaoyanCard() {
     will_throw = false;
     handling_method = Card::MethodNone;
@@ -1715,7 +1717,6 @@ void BaoyanCard::onEffect(const CardEffectStruct &effect) const{
     effect.from->drawCards(1, "baoyan");
 }
 
-//Baoyan for Hitagi
 class Baoyan : public OneCardViewAsSkill{
 public:
     Baoyan() : OneCardViewAsSkill("baoyan"){
@@ -1750,6 +1751,7 @@ public:
 
     virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *, QVariant &, ServerPlayer * &) const
     {
+        return QStringList();
     }
 }
 

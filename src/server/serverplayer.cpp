@@ -309,7 +309,7 @@ int ServerPlayer::getPlayerNumWithSameKingdom(const QString &reason, const QStri
     foreach (ServerPlayer *p, players) {
         if (!p->hasShownOneGeneral())
             continue;
-        if (p->getRole() == "careerist") { // if player is careerist, DO NOT COUNT AS SOME KINGDOM!!!!!
+        if (p->getRole() == "careerist") { // if player is careerist, DO NOT COUNT AS SAME KINGDOM!!!!!
             if (to_calculate == "careerist")
                 num = 1;
             continue;

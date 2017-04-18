@@ -751,9 +751,20 @@ bool GameRule::effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *playe
         if (room->getTag("SkipNormalDeathProcess").toBool())
             return false;
 
+        auto originalRole = player->getRole();
+
         ServerPlayer *killer = death.damage ? death.damage->from : NULL;
         if (killer != NULL)
+        {
+            if (killer->hasFlag("Jieao_flag"))
+            {
+                killer->setFlags("-Jieao_flag");
+                player->setRole("careerist");
+            }
             rewardAndPunish(killer, player);
+        }
+
+        player->setRole(originalRole);
 
         if (player->getGeneral()->isLord() && player == data.value<DeathStruct>().who) {
             foreach (ServerPlayer *p, room->getOtherPlayers(player, true)) {
@@ -920,12 +931,6 @@ void GameRule::rewardAndPunish(ServerPlayer *killer, ServerPlayer *victim) const
 
     Q_ASSERT(killer->getRoom() != NULL);
     Room *room = killer->getRoom();
-
-    if (killer->hasShownSkill("jieao")) // don't remove this for Jieao(yukino)
-    {
-        killer->drawCards(1);
-        return;
-    }
 
     if (!killer->isFriendWith(victim)) {
         int n = 1;
