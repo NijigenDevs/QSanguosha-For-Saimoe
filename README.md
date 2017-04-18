@@ -32,7 +32,7 @@ BY-NC-ND 4.0)
 
 * Musics, Dubbing, General and Skill Designs, Descriptions, Translations, Documents, Images, Icons, UI designs and others.
 
-*Please pay attention: the materials from other sources like network is not under CC BY-NC-ND 4.0.*
+*Please pay attention: the materials from other sources like network maybe not under CC BY-NC-ND 4.0.*
 
 *That means: You should use those materials under their original license.*
 
