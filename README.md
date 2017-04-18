@@ -11,13 +11,13 @@ Our Codes are under the terms of the GPLv3 (Version 3 of the GNU General Public 
 
 **You are free to:**
 
-Use the code for any purpose
+* Use the code for any purpose
 
-Change the code to suit your needs
+* Change the code to suit your needs
 
-Share the code with your friends and neighbors
+* Share the code with your friends and neighbors
 
-Share the changes you make
+* Share the changes you make
 
 ---
 
@@ -27,6 +27,14 @@ Attribution-NonCommercial-NoDerivatives 4.0 International (CC
 BY-NC-ND 4.0)
 
 *Please read "CC BY-NC-ND 4.0" for details.*
+
+**Materials include:**
+
+* Musics, Dubbing, General and Skill Designs, Descriptions, Translations, Documents, Images, Icons, UI designs and others.
+
+*Please pay attention: the materials from other sources like network is not under CC BY-NC-ND 4.0.*
+
+*That means: You should use those materials under their original license.*
 
 **You are free to:**
 
