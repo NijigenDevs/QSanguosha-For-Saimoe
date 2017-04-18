@@ -1,4 +1,4 @@
-﻿return {
+return {
 	["moesen"] = "萌战MOD",
 
 	["mami"] = "巴麻美", 
@@ -49,7 +49,7 @@
 	["~homura"] = "", 
 	["designer:homura"] = "御坂2623、AK",
 	["cv:homura"] = "斋藤千和",
-	["illustrator:homura"] = "",
+	["illustrator:homura"] = "ID=45754521",
 	
 	["n_azusa"] = "中野梓", 
 	["&n_azusa"] = "中野梓", 
@@ -97,9 +97,9 @@
 	["#&rei"] = "EVA", 	
 	["#$rei"] = "碇真嗣", 	
 	["~rei"] = "", 
-	["designer:rei"] = "",
+	["designer:rei"] = "hmqgg",
 	["cv:rei"] = "林原めぐみ",
-	["illustrator:rei"] = "",
+	["illustrator:rei"] = "ID=36951533",
 	
 	["asuka"] = "惣流·明日香·兰格雷", 
 	["&asuka"] = "明日香", 
@@ -128,7 +128,7 @@
 	["~n_maki"] = "", 
 	["designer:n_maki"] = "Kayak",
 	["cv:n_maki"] = "Pile",
-	["illustrator:n_maki"] = "",
+	["illustrator:n_maki"] = "ID=47375402",
 	
 	["mayu"] = "岛田真梦", 
 	["&mayu"] = "岛田真梦", 
@@ -158,14 +158,14 @@
 	["cv:sawa"] = "早見沙織",
 	["illustrator:sawa"] = "ひのほし☆＠お仕事募集中",
 	
-	["erinoa"] = "爱诺雅·贝克", 
-	["&erinoa"] = "爱诺雅", 
-	["#erinoa"] = "妹抖赛高", 
-	["#&erinoa"] = "MADLAX", 
-	["~erinoa"] = "", 
-	["designer:erinoa"] = "",
-	["cv:erinoa"] = "内川藍維",
-	["illustrator:erinoa"] = "",
+	["menma"] = "本间芽衣子", 
+	["&menma"] = "面码", 
+	["#menma"] = "找到你了", 
+	["#&menma"] = "未闻花名", 
+	["~menma"] = "", 
+	["designer:menma"] = "钉子",
+	["cv:menma"] = "内川藍維",
+	["illustrator:menma"] = "ID=38356471",
 	
 	["miho"] = "西住美穗", 
 	["&miho"] = "西住美穗", 
