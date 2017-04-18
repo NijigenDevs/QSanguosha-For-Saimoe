@@ -76,3 +76,4 @@ lib/breakpad.pdb
 lib/lua.pdb
 fmod*.dll
 src/.vscode
+*.vcxproj.user
