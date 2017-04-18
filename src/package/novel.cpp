@@ -1611,6 +1611,7 @@ public:
                 }
             }
         }
+        
         return skill_list;
     }
 
@@ -1622,6 +1623,7 @@ public:
             room->loseHp(ask_who);
             return true;
         }
+
         return false;
     }
 
@@ -1636,6 +1638,7 @@ public:
             room->recover(luckyDog, recover);
             ask_who->drawCards(2, objectName());
         }
+
         return false;
     }
 }
@@ -1774,6 +1777,7 @@ bool TiaotingCard::targetFilter(const QList<const Player *> &targets, const Play
     {
         return (targets.isEmpty() || (targets.length() == 1 && !to_select->isFriendWith(targets.first())));
     }
+
     return false;
 }
 
@@ -1874,23 +1878,8 @@ public:
                 }
             }
         }
-        return QStringList();
-    }
 
-    virtual bool cost(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const
-    {
-        if (event == EventPhaseStart)
-        {
-            if (room->askForUseCard(player, "@@tiaoting", objectName()) != NULL)
-            {
-                return true;
-            }
-        }
-        else
-        {
-            room->broadcastSkillInvoke(objectName(), 2, ask_who);
-            return true;
-        }
+        return QStringList();
     }
 
     virtual bool cost(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const
@@ -1908,6 +1897,8 @@ public:
             room->broadcastSkillInvoke(objectName(), 2, ask_who);
             return true;
         }
+        
+        return false;
     }
 
     virtual bool effect(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const
@@ -1918,6 +1909,7 @@ public:
         }
         else
         {
+            ask_who->setFlags("tiaoting_used");
             auto damage = data.value<DamageStruct>();
             auto armistice = room->getTag("tiaoting").value<QMap<ServerPlayer *, QMap<ServerPlayer *, bool>>>();
             (armistice[ask_who])[damage.from] = true;
@@ -1937,6 +1929,65 @@ public:
             }
             return true;
         }
+
+        return false;
+    }
+}
+
+//Jilu for watashi
+class Jilu : public TriggerSkill
+{
+public:
+    Jilu() : TriggerSkill("jilu")
+    {
+        events << EventPhaseStart;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &ask_who) const
+    {
+        if (player == NULL || !player->isAlive())
+        {
+            return QStringList();
+        }
+
+        if (player->getPhase() == Player::End)
+        {
+            auto armistice = room->getTag("tiaoting").value<QMap<ServerPlayer *, QMap<ServerPlayer *, bool>>>();
+            foreach (ServerPlayer *p, room->getOtherPlayers(player))
+            {
+                if (armistice.value(p) != NULL)
+                {
+                    auto belligerent = armistice.value(p);
+                    if (belligerent.contains(player) && !belligerent.value(player))
+                    {
+                        if (!p->hasFlag("tiaoting_used"))
+                        {
+                            ask_who = p;
+                            return QStringList(objectName());
+                        }
+                    }
+                }
+            }
+        }
+
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const
+    {
+        if (room->askForSkillInvoke(ask_who, objectName()))
+        {
+            room->broadcastSkillInvoke(objectName(), ask_who);
+            return true;
+        }
+
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const
+    {
+        ask_who->drawCards(1, objectName());
+        return false;
     }
 }
 
@@ -2015,7 +2066,9 @@ void MoesenPackage::addNovelGenerals()
     hitagi->addSkill(new Qingyou);
     hitagi->addSkill(new Zhongxie);
     
-    //General *watashi = new General(this, "watashi", "qun", 3, false); // N016
+    General *watashi = new General(this, "watashi", "qun", 3, false); // N016
+    watashi->addSkill(new Tiaoting);
+    watashi->addSkill(new Jilu);
     
     //General *haruhi = new General(this, "haruhi", "qun", 3, false); // N017
 
