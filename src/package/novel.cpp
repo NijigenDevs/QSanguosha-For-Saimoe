@@ -1702,16 +1702,19 @@ public:
 };
 
 //Baoyan for Hitagi
-BaoyanCard::BaoyanCard() {
+BaoyanCard::BaoyanCard()
+{
     will_throw = false;
     handling_method = Card::MethodNone;
 }
 
-bool BaoyanCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *self) const{
+bool BaoyanCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *self) const
+{
     return targets.isEmpty() && to_select != self;
 }
 
-void BaoyanCard::onEffect(const CardEffectStruct &effect) const{
+void BaoyanCard::onEffect(const CardEffectStruct &effect) const
+{
     CardMoveReason reason(CardMoveReason::S_REASON_GIVE, effect.from->objectName(), effect.to->objectName(), "baoyan", QString());
     effect.from->getRoom()->obtainCard(effect.to, this, reason, true);
     effect.from->drawCards(1, "baoyan");
@@ -1723,15 +1726,18 @@ public:
         filter_pattern = ".|.|.|hand!";
     }
 
-    virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const{
+    virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const
+    {
         return selected.isEmpty() && to_select->isKindOf("Slash");
     }
 
-    virtual bool isEnabledAtPlay(const Player *player) const{
+    virtual bool isEnabledAtPlay(const Player *player) const
+    {
         return (!player->isKongcheng() && ((player->hasShownSkill("zhongxie") && player->hasShownAllGenerals() && player->getMark("HalfMaxHpLeft") == 0) || !player->hasUsed("BaoyanCard")));
     }
 
-    virtual const Card *viewAs(const Card *originalCard) const{
+    virtual const Card *viewAs(const Card *originalCard) const
+    {
         BaoyanCard *by = new BaoyanCard;
         by->addSubcard(originalCard->getId());
         by->setShowSkill(objectName());
@@ -1752,6 +1758,185 @@ public:
     virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *, QVariant &, ServerPlayer * &) const
     {
         return QStringList();
+    }
+}
+
+//Tiaoting for Watashi (Not me but watashi :D)
+TiaotingCard::TiaotingCard()
+{
+    will_throw = false;
+    handling_method = Card::MethodNone;
+}
+
+bool TiaotingCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *self) const
+{
+    if (to_select->hasShownOneGeneral() && to_select != self)
+    {
+        return (targets.isEmpty() || (targets.length() == 1 && !to_select->isFriendWith(targets.first())));
+    }
+    return false;
+}
+
+bool TiaotingCard::targetsFeasible(const QList<const Player *> &targets, const Player *) const
+{
+    return targets.length() == 2;
+}
+
+void TiaotingCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const
+{
+    ServerPlayer *axis = targets.at(0);
+    ServerPlayer *allies = targets.at(1);
+
+    auto armistice = room->getTag("tiaoting").value<QMap<ServerPlayer *, QMap<ServerPlayer *, bool>>>();
+    QMap<ServerPlayer *, bool> belligerent;
+    belligerent.insert(axis, false);
+    belligerent.insert(allies, false);
+    armistice[source] = belligerent;
+    room->tag["tiaoting"] = QVariant::fromValue(armistice);
+}
+
+class TiaotingVS : public ZeroCardViewAsSkill
+{
+public:
+    TiaotingVS() : ZeroCardViewAsSkill("tiaoting")
+    {
+        response_pattern = "@@tiaoting";
+    }
+
+    virtual const Card *viewAs(const Card *originalCard) const
+    {
+        TiaotingCard *tt = new TiaotingCard;
+        tt->setShowSkill(objectName());
+        return c;
+    }
+};
+
+class Tiaoting : public TriggerSkill
+{
+public:
+    Tiaoting() : TriggerSkill("tiaoting")
+    {
+        events << EventPhaseStart << TurnStart << DamageCaused;
+        view_as_skill = new TiaotingVS;
+    }
+
+    virtual QStringList triggerable(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &ask_who) const
+    {
+        if (event == EventPhaseStart)
+        {
+            if (TriggerSkill:triggerable(player) && player->getPhase() == Player::Finish)
+            {
+                QStringList kingdoms;
+                foreach (ServerPlayer *p, room->getOtherPlayers(player))
+                {
+                    if (p->hasShownOneGeneral())
+                    {
+                        if (!kingdoms.contains(p->getRole()))
+                        {
+                            kingdoms << p->getRole();
+                        }
+
+                        if (kingdoms.length() > 1)
+                        {
+                            return QStringList(objectName());
+                        }
+                    }
+                }
+            }
+        }
+        else if (event == TurnStart)
+        {
+            if (TriggerSkill:triggerable(player))
+            {
+                //                                                   Watashi       ,      Belligerent   , have damaged
+                auto armistice = room->getTag("tiaoting").value<QMap<ServerPlayer *, QMap<ServerPlayer *, bool>>>();
+                armistice[player] = NULL;
+                room->tag["tiaoting"] = QVariant::fromValue(armistice);
+            }
+        }
+        else
+        {
+            auto damage = data.value<DamageStruct>();
+            if (damage.from != NULL && damage.to != NULL && damage.damage > 0)
+            {
+                auto armistice = room->getTag("tiaoting").value<QMap<ServerPlayer *, QMap<ServerPlayer *, bool>>>();
+                foreach (ServerPlayer *p, room->getOtherPlayers(damage.from))
+                {
+                    if (armistice.value(p) != NULL)
+                    {
+                        auto belligerent = armistice.value(p);
+                        if (belligerent.contains(damage.from) && belligerent.contains(damage.to) && !belligerent.value(damage.from))
+                        {
+                            ask_who = p;
+                            return QStringList(objectName());
+                        }
+                    }
+                }
+            }
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const
+    {
+        if (event == EventPhaseStart)
+        {
+            if (room->askForUseCard(player, "@@tiaoting", objectName()) != NULL)
+            {
+                return true;
+            }
+        }
+        else
+        {
+            room->broadcastSkillInvoke(objectName(), 2, ask_who);
+            return true;
+        }
+    }
+
+    virtual bool cost(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const
+    {
+        if (event == EventPhaseStart)
+        {
+            if (room->askForUseCard(player, "@@tiaoting", objectName()) != NULL)
+            {
+                room->broadcastSkillInvoke(objectName(), 1, player);
+                return true;
+            }
+        }
+        else
+        {
+            room->broadcastSkillInvoke(objectName(), 2, ask_who);
+            return true;
+        }
+    }
+
+    virtual bool effect(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const
+    {
+        if (event == EventPhaseStart)
+        {
+            return false;
+        }
+        else
+        {
+            auto damage = data.value<DamageStruct>();
+            auto armistice = room->getTag("tiaoting").value<QMap<ServerPlayer *, QMap<ServerPlayer *, bool>>>();
+            (armistice[ask_who])[damage.from] = true;
+            room->tag["tiaoting"] = QVariant::fromValue(armistice);
+            QList<ServerPlayer *> belligerent;
+            if (damage.from->isAlive())
+            {
+                belligerent << damage.from;
+            }
+            if (damage.to->isAlive())
+            {
+                belligerent << damage.to;
+            }
+            if (belligerent.length() > 0)
+            {
+                room->drawCards(belligerent, 1, objectName());
+            }
+            return true;
+        }
     }
 }
 
@@ -1847,4 +2032,5 @@ void MoesenPackage::addNovelGenerals()
     addMetaObject<XieyuSummon>();
     addMetaObject<XianliCard>();
     addMetaObject<BaoyanCard>();
+    addMetaObject<TiaotingCard>();
 }
