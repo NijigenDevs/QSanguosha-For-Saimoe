@@ -1,25 +1,32 @@
-Open Source Sanguosha-Hegemony Mod
-==========
+QSanguosha-For-Saimoe
+==
+> Open Source Sanguosha-Hegemony Mod
 
-Lisense
-------------
-###Code
-This game is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 3.0
-of the License, or (at your option) any later version.
+## Lisense
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-General Public License for more details.
+### Code
+Our Codes are under the terms of the GPLv3 (Version 3 of the GNU General Public License)
 
-See the LICENSE file for more details.
+*Please read "LICENSE" for details.*
 
-###Material
+**You are free to:**
+
+Use the code for any purpose
+
+Change the code to suit your needs
+
+Share the code with your friends and neighbors
+
+Share the changes you make
+
+---
+
+### Material
 Our Materials are under the terms of the Creative Commons
 Attribution-NonCommercial-NoDerivatives 4.0 International (CC
 BY-NC-ND 4.0)
+
+*Please read "CC BY-NC-ND 4.0" for details.*
 
 **You are free to:**
 
@@ -39,8 +46,7 @@ you may not distribute the modified material.
 
 See the CC BY-NC-ND 4.0 file for more details.
 
-Introduction
-----------
+## Introduction
 
 Sanguosha is both a popular board game and online game,
 this project try to clone the Sanguosha online version.
@@ -55,10 +61,11 @@ its graphics view framework is suitable for my game developing. By Moligaloo
 Saimoe MOD is an extension of original Sanguosha,
 with self-designed characters from Saimoe League.
 We hope you will join us with your loved one.
-Contact me at acgkiller@live.com. By hmqgg
 
-Features
-----------
+
+Contact me at [Email](mailto:acgkiller@live.com). By hmqgg
+
+## Features
 
 1. Framework
     * Open source with Qt graphics view framework
@@ -77,17 +84,17 @@ Features
     * Some MODs are available based on this game
     * Lua Packages are supported in this game
 
-HOW TO BUILD
-=========
+## HOW TO BUILD
 **Tips: "~" stands for the folder where the repo is in.**
 
-VS2015(Windows)
---------
+VS2017 (Windows)
+---
 
 1. Download the following packages:
-(1) QT libraries for Windows (Visual Studio 2015, 5.6.0+)
 
-(2) Swigwin binaries (3.0.10)
+* QT libraries for Windows ( Visual Studio 2017, 5.6.0+ )
+
+* Swigwin binaries ( 3.0.10 + Version )
 
 2. Open Qsanguosha.sln right under ~/builds/vs2015, change the Configuration to Release Qt5|Win32.
 
@@ -96,12 +103,13 @@ VS2015(Windows)
 4. You are now able to build the solution. When compilation succeeded, the QSanguosha.exe is in ~/Bin folder. You should move this file to ~ folder.
 
 5. Copy 6 files from Qt libraries to ~, they are listed below:
-   Qt5Core.dll
-   Qt5Gui.dll
-   Qt5Network.dll
-   Qt5Qml.dll
-   Qt5Widgets.dll
 
-   You can install VC redist or copy 2 files from VC Redist Directory to ~.
+*   Qt5Core.dll
+*   Qt5Gui.dll
+*   Qt5Network.dll
+*   Qt5Qml.dll
+*   Qt5Widgets.dll
+
+You can install VC redist or copy the 2 dlls from VC Redist Directory to ~.
 
 6. Double-click the QSanguosha.exe and have fun!
