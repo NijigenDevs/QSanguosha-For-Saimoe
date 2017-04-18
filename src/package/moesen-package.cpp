@@ -46,7 +46,7 @@ MoesenPackage::MoesenPackage()
 ADD_PACKAGE(Moesen)
 
 
-    /*
+/*
 StandardCardPackage::StandardCardPackage()
     : Package("standard_cards", Package::CardPack)
 {

@@ -4,7 +4,8 @@
 #include "moesen-package.h"
 #include "card.h"
 
-class WuweiCard: public SkillCard {
+class WuweiCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -13,7 +14,8 @@ public:
     virtual const Card *validate(CardUseStruct &use) const;
 };
 
-class QuanmianCard: public SkillCard {
+class QuanmianCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -22,7 +24,8 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
-class MiaolvCard: public SkillCard {
+class MiaolvCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -31,7 +34,8 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
-class XiehangCard: public SkillCard {
+class XiehangCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -41,7 +45,8 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
-class XiehangUseCard : public SkillCard {
+class XiehangUseCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -53,7 +58,8 @@ public:
     virtual const Card *validate(CardUseStruct &cardUse) const;
 };
 
-class BajianCard: public SkillCard {
+class BajianCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -62,7 +68,8 @@ public:
     virtual void use(Room *room, ServerPlayer *xunyu, QList<ServerPlayer *> &targets) const;
 };
 
-class GejiCard: public SkillCard {
+class GejiCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -71,7 +78,8 @@ public:
     virtual void use(Room *, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
-class Tengyue: public DrawCardsSkill {
+class Tengyue : public DrawCardsSkill
+{
 public:
     Tengyue();
 

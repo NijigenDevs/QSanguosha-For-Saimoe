@@ -4,30 +4,32 @@
 #include "moesen-package.h"
 #include "card.h"
 
-class QiangqiCard : public SkillCard {
-	Q_OBJECT
+class QiangqiCard : public SkillCard
+{
+    Q_OBJECT
 
 public:
-	Q_INVOKABLE QiangqiCard();
-	virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
-	virtual const Card *validate(CardUseStruct &use) const;
+    Q_INVOKABLE QiangqiCard();
+    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+    virtual const Card *validate(CardUseStruct &use) const;
 };
 
 class TianjianCard : public SkillCard
 {
-	Q_OBJECT
+    Q_OBJECT
 
 public:
-	Q_INVOKABLE TianjianCard();
+    Q_INVOKABLE TianjianCard();
 
-	virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
-	virtual bool targetsFeasible(const QList<const Player *> &targets, const Player *Self) const;
+    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+    virtual bool targetsFeasible(const QList<const Player *> &targets, const Player *Self) const;
     virtual const Card *validateInResponse(ServerPlayer * player) const;
     virtual bool targetFixed() const;
     virtual const Card *validate(CardUseStruct &card_use) const;
 };
 
-class HaixingCard: public SkillCard {
+class HaixingCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -36,16 +38,18 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
-class ShenaiCard : public SkillCard {
-	Q_OBJECT
+class ShenaiCard : public SkillCard
+{
+    Q_OBJECT
 
 public:
-	Q_INVOKABLE ShenaiCard();
-	virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
-	virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+    Q_INVOKABLE ShenaiCard();
+    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
-class TaozuiCard : public SkillCard {
+class TaozuiCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -55,7 +59,8 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
-class XiayingCard: public SkillCard {
+class XiayingCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -63,7 +68,8 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
-class YumengDraw: public DrawCardsSkill {
+class YumengDraw : public DrawCardsSkill
+{
 public:
     YumengDraw();
 
@@ -71,7 +77,8 @@ public:
     virtual int getDrawNum(ServerPlayer *player, int n) const;
 };
 
-class Key : public DelayedTrick {
+class Key : public DelayedTrick
+{
     Q_OBJECT
 
 public:
@@ -82,7 +89,8 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
-class ShenxingCard : public SkillCard {
+class ShenxingCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -92,7 +100,8 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
-class LuoxuanCard : public SkillCard {
+class LuoxuanCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -102,7 +111,8 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
-class Lingdan : public DelayedTrick {
+class Lingdan : public DelayedTrick
+{
     Q_OBJECT
 
 public:
@@ -112,7 +122,8 @@ public:
     virtual void takeEffect(ServerPlayer *target) const;
 };
 
-class FengwangCard : public SkillCard {
+class FengwangCard : public SkillCard
+{
     Q_OBJECT
 
 public:
@@ -120,7 +131,8 @@ public:
     virtual void onUse(Room *room, const CardUseStruct &card_use) const;
 };
 
-class YonglanCard : public SkillCard {
+class YonglanCard : public SkillCard
+{
     Q_OBJECT
 
 public:

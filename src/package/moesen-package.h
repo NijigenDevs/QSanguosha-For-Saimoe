@@ -6,7 +6,8 @@
 #include "skill.h"
 #include "standard.h"
 
-class MoesenPackage: public Package {
+class MoesenPackage : public Package
+{
     Q_OBJECT
 
 public:

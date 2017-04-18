@@ -28,7 +28,7 @@ ExpPattern::ExpPattern(const QString &exp)
 
 bool ExpPattern::match(const Player *player, const Card *card) const
 {
-    foreach (const QString &one_exp, this->exp.split("#"))
+    foreach(const QString &one_exp, this->exp.split("#"))
         if (this->matchOne(player, card, one_exp)) return true;
 
     return false;
@@ -46,16 +46,22 @@ bool ExpPattern::matchOne(const Player *player, const Card *card, QString exp) c
 
     bool checkpoint = false;
     QStringList card_types = factors.at(0).split(',');
-    foreach (const QString &or_name, card_types) {
+    foreach(const QString &or_name, card_types)
+    {
         checkpoint = false;
-        foreach (const QString &_name, or_name.split('+')) {
+        foreach(const QString &_name, or_name.split('+'))
+        {
             QString name = _name;
-            if (name == ".") {
+            if (name == ".")
+            {
                 checkpoint = true;
-            } else {
+            }
+            else
+            {
                 bool isInt = false;
                 bool positive = true;
-                if (name.startsWith('^')) {
+                if (name.startsWith('^'))
+                {
                     positive = false;
                     name = name.mid(1);
                 }
@@ -75,13 +81,16 @@ bool ExpPattern::matchOne(const Player *player, const Card *card, QString exp) c
 
     checkpoint = false;
     QStringList card_suits = factors.at(1).split(',');
-    foreach (const QString &_suit, card_suits) {
+    foreach(const QString &_suit, card_suits)
+    {
         QString suit = _suit;
-        if (suit == ".") {
+        if (suit == ".")
+        {
             checkpoint = true; break;
         }
         bool positive = true;
-        if (suit.startsWith('^')) {
+        if (suit.startsWith('^'))
+        {
             positive = false;
             suit = suit.mid(1);
         }
@@ -100,14 +109,17 @@ bool ExpPattern::matchOne(const Player *player, const Card *card, QString exp) c
     QStringList card_numbers = factors.at(2).split(',');
     int cdn = card->getNumber();
 
-    foreach (const QString &number, card_numbers) {
-        if (number == ".") {
+    foreach(const QString &number, card_numbers)
+    {
+        if (number == ".")
+        {
             checkpoint = true;
             break;
         }
 
         bool isInt = false;
-        if (number.contains('~')) {
+        if (number.contains('~'))
+        {
             QStringList params = number.split('~');
             int from, to;
             if (!params.at(0).size())
@@ -120,12 +132,16 @@ bool ExpPattern::matchOne(const Player *player, const Card *card, QString exp) c
                 to = params.at(1).toInt();
 
             if (from <= cdn && cdn <= to) checkpoint = true;
-        } else if (number.toInt(&isInt) == cdn && isInt) {
+        }
+        else if (number.toInt(&isInt) == cdn && isInt)
+        {
             checkpoint = true;
-        } else if ((number == "A" && cdn == 1)
+        }
+        else if ((number == "A" && cdn == 1)
             || (number == "J" && cdn == 11)
             || (number == "Q" && cdn == 12)
-            || (number == "K" && cdn == 13)) {
+            || (number == "K" && cdn == 13))
+        {
             checkpoint = true;
         }
         if (checkpoint) break;
@@ -136,39 +152,55 @@ bool ExpPattern::matchOne(const Player *player, const Card *card, QString exp) c
     checkpoint = false;
     QString place = factors.at(3);
     if (!player || place == ".") checkpoint = true;
-    if (!checkpoint) {
+    if (!checkpoint)
+    {
         QList<int> ids;
         if (card->isVirtualCard())
             ids = card->getSubcards();
         else
             ids << card->getEffectiveId();
-        if (!ids.isEmpty()) {
-            foreach (int id, ids) {
+        if (!ids.isEmpty())
+        {
+            foreach(int id, ids)
+            {
                 checkpoint = false;
                 const Card *card = Sanguosha->getCard(id);
-                foreach (const QString &_p, place.split(",")) {
+                foreach(const QString &_p, place.split(","))
+                {
                     QString p = _p;
-                    if (p == "equipped" && player->hasEquip(card)) {
+                    if (p == "equipped" && player->hasEquip(card))
+                    {
                         checkpoint = true;
-                    } else if (p == "hand" && card->getEffectiveId() >= 0) {
-                        foreach (const Card *c, player->getHandcards()) {
-                            if (c->getEffectiveId() == id) {
+                    }
+                    else if (p == "hand" && card->getEffectiveId() >= 0)
+                    {
+                        foreach(const Card *c, player->getHandcards())
+                        {
+                            if (c->getEffectiveId() == id)
+                            {
                                 checkpoint = true;
                                 break;
                             }
                         }
-                    } else {
+                    }
+                    else
+                    {
                         if (p.contains("$"))
                             p.replace("$", "#");
-                        if (p.startsWith("%")) {
+                        if (p.startsWith("%"))
+                        {
                             p = p.mid(1);
-                            foreach (const Player *pl, player->getAliveSiblings()) {
-                                if (!pl->getPile(p).isEmpty() && pl->getPile(p).contains(id)) {
+                            foreach(const Player *pl, player->getAliveSiblings())
+                            {
+                                if (!pl->getPile(p).isEmpty() && pl->getPile(p).contains(id))
+                                {
                                     checkpoint = true;
                                     break;
                                 }
                             }
-                        } else if (!player->getPile(p).isEmpty() && player->getPile(p).contains(id)) {
+                        }
+                        else if (!player->getPile(p).isEmpty() && player->getPile(p).contains(id))
+                        {
                             checkpoint = true;
                         }
                     }

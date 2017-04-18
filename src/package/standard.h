@@ -56,7 +56,7 @@ private:
 class EquipCard : public Card
 {
     Q_OBJECT
-    Q_ENUMS(Location)
+        Q_ENUMS(Location)
 
 public:
     enum Location

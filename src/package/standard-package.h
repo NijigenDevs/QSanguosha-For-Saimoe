@@ -23,7 +23,8 @@
 
 #include "package.h"
 
-class StandardPackage : public Package {
+class StandardPackage : public Package
+{
     Q_OBJECT
 
 public:
@@ -34,14 +35,16 @@ public:
     void addQunGenerals();
 };
 
-class TestPackage : public Package {
+class TestPackage : public Package
+{
     Q_OBJECT
 
 public:
     TestPackage();
 };
 
-class StandardCardPackage : public Package {
+class StandardCardPackage : public Package
+{
     Q_OBJECT
 
 public:
