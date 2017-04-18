@@ -1727,7 +1727,7 @@ public:
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const{
-        return (!player->isKongcheng() && (player->getMark("HalfMaxHpLeft") == 0 || !player->hasUsed("BaoyanCard")));
+        return (!player->isKongcheng() && ((player->hasShownSkill("zhongxie") && player->hasShownAllGenerals() && player->getMark("HalfMaxHpLeft") == 0) || !player->hasUsed("BaoyanCard")));
     }
 
     virtual const Card *viewAs(const Card *originalCard) const{
