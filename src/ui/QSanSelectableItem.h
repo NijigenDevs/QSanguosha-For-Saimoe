@@ -1,5 +1,3 @@
-
-
 #ifndef _QSAN_SELECTABLE_ITEM_H
 #define _QSAN_SELECTABLE_ITEM_H
 

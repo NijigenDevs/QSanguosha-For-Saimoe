@@ -1,5 +1,3 @@
-
-
 class QVariant {
 public:
     QVariant();

@@ -570,8 +570,6 @@ public:
         }
         return skill_list;
     }
-
-
     virtual bool cost(TriggerEvent event, Room *room, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const
     {
         if (event == TargetConfirmed)
@@ -714,8 +712,6 @@ void QuanmianCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &
     if (yui != source)
         source->drawCards(1);
 }
-
-
 class Quanmian : public ZeroCardViewAsSkill
 {
 public:
@@ -762,8 +758,6 @@ void MiaolvCard::onEffect(const CardEffectStruct &effect) const
     recover.who = effect.from;
     room->recover(effect.to, recover);
 }
-
-
 class Miaolv : public ViewAsSkill
 {
 public:
@@ -794,8 +788,6 @@ public:
         return NULL;
     }
 };
-
-
 // yinzhuang, xiuse -SE, slob
 class Yinzhuang : public TriggerSkill
 {
@@ -1113,8 +1105,6 @@ public:
     {
         events << EventPhaseStart << Damage;
     }
-
-
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer * &ask_who) const
     {
         if (triggerEvent == EventPhaseStart)
@@ -1306,8 +1296,6 @@ void XiehangCard::use(Room *room, ServerPlayer *asuka, QList<ServerPlayer *> &ta
     {
         room->acquireSkill(user, "xiehang-viewas");
     }
-
-
     room->fillAG(cardids, user);
     int id = room->askForAG(user, cardids, false, objectName());
     room->clearAG(user);
@@ -1376,8 +1364,6 @@ const Card * XiehangUseCard::validate(CardUseStruct &cardUse) const
 
 }
 
-
-
 class Xiehang : public ZeroCardViewAsSkill
 {
 public:
@@ -1433,10 +1419,6 @@ public:
         return NULL;
     }
 };
-
-
-
-
 //powei by SE
 class Powei : public TriggerSkill
 {
@@ -1526,8 +1508,6 @@ public:
         {
             asuka->addMark("powei");
         }
-
-
         return false;
     }
 };
@@ -2704,8 +2684,6 @@ public:
         return false;
     }
 };
-
-
 
 void MoesenPackage::addAnimationGenerals()
 {

@@ -1,5 +1,3 @@
-
-
 #ifndef _STANDARD_WEI_H
 #define _STANDARD_WEI_H
 

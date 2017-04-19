@@ -1,5 +1,3 @@
-
-
 #include "cardoverview.h"
 #ifdef Q_OS_IOS
 #include "ui_cardoverview_ios.h"

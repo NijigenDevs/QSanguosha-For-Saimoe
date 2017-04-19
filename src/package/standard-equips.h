@@ -1,5 +1,3 @@
-
-
 #ifndef _STANDARD_EQUIPS_H
 #define _STANDARD_EQUIPS_H
 

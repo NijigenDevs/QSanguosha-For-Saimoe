@@ -1,5 +1,3 @@
-
-
 #include "lua-wrapper.h"
 #include "util.h"
 
@@ -321,8 +319,6 @@ LuaArmor *LuaArmor::clone(Card::Suit suit, int number) const
 
     return new_card;
 }
-
-
 LuaTreasure::LuaTreasure(Card::Suit suit, int number, const char *obj_name, const char *class_name)
     : Treasure(suit, number)
 {

@@ -1,5 +1,3 @@
-
-
 #ifndef CARDEDITOR_H
 #define CARDEDITOR_H
 

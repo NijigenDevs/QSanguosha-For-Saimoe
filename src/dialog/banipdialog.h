@@ -1,5 +1,3 @@
-
-
 #ifndef BANIPDIALOG_H
 #define BANIPDIALOG_H
 

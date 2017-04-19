@@ -1,5 +1,3 @@
-
-
 #ifndef GUANXINGBOX_H
 #define GUANXINGBOX_H
 

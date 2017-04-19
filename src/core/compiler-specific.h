@@ -1,5 +1,3 @@
-
-
 #ifndef _COMPILER_SPECIFIC_H
 #define _COMPILER_SPECIFIC_H
 

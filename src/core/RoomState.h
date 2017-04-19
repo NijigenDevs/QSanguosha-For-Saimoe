@@ -1,5 +1,3 @@
-
-
 #ifndef _ROOM_STATE_H
 #define _ROOM_STATE_H
 

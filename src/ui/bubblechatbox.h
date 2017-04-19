@@ -1,5 +1,3 @@
-
-
 #ifndef BUBBLECHATBOX_H
 #define BUBBLECHATBOX_H
 

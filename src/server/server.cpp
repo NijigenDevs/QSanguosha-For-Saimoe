@@ -1,5 +1,3 @@
-
-
 #include "server.h"
 #include "nativesocket.h"
 #include "clientstruct.h"

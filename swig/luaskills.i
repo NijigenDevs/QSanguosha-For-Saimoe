@@ -1,5 +1,3 @@
-
-
 class LuaTriggerSkill: public TriggerSkill {
 public:
     LuaTriggerSkill(const char *name, Frequency frequency, const char *limit_mark);

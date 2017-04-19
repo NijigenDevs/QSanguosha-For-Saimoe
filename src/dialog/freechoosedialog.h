@@ -1,5 +1,3 @@
-
-
 #ifndef FREECHOOSEDIALOG_H
 #define FREECHOOSEDIALOG_H
 

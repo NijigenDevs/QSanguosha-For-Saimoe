@@ -1,5 +1,3 @@
-
-
 #include "genericcardcontainerui.h"
 #include "engine.h"
 #include "standard.h"

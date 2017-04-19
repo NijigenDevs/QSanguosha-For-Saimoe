@@ -1,5 +1,3 @@
-
-
 #include "standard-tricks.h"
 #include "standard-package.h"
 #include "room.h"

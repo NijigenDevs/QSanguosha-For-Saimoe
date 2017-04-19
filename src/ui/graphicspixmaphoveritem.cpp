@@ -1,5 +1,3 @@
-
-
 #include "graphicspixmaphoveritem.h"
 #include "genericcardcontainerui.h"
 #include "pixmapanimation.h"

@@ -1,5 +1,3 @@
-
-
 #ifndef GRAPHICSBOX_H
 #define GRAPHICSBOX_H
 

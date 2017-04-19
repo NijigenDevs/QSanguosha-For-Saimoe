@@ -1,5 +1,3 @@
-
-
 #include "standard-wei-generals.h"
 #include "skill.h"
 #include "engine.h"

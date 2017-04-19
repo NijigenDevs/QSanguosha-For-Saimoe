@@ -1,5 +1,3 @@
-
-
 #include "udpdetectordialog.h"
 #include "detector.h"
 #include "stylehelper.h"

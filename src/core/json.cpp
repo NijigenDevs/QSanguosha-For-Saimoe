@@ -1,5 +1,3 @@
-
-
 #include "json.h"
 
 #include <QStringList>

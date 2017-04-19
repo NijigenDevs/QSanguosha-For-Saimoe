@@ -1,5 +1,3 @@
-
-
 #include "standard.h"
 #include "room.h"
 #include "skill.h"

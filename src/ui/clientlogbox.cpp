@@ -1,5 +1,3 @@
-
-
 #include "clientlogbox.h"
 #include "settings.h"
 #include "engine.h"

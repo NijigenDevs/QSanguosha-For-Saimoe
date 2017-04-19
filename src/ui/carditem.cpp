@@ -1,5 +1,3 @@
-
-
 #include "carditem.h"
 #include "engine.h"
 #include "skill.h"

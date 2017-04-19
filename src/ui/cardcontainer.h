@@ -1,5 +1,3 @@
-
-
 #ifndef _CARD_CONTAINER_H
 #define _CARD_CONTAINER_H
 

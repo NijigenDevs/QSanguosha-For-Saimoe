@@ -1,5 +1,3 @@
-
-
 #include "flatdialog.h"
 #include "stylehelper.h"
 

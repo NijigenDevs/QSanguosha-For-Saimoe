@@ -1,5 +1,3 @@
-
-
 #include "roomthread.h"
 #include "room.h"
 #include "engine.h"

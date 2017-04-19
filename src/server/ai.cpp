@@ -1,5 +1,3 @@
-
-
 #include "ai.h"
 #include "serverplayer.h"
 #include "engine.h"

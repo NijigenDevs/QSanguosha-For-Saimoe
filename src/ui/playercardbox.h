@@ -1,5 +1,3 @@
-
-
 #ifndef PLAYERCARDBOX_H
 #define PLAYERCARDBOX_H
 

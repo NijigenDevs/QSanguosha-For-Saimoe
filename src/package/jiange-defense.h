@@ -1,5 +1,3 @@
-
-
 #ifndef _JIANGE_DEFENSE_PACKAGE_H
 #define _JIANGE_DEFENSE_PACKAGE_H
 

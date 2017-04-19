@@ -1,5 +1,3 @@
-
-
 #include "nativesocket.h"
 #include "settings.h"
 #include "clientplayer.h"

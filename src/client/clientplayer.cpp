@@ -1,5 +1,3 @@
-
-
 #include "clientplayer.h"
 #include "skill.h"
 #include "client.h"

@@ -1,5 +1,3 @@
-
-
 #ifndef _WRAPPED_CARD_H
 #define _WRAPPED_CARD_H
 

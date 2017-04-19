@@ -1,5 +1,3 @@
-
-
 #ifndef _CHOOSE_OPTIONS_BOX_H
 #define _CHOOSE_OPTIONS_BOX_H
 

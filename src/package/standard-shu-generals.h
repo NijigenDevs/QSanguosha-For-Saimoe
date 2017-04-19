@@ -1,5 +1,3 @@
-
-
 #ifndef _STANDARD_SHU_H
 #define _STANDARD_SHU_H
 

@@ -1,5 +1,3 @@
-
-
 #include "photo.h"
 #include "clientplayer.h"
 #include "settings.h"

@@ -1,5 +1,3 @@
-
-
 #ifndef SERVERDIALOG_H
 #define SERVERDIALOG_H
 

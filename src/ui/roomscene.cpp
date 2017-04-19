@@ -1,5 +1,3 @@
-
-
 #include "roomscene.h"
 #include "settings.h"
 #include "carditem.h"

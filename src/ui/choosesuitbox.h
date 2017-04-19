@@ -1,5 +1,3 @@
-
-
 #ifndef CHOOSESUITBOX_H
 #define CHOOSESUITBOX_H
 

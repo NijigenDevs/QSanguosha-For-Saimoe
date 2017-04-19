@@ -1,5 +1,3 @@
-
-
 #ifndef GENERALSELECTOR_H
 #define GENERALSELECTOR_H
 

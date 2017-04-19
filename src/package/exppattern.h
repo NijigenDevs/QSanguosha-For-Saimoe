@@ -1,5 +1,3 @@
-
-
 #ifndef _EXPPATTERN_H
 #define _EXPPATTERN_H
 

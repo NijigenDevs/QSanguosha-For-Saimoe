@@ -1,5 +1,3 @@
-
-
 #include "indicatoritem.h"
 #include "engine.h"
 

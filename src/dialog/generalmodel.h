@@ -1,5 +1,3 @@
-
-
 #ifndef GENERALMODEL_H
 #define GENERALMODEL_H
 

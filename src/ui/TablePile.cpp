@@ -1,5 +1,3 @@
-
-
 #include "tablepile.h"
 #include "skinbank.h"
 #include <QParallelAnimationGroup>

@@ -1,5 +1,3 @@
-
-
 #include "banlistdialog.h"
 #include "banpair.h"
 #include "skinbank.h"

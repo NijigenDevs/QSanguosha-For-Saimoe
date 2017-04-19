@@ -1,5 +1,3 @@
-
-
 #ifndef _QSAN_BUTTON_H
 #define _QSAN_BUTTON_H
 

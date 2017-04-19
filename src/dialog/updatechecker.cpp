@@ -1,5 +1,3 @@
-
-
 #include "updatechecker.h"
 #include "engine.h"
 #include "version.h"

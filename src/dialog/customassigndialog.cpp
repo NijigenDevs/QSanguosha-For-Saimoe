@@ -1,5 +1,3 @@
-
-
 #include "customassigndialog.h"
 #include "engine.h"
 #include "settings.h"

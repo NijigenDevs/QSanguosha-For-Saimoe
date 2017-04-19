@@ -619,8 +619,6 @@ public:
     }
 };
 
-
-
 class roseshinku : public TriggerSkill
 {
 public:
@@ -675,8 +673,6 @@ void HeliCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targ
         source->hideGeneral(false);
         room->setPlayerDisableShow(source, "d", "roseshinku");
     }
-
-
     room->damage(DamageStruct("heli", source, target, invoke ? qMin(3, subcardsLength() - 1) : qMin(3, subcardsLength() / 2), DamageStruct::Normal));
 }
 

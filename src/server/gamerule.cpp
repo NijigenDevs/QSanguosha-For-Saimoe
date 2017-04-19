@@ -1,5 +1,3 @@
-
-
 #include "gamerule.h"
 #include "serverplayer.h"
 #include "room.h"

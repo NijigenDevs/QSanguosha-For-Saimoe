@@ -1,5 +1,3 @@
-
-
 #include <QFile>
 #include <QCoreApplication>
 #include <QApplication>

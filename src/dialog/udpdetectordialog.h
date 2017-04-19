@@ -1,5 +1,3 @@
-
-
 #ifndef UDPDETECTORDIALOG_H
 #define UDPDETECTORDIALOG_H
 

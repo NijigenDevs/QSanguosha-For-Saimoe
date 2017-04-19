@@ -1,5 +1,3 @@
-
-
 #include "freechoosedialog.h"
 #include "general.h"
 #include "engine.h"

@@ -1,5 +1,3 @@
-
-
 #ifndef _DETECTOR_H
 #define _DETECTOR_H
 

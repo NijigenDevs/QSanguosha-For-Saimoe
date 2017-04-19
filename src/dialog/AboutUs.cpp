@@ -1,5 +1,3 @@
-
-
 #include "aboutus.h"
 #include "engine.h"
 #include "stylehelper.h"

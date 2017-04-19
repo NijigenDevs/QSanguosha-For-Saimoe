@@ -1,5 +1,3 @@
-
-
 #include "standard-equips.h"
 #include "standard-package.h"
 #include "skill.h"

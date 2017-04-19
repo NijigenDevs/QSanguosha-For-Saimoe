@@ -1,5 +1,3 @@
-
-
 #include "settings.h"
 #include "engine.h"
 #include "scenerule.h"

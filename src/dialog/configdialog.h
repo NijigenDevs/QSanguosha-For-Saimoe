@@ -1,5 +1,3 @@
-
-
 #ifndef CONFIGDIALOG_H
 #define CONFIGDIALOG_H
 

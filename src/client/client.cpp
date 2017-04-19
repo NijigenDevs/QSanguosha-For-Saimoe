@@ -1,5 +1,3 @@
-
-
 #include "client.h"
 #include "settings.h"
 #include "engine.h"
@@ -1677,8 +1675,6 @@ void Client::revivePlayer(const QVariant &player)
     alive_count++;
     emit player_revived(player_name);
 }
-
-
 void Client::warn(const QVariant &reason_var)
 {
     QString reason = reason_var.toString();

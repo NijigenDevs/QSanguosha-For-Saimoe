@@ -1,5 +1,3 @@
-
-
 #ifndef _SKIN_BANK_H
 #define _SKIN_BANK_H
 

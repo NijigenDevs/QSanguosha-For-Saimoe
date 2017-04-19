@@ -1,5 +1,3 @@
-
-
 #ifndef SCENERULE_H
 #define SCENERULE_H
 

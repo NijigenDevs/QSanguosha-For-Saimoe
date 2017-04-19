@@ -1,5 +1,3 @@
-
-
 #include "room.h"
 #include "engine.h"
 #include "settings.h"

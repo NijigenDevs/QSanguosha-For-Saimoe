@@ -1,5 +1,3 @@
-
-
 #include "serverdialog.h"
 #include "package.h"
 #include "settings.h"

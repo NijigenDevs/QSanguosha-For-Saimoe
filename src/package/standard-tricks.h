@@ -1,5 +1,3 @@
-
-
 #ifndef _STANDARD_TRICK_H
 #define _STANDARD_TRICK_H
 

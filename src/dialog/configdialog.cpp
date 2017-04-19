@@ -1,5 +1,3 @@
-
-
 #include "configdialog.h"
 #ifdef Q_OS_IOS
 #include "ui_configdialog_ios.h"

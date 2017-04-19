@@ -1,5 +1,3 @@
-
-
 #ifndef _TIMED_PROGRESS_BAR_H
 #define _TIMED_PROGRESS_BAR_H
 

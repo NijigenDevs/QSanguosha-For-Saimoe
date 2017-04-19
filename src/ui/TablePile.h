@@ -1,5 +1,3 @@
-
-
 #ifndef _TABLE_PILE_H
 #define _TABLE_PILE_H
 

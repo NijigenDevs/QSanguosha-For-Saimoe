@@ -1,5 +1,3 @@
-
-
 #include "banpair.h"
 #include "settings.h"
 

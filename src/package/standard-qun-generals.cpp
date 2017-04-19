@@ -1,5 +1,3 @@
-
-
 #include "standard-qun-generals.h"
 #include "skill.h"
 #include "standard-basics.h"

@@ -1,5 +1,3 @@
-
-
 #include "wrappedcard.h"
 
 WrappedCard::WrappedCard(Card *card)

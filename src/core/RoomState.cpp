@@ -1,5 +1,3 @@
-
-
 #include "roomstate.h"
 #include "engine.h"
 #include "wrappedcard.h"

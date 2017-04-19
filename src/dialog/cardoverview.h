@@ -1,5 +1,3 @@
-
-
 #ifndef _CARD_OVERVIEW_H
 #define _CARD_OVERVIEW_H
 

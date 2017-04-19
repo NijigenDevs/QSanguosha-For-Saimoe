@@ -1,5 +1,3 @@
-
-
 #include "skill.h"
 #include "settings.h"
 #include "engine.h"

@@ -1,5 +1,3 @@
-
-
 #ifndef _CHAT_WIDGET_H
 #define _CHAT_WIDGET_H
 

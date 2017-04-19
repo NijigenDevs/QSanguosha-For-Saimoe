@@ -1,5 +1,3 @@
-
-
 #ifndef _CLIENT_PLAYER_H
 #define _CLIENT_PLAYER_H
 

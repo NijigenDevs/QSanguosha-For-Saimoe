@@ -1,5 +1,3 @@
-
-
 #include "distanceviewdialog.h"
 
 #include "client.h"

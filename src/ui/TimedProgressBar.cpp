@@ -1,5 +1,3 @@
-
-
 #include "timedprogressbar.h"
 #include "clientstruct.h"
 #include <QPainter>

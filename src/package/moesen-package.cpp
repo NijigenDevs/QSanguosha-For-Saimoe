@@ -14,8 +14,6 @@ MoesenPackage::MoesenPackage()
     addComicGenerals();
     addGameGenerals();
     addNovelGenerals();
-
-
     patterns["."] = new ExpPattern(".|.|.|hand");
     patterns[".S"] = new ExpPattern(".|spade|.|hand");
     patterns[".C"] = new ExpPattern(".|club|.|hand");
@@ -44,8 +42,6 @@ MoesenPackage::MoesenPackage()
 }
 
 ADD_PACKAGE(Moesen)
-
-
 /*
 StandardCardPackage::StandardCardPackage()
     : Package("standard_cards", Package::CardPack)

@@ -1,5 +1,3 @@
-
-
 #include "avatarmodel.h"
 #include "skinbank.h"
 

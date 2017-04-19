@@ -1,5 +1,3 @@
-
-
 #ifndef _NAMESPACE_H
 #define _NAMESPACE_H
 

@@ -1,5 +1,3 @@
-
-
 #include "guanxingbox.h"
 #include "roomscene.h"
 #include "engine.h"

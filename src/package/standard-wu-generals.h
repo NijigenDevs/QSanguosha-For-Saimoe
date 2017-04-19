@@ -1,5 +1,3 @@
-
-
 #ifndef _STANDARD_WU_H
 #define _STANDARD_WU_H
 

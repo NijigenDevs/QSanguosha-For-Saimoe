@@ -1,5 +1,3 @@
-
-
 #ifndef _MAGATAMAS_ITEM_H
 #define _MAGATAMAS_ITEM_H
 

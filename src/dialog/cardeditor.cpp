@@ -1,5 +1,3 @@
-
-
 #include "cardeditor.h"
 #include "settings.h"
 #include "card.h"

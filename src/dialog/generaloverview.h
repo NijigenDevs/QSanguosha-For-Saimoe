@@ -1,5 +1,3 @@
-
-
 #ifndef GENERALOVERVIEW_H
 #define GENERALOVERVIEW_H
 

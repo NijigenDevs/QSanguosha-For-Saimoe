@@ -1,5 +1,3 @@
-
-
 #include "util.h"
 #include "lua.hpp"
 

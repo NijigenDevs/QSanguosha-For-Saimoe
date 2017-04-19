@@ -1,5 +1,3 @@
-
-
 #include "pixmapanimation.h"
 #include "skinbank.h"
 

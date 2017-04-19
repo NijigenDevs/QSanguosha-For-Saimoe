@@ -1,5 +1,3 @@
-
-
 #ifndef _H_MOMENTUM_H
 #define _H_MOMENTUM_H
 

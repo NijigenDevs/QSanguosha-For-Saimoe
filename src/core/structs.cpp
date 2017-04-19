@@ -1,5 +1,3 @@
-
-
 #include "structs.h"
 #include "json.h"
 #include "exppattern.h"

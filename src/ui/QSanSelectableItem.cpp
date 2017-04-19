@@ -1,5 +1,3 @@
-
-
 #include "qsanselectableitem.h"
 #include "uiutils.h"
 

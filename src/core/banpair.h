@@ -1,5 +1,3 @@
-
-
 #ifndef _BAN_PAIR_H
 #define _BAN_PAIR_H
 

@@ -1,5 +1,3 @@
-
-
 #include "standard-basics.h"
 #include "standard-package.h"
 #include "engine.h"
@@ -81,8 +79,6 @@ bool Slash::IsSpecificAssignee(const Player *player, const Player *from, const C
     }
     return false;
 }
-
-
 bool Slash::isAvailable(const Player *player) const
 {
     return IsAvailable(player, this) && BasicCard::isAvailable(player);
@@ -258,8 +254,6 @@ else
                 // shenmegui??
             }
         }
-
-
         if (isPaoxiao)
         {
             if (!player->hasShownSkill("paoxiao"))
@@ -641,8 +635,6 @@ QStringList Analeptic::checkTargetModSkillShow(const CardUseStruct &use) const
 QList<Card *> StandardCardPackage::basicCards()
 {
     QList<Card *> cards;
-
-
     cards
         << new Slash(Card::Spade, 5)
         << new Slash(Card::Spade, 7)

@@ -1,5 +1,3 @@
-
-
 #include "clientstruct.h"
 #include "engine.h"
 #include "client.h"

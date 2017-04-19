@@ -1,5 +1,3 @@
-
-
 #include "window.h"
 #include "settings.h"
 #include "button.h"

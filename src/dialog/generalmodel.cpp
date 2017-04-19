@@ -1,5 +1,3 @@
-
-
 #include "generalmodel.h"
 #include "engine.h"
 #include "settings.h"

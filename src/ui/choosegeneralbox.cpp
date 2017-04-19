@@ -1,5 +1,3 @@
-
-
 #include "choosegeneralbox.h"
 #include "engine.h"
 #include "skinbank.h"

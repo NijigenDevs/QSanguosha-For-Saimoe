@@ -1,5 +1,3 @@
-
-
 #include "bubblechatbox.h"
 #include "settings.h"
 #include "stylehelper.h"

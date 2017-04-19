@@ -1,5 +1,3 @@
-
-
 #include "skinbank.h"
 #include "engine.h"
 #include "settings.h"

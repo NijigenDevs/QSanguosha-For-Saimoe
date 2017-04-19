@@ -1,5 +1,3 @@
-
-
 #include "detector.h"
 #include "settings.h"
 

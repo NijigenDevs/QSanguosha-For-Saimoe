@@ -1,5 +1,3 @@
-
-
 #ifndef _RECORD_ANALYSIS_H
 #define _RECORD_ANALYSIS_H
 

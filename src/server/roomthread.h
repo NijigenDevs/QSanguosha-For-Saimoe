@@ -1,5 +1,3 @@
-
-
 #ifndef _ROOM_THREAD_H
 #define _ROOM_THREAD_H
 

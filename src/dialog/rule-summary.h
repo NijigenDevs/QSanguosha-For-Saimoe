@@ -1,5 +1,3 @@
-
-
 #ifndef _SCENARIO_OVERVIEW_H
 #define _SCENARIO_OVERVIEW_H
 

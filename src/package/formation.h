@@ -1,5 +1,3 @@
-
-
 #ifndef _H_FORMATION_H
 #define _H_FORMATION_H
 

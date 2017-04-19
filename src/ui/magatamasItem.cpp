@@ -1,5 +1,3 @@
-
-
 #include "magatamasitem.h"
 #include <QPropertyAnimation>
 #include <QParallelAnimationGroup>

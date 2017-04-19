@@ -1,5 +1,3 @@
-
-
 #include "graphicsbox.h"
 #include "skinbank.h"
 #include "roomscene.h"

@@ -1,5 +1,3 @@
-
-
 #ifndef _CHOOSE_GENERAL_BOX_H
 #define _CHOOSE_GENERAL_BOX_H
 

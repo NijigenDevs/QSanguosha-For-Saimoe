@@ -1,5 +1,3 @@
-
-
 #ifndef _GAME_RULE_H
 #define _GAME_RULE_H
 

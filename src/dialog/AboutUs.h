@@ -1,5 +1,3 @@
-
-
 #ifndef ABOUTUS_H
 #define ABOUTUS_H
 

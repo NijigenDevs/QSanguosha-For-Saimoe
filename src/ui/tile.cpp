@@ -1,5 +1,3 @@
-
-
 #include "tile.h"
 
 #include <QFile>

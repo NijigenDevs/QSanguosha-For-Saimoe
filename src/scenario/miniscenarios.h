@@ -1,5 +1,3 @@
-
-
 #ifndef _MINI_SCENARIOS_H
 #define _MINI_SCENARIOS_H
 

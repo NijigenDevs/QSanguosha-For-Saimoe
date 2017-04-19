@@ -1,5 +1,3 @@
-
-
 #include "scenario.h"
 #include "engine.h"
 

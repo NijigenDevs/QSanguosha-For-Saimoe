@@ -1,5 +1,3 @@
-
-
 #include "mainwindow.h"
 #include "startscene.h"
 #include "roomscene.h"

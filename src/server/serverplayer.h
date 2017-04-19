@@ -1,5 +1,3 @@
-
-
 #ifndef _SERVER_PLAYER_H
 #define _SERVER_PLAYER_H
 

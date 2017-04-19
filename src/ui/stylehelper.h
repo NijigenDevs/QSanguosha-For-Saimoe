@@ -1,5 +1,3 @@
-
-
 #ifndef STYLEHELPER_H
 #define STYLEHELPER_H
 

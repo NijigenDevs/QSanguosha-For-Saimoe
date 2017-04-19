@@ -1,5 +1,3 @@
-
-
 #include "heroskincontainer.h"
 #include "skinitem.h"
 #include "qsanbutton.h"

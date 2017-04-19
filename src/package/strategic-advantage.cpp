@@ -1,5 +1,3 @@
-
-
 #include "strategic-advantage.h"
 #include "standard-basics.h"
 #include "standard-tricks.h"

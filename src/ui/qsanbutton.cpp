@@ -1,5 +1,3 @@
-
-
 #include "qsanbutton.h"
 #include "clientplayer.h"
 #include "skinbank.h"

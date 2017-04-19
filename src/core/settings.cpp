@@ -1,5 +1,3 @@
-
-
 #include "settings.h"
 #include "photo.h"
 #include "card.h"

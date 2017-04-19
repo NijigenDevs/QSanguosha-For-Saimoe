@@ -1,5 +1,3 @@
-
-
 #ifndef _START_SCENE_H
 #define _START_SCENE_H
 

@@ -1,5 +1,3 @@
-
-
 #include "record-analysis.h"
 #include "recorder.h"
 #include "settings.h"

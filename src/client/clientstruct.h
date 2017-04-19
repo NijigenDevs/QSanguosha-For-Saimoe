@@ -1,5 +1,3 @@
-
-
 #ifndef _CLIENT_STRUCT_H
 #define _CLIENT_STRUCT_H
 

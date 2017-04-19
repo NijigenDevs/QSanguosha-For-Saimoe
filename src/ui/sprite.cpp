@@ -1,5 +1,3 @@
-
-
 #include "sprite.h"
 
 #include <QAnimationGroup>

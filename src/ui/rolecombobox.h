@@ -1,5 +1,3 @@
-
-
 #ifndef _ROLE_COMBO_BOX_H
 #define _ROLE_COMBO_BOX_H
 

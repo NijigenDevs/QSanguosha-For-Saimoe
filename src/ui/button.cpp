@@ -1,5 +1,3 @@
-
-
 #include "button.h"
 #include "title.h"
 #include "skinbank.h"

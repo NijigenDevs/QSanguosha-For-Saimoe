@@ -1,5 +1,3 @@
-
-
 #ifndef _CONNECTION_DIALOG_H
 #define _CONNECTION_DIALOG_H
 

@@ -1,5 +1,3 @@
-
-
 #include "standard-package.h"
 #include "exppattern.h"
 #include "card.h"

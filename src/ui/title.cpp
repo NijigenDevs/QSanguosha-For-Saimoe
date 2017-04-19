@@ -1,5 +1,3 @@
-
-
 #include "title.h"
 #include "skinbank.h"
 

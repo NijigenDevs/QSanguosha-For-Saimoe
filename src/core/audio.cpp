@@ -1,5 +1,3 @@
-
-
 #include "audio.h"
 #include "settings.h"
 

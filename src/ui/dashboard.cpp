@@ -1,5 +1,3 @@
-
-
 #include "dashboard.h"
 #include "engine.h"
 #include "settings.h"

@@ -1,5 +1,3 @@
-
-
 #include "rule-summary.h"
 #include "engine.h"
 #include "stylehelper.h"

@@ -1,5 +1,3 @@
-
-
 #ifndef _INDICATOR_ITEM_H
 #define _INDICATOR_ITEM_H
 

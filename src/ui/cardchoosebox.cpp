@@ -1,5 +1,3 @@
-
-
 #include "cardchoosebox.h"
 #include "roomscene.h"
 #include "engine.h"

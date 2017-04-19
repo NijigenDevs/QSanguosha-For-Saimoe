@@ -1,5 +1,3 @@
-
-
 #ifndef AVATARMODEL_H
 #define AVATARMODEL_H
 

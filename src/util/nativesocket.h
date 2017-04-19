@@ -1,5 +1,3 @@
-
-
 #ifndef _NATIVESOCKET_H
 #define _NATIVESOCKET_H
 

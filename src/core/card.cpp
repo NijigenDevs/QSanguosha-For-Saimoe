@@ -1,5 +1,3 @@
-
-
 #include "card.h"
 #include "settings.h"
 #include "engine.h"

@@ -1,5 +1,3 @@
-
-
 #include "miniscenarios.h"
 #include "qmath.h"
 

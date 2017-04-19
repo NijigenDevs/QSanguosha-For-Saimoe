@@ -1,5 +1,3 @@
-
-
 #ifndef _CLIENT_LOG_BOX_H
 #define _CLIENT_LOG_BOX_H
 

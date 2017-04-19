@@ -1,5 +1,3 @@
-
-
 #include "generaloverview.h"
 #include "engine.h"
 #ifdef Q_OS_IOS

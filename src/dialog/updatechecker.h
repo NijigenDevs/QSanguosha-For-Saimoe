@@ -1,5 +1,3 @@
-
-
 #ifndef UPDATECHECKER_H
 #define UPDATECHECKER_H
 

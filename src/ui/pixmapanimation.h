@@ -1,5 +1,3 @@
-
-
 #ifndef _PIXMAP_ANIMATION_H
 #define _PIXMAP_ANIMATION_H
 

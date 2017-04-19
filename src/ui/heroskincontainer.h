@@ -1,5 +1,3 @@
-
-
 #ifndef HEROSKINCONTAINER_H
 #define HEROSKINCONTAINER_H
 

@@ -1,5 +1,3 @@
-
-
 #ifndef _PHOTO_H
 #define _PHOTO_H
 

@@ -1,5 +1,3 @@
-
-
 #include "rolecombobox.h"
 #include "skinbank.h"
 #include "roomscene.h"

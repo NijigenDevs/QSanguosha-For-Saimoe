@@ -1,5 +1,3 @@
-
-
 #include "chooseoptionsbox.h"
 #include "engine.h"
 #include "button.h"

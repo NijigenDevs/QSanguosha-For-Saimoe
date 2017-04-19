@@ -1,5 +1,3 @@
-
-
 #include "connectiondialog.h"
 #ifdef Q_OS_IOS
 #include "ui_connectiondialog_ios.h"

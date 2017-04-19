@@ -1,5 +1,3 @@
-
-
 %naturalvar LuaFunction;
 %typemap(in) LuaFunction
 %{

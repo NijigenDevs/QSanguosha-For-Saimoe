@@ -1,5 +1,3 @@
-
-
 #include "playercardbox.h"
 #include "clientplayer.h"
 #include "skinbank.h"

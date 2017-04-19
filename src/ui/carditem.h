@@ -1,5 +1,3 @@
-
-
 #ifndef _CARD_ITEM_H
 #define _CARD_ITEM_H
 

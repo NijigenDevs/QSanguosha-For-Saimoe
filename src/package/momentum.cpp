@@ -1,5 +1,3 @@
-
-
 #include "momentum.h"
 #include "standard-basics.h"
 #include "standard-tricks.h"

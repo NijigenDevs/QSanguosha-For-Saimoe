@@ -1,5 +1,3 @@
-
-
 #include "choosetriggerorderbox.h"
 #include "engine.h"
 #include "button.h"

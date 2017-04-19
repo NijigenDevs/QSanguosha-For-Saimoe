@@ -1,5 +1,3 @@
-
-
 #ifndef _AUX_SKILLS_H
 #define _AUX_SKILLS_H
 

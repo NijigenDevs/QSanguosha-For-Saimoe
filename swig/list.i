@@ -1,5 +1,3 @@
-
-
 template <class T>
 class QList {
 public:

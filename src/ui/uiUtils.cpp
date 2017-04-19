@@ -1,5 +1,3 @@
-
-
 #include "uiutils.h"
 
 #include <QPixmap>

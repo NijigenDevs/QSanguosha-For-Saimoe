@@ -1,5 +1,3 @@
-
-
 #ifndef _STANDARD_BASICS_H
 #define _STANDARD_BASICS_H
 

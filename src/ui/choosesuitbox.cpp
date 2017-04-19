@@ -1,5 +1,3 @@
-
-
 #include "choosesuitbox.h"
 #include "skinbank.h"
 #include "timedprogressbar.h"

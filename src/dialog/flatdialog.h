@@ -1,5 +1,3 @@
-
-
 #ifndef FLATDIALOG_H
 #define FLATDIALOG_H
 

@@ -1,5 +1,3 @@
-
-
 #include "standard-shu-generals.h"
 #include "structs.h"
 #include "standard-basics.h"

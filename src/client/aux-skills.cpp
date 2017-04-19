@@ -1,5 +1,3 @@
-
-
 #include "aux-skills.h"
 #include "client.h"
 #include "standard-shu-generals.h"

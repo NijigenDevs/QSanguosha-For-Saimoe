@@ -119,8 +119,6 @@ void putKeyFromId(Room *room, int id, ServerPlayer *from, ServerPlayer *to, QStr
     ql.append(QVariant::fromValue(key->getEffectiveId()));
     room->setTag("keyList", ql);
 }
-
-
 //haixing & taozui by SE
 HaixingCard::HaixingCard()
 {
@@ -174,8 +172,6 @@ public:
         return card;
     }
 };
-
-
 class Haixing : public TriggerSkill
 {
 public:
@@ -613,8 +609,6 @@ public:
         return card;
     }
 };
-
-
 class Xiaying : public TriggerSkill
 {
 public:
@@ -1082,8 +1076,6 @@ public:
         return false;
     }
 };
-
-
 class Liepo : public TriggerSkill
 {
 public:
@@ -2587,8 +2579,6 @@ const Card *TianjianCard::validateInResponse(ServerPlayer *player) const
     use_card->deleteLater();
     return use_card;
 }
-
-
 class Tianjian : public ZeroCardViewAsSkill
 {
 public:

@@ -1,5 +1,3 @@
-
-
 #ifndef BANLISTDIALOG_H
 #define BANLISTDIALOG_H
 

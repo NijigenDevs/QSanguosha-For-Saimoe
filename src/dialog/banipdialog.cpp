@@ -1,5 +1,3 @@
-
-
 #include "banipdialog.h"
 #include "server.h"
 #include "room.h"

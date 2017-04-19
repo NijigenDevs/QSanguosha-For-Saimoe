@@ -1,5 +1,3 @@
-
-
 #include "cardcontainer.h"
 #include "clientplayer.h"
 #include "carditem.h"

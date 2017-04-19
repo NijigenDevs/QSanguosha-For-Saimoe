@@ -1,5 +1,3 @@
-
-
 #include "formation.h"
 #include "standard-basics.h"
 #include "standard-tricks.h"
@@ -1269,8 +1267,6 @@ public:
         return false;
     }
 };
-
-
 class Zhangwu : public TriggerSkill
 {
 public:
@@ -1501,8 +1497,6 @@ public:
         return false; //return player->getHp() > 0 || player->isDead();
     }
 };
-
-
 FormationPackage::FormationPackage()
     : Package("formation")
 {
@@ -1571,8 +1565,6 @@ FormationPackage::FormationPackage()
 }
 
 ADD_PACKAGE(Formation)
-
-
 DragonPhoenix::DragonPhoenix(Suit suit, int number) : Weapon(suit, number, 2)
 {
     setObjectName("DragonPhoenix");
@@ -1740,8 +1732,6 @@ public:
         return false;
     }
 };
-
-
 FormationEquipPackage::FormationEquipPackage() : Package("formation_equip", CardPack)
 {
     DragonPhoenix *dp = new DragonPhoenix();
@@ -1752,5 +1742,3 @@ FormationEquipPackage::FormationEquipPackage() : Package("formation_equip", Card
 }
 
 ADD_PACKAGE(FormationEquip)
-
-

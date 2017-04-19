@@ -1,5 +1,3 @@
-
-
 #include "generalselector.h"
 #include "engine.h"
 #include "serverplayer.h"

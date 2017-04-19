@@ -1,5 +1,3 @@
-
-
 #include "chatwidget.h"
 #include "engine.h"
 #include <QPainter>
