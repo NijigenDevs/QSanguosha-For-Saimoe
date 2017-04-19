@@ -60,7 +60,7 @@ public:
         AskForMoveCardsStruct result = room->askForMoveCards(lidian, card_ids, QList<int>(), true, objectName(), "", objectName(), 2, 2, false, false, QList<int>() << -1);
         DummyCard dummy(result.bottom);
         lidian->obtainCard(&dummy, false);
-        foreach(int id, result.top)
+        foreach (int id, result.top)
             room->getDrawPile().append(id);
         room->doBroadcastNotify(QSanProtocol::S_COMMAND_UPDATE_PILE, QVariant(room->getDrawPile().length()));
         LogMessage a;
@@ -201,7 +201,7 @@ public:
         if (triggerEvent == TurnStart)
         {
             room->setPlayerMark(player, "@hengjiang", 0);
-            foreach(ServerPlayer *p, room->getAllPlayers())
+            foreach (ServerPlayer *p, room->getAllPlayers())
                 if (p->getMark("HengjiangInvoke") > 0)
                     room->setPlayerMark(p, "HengjiangInvoke", 0);
         }
@@ -217,7 +217,7 @@ public:
             PhaseChangeStruct change = data.value<PhaseChangeStruct>();
             if (change.to != Player::NotActive) return skill_list;
             QList<ServerPlayer *> zangbas;
-            foreach(ServerPlayer *p, room->getAllPlayers())
+            foreach (ServerPlayer *p, room->getAllPlayers())
             {
                 if (p->getMark("HengjiangInvoke") > 0)
                 {
@@ -244,7 +244,7 @@ public:
                     player->setFlags("-HengjiangDiscarded");
                 room->setPlayerMark(player, "@hengjiang", 0);
                 if (invoke)
-                    foreach(ServerPlayer *zangba, zangbas)
+                    foreach (ServerPlayer *zangba, zangbas)
                     skill_list.insert(zangba, QStringList(objectName()));
             }
         }
@@ -318,7 +318,7 @@ public:
         if (!target->isAlive()) return false;
         QString color = judge.pattern;
         QList<ServerPlayer *> to_choose;
-        foreach(ServerPlayer *p, room->getOtherPlayers(target))
+        foreach (ServerPlayer *p, room->getOtherPlayers(target))
         {
             if (target->distanceTo(p) == 1)
                 to_choose << p;
@@ -376,7 +376,7 @@ public:
         }
 
         QString color = player->tag["qianxi"].toString();
-        foreach(ServerPlayer *p, room->getOtherPlayers(player))
+        foreach (ServerPlayer *p, room->getOtherPlayers(player))
         {
             if (p->hasFlag("QianxiTarget"))
             {
@@ -655,7 +655,7 @@ public:
                     if (ok && yongjue_id == move.card_ids.first())
                     {
                         ask_who = player;
-                        foreach(ServerPlayer *p, owners)
+                        foreach (ServerPlayer *p, owners)
                         {
                             if (p->isFriendWith(player))
                                 return QStringList(objectName());
@@ -671,7 +671,7 @@ public:
     {
         QList<ServerPlayer *> owners = room->findPlayersBySkillName(objectName());
         ServerPlayer *owner = NULL;
-        foreach(ServerPlayer *p, owners)
+        foreach (ServerPlayer *p, owners)
         {
             if (player->isFriendWith(p))
             {
@@ -791,7 +791,7 @@ public:
         if (player == NULL) return skill_list;
         QList<ServerPlayer *> sunces = room->findPlayersBySkillName(objectName());
         PindianStruct *pindian = data.value<PindianStruct *>();
-        foreach(ServerPlayer *sunce, sunces)
+        foreach (ServerPlayer *sunce, sunces)
             if (pindian->from == sunce || pindian->to == sunce)
                 skill_list.insert(sunce, QStringList(objectName()));
 
@@ -973,7 +973,7 @@ public:
     {
         if (PhaseChangeSkill::triggerable(player) && player->getPhase() == Player::Finish && player->isChained())
         {
-            foreach(ServerPlayer *p, room->getAllPlayers())
+            foreach (ServerPlayer *p, room->getAllPlayers())
             {
                 if (p->isChained() && player->canDiscard(p, "he"))
                     return QStringList(objectName());
@@ -987,7 +987,7 @@ public:
         if (player->askForSkillInvoke(this))
         {
 
-            foreach(ServerPlayer *p, room->getOtherPlayers(player))
+            foreach (ServerPlayer *p, room->getOtherPlayers(player))
             {
                 if (p->isChained())
                     room->doAnimate(QSanProtocol::S_ANIMATE_INDICATE, player->objectName(), p->objectName());
@@ -1003,7 +1003,7 @@ public:
     virtual bool onPhaseChange(ServerPlayer *player) const
     {
         Room *room = player->getRoom();
-        foreach(ServerPlayer *p, room->getAllPlayers())
+        foreach (ServerPlayer *p, room->getAllPlayers())
         {
             if (p->isChained() && player->canDiscard(p, "he") && player->isAlive())
             {
@@ -1032,7 +1032,7 @@ public:
     {
         if (PhaseChangeSkill::triggerable(player) && player->getPhase() == Player::Draw && (player->isKongcheng() || player->getHp() == 1))
         {
-            foreach(ServerPlayer *p, room->getOtherPlayers(player))
+            foreach (ServerPlayer *p, room->getOtherPlayers(player))
             {
                 if (!p->isAllNude())
                     return QStringList(objectName());
@@ -1056,7 +1056,7 @@ public:
     virtual bool onPhaseChange(ServerPlayer *player) const
     {
         Room *room = player->getRoom();
-        foreach(ServerPlayer *p, room->getOtherPlayers(player))
+        foreach (ServerPlayer *p, room->getOtherPlayers(player))
         {
             if (!p->isAllNude())
             {
@@ -1139,7 +1139,7 @@ public:
         if (player->getPhase() == Player::Finish)
         {
             QList<ServerPlayer *> players = room->getOtherPlayers(player);
-            foreach(ServerPlayer *p, players)
+            foreach (ServerPlayer *p, players)
                 if (player->getHp() > p->getHp())
                     return QStringList(objectName());
         }
@@ -1243,13 +1243,13 @@ public:
         TriggerList skill_list;
         CardUseStruct use = data.value<CardUseStruct>();
         QList<ServerPlayer *> skill_owners = room->findPlayersBySkillName(objectName());
-        foreach(ServerPlayer *skill_owner, skill_owners)
+        foreach (ServerPlayer *skill_owner, skill_owners)
         {
             if (BattleArraySkill::triggerable(skill_owner) && skill_owner->hasShownSkill(this)
                 && use.card != NULL && use.card->isKindOf("Slash"))
             {
                 QStringList targets;
-                foreach(ServerPlayer *to, use.to)
+                foreach (ServerPlayer *to, use.to)
                 {
                     if (player->inSiegeRelation(skill_owner, to) && to->canDiscard(to, "e"))
                         targets << to->objectName();
@@ -1278,7 +1278,7 @@ public:
         if (!room->askForCard(skill_target, ".|.|.|equipped!", "@fengshi-discard:" + ask_who->objectName()))
         {
             QList<const Card *> equips_candiscard;
-            foreach(const Card *e, skill_target->getEquips())
+            foreach (const Card *e, skill_target->getEquips())
             {
                 if (skill_target->canDiscard(skill_target, e->getEffectiveId()))
                     equips_candiscard << e;
@@ -1432,7 +1432,7 @@ public:
             {
                 if (player && player->isAlive() && player->hasLordSkill(objectName()))
                 {
-                    foreach(ServerPlayer *p, room->getAlivePlayers())
+                    foreach (ServerPlayer *p, room->getAlivePlayers())
                         if (p->willBeFriendWith(player))
                             room->attachSkillToPlayer(p, "hongfa_slash");
                 }
@@ -1451,7 +1451,7 @@ public:
                     if (death.who != player)
                         return QStringList();
                 }
-                foreach(ServerPlayer *p, room->getAlivePlayers())
+                foreach (ServerPlayer *p, room->getAlivePlayers())
                     room->detachSkillFromPlayer(p, "hongfa_slash");
             }
             return QStringList();
@@ -1546,9 +1546,9 @@ WendaoCard::WendaoCard()
 void WendaoCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const
 {
     const Card *tpys = NULL;
-    foreach(ServerPlayer *p, room->getAlivePlayers())
+    foreach (ServerPlayer *p, room->getAlivePlayers())
     {
-        foreach(const Card *card, p->getEquips())
+        foreach (const Card *card, p->getEquips())
         {
             if (Sanguosha->getCard(card->getEffectiveId())->isKindOf("PeaceSpell"))
             {
@@ -1561,7 +1561,7 @@ void WendaoCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) 
             break;
     }
     if (tpys == NULL)
-        foreach(int id, room->getDiscardPile())
+        foreach (int id, room->getDiscardPile())
     {
         if (Sanguosha->getCard(id)->isKindOf("PeaceSpell"))
         {
@@ -1768,7 +1768,7 @@ public:
         QList<ServerPlayer *> targets = target->getRoom()->getAlivePlayers();
 
         ServerPlayer *ps_owner = NULL;
-        foreach(ServerPlayer *p, targets)
+        foreach (ServerPlayer *p, targets)
         {
             if (p->hasArmorEffect("PeaceSpell"))
             {

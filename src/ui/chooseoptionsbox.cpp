@@ -32,7 +32,7 @@ QRectF ChooseOptionsBox::boundingRect() const
     const int width = getButtonWidth()* (qMax(options.length(), 1)) + outerBlankWidth * 2 + (qMax(options.length(), 1) - 1) * interval;
 
     int max = 0;
-    foreach(const QString &str, options)
+    foreach (const QString &str, options)
         max = qMax(max, str.split("+").length());
 
     int height = topBlankWidth + max * defaultButtonHeight + (max - 1) * interval + bottomBlankWidth;
@@ -54,11 +54,11 @@ void ChooseOptionsBox::chooseOption(const QStringList &options)
     QMap<Button *, QPoint> pos;
     int x = 0;
     int y = 0;
-    foreach(const QString &option, options)
+    foreach (const QString &option, options)
     {
         y = 0;
         ++x;
-        foreach(const QString &choice, option.split("+"))
+        foreach (const QString &choice, option.split("+"))
         {
             ++y;
             Button *button = new Button(translate(choice), QSizeF(buttonWidth,
@@ -134,9 +134,9 @@ int ChooseOptionsBox::getButtonWidth() const
 
     QFontMetrics fontMetrics(Button::defaultFont());
     int biggest = 0;
-    foreach(const QString &section, options)
+    foreach (const QString &section, options)
     {
-        foreach(const QString &choice, section.split("+"))
+        foreach (const QString &choice, section.split("+"))
         {
             const int width = fontMetrics.width(translate(choice));
             if (width > biggest)
@@ -169,7 +169,7 @@ void ChooseOptionsBox::clear()
         progressBar = NULL;
     }
 
-    foreach(Button *button, buttons)
+    foreach (Button *button, buttons)
         button->deleteLater();
 
     buttons.clear();

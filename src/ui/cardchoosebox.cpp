@@ -31,7 +31,7 @@ void CardChooseBox::doCardChoose(const QList<int> &upcards, const QList<int> &do
     downItems.clear();
     scene_width = RoomSceneInstance->sceneRect().width();
 
-    foreach(int cardId, upcards)
+    foreach (int cardId, upcards)
     {
         CardItem *cardItem = new CardItem(Sanguosha->getCard(cardId));
         cardItem->setAutoBack(false);
@@ -45,7 +45,7 @@ void CardChooseBox::doCardChoose(const QList<int> &upcards, const QList<int> &do
         if (cardId == -1) noneoperator = true;
     }
 
-    foreach(int cardId, downcards)
+    foreach (int cardId, downcards)
     {
         CardItem *cardItem = new CardItem(Sanguosha->getCard(cardId));
         cardItem->setAutoBack(false);
@@ -138,7 +138,7 @@ void CardChooseBox::doCardChoose(const QList<int> &upcards, const QList<int> &do
     }
     if (this->moverestricted && !noneoperator)
     {
-        foreach(CardItem *card, upItems)
+        foreach (CardItem *card, upItems)
             card->setEnabled(check(downcards, card->getCard()->getId()));
     }
 }
@@ -148,13 +148,13 @@ void CardChooseBox::mirrorCardChooseStart(const QString &who, const QString &rea
 {
     doCardChoose(upcards, downcards, reason, pattern, moverestricted, min_num, max_num);
 
-    foreach(CardItem *item, upItems)
+    foreach (CardItem *item, upItems)
     {
         item->setFlag(QGraphicsItem::ItemIsMovable, false);
         item->disconnect(this);
     }
 
-    foreach(CardItem *item, downItems)
+    foreach (CardItem *item, downItems)
     {
         item->setFlag(QGraphicsItem::ItemIsMovable, false);
         item->disconnect(this);
@@ -225,7 +225,7 @@ void CardChooseBox::onItemReleased()
     if (item == NULL) return;
 
     QList<int> down_cards;
-    foreach(CardItem *card_item, downItems)
+    foreach (CardItem *card_item, downItems)
         down_cards << card_item->getCard()->getId();
     bool check = (func == "") ? true : this->check(down_cards, item->getCard()->getId());
 
@@ -296,7 +296,7 @@ void CardChooseBox::onItemReleased()
         QList<CardItem *> readjust;
         for (int i = itemCount; i < count; i++)
             readjust << upItems.at(i);
-        foreach(CardItem *item, readjust)
+        foreach (CardItem *item, readjust)
         {
             upItems.removeOne(item);
             downItems.append(item);
@@ -309,7 +309,7 @@ void CardChooseBox::onItemReleased()
         QList<CardItem *> readjust;
         for (int i = downCount; i < count; i++)
             readjust << downItems.at(i);
-        foreach(CardItem *item, readjust)
+        foreach (CardItem *item, readjust)
         {
             downItems.removeOne(item);
             upItems.append(item);
@@ -321,7 +321,7 @@ void CardChooseBox::onItemReleased()
     if (!moverestricted && func != "")
     {
         down_cards.clear();
-        foreach(CardItem *card_item, downItems)
+        foreach (CardItem *card_item, downItems)
             down_cards << card_item->getCard()->getId();
         buttonstate = this->check(down_cards, -1);
     }
@@ -340,7 +340,7 @@ void CardChooseBox::onItemClicked()
     if (item == NULL) return;
 
     QList<int> down_cards;
-    foreach(CardItem *card_item, downItems)
+    foreach (CardItem *card_item, downItems)
         down_cards << card_item->getCard()->getId();
     bool check = (func == "") ? true : this->check(down_cards, item->getCard()->getId());
     if (moverestricted && upItems.contains(item) && !check) return;
@@ -368,7 +368,7 @@ void CardChooseBox::onItemClicked()
     if (!moverestricted && func != "")
     {
         down_cards.clear();
-        foreach(CardItem *card_item, downItems)
+        foreach (CardItem *card_item, downItems)
             down_cards << card_item->getCard()->getId();
         buttonstate = this->check(down_cards, -1);
     }
@@ -407,7 +407,7 @@ void CardChooseBox::adjust()
         if (moverestricted && !noneoperator)
         {
             QList<int> down_cards;
-            foreach(CardItem *card_item, downItems)
+            foreach (CardItem *card_item, downItems)
                 down_cards << card_item->getCard()->getId();
 
             upItems.at(i)->setEnabled(check(down_cards, upItems.at(i)->getCard()->getId()));
@@ -488,9 +488,9 @@ bool CardChooseBox::check(const QList<int> &selected, int to_select)
 
 void CardChooseBox::clear()
 {
-    foreach(CardItem *card_item, upItems)
+    foreach (CardItem *card_item, upItems)
         card_item->deleteLater();
-    foreach(CardItem *card_item, downItems)
+    foreach (CardItem *card_item, downItems)
         card_item->deleteLater();
 
     upItems.clear();
@@ -503,10 +503,10 @@ void CardChooseBox::clear()
 void CardChooseBox::reply()
 {
     QList<int> up_cards, down_cards;
-    foreach(CardItem *card_item, upItems)
+    foreach (CardItem *card_item, upItems)
         up_cards << card_item->getCard()->getId();
 
-    foreach(CardItem *card_item, downItems)
+    foreach (CardItem *card_item, downItems)
         down_cards << card_item->getCard()->getId();
 
     ClientInstance->onPlayerReplyMoveCards(up_cards, down_cards);

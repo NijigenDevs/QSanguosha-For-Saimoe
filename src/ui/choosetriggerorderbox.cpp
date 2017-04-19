@@ -72,7 +72,7 @@ QString TriggerOptionButton::getGeneralNameBySkill() const
         skillName = m_skillStr.split("*").first();
     if (skillName == arrayString)
     {
-        foreach(const Skill *skill, player->getVisibleSkillList())
+        foreach (const Skill *skill, player->getVisibleSkillList())
         {
             if (!skill->inherits("BattleArraySkill")) continue;
             if (player->inHeadSkills(skill))
@@ -323,7 +323,7 @@ void ChooseTriggerOrderBox::storeMinimumWidth()
 {
     int width = 0;
     static QFontMetrics fontMetrics(TriggerOptionButton::defaultFont());
-    foreach(const QString &option, options)
+    foreach (const QString &option, options)
     {
         const QString skill = option.split(":").last();
         if (skill.startsWith(generalShowStringHead))
@@ -420,7 +420,7 @@ void ChooseTriggerOrderBox::chooseOption(const QString &reason, const QStringLis
 
     width = qMax(width, m_minimumWidth);
 
-    foreach(const QString &option, options)
+    foreach (const QString &option, options)
     {
         QStringList pair = option.split(":");
         if (pair.last().startsWith(generalShowStringHead))
@@ -428,7 +428,7 @@ void ChooseTriggerOrderBox::chooseOption(const QString &reason, const QStringLis
 
         TriggerOptionButton *button = new TriggerOptionButton(this, pair.first(), pair.last(), width);
         button->setObjectName(option);
-        foreach(TriggerOptionButton *otherButton, optionButtons)
+        foreach (TriggerOptionButton *otherButton, optionButtons)
         {
             if (otherButton->isPreferentialSkillOf(button))
                 connect(button, &TriggerOptionButton::hovered, otherButton, &TriggerOptionButton::needDisabled);
@@ -440,7 +440,7 @@ void ChooseTriggerOrderBox::chooseOption(const QString &reason, const QStringLis
     show();
 
     int y = m_topBlankWidth;
-    foreach(TriggerOptionButton *button, optionButtons)
+    foreach (TriggerOptionButton *button, optionButtons)
     {
         QPointF pos;
         pos.setX(m_leftBlankWidth);
@@ -451,7 +451,7 @@ void ChooseTriggerOrderBox::chooseOption(const QString &reason, const QStringLis
         y += button->boundingRect().height() + interval;
     }
 
-    foreach(GeneralButton *button, generalButtons)
+    foreach (GeneralButton *button, generalButtons)
         connect(button, &GeneralButton::clicked, this, &ChooseTriggerOrderBox::reply);
 
 
@@ -490,10 +490,10 @@ void ChooseTriggerOrderBox::clear()
         progressBar = NULL;
     }
 
-    foreach(TriggerOptionButton *button, optionButtons)
+    foreach (TriggerOptionButton *button, optionButtons)
         button->deleteLater();
 
-    foreach(GeneralButton *button, generalButtons)
+    foreach (GeneralButton *button, generalButtons)
         button->deleteLater();
 
     optionButtons.clear();

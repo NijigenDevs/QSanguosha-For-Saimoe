@@ -174,7 +174,7 @@ MainWindow::MainWindow(QWidget *parent)
 #ifdef Q_OS_IOS
     actions << ui->actionRule_Summary;//SE
 #endif
-    foreach(QAction *action, actions)
+    foreach (QAction *action, actions)
         start_scene->addButton(action);
 
 #if defined(Q_OS_WIN) || defined(Q_OS_LINUX)
@@ -732,7 +732,7 @@ void BackLoader::preload()
 {
     QStringList emotions = G_ROOM_SKIN.getAnimationFileNames();
 
-    foreach(const QString &emotion, emotions)
+    foreach (const QString &emotion, emotions)
     {
         int n = PixmapAnimation::GetFrameCount(emotion);
         for (int i = 0; i < n; i++)
@@ -829,7 +829,7 @@ void MainWindow::gotoStartScene()
     actions << ui->actionRule_Summary;
 #endif
 
-    foreach(QAction *action, actions)
+    foreach (QAction *action, actions)
         start_scene->addButton(action);
 
     setCentralWidget(view);
@@ -1121,7 +1121,7 @@ void MainWindow::on_actionReplay_file_convert_triggered()
     if (filenames.isEmpty())
         return;
 
-    foreach(const QString &filename, filenames)
+    foreach (const QString &filename, filenames)
     {
         QFile file(filename);
         if (file.open(QIODevice::ReadOnly))
@@ -1194,7 +1194,7 @@ void MainWindow::on_actionRecord_analysis_triggered()
     table->setSelectionBehavior(QTableWidget::SelectRows);
 
     int i = 0;
-    foreach(PlayerRecordStruct *rec, record_map)
+    foreach (PlayerRecordStruct *rec, record_map)
     {
         QTableWidgetItem *item = new QTableWidgetItem;
         QString screen_name = Sanguosha->translate(rec->m_screenName);

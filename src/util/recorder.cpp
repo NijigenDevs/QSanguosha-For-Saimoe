@@ -115,7 +115,7 @@ Replayer::Replayer(QObject *parent, const QString &filename)
 
     int time_offset = 0;
     pair_offset = 0;
-    foreach(const Pair &pair, pairs)
+    foreach (const Pair &pair, pairs)
     {
         Packet packet;
         if (packet.parse(pair.cmd))

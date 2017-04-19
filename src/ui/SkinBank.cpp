@@ -332,7 +332,7 @@ QPixmap QSanRoomSkin::getProgressBarPixmap(int percentile) const
 {
     if (!_m_imageConfig[S_SKIN_KEY_PROGRESS_BAR_IMAGE].canConvert<JsonArray>()) return QPixmap();
     JsonArray allMaps = _m_imageConfig[S_SKIN_KEY_PROGRESS_BAR_IMAGE].value<JsonArray>();
-    foreach(const QVariant &_map, allMaps)
+    foreach (const QVariant &_map, allMaps)
     {
         JsonArray map = _map.value<JsonArray>();
         if (map.size() < 2 || !JsonUtils::isNumber(map[0])) continue;
@@ -672,7 +672,7 @@ bool IQSanComponentSkin::_loadImageConfig(const QVariant &config)
     {
         JsonObject object = config.value<JsonObject>();
         const QList<QString> &keys = object.keys();
-        foreach(const QString &key, keys)
+        foreach (const QString &key, keys)
         {
             _m_imageConfig[key] = object[key];
             S_IMAGE_KEY2FILE.remove(key);
@@ -680,7 +680,7 @@ bool IQSanComponentSkin::_loadImageConfig(const QVariant &config)
             if (S_IMAGE_GROUP_KEYS.contains(key))
             {
                 const QList<QString> &mappedKeys = S_IMAGE_GROUP_KEYS[key];
-                foreach(const QString &mkey, mappedKeys)
+                foreach (const QString &mkey, mappedKeys)
                 {
                     S_IMAGE_KEY2FILE.remove(mkey);
                     S_IMAGE_KEY2PIXMAP.remove(mkey);
@@ -1019,7 +1019,7 @@ bool QSanRoomSkin::_loadLayoutConfig(const QVariant &layout)
     tryParse(config["roleNormalBgSize"], _m_commonLayout.m_roleNormalBgSize);
     QStringList kingdoms = Sanguosha->getKingdoms();
     kingdoms.removeAll("god");
-    foreach(const QString &kingdom, kingdoms)
+    foreach (const QString &kingdom, kingdoms)
     {
         tryParse(config[QString(S_SKIN_KEY_ROLE_BOX_RECT).arg(kingdom)], _m_commonLayout.m_rolesRect[kingdom]);
         tryParse(config[QString(S_SKIN_KEY_ROLE_BOX_COLOR).arg(kingdom)], _m_commonLayout.m_rolesColor[kingdom]);

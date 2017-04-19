@@ -110,7 +110,7 @@ int main(int argc, char *argv[])
         bool found = false;
         QDir storageDir("/storage");
         QStringList sdcards = storageDir.entryList(QDir::Dirs | QDir::NoDotAndDotDot);
-        foreach(const QString &sdcard, sdcards)
+        foreach (const QString &sdcard, sdcards)
         {
             QDir root(QString("/storage/%1/Android/data/org.qsgsrara.qsanguosha").arg(sdcard));
             if (root.exists("lua/config.lua"))
@@ -221,7 +221,7 @@ int main(int argc, char *argv[])
     }
 #endif
 
-    foreach(const QString &_arg, qApp->arguments())
+    foreach (const QString &_arg, qApp->arguments())
     {
         QString arg = _arg;
         if (arg.startsWith("-connect:"))

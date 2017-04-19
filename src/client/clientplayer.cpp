@@ -25,7 +25,7 @@ int ClientPlayer::aliveCount(bool includeRemoved) const
     {
         if (isRemoved())
             n--;
-        foreach(const Player *p, getAliveSiblings())
+        foreach (const Player *p, getAliveSiblings())
             if (p->isRemoved())
                 n--;
     }
@@ -81,7 +81,7 @@ bool ClientPlayer::isLastHandCard(const Card *card, bool contain) const
     {
         if (!contain)
         {
-            foreach(int card_id, card->getSubcards())
+            foreach (int card_id, card->getSubcards())
             {
                 if (!known_cards.contains(Sanguosha->getCard(card_id)))
                     return false;
@@ -90,7 +90,7 @@ bool ClientPlayer::isLastHandCard(const Card *card, bool contain) const
         }
         else
         {
-            foreach(const Card *ncard, known_cards)
+            foreach (const Card *ncard, known_cards)
             {
                 if (!card->getSubcards().contains(ncard->getEffectiveId()))
                     return false;
@@ -139,7 +139,7 @@ QList<const Card *> ClientPlayer::getHandcards() const
 void ClientPlayer::setCards(const QList<int> &card_ids)
 {
     known_cards.clear();
-    foreach(int cardId, card_ids)
+    foreach (int cardId, card_ids)
         known_cards.append(Sanguosha->getCard(cardId));
 }
 
@@ -150,13 +150,13 @@ QList<const Card *> ClientPlayer::getVisiblecards() const
 
 void ClientPlayer::addVisibleCards(const QList<int> &card_ids)
 {
-    foreach(int cardId, card_ids)
+    foreach (int cardId, card_ids)
         visible_cards.append(Sanguosha->getCard(cardId));
 }
 
 void ClientPlayer::removeVisibleCards(const QList<int> &card_ids)
 {
-    foreach(int cardId, card_ids)
+    foreach (int cardId, card_ids)
         visible_cards.removeOne(Sanguosha->getCard(cardId));
 }
 
@@ -185,7 +185,7 @@ void ClientPlayer::changePile(const QString &name, bool add, QList<int> card_ids
     }
     else
     {
-        foreach(int card_id, card_ids)
+        foreach (int card_id, card_ids)
         {
             if (piles[name].isEmpty()) break;
             if (piles[name].contains(Card::S_UNKNOWN_CARD_ID) && !piles[name].contains(card_id))
@@ -274,7 +274,7 @@ QStringList ClientPlayer::getBigKingdoms(const QString &, MaxCardsType::MaxCards
     kingdom_map.insert("qun", 0);
     QList<const Player *> players = getAliveSiblings();
     players.prepend(this);
-    foreach(const Player *p, players)
+    foreach (const Player *p, players)
     {
         if (!p->hasShownOneGeneral())
             continue;
@@ -288,7 +288,7 @@ QStringList ClientPlayer::getBigKingdoms(const QString &, MaxCardsType::MaxCards
     if (type == MaxCardsType::Max && hasLordSkill("hongfa") && !getPile("heavenly_army").isEmpty())
         kingdom_map["qun"] += getPile("heavenly_army").length();
     QStringList big_kingdoms;
-    foreach(const QString &key, kingdom_map.keys())
+    foreach (const QString &key, kingdom_map.keys())
     {
         if (kingdom_map[key] == 0)
             continue;
@@ -309,7 +309,7 @@ QStringList ClientPlayer::getBigKingdoms(const QString &, MaxCardsType::MaxCards
         }
     }
     const Player *jade_seal_owner = NULL;
-    foreach(const Player *p, players)
+    foreach (const Player *p, players)
     {
         if (p->hasTreasure("JadeSeal") && p->hasShownOneGeneral())
         {

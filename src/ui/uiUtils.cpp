@@ -128,9 +128,9 @@ QString QSanUiUtils::QSanFreeTypeFont::resolveFont(const QString &fontName)
         dirsToResolve.push_back("./font");
         extsToTry.push_back("ttf");
         extsToTry.push_back("ttc");
-        foreach(const QString &sdir, dirsToResolve)
+        foreach (const QString &sdir, dirsToResolve)
         {
-            foreach(const QString &ext, extsToTry)
+            foreach (const QString &ext, extsToTry)
             {
                 QDir dir(sdir);
                 QString filePath = dir.filePath(QString("%1.%2").arg(fontName).arg(ext));

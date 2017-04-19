@@ -58,7 +58,7 @@ QString Skill::getDescription(bool inToolTip) const
     if (des_src == ":" + skill_name)
         return desc;
 
-    foreach(const QString &skill_type, Sanguosha->getSkillColorMap().keys())
+    foreach (const QString &skill_type, Sanguosha->getSkillColorMap().keys())
     {
         QString to_replace = Sanguosha->translate(skill_type);
         if (to_replace == skill_type) continue;
@@ -332,7 +332,7 @@ bool OneCardViewAsSkill::viewFilter(const Card *to_select) const
         {
             QStringList handlist;
             handlist.append("hand");
-            foreach(const QString &pile, Self->getPileNames())
+            foreach (const QString &pile, Self->getPileNames())
             {
                 if (pile.startsWith("&") || pile == "wooden_ox")
                     handlist.append(pile);
@@ -711,7 +711,7 @@ bool FakeMoveSkill::effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &,
 {
     QString flag = QString("%1_InTempMoving").arg(name);
 
-    foreach(ServerPlayer *p, room->getAllPlayers())
+    foreach (ServerPlayer *p, room->getAllPlayers())
         if (p->hasFlag(flag)) return true;
 
     return false;

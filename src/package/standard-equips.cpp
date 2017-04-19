@@ -30,7 +30,7 @@ public:
         if (use.card != NULL && use.card->isKindOf("Slash"))
         {
             QStringList targets;
-            foreach(ServerPlayer *to, use.to)
+            foreach (ServerPlayer *to, use.to)
             {
                 if (genderDiff(player, to))
                     targets << to->objectName();
@@ -98,7 +98,7 @@ public:
         if (use.card != NULL && use.card->isKindOf("Slash"))
         {
             QStringList targets;
-            foreach(ServerPlayer *to, use.to)
+            foreach (ServerPlayer *to, use.to)
                 targets << to->objectName();
             if (!targets.isEmpty())
                 return QStringList(objectName() + "->" + targets.join("+"));
@@ -494,7 +494,7 @@ public:
 
     virtual int getExtra(const Player *target, bool) const
     {
-        foreach(const Player *p, target->getAliveSiblings())
+        foreach (const Player *p, target->getAliveSiblings())
         {
             if (p->hasWeapon("SixSwords") && p->isFriendWith(target) && p->getMark("Equips_Nullified_to_Yourself") == 0)
                 return 1;
@@ -557,7 +557,7 @@ public:
             && damage.by_user && !damage.chain && !damage.transfer)
         {
             QList<ServerPlayer *> players;
-            foreach(ServerPlayer *p, room->getOtherPlayers(player))
+            foreach (ServerPlayer *p, room->getOtherPlayers(player))
             {
                 if (damage.to->distanceTo(p) == 1)
                 {
@@ -570,7 +570,7 @@ public:
             room->askForUseCard(player, "@@Triblade", "@Triblade");
         }
 
-        foreach(ServerPlayer *p, room->getAllPlayers())
+        foreach (ServerPlayer *p, room->getAllPlayers())
             if (p->hasFlag("TribladeCanBeSelected"))
                 room->setPlayerFlag(p, "-TribladeCanBeSelected");
 

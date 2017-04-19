@@ -61,7 +61,7 @@ bool ServerInfoStruct::parse(const QString &str)
         QStringList ban_packages = texts.at(5).split("+");
         const QList<const Package *> &packages = Sanguosha->getPackages();
         Extensions.clear();
-        foreach(const Package *package, packages)
+        foreach (const Package *package, packages)
         {
             QString package_name = package->objectName();
             if (ban_packages.contains(package_name))
@@ -151,7 +151,7 @@ void ServerInfoWidget::fill(const ServerInfoStruct &info, const QString &address
     static QIcon enabled_icon("image/system/enabled.png");
     static QIcon disabled_icon("image/system/disabled.png");
 
-    foreach(const QString &_extension, info.Extensions)
+    foreach (const QString &_extension, info.Extensions)
     {
         QString extension = _extension;
         bool checked = !extension.startsWith("!");

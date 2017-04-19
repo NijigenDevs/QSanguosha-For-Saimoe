@@ -6,7 +6,7 @@
 
 RoomState::~RoomState()
 {
-    foreach(WrappedCard *card, m_cards)
+    foreach (WrappedCard *card, m_cards)
     {
         delete card;
     }
@@ -33,7 +33,7 @@ void RoomState::resetCard(int cardId)
 // Reset all cards, generals' states of the room instance
 void RoomState::reset()
 {
-    foreach(WrappedCard *card, m_cards)
+    foreach (WrappedCard *card, m_cards)
     {
         delete card;
     }

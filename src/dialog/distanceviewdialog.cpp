@@ -36,10 +36,10 @@ public:
         horse_edit->setObjectName("HorseCorrect");
         horse_edit->setReadOnly(true);
         distance_edits << horse_edit;
-        foreach(const DistanceSkill *skill, skills)
+        foreach (const DistanceSkill *skill, skills)
         {
             bool show_skill = false;
-            foreach(const ClientPlayer *p, ClientInstance->getPlayers())
+            foreach (const ClientPlayer *p, ClientInstance->getPlayers())
             {
                 if (p->hasShownSkill(skill))
                 {
@@ -93,7 +93,7 @@ DistanceViewDialog::DistanceViewDialog(QWidget *parent)
     fLayout->addRow(tr("Distance correct"), box);
 
     QFormLayout *box_layout = new QFormLayout;
-    foreach(QLineEdit *edit, ui->distance_edits)
+    foreach (QLineEdit *edit, ui->distance_edits)
         box_layout->addRow(Sanguosha->translate(edit->objectName()), edit);
 
     box->setLayout(box_layout);
@@ -144,7 +144,7 @@ void DistanceViewDialog::showDistance()
             .arg(min));
     }
 
-    foreach(QLineEdit *edit, ui->distance_edits)
+    foreach (QLineEdit *edit, ui->distance_edits)
     {
         QString skill_name = edit->objectName();
         if (skill_name == "HorseCorrect")

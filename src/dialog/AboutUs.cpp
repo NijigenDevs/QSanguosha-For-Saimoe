@@ -44,7 +44,7 @@ AboutUsDialog::AboutUsDialog(QWidget *parent)
 
     QStringList developers = GetValueFromLuaState(L, "about_us", "developers").toStringList();
 
-    foreach(const QString &name, developers)
+    foreach (const QString &name, developers)
     {
         QListWidgetItem *item = new QListWidgetItem(Sanguosha->translate(name), list);
         item->setData(Qt::UserRole, name);

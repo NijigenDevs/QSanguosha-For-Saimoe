@@ -349,7 +349,7 @@ bool Dashboard::_addCardItems(QList<CardItem *> &card_items, const CardsMoveStru
     Player::Place place = moveInfo.to_place;
     if (place == Player::PlaceSpecial)
     {
-        foreach(CardItem *card, card_items)
+        foreach (CardItem *card, card_items)
             card->setHomeOpacity(0.0);
         QPointF center = mapFromItem(_getAvatarParent(), layout->m_secondaryAvatarArea.center());
         QRectF rect = QRectF(0, 0, layout->m_disperseWidth, 0);
@@ -371,7 +371,7 @@ bool Dashboard::_addCardItems(QList<CardItem *> &card_items, const CardsMoveStru
 
 void Dashboard::addHandCards(QList<CardItem *> &card_items)
 {
-    foreach(CardItem *card_item, card_items)
+    foreach (CardItem *card_item, card_items)
         _addHandCard(card_item);
     updateHandcardNum();
 }
@@ -441,7 +441,7 @@ void Dashboard::selectCard(const QString &pattern, bool forward, bool multiple)
 
     // find all cards that match the card type
     QList<CardItem *> matches;
-    foreach(CardItem *card_item, m_handCards)
+    foreach (CardItem *card_item, m_handCards)
     {
         if (!card_item->isFrozen() && (pattern == "." || card_item->getCard()->match(pattern)))
             matches << card_item;
@@ -487,7 +487,7 @@ void Dashboard::selectOnlyCard(bool need_only)
     int count = 0;
 
     QList<CardItem *> items;
-    foreach(CardItem *card_item, m_handCards)
+    foreach (CardItem *card_item, m_handCards)
     {
         if (!card_item->isFrozen())
         {
@@ -557,7 +557,7 @@ void Dashboard::unselectAll(const CardItem *except)
 {
     selected = NULL;
 
-    foreach(CardItem *card_item, m_handCards)
+    foreach (CardItem *card_item, m_handCards)
     {
         if (card_item != except)
             selectCard(card_item, false);
@@ -745,7 +745,7 @@ void Dashboard::showSeat()
 void Dashboard::clearPendings()
 {
     selected = NULL;
-    foreach(CardItem *item, m_handCards)
+    foreach (CardItem *item, m_handCards)
         selectCard(item, false);
     pendings.clear();
 }
@@ -760,7 +760,7 @@ void Dashboard::skillButtonActivated()
     QSanSkillButton *button = qobject_cast<QSanSkillButton *>(sender());
     QList<QSanInvokeSkillButton *> buttons = m_leftSkillDock->getAllSkillButtons()
         + m_rightSkillDock->getAllSkillButtons();
-    foreach(QSanSkillButton *btn, buttons)
+    foreach (QSanSkillButton *btn, buttons)
     {
         if (button == btn) continue;
 
@@ -781,7 +781,7 @@ void Dashboard::skillButtonDeactivated()
 {
     QList<QSanInvokeSkillButton *> buttons = m_leftSkillDock->getAllSkillButtons()
         + m_rightSkillDock->getAllSkillButtons();
-    foreach(QSanSkillButton *btn, buttons)
+    foreach (QSanSkillButton *btn, buttons)
     {
         if (btn->getViewAsSkill() != NULL && btn->isDown())
             btn->setState(QSanButton::S_STATE_UP);
@@ -797,7 +797,7 @@ void Dashboard::skillButtonDeactivated()
         }
     }
 
-    foreach(TransferButton *button, _transferButtons)
+    foreach (TransferButton *button, _transferButtons)
     {
         if (button->isDown())
             button->setState(QSanButton::S_STATE_UP);
@@ -806,7 +806,7 @@ void Dashboard::skillButtonDeactivated()
 
 void Dashboard::selectAll()
 {
-    foreach(const QString &pile, Self->getHandPileList(false))
+    foreach (const QString &pile, Self->getHandPileList(false))
         retractPileCards(pile);
     selectCards(".");
 }
@@ -816,7 +816,7 @@ void Dashboard::selectCards(const QString &pattern)
     if (viewAsSkill)
     {
         unselectAll();
-        foreach(CardItem *card_item, m_handCards)
+        foreach (CardItem *card_item, m_handCards)
         {
             if (!Sanguosha->matchExpPattern(pattern, Self, card_item->getCard())) continue;
             selectCard(card_item, true);
@@ -1038,7 +1038,7 @@ int Dashboard::maxCardsNumInFirstLine() const
 void Dashboard::adjustCards(bool playAnimation)
 {
     _adjustCards();
-    foreach(CardItem *card, m_handCards)
+    foreach (CardItem *card, m_handCards)
         card->goBack(playAnimation);
 }
 
@@ -1092,7 +1092,7 @@ QList<CardItem *> Dashboard::cloneCardItems(QList<int> card_ids)
     CardItem *card_item;
     CardItem *new_card;
 
-    foreach(int card_id, card_ids)
+    foreach (int card_id, card_ids)
     {
         new_card = _createCard(card_id);
 
@@ -1112,7 +1112,7 @@ QList<CardItem *> Dashboard::removeHandCards(const QList<int> &card_ids)
 {
     QList<CardItem *> result;
     CardItem *card_item;
-    foreach(int card_id, card_ids)
+    foreach (int card_id, card_ids)
     {
         card_item = CardItem::FindItem(m_handCards, card_id);
         if (card_item == selected) selected = NULL;
@@ -1156,7 +1156,7 @@ QList<CardItem *> Dashboard::removeCardItems(const QList<int> &card_ids, Player:
         result = removeDelayedTricks(card_ids);
     else if (place == Player::PlaceSpecial)
     {
-        foreach(int card_id, card_ids)
+        foreach (int card_id, card_ids)
         {
             card_item = _createCard(card_id);
             card_item->setOpacity(0.0);
@@ -1255,7 +1255,7 @@ void Dashboard::reverseSelection()
     if (!viewAsSkill) return;
 
     QList<CardItem *> selected_items;
-    foreach(CardItem *item, m_handCards)
+    foreach (CardItem *item, m_handCards)
     {
         if (item->isSelected())
         {
@@ -1263,7 +1263,7 @@ void Dashboard::reverseSelection()
             selected_items << item;
         }
     }
-    foreach(CardItem *item, m_handCards)
+    foreach (CardItem *item, m_handCards)
         if (!item->isFrozen() && !selected_items.contains(item))
             item->clickItem();
     adjustCards();
@@ -1292,7 +1292,7 @@ void Dashboard::controlNullificationButton(bool keepState)
 void Dashboard::disableAllCards()
 {
     m_mutexEnableCards.lock();
-    foreach(CardItem *card_item, m_handCards)
+    foreach (CardItem *card_item, m_handCards)
         card_item->setFrozen(true, false);
     m_mutexEnableCards.unlock();
 }
@@ -1300,10 +1300,10 @@ void Dashboard::disableAllCards()
 void Dashboard::enableCards()
 {
     m_mutexEnableCards.lock();
-    foreach(const QString &pile, Self->getHandPileList(false))
+    foreach (const QString &pile, Self->getHandPileList(false))
         expandPileCards(pile);
 
-    foreach(CardItem *card_item, m_handCards)
+    foreach (CardItem *card_item, m_handCards)
     {
         const bool frozen = !card_item->getCard()->isAvailable(Self);
         card_item->setFrozen(frozen, false);
@@ -1316,7 +1316,7 @@ void Dashboard::enableCards()
 void Dashboard::enableAllCards()
 {
     m_mutexEnableCards.lock();
-    foreach(CardItem *card_item, m_handCards)
+    foreach (CardItem *card_item, m_handCards)
     {
         card_item->setFrozen(false, false);
         if (Config.EnableSuperDrag)
@@ -1343,16 +1343,16 @@ void Dashboard::startPending(const ViewAsSkill *skill)
     retractAllSkillPileCards();
     if (expand)
     {
-        foreach(const QString &pile, Self->getHandPileList(false))
+        foreach (const QString &pile, Self->getHandPileList(false))
             expandPileCards(pile);
     }
     else
     {
-        foreach(const QString &pile, Self->getHandPileList(false))
+        foreach (const QString &pile, Self->getHandPileList(false))
             retractPileCards(pile);
         if (skill && !skill->getExpandPile().isEmpty())
         {
-            foreach(const QString &pile_name, skill->getExpandPile().split(","))
+            foreach (const QString &pile_name, skill->getExpandPile().split(","))
                 expandPileCards(pile_name);
         }
     }
@@ -1373,18 +1373,18 @@ void Dashboard::stopPending()
 
     if (viewAsSkill && !viewAsSkill->getExpandPile().isEmpty())
     {
-        foreach(const QString &pile_name, viewAsSkill->getExpandPile().split(","))
+        foreach (const QString &pile_name, viewAsSkill->getExpandPile().split(","))
             retractPileCards(pile_name);
     }
 
     viewAsSkill = NULL;
     pendingCard = NULL;
-    foreach(const QString &pile, Self->getHandPileList())
+    foreach (const QString &pile, Self->getHandPileList())
         retractPileCards(pile);
 
     emit card_selected(NULL);
 
-    foreach(CardItem *item, m_handCards)
+    foreach (CardItem *item, m_handCards)
         item->setFrozen(true, false);
 
     for (int i = 0; i < S_EQUIP_AREA_LENGTH; i++)
@@ -1413,7 +1413,7 @@ void Dashboard::expandPileCards(const QString &pile_name)
     if (new_name.startsWith("%"))
     {
         new_name = new_name.mid(1);
-        foreach(const Player *p, Self->getAliveSiblings())
+        foreach (const Player *p, Self->getAliveSiblings())
             pile += p->getPile(new_name);
     }
     else
@@ -1422,7 +1422,7 @@ void Dashboard::expandPileCards(const QString &pile_name)
     }
     if (pile.isEmpty()) return;
     QList<CardItem *> card_items = _createCards(pile);
-    foreach(CardItem *card_item, card_items)
+    foreach (CardItem *card_item, card_items)
     {
         card_item->setPos(mapFromScene(card_item->scenePos()));
         card_item->setParentItem(this);
@@ -1432,7 +1432,7 @@ void Dashboard::expandPileCards(const QString &pile_name)
     {
         prepend = false;
     }
-    foreach(CardItem *card_item, card_items)
+    foreach (CardItem *card_item, card_items)
         _addHandCard(card_item, prepend, Sanguosha->translate(new_name));
 
     adjustCards();
@@ -1449,7 +1449,7 @@ void Dashboard::retractPileCards(const QString &pile_name)
     if (new_name.startsWith("%"))
     {
         new_name = new_name.mid(1);
-        foreach(const Player *p, Self->getAliveSiblings())
+        foreach (const Player *p, Self->getAliveSiblings())
             pile += p->getPile(new_name);
     }
     else
@@ -1458,7 +1458,7 @@ void Dashboard::retractPileCards(const QString &pile_name)
     }
     if (pile.isEmpty()) return;
     CardItem *card_item;
-    foreach(int card_id, pile)
+    foreach (int card_id, pile)
     {
         card_item = CardItem::FindItem(m_handCards, card_id);
         if (card_item == selected) selected = NULL;
@@ -1477,7 +1477,7 @@ void Dashboard::retractPileCards(const QString &pile_name)
 
 void Dashboard::retractAllSkillPileCards()
 {
-    foreach(const QString &pileName, _m_pile_expanded)
+    foreach (const QString &pileName, _m_pile_expanded)
     {
         if (!Self->getHandPileList(false).contains(pileName))
             retractPileCards(pileName);
@@ -1530,13 +1530,13 @@ void Dashboard::updatePending()
 {
     if (!viewAsSkill) return;
     QList<const Card *> cards;
-    foreach(CardItem *item, pendings)
+    foreach (CardItem *item, pendings)
         cards.append(item->getCard());
 
     QList<const Card *> pended;
     if (!viewAsSkill->inherits("OneCardViewAsSkill"))
         pended = cards;
-    foreach(CardItem *item, m_handCards)
+    foreach (CardItem *item, m_handCards)
     {
         if (!item->isSelected() || pendings.isEmpty())
         {

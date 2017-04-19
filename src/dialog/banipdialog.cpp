@@ -83,9 +83,9 @@ void BanIpDialog::loadIPList()
 {
     left->clear();
 
-    foreach(Room *room, server->rooms)
+    foreach (Room *room, server->rooms)
     {
-        foreach(ServerPlayer *p, room->getPlayers())
+        foreach (ServerPlayer *p, room->getPlayers())
         {
             if (p->getState() != "offline" && p->getState() != "robot")
                 addPlayer(p);

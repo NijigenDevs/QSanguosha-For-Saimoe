@@ -53,7 +53,7 @@ bool Slash::IsAvailable(const Player *player, const Card *slash, bool considerSp
             QStringList assignee_list = player->property("extra_slash_specific_assignee").toString().split("+");
             if (!assignee_list.isEmpty())
             {
-                foreach(const Player *p, player->getAliveSiblings())
+                foreach (const Player *p, player->getAliveSiblings())
                 {
                     if (assignee_list.contains(p->objectName()) && player->canSlash(p, THIS_SLASH))
                         return true;
@@ -102,7 +102,7 @@ void Slash::onUse(Room *room, const CardUseStruct &card_use) const
     {
         room->setPlayerFlag(player, "-slashTargetFix");
         room->setPlayerFlag(player, "-slashTargetFixToOne");
-        foreach(ServerPlayer *target, room->getAlivePlayers())
+        foreach (ServerPlayer *target, room->getAlivePlayers())
             if (target->hasFlag("SlashAssignee"))
                 room->setPlayerFlag(target, "-SlashAssignee");
     }
@@ -138,7 +138,7 @@ void Slash::onUse(Room *room, const CardUseStruct &card_use) const
                     fire_slash->addSubcard(this);
                 fire_slash->setSkillName("Fan");
                 bool can_use = true;
-                foreach(ServerPlayer *p, use.to)
+                foreach (ServerPlayer *p, use.to)
                 {
                     if (!player->canSlash(p, fire_slash, false))
                     {
@@ -162,9 +162,9 @@ void Slash::onUse(Room *room, const CardUseStruct &card_use) const
             forever{
                 QList<ServerPlayer *> targets_ts;
                 QList<const Player *> targets_const;
-                foreach(ServerPlayer *p, use.to)
+                foreach (ServerPlayer *p, use.to)
                     targets_const << qobject_cast<const Player *>(p);
-                foreach(ServerPlayer *p, room->getAlivePlayers())
+                foreach (ServerPlayer *p, room->getAlivePlayers())
                     if (!use.to.contains(p) && use.card->targetFilter(targets_const, p, use.from))
                         targets_ts << p;
                 if (targets_ts.isEmpty())
@@ -188,9 +188,9 @@ else
         while (true)
         {
             QList<const Player *> targets_const;
-            foreach(ServerPlayer *p, use.to)
+            foreach (ServerPlayer *p, use.to)
                 targets_const << qobject_cast<const Player *>(p);
-            foreach(ServerPlayer *p, room->getAlivePlayers())
+            foreach (ServerPlayer *p, room->getAlivePlayers())
                 if (!use.to.contains(p) && use.card->targetFilter(targets_const, p, use.from))
                     targets_ts << p;
             if (targets_ts.isEmpty())
@@ -372,7 +372,7 @@ bool Slash::targetFilter(const QList<const Player *> &targets, const Player *to_
         ++rangefix;
 
     bool has_specific_assignee = false;
-    foreach(const Player *p, Self->getAliveSiblings())
+    foreach (const Player *p, Self->getAliveSiblings())
     {
         if (Slash::IsSpecificAssignee(p, Self, this))
         {
@@ -389,7 +389,7 @@ bool Slash::targetFilter(const QList<const Player *> &targets, const Player *to_
         {
             if (Self->hasFlag("slashDisableExtraTarget")) return false;
             bool canSelect = false;
-            foreach(const Player *p, targets)
+            foreach (const Player *p, targets)
             {
                 if (Slash::IsSpecificAssignee(p, Self, this))
                 {
@@ -405,7 +405,7 @@ bool Slash::targetFilter(const QList<const Player *> &targets, const Player *to_
     if (Self->hasFlag("HalberdSlashFilter"))
     {
         QSet<QString> kingdoms;
-        foreach(const Player *p, targets)
+        foreach (const Player *p, targets)
         {
             if (!p->hasShownOneGeneral() || p->getRole() == "careerist")
                 continue;
@@ -424,7 +424,7 @@ bool Slash::targetFilter(const QList<const Player *> &targets, const Player *to_
         {
             QList<const Player *> duanbing_targets;
             bool no_other_assignee = true;
-            foreach(const Player *p, targets)
+            foreach (const Player *p, targets)
             {
                 if (Self->distanceTo(p, rangefix) == 1)
                     duanbing_targets << p;
@@ -591,7 +591,7 @@ QStringList Analeptic::checkTargetModSkillShow(const CardUseStruct &use) const
         QList<const Skill *> skills = from->getSkillList(false, false);
         QList<const TargetModSkill *> tarmods;
 
-        foreach(const Skill *skill, skills)
+        foreach (const Skill *skill, skills)
         {
             if (from->hasSkill(skill) && skill->inherits("TargetModSkill"))
             {
@@ -606,7 +606,7 @@ QStringList Analeptic::checkTargetModSkillShow(const CardUseStruct &use) const
         int n = use.from->usedTimes(getClassName()) - 1;
         QList<const TargetModSkill *> tarmods_copy = tarmods;
 
-        foreach(const TargetModSkill *tarmod, tarmods_copy)
+        foreach (const TargetModSkill *tarmod, tarmods_copy)
         {
             if (tarmod->getResidueNum(from, use.card) == 0)
             {
@@ -628,7 +628,7 @@ QStringList Analeptic::checkTargetModSkillShow(const CardUseStruct &use) const
         tarmods_copy = tarmods;
 
         QStringList shows;
-        foreach(const TargetModSkill *tarmod, tarmods_copy)
+        foreach (const TargetModSkill *tarmod, tarmods_copy)
         {
             const Skill *main_skill = Sanguosha->getMainSkill(tarmod->objectName());
             shows << main_skill->objectName();

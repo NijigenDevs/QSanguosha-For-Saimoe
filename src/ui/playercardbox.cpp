@@ -161,7 +161,7 @@ void PlayerCardBox::paintLayout(QPainter *painter)
     if (nameRects.isEmpty())
         return;
 
-    foreach(const QRect &rect, nameRects)
+    foreach (const QRect &rect, nameRects)
         painter->drawRoundedRect(rect, 3, 3);
 
     int index = 0;
@@ -199,7 +199,7 @@ void PlayerCardBox::clear()
         progressBarItem->deleteLater();
     }
 
-    foreach(CardItem *item, items)
+    foreach (CardItem *item, items)
         item->deleteLater();
     items.clear();
 
@@ -236,7 +236,7 @@ void PlayerCardBox::arrangeCards(const CardList &cards, const QPoint &topLeft)
 {
     QList<CardItem *> areaItems;
 
-    foreach(const Card *card, cards)
+    foreach (const Card *card, cards)
     {
         CardItem *item = new CardItem(card);
         if (handcards.contains(card->getId()) && !handcardVisible && Self != player && !player->getVisiblecards().contains(card))

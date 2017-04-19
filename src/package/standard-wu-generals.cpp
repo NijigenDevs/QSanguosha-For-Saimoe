@@ -279,7 +279,7 @@ bool LiuliCard::targetFilter(const QList<const Player *> &targets, const Player 
         return false;
 
     const Player *from = NULL;
-    foreach(const Player *p, Self->getAliveSiblings())
+    foreach (const Player *p, Self->getAliveSiblings())
     {
         if (p->hasFlag("LiuliSlashSource"))
         {
@@ -357,7 +357,7 @@ public:
             players.removeOne(use.from);
 
             bool can_invoke = false;
-            foreach(ServerPlayer *p, players)
+            foreach (ServerPlayer *p, players)
             {
                 if (use.from->canSlash(p, use.card, false) && daqiao->inMyAttackRange(p))
                 {
@@ -394,7 +394,7 @@ public:
     {
         CardUseStruct use = data.value<CardUseStruct>();
         QList<ServerPlayer *> players = room->getOtherPlayers(daqiao);
-        foreach(ServerPlayer *p, players)
+        foreach (ServerPlayer *p, players)
         {
             if (p->hasFlag("LiuliTarget"))
             {
@@ -502,7 +502,7 @@ void JieyinCard::onEffect(const CardEffectStruct &effect) const
     QList<ServerPlayer *> targets;
     targets << effect.from << effect.to;
     room->sortByActionOrder(targets);
-    foreach(ServerPlayer *target, targets)
+    foreach (ServerPlayer *target, targets)
         room->recover(target, recover, true);
 }
 
@@ -705,7 +705,7 @@ public:
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *xiaoqiao, QVariant &data, ServerPlayer *) const
     {
-        foreach(ServerPlayer *p, room->getAlivePlayers())
+        foreach (ServerPlayer *p, room->getAlivePlayers())
             p->setFlags("-tianxiang_target");
 
         xiaoqiao->setFlags("-tianxiang_invoke");
@@ -721,7 +721,7 @@ public:
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *xiaoqiao, QVariant &data, ServerPlayer *) const
     {
         ServerPlayer *target = NULL;
-        foreach(ServerPlayer *p, room->getAlivePlayers())
+        foreach (ServerPlayer *p, room->getAlivePlayers())
         {
             if (p->hasFlag("tianxiang_target"))
             {
@@ -785,7 +785,7 @@ public:
         Room *room = Sanguosha->currentRoom();
         if (room != NULL)
         { // Server
-            foreach(ServerPlayer *p, room->getAlivePlayers())
+            foreach (ServerPlayer *p, room->getAlivePlayers())
             {
                 if (p->ownSkill(objectName()) && p->hasShownSkill(objectName()))
                     return to_select->getSuit() == Card::Spade;
@@ -983,7 +983,7 @@ public:
         if (need <= 0)
         {
             // clear all the buqu cards
-            foreach(int card_id, buqu)
+            foreach (int card_id, buqu)
             {
                 LogMessage log;
                 log.type = "$BuquRemove";
@@ -1053,7 +1053,7 @@ public:
 
             QList<int> duplicate_numbers;
             QSet<int> numbers;
-            foreach(int card_id, buqu)
+            foreach (int card_id, buqu)
             {
                 const Card *card = Sanguosha->getCard(card_id);
                 int number = card->getNumber();
@@ -1095,7 +1095,7 @@ public:
                     }
                     room->sendLog(log);
 
-                    foreach(int card_id, buqu)
+                    foreach (int card_id, buqu)
                     {
                         const Card *card = Sanguosha->getCard(card_id);
                         if (card->getNumber() == number)
@@ -1146,7 +1146,7 @@ public:
             QList<int> duplicate_numbers;
 
             QSet<int> numbers;
-            foreach(int card_id, buqunew)
+            foreach (int card_id, buqunew)
             {
                 const Card *card = Sanguosha->getCard(card_id);
                 int number = card->getNumber();
@@ -1292,7 +1292,7 @@ public:
     {
         QList<ServerPlayer *> other_players = room->getOtherPlayers(lusu);
         int least = 1000;
-        foreach(ServerPlayer *player, other_players)
+        foreach (ServerPlayer *player, other_players)
             least = qMin(player->getHandcardNum(), least);
         room->setPlayerMark(lusu, "haoshi", least);
 
@@ -1300,7 +1300,7 @@ public:
         {
             // force lusu to give his half cards
             ServerPlayer *beggar = NULL;
-            foreach(ServerPlayer *player, other_players)
+            foreach (ServerPlayer *player, other_players)
             {
                 if (player->getHandcardNum() == least)
                 {
@@ -1365,7 +1365,7 @@ void DimengCard::use(Room *room, ServerPlayer *, QList<ServerPlayer *> &targets)
 
     try
     {
-        foreach(ServerPlayer *p, room->getAlivePlayers())
+        foreach (ServerPlayer *p, room->getAlivePlayers())
         {
             if (p != a && p != b)
                 room->doNotify(p, QSanProtocol::S_COMMAND_EXCHANGE_KNOWN_CARDS,
@@ -1583,7 +1583,7 @@ public:
 
             if ((move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_DISCARD)
             {
-                foreach(int card_id, move.card_ids)
+                foreach (int card_id, move.card_ids)
                 {
                     if (move.from == current)
                     {
@@ -1609,7 +1609,7 @@ public:
         if (player == NULL || e != EventPhaseEnd || player->getPhase() != Player::Discard) return skill_list;
         QList<ServerPlayer *> erzhangs = room->findPlayersBySkillName(objectName());
 
-        foreach(ServerPlayer *erzhang, erzhangs)
+        foreach (ServerPlayer *erzhang, erzhangs)
         {
             QVariantList guzheng_cardsToGet = erzhang->tag["GuzhengToGet"].toList();
             QVariantList guzheng_cardsOther = erzhang->tag["GuzhengOther"].toList();
@@ -1618,14 +1618,14 @@ public:
                 return TriggerList();
 
             QList<int> cardsToGet;
-            foreach(QVariant card_data, guzheng_cardsToGet)
+            foreach (QVariant card_data, guzheng_cardsToGet)
             {
                 int card_id = card_data.toInt();
                 if (room->getCardPlace(card_id) == Player::DiscardPile)
                     cardsToGet << card_id;
             }
             QList<int> cardsOther;
-            foreach(QVariant card_data, guzheng_cardsOther)
+            foreach (QVariant card_data, guzheng_cardsOther)
             {
                 int card_id = card_data.toInt();
                 if (room->getCardPlace(card_id) == Player::DiscardPile)
@@ -1634,7 +1634,7 @@ public:
 
             if (cardsToGet.isEmpty())
             {
-                foreach(ServerPlayer *erzhang, erzhangs)
+                foreach (ServerPlayer *erzhang, erzhangs)
                 {
                     erzhang->tag.remove("GuzhengToGet");
                     erzhang->tag.remove("GuzhengOther");
@@ -1654,14 +1654,14 @@ public:
         QVariantList guzheng_cardsOther = erzhang->tag["GuzhengOther"].toList();
 
         QList<int> cardsToGet;
-        foreach(QVariant card_data, guzheng_cardsToGet)
+        foreach (QVariant card_data, guzheng_cardsToGet)
         {
             int card_id = card_data.toInt();
             if (room->getCardPlace(card_id) == Player::DiscardPile)
                 cardsToGet << card_id;
         }
         QList<int> cardsOther;
-        foreach(QVariant card_data, guzheng_cardsOther)
+        foreach (QVariant card_data, guzheng_cardsOther)
         {
             int card_id = card_data.toInt();
             if (room->getCardPlace(card_id) == Player::DiscardPile)

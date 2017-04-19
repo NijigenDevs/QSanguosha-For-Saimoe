@@ -29,7 +29,7 @@ public:
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *) const
     {
-        foreach(ServerPlayer *p, room->getAllPlayers())
+        foreach (ServerPlayer *p, room->getAllPlayers())
         {
             if (p->hasFlag("Global_InTempMoving"))
                 return true;
@@ -104,7 +104,7 @@ StandardCardPackage::StandardCardPackage()
 
     cards << basicCards() << equipCards() << trickCards();
 
-    foreach(Card *card, cards)
+    foreach (Card *card, cards)
         card->setParent(this);
 
     addEquipSkills();

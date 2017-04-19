@@ -91,7 +91,7 @@ int Card::getNumber() const
         else
         {
             int num = 0;
-            foreach(int id, subcards)
+            foreach (int id, subcards)
                 num += Sanguosha->getCard(id)->getNumber();
             return num;
         }
@@ -134,7 +134,7 @@ Card::Suit Card::getSuit() const
         else
         {
             Color color = Colorless;
-            foreach(int id, subcards)
+            foreach (int id, subcards)
             {
                 Color color2 = Sanguosha->getCard(id)->getColor();
                 if (color == Colorless)
@@ -184,7 +184,7 @@ bool Card::isEquipped() const
 bool Card::match(const QString &pattern) const
 {
     QStringList patterns = pattern.split("+");
-    foreach(const QString &ptn, patterns)
+    foreach (const QString &ptn, patterns)
     {
         if (objectName() == ptn || getType() == ptn || getSubtype() == ptn)
             return true;
@@ -231,7 +231,7 @@ bool Card::CompareByType(const Card *a, const Card *b)
         {
             case TypeBasic:
             {
-                foreach(const QString &object_name, basic)
+                foreach (const QString &object_name, basic)
                 {
                     if (a->objectName() == object_name)
                     {
@@ -382,7 +382,7 @@ QString Card::getDescription(bool yellow) const
     QString desc = Sanguosha->translate(":" + objectName());
     if (desc == ":" + objectName())
         return desc;
-    foreach(const QString &skill_type, Sanguosha->getSkillColorMap().keys())
+    foreach (const QString &skill_type, Sanguosha->getSkillColorMap().keys())
     {
         QString to_replace = Sanguosha->translate(skill_type);
         if (to_replace == skill_type) continue;
@@ -464,7 +464,7 @@ QString Card::subcardString() const
         return ".";
 
     QStringList str;
-    foreach(int subcard, subcards)
+    foreach (int subcard, subcards)
         str << QString::number(subcard);
 
     return str.join("+");
@@ -472,7 +472,7 @@ QString Card::subcardString() const
 
 void Card::addSubcards(const QList<const Card *> &cards)
 {
-    foreach(const Card *card, cards)
+    foreach (const Card *card, cards)
         subcards.append(card->getId());
 }
 
@@ -805,7 +805,7 @@ void Card::onUse(Room *room, const CardUseStruct &use) const
         CardMoveReason reason(CardMoveReason::S_REASON_USE, player->objectName(), QString(), card_use.card->getSkillName(), QString());
         if (card_use.to.size() == 1)
             reason.m_targetId = card_use.to.first()->objectName();
-        foreach(int id, used_cards)
+        foreach (int id, used_cards)
         {
             CardsMoveStruct move(id, NULL, Player::PlaceTable, reason);
             moves.append(move);
@@ -851,7 +851,7 @@ void Card::onUse(Room *room, const CardUseStruct &use) const
         if (use.card->isNDTrick())
             room->removeTag(use.card->toString() + "HegNullificationTargets");
 
-        foreach(ServerPlayer *p, room->getAlivePlayers())
+        foreach (ServerPlayer *p, room->getAlivePlayers())
             room->doNotify(p, QSanProtocol::S_COMMAND_NULLIFICATION_ASKED, QString("."));
         if (use.card->isKindOf("Slash"))
             use.from->tag.remove("Jink_" + use.card->toString());
@@ -862,7 +862,7 @@ void Card::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets)
 {
     QStringList nullified_list = room->getTag("CardUseNullifiedList").toStringList();
     bool all_nullified = nullified_list.contains("_ALL_TARGETS");
-    foreach(ServerPlayer *target, targets)
+    foreach (ServerPlayer *target, targets)
     {
         CardEffectStruct effect;
         effect.card = this;
@@ -1084,7 +1084,7 @@ DummyCard::DummyCard(const QList<int> &subcards) : SkillCard()
     target_fixed = true;
     handling_method = Card::MethodNone;
     setObjectName("dummy");
-    foreach(int id, subcards)
+    foreach (int id, subcards)
         this->subcards.append(id);
 }
 

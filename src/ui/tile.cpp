@@ -68,7 +68,7 @@ void Tile::addScrollTexts(const QStringList &texts)
 
     if (!texts.isEmpty())
     {
-        foreach(const QString &text, texts)
+        foreach (const QString &text, texts)
         {
             Title *title = new Title(this, text, font_name, font_size - 2);
             title->setOpacity(0.0);

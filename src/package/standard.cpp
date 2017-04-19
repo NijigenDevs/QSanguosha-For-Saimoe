@@ -166,7 +166,7 @@ void GlobalEffect::onUse(Room *room, const CardUseStruct &card_use) const
     if (card_use.to.isEmpty())
     {
         QList<ServerPlayer *> all_players = room->getAllPlayers();
-        foreach(ServerPlayer *player, all_players)
+        foreach (ServerPlayer *player, all_players)
         {
             const Skill *skill = room->isProhibited(source, player, this);
             if (skill)
@@ -206,7 +206,7 @@ bool GlobalEffect::isAvailable(const Player *player) const
     bool canUse = false;
     QList<const Player *> players = player->getAliveSiblings();
     players << player;
-    foreach(const Player *p, players)
+    foreach (const Player *p, players)
     {
         if (player->isProhibited(p, this))
             continue;
@@ -227,7 +227,7 @@ bool AOE::isAvailable(const Player *player) const
 {
     bool canUse = false;
     QList<const Player *> players = player->getAliveSiblings();
-    foreach(const Player *p, players)
+    foreach (const Player *p, players)
     {
         if (player->isProhibited(p, this))
             continue;
@@ -246,7 +246,7 @@ void AOE::onUse(Room *room, const CardUseStruct &card_use) const
     if (card_use.to.isEmpty())
     {
         QList<ServerPlayer *> other_players = room->getOtherPlayers(source);
-        foreach(ServerPlayer *player, other_players)
+        foreach (ServerPlayer *player, other_players)
         {
             const Skill *skill = room->isProhibited(source, player, this);
             if (skill)
@@ -410,7 +410,7 @@ void DelayedTrick::onNullified(ServerPlayer *target) const
 
         ServerPlayer *p = NULL;
 
-        foreach(ServerPlayer *player, players)
+        foreach (ServerPlayer *player, players)
         {
             if (player->containsTrick(objectName()))
                 continue;
@@ -444,9 +444,9 @@ void DelayedTrick::onNullified(ServerPlayer *target) const
                 break;
             }
 
-            foreach(ServerPlayer *p, room->getAllPlayers())
+            foreach (ServerPlayer *p, room->getAllPlayers())
                 thread->trigger(TargetChosen, room, p, data);
-            foreach(ServerPlayer *p, room->getAllPlayers())
+            foreach (ServerPlayer *p, room->getAllPlayers())
                 thread->trigger(TargetConfirmed, room, p, data);
             break;
         }

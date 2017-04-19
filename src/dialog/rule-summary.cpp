@@ -60,7 +60,7 @@ RuleSummary::RuleSummary(QWidget *parent)
     }
 
     names << "hegemony" << "rule1-card" << "rule2-wording" << "rule3-extras";
-    foreach(const QString &name, names)
+    foreach (const QString &name, names)
     {
         QString text = Sanguosha->translate(name);
         QListWidgetItem *item = new QListWidgetItem(text, list);

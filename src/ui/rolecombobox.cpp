@@ -23,7 +23,7 @@ void RoleComboBox::mousePressEvent(QGraphicsSceneMouseEvent *event)
     }
     QStringList kingdoms = Sanguosha->getKingdoms();
     kingdoms.removeAll("god");
-    foreach(const QString &kingdom, kingdoms)
+    foreach (const QString &kingdom, kingdoms)
     {
         if (G_COMMON_LAYOUT.m_rolesRect.value(kingdom, QRect()).contains(point))
         {
@@ -75,7 +75,7 @@ void RoleComboBox::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QW
             painter->setPen(pen);
 
             int index = 0;
-            foreach(const QString &kingdom, kingdoms)
+            foreach (const QString &kingdom, kingdoms)
             {
                 painter->setBrush(QBrush(kingdoms_excluded.value(kingdom) ? grey : G_COMMON_LAYOUT.m_rolesColor.value(kingdom)));
                 painter->drawRect(COMPACT_BORDER_WIDTH + ((index % 2) ? COMPACT_BORDER_WIDTH + COMPACT_ITEM_LENGTH : 0), COMPACT_BORDER_WIDTH + (COMPACT_BORDER_WIDTH + COMPACT_ITEM_LENGTH) * (index / 2), COMPACT_ITEM_LENGTH, COMPACT_ITEM_LENGTH);
@@ -88,7 +88,7 @@ void RoleComboBox::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QW
         QPixmap pix = G_ROOM_SKIN.getPixmap(QSanRoomSkin::S_SKIN_KEY_EXPANDING_ROLE_BOX);
         painter->drawPixmap(0, 0, pix);
 
-        foreach(const QString &kingdom, kingdoms)
+        foreach (const QString &kingdom, kingdoms)
         {
             if (kingdoms_excluded.value(kingdom))
                 painter->drawPixmap(G_COMMON_LAYOUT.m_rolesRect.value(kingdom), G_ROOM_SKIN.getPixmap(QSanRoomSkin::S_SKIN_KEY_ROLE_BOX_KINGDOM_MASK, kingdom));
@@ -107,7 +107,7 @@ RoleComboBox::RoleComboBox(QGraphicsItem *photo, bool circle)
 {
     QStringList kingdoms = Sanguosha->getKingdoms();
     kingdoms.removeAll("god");
-    foreach(const QString &kingdom, kingdoms)
+    foreach (const QString &kingdom, kingdoms)
         kingdoms_excluded[kingdom] = false;
 
     connect(RoomSceneInstance, &RoomScene::cancel_role_box_expanding, this, &RoleComboBox::mouseClickedOutside);

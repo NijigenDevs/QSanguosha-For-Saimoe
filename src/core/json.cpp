@@ -72,7 +72,7 @@ bool JsonUtils::isNumberArray(const QVariant &var, unsigned from, unsigned to)
 QVariant JsonUtils::toJsonArray(const QList<int> &intArray)
 {
     JsonArray json;
-    foreach(int number, intArray)
+    foreach (int number, intArray)
         json << number;
     return json;
 }
@@ -80,7 +80,7 @@ QVariant JsonUtils::toJsonArray(const QList<int> &intArray)
 QVariant JsonUtils::toJsonArray(const QStringList &stringArray)
 {
     JsonArray json;
-    foreach(const QString &string, stringArray)
+    foreach (const QString &string, stringArray)
         json << string;
     return json;
 }
@@ -116,13 +116,13 @@ bool JsonUtils::tryParse(const QVariant &var, QStringList &list)
 
     JsonArray array = var.value<JsonArray>();
 
-    foreach(const QVariant &var, array)
+    foreach (const QVariant &var, array)
     {
         if (!var.canConvert<QString>())
             return false;
     }
 
-    foreach(const QVariant &var, array)
+    foreach (const QVariant &var, array)
         list << var.toString();
 
     return true;
@@ -135,13 +135,13 @@ bool JsonUtils::tryParse(const QVariant &var, QList<int> &list)
 
     JsonArray array = var.value<JsonArray>();
 
-    foreach(const QVariant &var, array)
+    foreach (const QVariant &var, array)
     {
         if (!var.canConvert<int>())
             return false;
     }
 
-    foreach(const QVariant &var, array)
+    foreach (const QVariant &var, array)
         list << var.toInt();
 
     return true;

@@ -24,7 +24,7 @@ void GuanxingBox::doGuanxing(const QList<int> &cardIds, bool up_only)
     upItems.clear();
     scene_width = RoomSceneInstance->sceneRect().width();
 
-    foreach(int cardId, cardIds)
+    foreach (int cardId, cardIds)
     {
         CardItem *cardItem = new CardItem(Sanguosha->getCard(cardId));
         cardItem->setAutoBack(false);
@@ -82,7 +82,7 @@ void GuanxingBox::mirrorGuanxingStart(const QString &who, bool up_only, const QL
 {
     doGuanxing(cards, up_only);
 
-    foreach(CardItem *item, upItems)
+    foreach (CardItem *item, upItems)
     {
         item->setFlag(QGraphicsItem::ItemIsMovable, false);
         item->disconnect(this);
@@ -293,9 +293,9 @@ bool GuanxingBox::isOneRow() const
 
 void GuanxingBox::clear()
 {
-    foreach(CardItem *card_item, upItems)
+    foreach (CardItem *card_item, upItems)
         card_item->deleteLater();
-    foreach(CardItem *card_item, downItems)
+    foreach (CardItem *card_item, downItems)
         card_item->deleteLater();
 
     upItems.clear();
@@ -308,10 +308,10 @@ void GuanxingBox::clear()
 void GuanxingBox::reply()
 {
     QList<int> up_cards, down_cards;
-    foreach(CardItem *card_item, upItems)
+    foreach (CardItem *card_item, upItems)
         up_cards << card_item->getCard()->getId();
 
-    foreach(CardItem *card_item, downItems)
+    foreach (CardItem *card_item, downItems)
         down_cards << card_item->getCard()->getId();
 
     ClientInstance->onPlayerReplyGuanxing(up_cards, down_cards);

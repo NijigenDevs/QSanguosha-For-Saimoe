@@ -219,7 +219,7 @@ static bool sortByKingdom(const QString &gen1, const QString &gen2)
         QStringList kingdoms = Sanguosha->getKingdoms();
         //kingdoms << "god";
         int i = 0;
-        foreach(const QString &kingdom, kingdoms)
+        foreach (const QString &kingdom, kingdoms)
             kingdom_priority_map[kingdom] = i++;
     }
     const General *g1 = Sanguosha->getGeneral(gen1);
@@ -244,7 +244,7 @@ void ChooseGeneralBox::chooseGeneral(const QStringList &_generals, bool view_onl
         this->m_viewOnly = view_only;
         confirm->setText(view_only ? tr("confirm") : tr("fight"));
     }
-    foreach(const QString &general, _generals)
+    foreach (const QString &general, _generals)
     {
         if (general.endsWith("(lord)"))
             generals.removeOne(general);
@@ -269,7 +269,7 @@ void ChooseGeneralBox::chooseGeneral(const QStringList &_generals, bool view_onl
     //DO NOT USE qSort HERE FOR WE NEED TO KEEP THE INITIAL ORDER IN SOME CASES
     qStableSort(generals.begin(), generals.end(), sortByKingdom);
 
-    foreach(const QString &general, generals)
+    foreach (const QString &general, generals)
     {
         int skinId = 0;
         if (player)
@@ -304,7 +304,7 @@ void ChooseGeneralBox::chooseGeneral(const QStringList &_generals, bool view_onl
         if (!single_result && !view_only)
         {
             const General *hero = Sanguosha->getGeneral(general);
-            foreach(const QString &other, generals)
+            foreach (const QString &other, generals)
             {
                 if (general != other && hero->isCompanionWith(other))
                 {
@@ -446,7 +446,7 @@ void ChooseGeneralBox::adjustItems()
 
     if (selected.length() == 2)
     {
-        foreach(GeneralCardItem *card, items)
+        foreach (GeneralCardItem *card, items)
             card->setFrozen(true);
         confirm->setEnabled(Sanguosha->getGeneral(selected.first()->objectName())->getKingdom()
             == Sanguosha->getGeneral(selected.last()->objectName())->getKingdom());
@@ -455,7 +455,7 @@ void ChooseGeneralBox::adjustItems()
     {
         selected.first()->hideCompanion();
         const General *seleted_general = Sanguosha->getGeneral(selected.first()->objectName());
-        foreach(GeneralCardItem *card, items)
+        foreach (GeneralCardItem *card, items)
         {
             const General *general = Sanguosha->getGeneral(card->objectName());
             if (BanPair::isBanned(seleted_general->objectName(), general->objectName())
@@ -485,10 +485,10 @@ void ChooseGeneralBox::adjustItems()
     else
     {
         _initializeItems();
-        foreach(GeneralCardItem *card, items)
+        foreach (GeneralCardItem *card, items)
         {
             card->hideCompanion();
-            foreach(GeneralCardItem *other, items)
+            foreach (GeneralCardItem *other, items)
             {
                 if (other->objectName().endsWith("(lord)")) continue;
                 const General *hero = Sanguosha->getGeneral(card->objectName());
@@ -506,15 +506,15 @@ void ChooseGeneralBox::adjustItems()
 void ChooseGeneralBox::_initializeItems()
 {
     QList<const General *> generals;
-    foreach(GeneralCardItem *item, items)
+    foreach (GeneralCardItem *item, items)
         generals << Sanguosha->getGeneral(item->objectName());
 
     int index = 0;
-    foreach(const General *general, generals)
+    foreach (const General *general, generals)
     {
         int party = 0;
         bool has_lord = false;
-        foreach(const General *other, generals)
+        foreach (const General *other, generals)
         {
             if (other->getKingdom() == general->getKingdom())
             {
@@ -563,10 +563,10 @@ void ChooseGeneralBox::reply()
 
 void ChooseGeneralBox::clear()
 {
-    foreach(GeneralCardItem *card_item, items)
+    foreach (GeneralCardItem *card_item, items)
         card_item->deleteLater();
 
-    foreach(GeneralCardItem *card_item, selected)
+    foreach (GeneralCardItem *card_item, selected)
         card_item->deleteLater();
 
     items.clear();

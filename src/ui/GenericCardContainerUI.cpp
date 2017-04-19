@@ -25,7 +25,7 @@ QList<CardItem *> GenericCardContainer::cloneCardItems(QList<int> card_ids)
 QList<CardItem *> GenericCardContainer::_createCards(QList<int> card_ids)
 {
     QList<CardItem *> result;
-    foreach(int card_id, card_ids)
+    foreach (int card_id, card_ids)
     {
         CardItem *item = _createCard(card_id);
         result.append(item);
@@ -100,7 +100,7 @@ void GenericCardContainer::_doUpdate()
 void GenericCardContainer::_playMoveCardsAnimation(QList<CardItem *> &cards, bool destroyCards)
 {
     QParallelAnimationGroup *animation = new QParallelAnimationGroup(this);
-    foreach(CardItem *card_item, cards)
+    foreach (CardItem *card_item, cards)
     {
         if (destroyCards)
             connect(card_item, &CardItem::movement_animation_finished, this, &GenericCardContainer::_destroyCard);
@@ -114,7 +114,7 @@ void GenericCardContainer::_playMoveCardsAnimation(QList<CardItem *> &cards, boo
 
 void GenericCardContainer::addCardItems(QList<CardItem *> &card_items, const CardsMoveStruct &moveInfo)
 {
-    foreach(CardItem *card_item, card_items)
+    foreach (CardItem *card_item, card_items)
     {
         card_item->setPos(mapFromScene(card_item->scenePos()));
         card_item->setParentItem(this);
@@ -437,7 +437,7 @@ void PlayerCardContainer::updatePile(const QString &pile_name)
     QPoint step = _m_layout->m_privatePileStep;
     QSize size = _m_layout->m_privatePileButtonSize;
     QList<QGraphicsProxyWidget *> widgets_t, widgets_p, widgets = _m_privatePiles.values();
-    foreach(QGraphicsProxyWidget *widget, widgets)
+    foreach (QGraphicsProxyWidget *widget, widgets)
     {
         if (widget->objectName() == treasure_name)
             widgets_t << widget;
@@ -654,7 +654,7 @@ void PlayerCardContainer::setPlayer(ClientPlayer *player)
 QList<CardItem *> PlayerCardContainer::removeDelayedTricks(const QList<int> &cardIds)
 {
     QList<CardItem *> result;
-    foreach(int card_id, cardIds)
+    foreach (int card_id, cardIds)
     {
         CardItem *item = CardItem::FindItem(_m_judgeCards, card_id);
         Q_ASSERT(item != NULL);
@@ -688,7 +688,7 @@ void PlayerCardContainer::updateDelayedTricks()
 
 void PlayerCardContainer::addDelayedTricks(QList<CardItem *> &tricks)
 {
-    foreach(CardItem *trick, tricks)
+    foreach (CardItem *trick, tricks)
     {
         QGraphicsPixmapItem *item = new QGraphicsPixmapItem(_getDelayedTrickParent());
         QRect start = _m_layout->m_delayedTrickFirstRegion;
@@ -752,7 +752,7 @@ void PlayerCardContainer::setFloatingArea(QRect rect)
 
 void PlayerCardContainer::addEquips(QList<CardItem *> &equips)
 {
-    foreach(CardItem *equip, equips)
+    foreach (CardItem *equip, equips)
     {
         const EquipCard *equip_card = qobject_cast<const EquipCard *>(equip->getCard()->getRealCard());
         int index = (int)(equip_card->location());
@@ -787,7 +787,7 @@ void PlayerCardContainer::addEquips(QList<CardItem *> &equips)
 QList<CardItem *> PlayerCardContainer::removeEquips(const QList<int> &cardIds)
 {
     QList<CardItem *> result;
-    foreach(int card_id, cardIds)
+    foreach (int card_id, cardIds)
     {
         const EquipCard *equip_card = qobject_cast<const EquipCard *>(Sanguosha->getEngineCard(card_id));
         int index = (int)(equip_card->location());
@@ -921,9 +921,9 @@ void PlayerCardContainer::_adjustComponentZValues()
     _layUnder(_m_floatingArea);
     _layUnder(_m_distanceItem);
     _layUnder(_m_votesItem);
-    foreach(QGraphicsItem *pile, _m_privatePiles)
+    foreach (QGraphicsItem *pile, _m_privatePiles)
         _layUnder(pile);
-    foreach(QGraphicsItem *judge, _m_judgeIcons)
+    foreach (QGraphicsItem *judge, _m_judgeIcons)
         _layUnder(judge);
     _layUnder(_m_markItem);
     _layUnder(_m_progressBarItem);

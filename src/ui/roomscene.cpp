@@ -526,7 +526,7 @@ void RoomScene::handleGameEvent(const QVariant &args)
         }
         case S_GAME_EVENT_UPDATE_SKILL:
         {
-            foreach(Photo *photo, photos)
+            foreach (Photo *photo, photos)
                 photo->updateAvatarTooltip();
             dashboard->updateAvatarTooltip();
             updateSkillButtons();
@@ -538,7 +538,7 @@ void RoomScene::handleGameEvent(const QVariant &args)
             bool auto_preshow_available = Self->hasFlag("AutoPreshowAvailable");
             JsonObject preshow_map = arg[1].value<JsonObject>();
             QList<QString> skill_names = preshow_map.keys();
-            foreach(const QString &skill, skill_names)
+            foreach (const QString &skill, skill_names)
             {
                 bool showed = preshow_map[skill].toBool();
 
@@ -553,7 +553,7 @@ void RoomScene::handleGameEvent(const QVariant &args)
                     Self->setSkillPreshowed(skill, showed);
                     if (!showed)
                     {
-                        foreach(QSanSkillButton *btn, m_skillButtons)
+                        foreach (QSanSkillButton *btn, m_skillButtons)
                         {
                             if (btn->getSkill()->objectName() == skill)
                             {
@@ -622,13 +622,13 @@ void RoomScene::handleGameEvent(const QVariant &args)
             const General* newHero = Sanguosha->getGeneral(newHeroName);
             if (oldHero)
             {
-                foreach(const Skill *skill, oldHero->getVisibleSkills(true, !isSecondaryHero))
+                foreach (const Skill *skill, oldHero->getVisibleSkills(true, !isSecondaryHero))
                     detachSkill(skill->objectName());
             }
 
             if (newHero && !player->isDuanchang(!isSecondaryHero))
             {
-                foreach(const Skill *skill, newHero->getVisibleSkills(true, !isSecondaryHero))
+                foreach (const Skill *skill, newHero->getVisibleSkills(true, !isSecondaryHero))
                     attachSkill(skill->objectName(), !isSecondaryHero);
             }
             break;
@@ -822,7 +822,7 @@ void RoomScene::onSceneRectChanged(const QRectF &rect)
             thread->blockSignals(true);
             factory.switchSkin(factory.S_COMPACT_SKIN_NAME);
             thread->blockSignals(false);
-            foreach(Photo *photo, photos)
+            foreach (Photo *photo, photos)
                 photo->repaintAll();
             dashboard->repaintAll();
         }
@@ -835,7 +835,7 @@ void RoomScene::onSceneRectChanged(const QRectF &rect)
             thread->blockSignals(true);
             factory.switchSkin(factory.S_DEFAULT_SKIN_NAME);
             thread->blockSignals(false);
-            foreach(Photo *photo, photos)
+            foreach (Photo *photo, photos)
                 photo->repaintAll();
             dashboard->repaintAll();
         }
@@ -1088,7 +1088,7 @@ void RoomScene::updateTable()
         else
             floatingArea.moveLeft(G_PHOTO_LAYOUT.m_normalWidth);
 
-        foreach(Photo *photo, photosInRegion[i])
+        foreach (Photo *photo, photosInRegion[i])
             photo->setFloatingArea(floatingArea);
         _dispersePhotos(photosInRegion[i], seatRegions[i], orient, align);
     }
@@ -1151,7 +1151,7 @@ void RoomScene::arrangeSeats(const QList<const ClientPlayer *> &seats)
     {
         item2player.insert(dashboard, Self);
         connect(dashboard, &Dashboard::selected_changed, this, &RoomScene::updateSelectedTargets);
-        foreach(Photo *photo, photos)
+        foreach (Photo *photo, photos)
         {
             item2player.insert(photo, photo->getPlayer());
             connect(photo, &Photo::selected_changed, this, &RoomScene::updateSelectedTargets);
@@ -1160,7 +1160,7 @@ void RoomScene::arrangeSeats(const QList<const ClientPlayer *> &seats)
     }
 
     bool all_robot = true;
-    foreach(const ClientPlayer *p, ClientInstance->getPlayers())
+    foreach (const ClientPlayer *p, ClientInstance->getPlayers())
     {
         if (p != Self && p->getState() != "robot")
         {
@@ -1173,7 +1173,7 @@ void RoomScene::arrangeSeats(const QList<const ClientPlayer *> &seats)
 
     //update the positions of bubbles after setting seats
     QList<QString> names = name2photo.keys();
-    foreach(const QString &who, names)
+    foreach (const QString &who, names)
     {
         if (bubbleChatBoxes.contains(who))
         {
@@ -1188,7 +1188,7 @@ void RoomScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
     m_mousePressed = true;
     bool changed = false;
     QPoint point(event->pos().x(), event->pos().y());
-    foreach(Photo *photo, photos)
+    foreach (Photo *photo, photos)
     {
         RoleComboBox *box = photo->getRoleComboBox();
         if (!box->boundingRect().contains(point) && box->isExpanding())
@@ -1268,7 +1268,7 @@ void RoomScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 
     PlayerCardContainer *victim = NULL;
 
-    foreach(Photo *photo, photos)
+    foreach (Photo *photo, photos)
     {
         if (photo->isUnderMouse())
             victim = photo;
@@ -1312,12 +1312,12 @@ void RoomScene::enableTargets(const Card *card)
     selected_targets.clear();
 
     // unset avatar and all photo
-    foreach(PlayerCardContainer *item, item2player.keys())
+    foreach (PlayerCardContainer *item, item2player.keys())
         item->setSelected(false);
 
     if (card == NULL)
     {
-        foreach(PlayerCardContainer *item, item2player.keys())
+        foreach (PlayerCardContainer *item, item2player.keys())
         {
             QGraphicsItem *animationTarget = item->getMouseClickReceiver();
             animations->effectOut(animationTarget);
@@ -1339,7 +1339,7 @@ void RoomScene::enableTargets(const Card *card)
             && (status == Client::Responding || (card->getTypeId() != Card::TypeSkill && status != Client::RespondingUse)))
         || ClientInstance->getStatus() == Client::AskForShowOrPindian)
     {
-        foreach(PlayerCardContainer *item, item2player.keys())
+        foreach (PlayerCardContainer *item, item2player.keys())
         {
             QGraphicsItem *animationTarget = item->getMouseClickReceiver();
             animations->effectOut(animationTarget);
@@ -1361,7 +1361,7 @@ void RoomScene::enableTargets(const Card *card)
         if (card->isKindOf("Slash") && Self->hasFlag("slashTargetFixToOne"))
         {
             unselectAllTargets();
-            foreach(Photo *photo, photos)
+            foreach (Photo *photo, photos)
             {
                 if (photo->flags() & QGraphicsItem::ItemIsSelectable)
                 {
@@ -1379,7 +1379,7 @@ void RoomScene::enableTargets(const Card *card)
             {
                 unselectAllTargets();
                 int count = 0;
-                foreach(Photo *photo, photos)
+                foreach (Photo *photo, photos)
                     if (photo->flags() & QGraphicsItem::ItemIsSelectable)
                         count++;
                 if (dashboard->flags() & QGraphicsItem::ItemIsSelectable)
@@ -1450,7 +1450,7 @@ void RoomScene::updateSelectedTargets()
         else
         {
             selected_targets.removeAll(player);
-            foreach(const Player *cp, selected_targets)
+            foreach (const Player *cp, selected_targets)
             {
                 QList<const Player *> tempPlayers = QList<const Player *>(selected_targets);
                 tempPlayers.removeAll(cp);
@@ -1494,7 +1494,7 @@ void RoomScene::keyReleaseEvent(QKeyEvent *event)
         case Qt::Key_F6:
         {
             if (!Self || !Self->isOwner() || ClientInstance->getPlayers().length() < Sanguosha->getPlayerCount(ServerInfo.GameMode)) break;
-            foreach(const ClientPlayer *p, ClientInstance->getPlayers())
+            foreach (const ClientPlayer *p, ClientInstance->getPlayers())
             {
                 if (p != Self && p->isAlive() && p->getState() != "robot")
                     break;
@@ -1599,7 +1599,7 @@ void RoomScene::keyReleaseEvent(QKeyEvent *event)
             if (Self->property("distance_shown").toBool())
             {
                 Self->setProperty("distance_shown", false);
-                foreach(Photo *photo, photos)
+                foreach (Photo *photo, photos)
                 {
                     if (photo->getPlayer() && photo->getPlayer()->isAlive())
                         photo->hideDistance();
@@ -1608,7 +1608,7 @@ void RoomScene::keyReleaseEvent(QKeyEvent *event)
             else
             {
                 Self->setProperty("distance_shown", true);
-                foreach(Photo *photo, photos)
+                foreach (Photo *photo, photos)
                 {
                     if (photo->getPlayer() && photo->getPlayer()->isAlive())
                         photo->showDistance();
@@ -1644,16 +1644,16 @@ void RoomScene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
         QMenu *private_pile = menu->addMenu(tr("Private Piles"));
 
         bool enabled = false;
-        foreach(PlayerCardContainer *container, item2player.keys())
+        foreach (PlayerCardContainer *container, item2player.keys())
         {
             const ClientPlayer *player = item2player.value(container, NULL);
             QStringList piles = player->getPileNames();
             if (!piles.isEmpty())
             {
-                foreach(const QString &pile_name, piles)
+                foreach (const QString &pile_name, piles)
                 {
                     bool add = false;
-                    foreach(int id, player->getPile(pile_name))
+                    foreach (int id, player->getPile(pile_name))
                     {
                         if (id != Card::S_UNKNOWN_CARD_ID)
                         {
@@ -1680,7 +1680,7 @@ void RoomScene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
         {
             QMenu *known_cards = menu->addMenu(tr("Known cards"));
 
-            foreach(PlayerCardContainer *container, item2player.keys())
+            foreach (PlayerCardContainer *container, item2player.keys())
             {
                 const ClientPlayer *player = item2player.value(container, NULL);
                 if (player == Self) continue;
@@ -1697,7 +1697,7 @@ void RoomScene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
                     connect(action, &QAction::triggered, this, &RoomScene::showPlayerCards);
 
                     submenu->addSeparator();
-                    foreach(const Card *card, known)
+                    foreach (const Card *card, known)
                     {
                         const Card *engine_card = Sanguosha->getEngineCard(card->getId());
                         submenu->addAction(G_ROOM_SKIN.getCardSuitPixmap(engine_card->getSuit()), engine_card->getFullName());
@@ -1747,7 +1747,7 @@ void RoomScene::chooseKingdom(const QStringList &kingdoms)
     QDialog *dialog = new QDialog;
     QVBoxLayout *layout = new QVBoxLayout;
 
-    foreach(const QString &kingdom, kingdoms)
+    foreach (const QString &kingdom, kingdoms)
     {
         QCommandLinkButton *button = new QCommandLinkButton;
         QPixmap kingdom_pixmap(QString("image/kingdom/icon/%1.png").arg(kingdom));
@@ -1915,7 +1915,7 @@ void RoomScene::toggleDiscards()
     CardOverview *overview = new CardOverview;
     overview->setWindowTitle(tr("Discarded pile"));
     QList<const Card *> cards;
-    foreach(const Card *card, ClientInstance->discarded_list)
+    foreach (const Card *card, ClientInstance->discarded_list)
         cards << Sanguosha->getEngineCard(card->getId());
     overview->loadFromList(cards);
     overview->show();
@@ -2024,7 +2024,7 @@ void RoomScene::loseCards(int moveId, QList<CardsMoveStruct> card_moves)
         m_cardContainer->m_currentPlayer = qobject_cast<ClientPlayer *>(movement.to);
         GenericCardContainer *from_container = _getGenericCardContainer(movement.from_place, movement.from);
         QList<CardItem *> cards = from_container->removeCardItems(movement.card_ids, movement.from_place);
-        foreach(CardItem *card, cards)
+        foreach (CardItem *card, cards)
             card->setEnabled(false);
 
         _m_cardsMoveStash[moveId].append(cards);
@@ -2140,7 +2140,7 @@ void RoomScene::keepLoseCardLog(const CardsMoveStruct &move)
     {
         if (move.reason.m_reason == CardMoveReason::S_REASON_PUT && move.reason.m_skillName == "luck_card") return;
         bool hidden = false;
-        foreach(int id, move.card_ids)
+        foreach (int id, move.card_ids)
         {
             if (id == Card::S_UNKNOWN_CARD_ID)
             {
@@ -2168,7 +2168,7 @@ void RoomScene::keepGetCardLog(const CardsMoveStruct &move)
             || move.to_place == Player::PlaceSpecial)
         && move.from_place != Player::DrawPile)
     {
-        foreach(const QString &flag, move.to->getFlagList())
+        foreach (const QString &flag, move.to->getFlagList())
             if (flag.endsWith("_InTempMoving"))
                 return;
     }
@@ -2274,7 +2274,7 @@ void RoomScene::keepGetCardLog(const CardsMoveStruct &move)
     {
         QString type = "$Install";
         QString to_general = move.to->objectName();
-        foreach(int card_id, move.card_ids)
+        foreach (int card_id, move.card_ids)
             log_box->appendLog(type, to_general, QStringList(), QString::number(card_id));
     }
     if (move.reason.m_reason == CardMoveReason::S_REASON_TURNOVER)
@@ -2332,7 +2332,7 @@ void RoomScene::acquireSkill(const ClientPlayer *player, const QString &skill_na
 
 void RoomScene::updateSkillButtons()
 {
-    foreach(const Skill *skill, Self->getVisibleSkillList())
+    foreach (const Skill *skill, Self->getVisibleSkillList())
     {
         if (Self->isDuanchang(Self->inHeadSkills(skill->objectName())))
             continue;
@@ -2344,7 +2344,7 @@ void RoomScene::updateSkillButtons()
     //foreach (QSanSkillButton *button, m_skillButtons)
     //    button->setEnabled(false);
 
-    foreach(QSanSkillButton *button, m_skillButtons)
+    foreach (QSanSkillButton *button, m_skillButtons)
     {
         const Skill *skill = button->getSkill();
         button->setEnabled(skill->canPreshow()
@@ -2484,7 +2484,7 @@ void RoomScene::useSelectedCard()
         dashboard->stopPending();
     else
     {
-        foreach(const QString &pile, Self->getHandPileList(false))
+        foreach (const QString &pile, Self->getHandPileList(false))
             dashboard->retractPileCards(pile);
     }
 }
@@ -2531,7 +2531,7 @@ void RoomScene::highlightSkillButton(const QString &skillName, const CardUseStru
     const bool isViewAsSkill = reason != CardUseStruct::CARD_USE_REASON_UNKNOWN && !pattern.isEmpty();
     if (Self->hasSkill(skillName, true))
     {
-        foreach(QSanSkillButton *button, m_skillButtons)
+        foreach (QSanSkillButton *button, m_skillButtons)
         {
             Q_ASSERT(button != NULL);
             if (isViewAsSkill)
@@ -2583,7 +2583,7 @@ void RoomScene::selectNextTarget(bool multiple)
         unselectAllTargets();
 
     QList<QGraphicsItem *> targets;
-    foreach(Photo *photo, photos)
+    foreach (Photo *photo, photos)
     {
         if (photo->flags() & QGraphicsItem::ItemIsSelectable)
             targets << photo;
@@ -2607,7 +2607,7 @@ void RoomScene::selectNextTarget(bool multiple)
         }
     }
 
-    foreach(QGraphicsItem *target, targets)
+    foreach (QGraphicsItem *target, targets)
     {
         if (!target->isSelected())
         {
@@ -2621,7 +2621,7 @@ void RoomScene::unselectAllTargets(const QGraphicsItem *except)
 {
     if (dashboard != except) dashboard->setSelected(false);
 
-    foreach(Photo *photo, photos)
+    foreach (Photo *photo, photos)
     {
         if (photo != except && photo->isSelected())
             photo->setSelected(false);
@@ -2724,7 +2724,7 @@ void RoomScene::updateStatus(Client::Status oldStatus, Client::Status newStatus)
                 CardUseStruct::CARD_USE_REASON_PLAY,
                 Sanguosha->currentRoomState()->getCurrentCardUsePattern());
         }
-        foreach(TransferButton *button, dashboard->getTransferButtons())
+        foreach (TransferButton *button, dashboard->getTransferButtons())
         {
             button->setEnabled(enabled);
             if (enabled)
@@ -2732,7 +2732,7 @@ void RoomScene::updateStatus(Client::Status oldStatus, Client::Status newStatus)
         }
     }
     //---------------------------------------------------
-    foreach(QSanSkillButton *button, m_skillButtons)
+    foreach (QSanSkillButton *button, m_skillButtons)
     {
         Q_ASSERT(button != NULL);
         const ViewAsSkill *vsSkill = button->getViewAsSkill();
@@ -3130,7 +3130,7 @@ void RoomScene::onTransferButtonActivated()
 
     Sanguosha->getTransfer()->setToSelect(button->getCardId());
 
-    foreach(TransferButton *btn, dashboard->getTransferButtons())
+    foreach (TransferButton *btn, dashboard->getTransferButtons())
     {
         if (btn != button && btn->isDown())
             btn->setState(QSanButton::S_STATE_UP);
@@ -3281,7 +3281,7 @@ void RoomScene::startInXs()
 
 void RoomScene::stopHeroSkinChangingAnimations()
 {
-    foreach(Photo *const &photo, photos)
+    foreach (Photo *const &photo, photos)
     {
         photo->stopHeroSkinChangingAnimation();
     }
@@ -3296,7 +3296,7 @@ void RoomScene::addHeroSkinContainer(HeroSkinContainer *heroSkinContainer)
 
 HeroSkinContainer *RoomScene::findHeroSkinContainer(const QString &generalName) const
 {
-    foreach(HeroSkinContainer *heroSkinContainer, m_heroSkinContainers)
+    foreach (HeroSkinContainer *heroSkinContainer, m_heroSkinContainers)
     {
         if (heroSkinContainer->getGeneralName() == generalName)
             return heroSkinContainer;
@@ -3414,7 +3414,7 @@ void RoomScene::onGameOver()
     if (victory)
     {
         win_effect = "win";
-        foreach(const Player *player, ClientInstance->getPlayers())
+        foreach (const Player *player, ClientInstance->getPlayers())
         {
             if (player->property("win").toBool() && player->getGeneralName().contains("caocao"))
             {
@@ -3460,7 +3460,7 @@ void RoomScene::onGameOver()
     layout->addWidget(loser_box);
 
     QList<const ClientPlayer *> winner_list, loser_list;
-    foreach(const ClientPlayer *player, ClientInstance->getPlayers())
+    foreach (const ClientPlayer *player, ClientInstance->getPlayers())
     {
         bool win = player->property("win").toBool();
         if (win)
@@ -3518,7 +3518,7 @@ void RoomScene::saveReplayRecord(const bool auto_save, const bool network_only)
     if (auto_save)
     {
         bool is_network = false;
-        foreach(const ClientPlayer *player, ClientInstance->getPlayers())
+        foreach (const ClientPlayer *player, ClientInstance->getPlayers())
         {
             if (player == Self) continue;
             if (player->getState() != "robot")
@@ -3687,7 +3687,7 @@ void RoomScene::FillPlayerNames(QComboBox *ComboBox, bool add_none)
 {
     if (add_none) ComboBox->addItem(tr("None"), ".");
     ComboBox->setIconSize(G_COMMON_LAYOUT.m_tinyAvatarSize);
-    foreach(const ClientPlayer *player, ClientInstance->getPlayers())
+    foreach (const ClientPlayer *player, ClientInstance->getPlayers())
     {
         QString general_name = Sanguosha->translate(player->getGeneralName());
         if (!player->getGeneral()) continue;
@@ -3744,7 +3744,7 @@ void RoomScene::makeReviving()
 
     QStringList items;
     QList<const ClientPlayer *> victims;
-    foreach(const ClientPlayer *player, ClientInstance->getPlayers())
+    foreach (const ClientPlayer *player, ClientInstance->getPlayers())
     {
         if (player->isDead())
         {
@@ -3996,7 +3996,7 @@ void RoomScene::showCard(const QString &player_name, int card_id)
 void RoomScene::chooseSkillButton()
 {
     QList<QSanSkillButton *> enabled_buttons;
-    foreach(QSanSkillButton *btn, m_skillButtons)
+    foreach (QSanSkillButton *btn, m_skillButtons)
     {
         if (btn->isEnabled())
             enabled_buttons << btn;
@@ -4009,7 +4009,7 @@ void RoomScene::chooseSkillButton()
 
     QVBoxLayout *layout = new QVBoxLayout;
 
-    foreach(QSanSkillButton *btn, enabled_buttons)
+    foreach (QSanSkillButton *btn, enabled_buttons)
     {
         Q_ASSERT(btn->getSkill());
         QCommandLinkButton *button = new QCommandLinkButton(Sanguosha->translate(btn->getSkill()->objectName()));
@@ -4155,7 +4155,7 @@ void RoomScene::showPlayerCards()
         {
             QString pile_name = names.last();
             QList<const Card *> cards;
-            foreach(int id, player->getPile(pile_name))
+            foreach (int id, player->getPile(pile_name))
             {
                 const Card *card = Sanguosha->getEngineCard(id);
                 if (card) cards << card;
@@ -4171,7 +4171,7 @@ void RoomScene::showPlayerCards()
         else
         {
             QList<const Card *> cards;
-            foreach(const Card *card, player->getHandcards())
+            foreach (const Card *card, player->getHandcards())
             {
                 const Card *engine_card = Sanguosha->getEngineCard(card->getId());
                 if (engine_card) cards << engine_card;
@@ -4214,7 +4214,7 @@ void RoomScene::onGameStart()
     if (!ClientInstance->getReplayer())
         dashboard->showControlButtons();
     dashboard->showSeat();
-    foreach(Photo *photo, photos)
+    foreach (Photo *photo, photos)
         photo->showSeat();
 }
 
@@ -4223,7 +4223,7 @@ void RoomScene::freeze()
     stopHeroSkinChangingAnimations();
 
     dashboard->setEnabled(false);
-    foreach(Photo *photo, photos)
+    foreach (Photo *photo, photos)
     {
         photo->hideProgressBar();
         photo->setEnabled(false);
@@ -4239,7 +4239,7 @@ void RoomScene::freeze()
 
 void RoomScene::_cancelAllFocus()
 {
-    foreach(Photo *photo, photos)
+    foreach (Photo *photo, photos)
     {
         photo->hideProgressBar();
         if (photo->getPlayer()->getPhase() == Player::NotActive)
@@ -4250,7 +4250,7 @@ void RoomScene::_cancelAllFocus()
 void RoomScene::moveFocus(const QStringList &players, Countdown countdown)
 {
     _cancelAllFocus();
-    foreach(const QString &player, players)
+    foreach (const QString &player, players)
     {
         Photo *photo = name2photo[player];
         if (!photo)
@@ -4519,7 +4519,7 @@ void RoomScene::doHuashen(const QString &, const QStringList &args)
 
     QList<CardItem *> generals;
 
-    foreach(QString arg, hargs)
+    foreach (QString arg, hargs)
     {
         CardItem *item = new CardItem(arg);
         item->setPos(this->m_tableCenterPos);
@@ -4661,7 +4661,7 @@ void RoomScene::takeGeneral(const QString &who, const QString &name, const QStri
     QList<CardItem *> *to_add = self_taken ? &down_generals : &up_generals;
 
     CardItem *general_item = NULL;
-    foreach(CardItem *item, general_items)
+    foreach (CardItem *item, general_items)
     {
         if (item->objectName() == name)
         {
@@ -4690,7 +4690,7 @@ void RoomScene::takeGeneral(const QString &who, const QString &name, const QStri
 void RoomScene::recoverGeneral(int index, const QString &name)
 {
     QString obj_name = QString("x%1").arg(index);
-    foreach(CardItem *item, general_items)
+    foreach (CardItem *item, general_items)
     {
         if (item->objectName() == obj_name)
         {
@@ -4718,7 +4718,7 @@ void RoomScene::startArrange(const QString &)
     selector_box->load(path);
     selector_box->setPos(m_tableCenterPos);
 
-    foreach(CardItem *item, down_generals)
+    foreach (CardItem *item, down_generals)
     {
         item->setFlag(QGraphicsItem::ItemIsFocusable);
         item->setAutoBack(false);
@@ -4727,7 +4727,7 @@ void RoomScene::startArrange(const QString &)
 
     QRect rect(0, 0, 80, 120);
 
-    foreach(const QPointF &pos, positions)
+    foreach (const QPointF &pos, positions)
     {
         QGraphicsRectItem *rect_item = new QGraphicsRectItem(rect, selector_box);
         rect_item->setPos(pos);
@@ -4806,7 +4806,7 @@ void RoomScene::finishArrange()
     arrange_button = NULL;
 
     QStringList names;
-    foreach(CardItem *item, arrange_items)
+    foreach (CardItem *item, arrange_items)
         names << item->objectName();
 
     if (selector_box)
@@ -4949,7 +4949,7 @@ void RoomScene::setChatBoxVisible(bool show)
 void RoomScene::updateHandcardNum()
 {
     dashboard->updateHandcardNum();
-    foreach(Photo *p, photos)
+    foreach (Photo *p, photos)
     {
         p->updateHandcardNum();
     }

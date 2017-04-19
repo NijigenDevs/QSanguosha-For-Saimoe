@@ -117,7 +117,7 @@ bool QSanButton::isMouseInside() const
     }
 
     QPoint cursorPos = QCursor::pos();
-    foreach(QGraphicsView *view, scenePtr->views())
+    foreach (QGraphicsView *view, scenePtr->views())
     {
         QPointF pos = mapFromScene(view->mapToScene(view->mapFromGlobal(cursorPos)));
         if (insideButton(pos))
@@ -485,7 +485,7 @@ void QSanInvokeSkillDock::paint(QPainter *, const QStyleOptionGraphicsItem *, QW
 
 QSanInvokeSkillButton *QSanInvokeSkillDock::getSkillButtonByName(const QString &skillName) const
 {
-    foreach(QSanInvokeSkillButton *button, _m_buttons)
+    foreach (QSanInvokeSkillButton *button, _m_buttons)
     {
         if (button->getSkill()->objectName() == skillName)
             return button;

@@ -99,7 +99,7 @@ public:
                 if (TriggerSkill::triggerable(player))
                 {
                     QStringList targets;
-                    foreach(ServerPlayer *to, use.to)
+                    foreach (ServerPlayer *to, use.to)
                         targets << to->objectName();
                     if (!targets.isEmpty())
                         return QStringList(objectName() + "->" + targets.join("+"));
@@ -120,7 +120,7 @@ public:
         {
             if (use.card->isKindOf("Duel"))
             {
-                foreach(ServerPlayer *lvbu, room->getAllPlayers())
+                foreach (ServerPlayer *lvbu, room->getAllPlayers())
                 {
                     if (lvbu->getMark("WushuangTarget") > 0)
                         room->setPlayerMark(lvbu, "WushuangTarget", 0);
@@ -569,7 +569,7 @@ void LuanwuCard::onEffect(const CardEffectStruct &effect) const
     QList<ServerPlayer *> players = room->getOtherPlayers(effect.to);
     QList<int> distance_list;
     int nearest = 1000;
-    foreach(ServerPlayer *player, players)
+    foreach (ServerPlayer *player, players)
     {
         int distance = effect.to->distanceTo(player);
         distance_list << distance;
@@ -829,7 +829,7 @@ public:
                 return skill_list;
 
             QList<ServerPlayer *> caiwenjis = room->findPlayersBySkillName(objectName());
-            foreach(ServerPlayer *caiwenji, caiwenjis)
+            foreach (ServerPlayer *caiwenji, caiwenjis)
                 if (caiwenji->canDiscard(caiwenji, "he"))
                     skill_list.insert(caiwenji, QStringList(objectName()));
             return skill_list;
@@ -1015,7 +1015,7 @@ public:
 
         QList<const Skill *> skills = choice == "head_general" ? target->getActualGeneral1()->getVisibleSkillList()
             : target->getActualGeneral2()->getVisibleSkillList();
-        foreach(const Skill *skill, skills)
+        foreach (const Skill *skill, skills)
         {
             if (!skill->isAttachedLordSkill())
                 room->detachSkillFromPlayer(target, skill->objectName(), !target->hasShownSkill(skill));
@@ -1044,7 +1044,7 @@ void XiongyiCard::onUse(Room *room, const CardUseStruct &card_use) const
 void XiongyiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const
 {
     QList<ServerPlayer *> targets;
-    foreach(ServerPlayer *p, room->getAllPlayers())
+    foreach (ServerPlayer *p, room->getAllPlayers())
     {
         if (p->isFriendWith(source))
         {
@@ -1059,7 +1059,7 @@ void XiongyiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &)
     kingdom_list << "careerist";
     bool invoke = true;
     int n = source->getPlayerNumWithSameKingdom("xiongyi", QString(), MaxCardsType::Normal);
-    foreach(const QString &kingdom, Sanguosha->getKingdoms())
+    foreach (const QString &kingdom, Sanguosha->getKingdoms())
     {
         if (kingdom == "god") continue;
         if (source->getRole() == "careerist")
@@ -1267,8 +1267,8 @@ public:
                 QList<int> lirang_card = StringList2IntList(lirang_strings.split("|").last().split("+"));
 
                 QList<int> lirang_give;
-                foreach(int id, move.card_ids) if (!lirang_card.contains(id)) return QStringList();
-                foreach(int id, lirang_card) if (room->getCardPlace(id) == Player::DiscardPile) lirang_give << id;
+                foreach (int id, move.card_ids) if (!lirang_card.contains(id)) return QStringList();
+                foreach (int id, lirang_card) if (room->getCardPlace(id) == Player::DiscardPile) lirang_give << id;
 
                 player->tag["lirang_give"] = IntList2StringList(lirang_give).join("+");
                 if (!lirang_give.isEmpty()) return QStringList(objectName());
@@ -1312,7 +1312,7 @@ public:
             player->tag.remove("lirang_forAI");
             if (!card) break;
             if (card->getSubcards().length() == 0) break;
-            foreach(int id, card->getSubcards()) lirang_give.removeOne(id);
+            foreach (int id, card->getSubcards()) lirang_give.removeOne(id);
             DummyCard dummy(card->getSubcards());
             ServerPlayer *target = player->tag["lirang_target"].value<ServerPlayer *>();
             CardMoveReason reason(CardMoveReason::S_REASON_PREVIEWGIVE, player->objectName(), target->objectName(), "lirang", QString());
@@ -1339,7 +1339,7 @@ public:
             Room *room = jiling->getRoom();
             bool can_invoke = false;
             QList<ServerPlayer *> other_players = room->getOtherPlayers(jiling);
-            foreach(ServerPlayer *player, other_players)
+            foreach (ServerPlayer *player, other_players)
             {
                 if (!player->isKongcheng())
                 {
@@ -1356,7 +1356,7 @@ public:
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *jiling, QVariant &, ServerPlayer *) const
     {
         QList<ServerPlayer *> targets;
-        foreach(ServerPlayer *p, room->getOtherPlayers(jiling))
+        foreach (ServerPlayer *p, room->getOtherPlayers(jiling))
         {
             if (!p->isKongcheng())
                 targets << p;
@@ -1385,7 +1385,7 @@ public:
             if (success)
             {
                 QList<ServerPlayer *> targets;
-                foreach(ServerPlayer *p, room->getAlivePlayers())
+                foreach (ServerPlayer *p, room->getAlivePlayers())
                 {
                     if (jiling->canSlash(p, NULL, false) && (p->isFriendWith(target) || target == p))
                         targets << p;
@@ -1431,7 +1431,7 @@ public:
         {
             QList<ServerPlayer *> other_players = room->getOtherPlayers(tianfeng);
             QList<ServerPlayer *> targets;
-            foreach(ServerPlayer *p, other_players)
+            foreach (ServerPlayer *p, other_players)
             {
                 if (tianfeng->canDiscard(p, "he"))
                     return QStringList(objectName());
@@ -1445,7 +1445,7 @@ public:
     {
         QList<ServerPlayer *> other_players = room->getOtherPlayers(tianfeng);
         QList<ServerPlayer *> targets;
-        foreach(ServerPlayer *p, other_players)
+        foreach (ServerPlayer *p, other_players)
         {
             if (tianfeng->canDiscard(p, "he"))
                 targets << p;
@@ -1645,14 +1645,14 @@ public:
     {
         if (set && !zoushi->tag["huoshui"].toBool())
         {
-            foreach(ServerPlayer *p, room->getOtherPlayers(zoushi))
+            foreach (ServerPlayer *p, room->getOtherPlayers(zoushi))
                 room->setPlayerDisableShow(p, "hd", "huoshui");
 
             zoushi->tag["huoshui"] = true;
         }
         else if (!set && zoushi->tag["huoshui"].toBool())
         {
-            foreach(ServerPlayer *p, room->getOtherPlayers(zoushi))
+            foreach (ServerPlayer *p, room->getOtherPlayers(zoushi))
                 room->removePlayerDisableShow(p, "huoshui");
 
             zoushi->tag["huoshui"] = false;

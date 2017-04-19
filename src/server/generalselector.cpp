@@ -38,7 +38,7 @@ QStringList GeneralSelector::selectGenerals(ServerPlayer *player, const QStringL
     int max_score = my_hash.values().first();
     QString best_pair = my_hash.keys().first();
 
-    foreach(const QString &key, my_hash.keys())
+    foreach (const QString &key, my_hash.keys())
     {
         int score = my_hash.value(key);
         if (score > max_score)
@@ -80,7 +80,7 @@ void GeneralSelector::loadGeneralTable()
 
         file.close();
     }
-    foreach(const QString &pack, Config.value("LuaPackages", QString()).toString().split("+"))
+    foreach (const QString &pack, Config.value("LuaPackages", QString()).toString().split("+"))
     {
         QFile lua_file(QString("extensions/ai-selector/%1-general-value.txt").arg(pack));
         if (lua_file.exists() && lua_file.open(QIODevice::ReadOnly))
@@ -133,7 +133,7 @@ void GeneralSelector::loadPairTable()
 
         file.close();
     }
-    foreach(const QString &pack, Config.value("LuaPackages", QString()).toString().split("+"))
+    foreach (const QString &pack, Config.value("LuaPackages", QString()).toString().split("+"))
     {
         QFile lua_file(QString("extensions/ai-selector/%1-pair-value.txt").arg(pack));
         if (lua_file.exists() && lua_file.open(QIODevice::ReadOnly))
@@ -179,13 +179,13 @@ void GeneralSelector::calculatePairValues(const ServerPlayer *player, const QStr
     QStringList candidates = _candidates;
     if (!player->getGeneralName().isEmpty())
     {
-        foreach(const QString &candidate, _candidates)
+        foreach (const QString &candidate, _candidates)
         {
             if (BanPair::isBanned(player->getGeneralName(), candidate))
                 candidates.removeOne(candidate);
         }
     }
-    foreach(const QString &first, candidates)
+    foreach (const QString &first, candidates)
     {
         calculateDeputyValue(player, first, candidates, kingdoms);
     }
@@ -194,7 +194,7 @@ void GeneralSelector::calculatePairValues(const ServerPlayer *player, const QStr
 void GeneralSelector::calculateDeputyValue(const ServerPlayer *player, const QString &first, const QStringList &_candidates, const QStringList &kingdom_list)
 {
     QStringList candidates = _candidates;
-    foreach(const QString &candidate, _candidates)
+    foreach (const QString &candidate, _candidates)
     {
         if (BanPair::isBanned(first, candidate))
         {
@@ -202,7 +202,7 @@ void GeneralSelector::calculateDeputyValue(const ServerPlayer *player, const QSt
             candidates.removeOne(candidate);
         }
     }
-    foreach(const QString &second, candidates)
+    foreach (const QString &second, candidates)
     {
         if (first == second) continue;
         QString key = QString("%1+%2").arg(first, second);
@@ -242,7 +242,7 @@ void GeneralSelector::calculateDeputyValue(const ServerPlayer *player, const QSt
             {
                 QSet<QString> need_high_max_hp_skills;
                 need_high_max_hp_skills << "zhiheng" << "zaiqi" << "yinghun" << "kurou";
-                foreach(const Skill *skill, general1->getVisibleSkills() + general2->getVisibleSkills())
+                foreach (const Skill *skill, general1->getVisibleSkills() + general2->getVisibleSkills())
                 {
                     if (need_high_max_hp_skills.contains(skill->objectName())) v -= 5;
                 }

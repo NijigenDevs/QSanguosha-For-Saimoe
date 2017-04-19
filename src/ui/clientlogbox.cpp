@@ -43,7 +43,7 @@ void ClientLogBox::appendLog(const QString &type, const QString &from_general, c
     if (!tos.isEmpty())
     {
         QStringList to_list;
-        foreach(const QString &to, tos)
+        foreach (const QString &to, tos)
             to_list << ClientInstance->getPlayerName(to);
         to = to_list.join(", ");
         to = bold(to, Qt::red);
@@ -54,7 +54,7 @@ void ClientLogBox::appendLog(const QString &type, const QString &from_general, c
     if (type.startsWith("$"))
     {
         QString log_name;
-        foreach(const QString &one_card, card_str.split("+"))
+        foreach (const QString &one_card, card_str.split("+"))
         {
             const Card *card = NULL;
             if (type == "$JudgeResult" || type == "$PasteCard")
@@ -97,7 +97,7 @@ void ClientLogBox::appendLog(const QString &type, const QString &from_general, c
     if (!card_str.isEmpty() && !from_general.isEmpty())
     {
         // do Indicator animation
-        foreach(const QString &to, tos)
+        foreach (const QString &to, tos)
             RoomSceneInstance->showIndicator(from_general, to);
 
         const Card *card = Card::Parse(card_str);
@@ -120,7 +120,7 @@ void ClientLogBox::appendLog(const QString &type, const QString &from_general, c
 
             QList<int> card_ids = card->getSubcards();
             QStringList subcard_list;
-            foreach(int card_id, card_ids)
+            foreach (int card_id, card_ids)
             {
                 const Card *subcard = Sanguosha->getEngineCard(card_id);
                 subcard_list << bold(subcard->getLogName(), Qt::yellow);

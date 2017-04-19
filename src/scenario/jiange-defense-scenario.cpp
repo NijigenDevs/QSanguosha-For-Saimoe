@@ -16,7 +16,7 @@ public:
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
         if (player == NULL)
-            foreach(ServerPlayer *p, room->getPlayers())
+            foreach (ServerPlayer *p, room->getPlayers())
             if (p->getActualGeneral1Name().startsWith("jg_"))
                 p->showGeneral(true, true, false);
         return false;
@@ -39,7 +39,7 @@ void JiangeDefenseScenario::assign(QStringList &generals, QStringList &generals2
     roles.insert("shu", shu_roles);
     qShuffle(kingdoms);
     QStringList wei_generals, shu_generals;
-    foreach(const QString &general, Sanguosha->getLimitedGeneralNames())
+    foreach (const QString &general, Sanguosha->getLimitedGeneralNames())
     {
         if (general.startsWith("lord_")) continue;
         if (BanPair::isBanned(general)) continue;
@@ -59,7 +59,7 @@ void JiangeDefenseScenario::assign(QStringList &generals, QStringList &generals2
         if (players[i]->getState() == "online")
         {
             QStringList choices;
-            foreach(const QString &kingdom, roles.keys())
+            foreach (const QString &kingdom, roles.keys())
                 if (roles[kingdom].contains("human"))
                     choices << kingdom;
             QString choice = choices.at(qrand() % choices.length());
@@ -115,7 +115,7 @@ void JiangeDefenseScenario::assign(QStringList &generals, QStringList &generals2
         else
         {
             QStringList kingdom_choices;
-            foreach(const QString &kingdom, roles.keys())
+            foreach (const QString &kingdom, roles.keys())
                 if (!roles[kingdom].isEmpty())
                     kingdom_choices << kingdom;
             QString kingdom = kingdom_choices.at(qrand() % kingdom_choices.length());

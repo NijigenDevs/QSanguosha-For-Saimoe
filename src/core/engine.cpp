@@ -70,16 +70,16 @@ Engine::Engine()
     DoLuaScript(lua, "lua/config.lua");
 
     QStringList stringlist_sp_convert = GetConfigFromLuaState(lua, "convert_pairs").toStringList();
-    foreach(const QString &cv_pair, stringlist_sp_convert)
+    foreach (const QString &cv_pair, stringlist_sp_convert)
     {
         QStringList pairs = cv_pair.split("->");
         QStringList cv_to = pairs.at(1).split("|");
-        foreach(const QString &to, cv_to)
+        foreach (const QString &to, cv_to)
             sp_convert_pairs.insertMulti(pairs.at(0), to);
     }
 
     QStringList package_names = GetConfigFromLuaState(lua, "package_names").toStringList();
-    foreach(const QString &name, package_names)
+    foreach (const QString &name, package_names)
         addPackage(name);
 
     metaobjects.insert("TransferCard", &TransferCard::staticMetaObject);
@@ -107,7 +107,7 @@ Engine::Engine()
 
     connect(qApp, &QApplication::aboutToQuit, this, &Engine::deleteLater);
 
-    foreach(const Skill *skill, skills)
+    foreach (const Skill *skill, skills)
     {
         Skill *mutable_skill = const_cast<Skill *>(skill);
         mutable_skill->initMediaSource();
@@ -133,7 +133,7 @@ Engine::~Engine()
     Audio::quit();
 #endif
 
-    foreach(ExpPattern * const &pattern, enginePatterns)
+    foreach (ExpPattern * const &pattern, enginePatterns)
         delete pattern;
 }
 
@@ -166,7 +166,7 @@ const Scenario *Engine::getScenario(const QString &name) const
 
 void Engine::addSkills(const QList<const Skill *> &all_skills)
 {
-    foreach(const Skill *skill, all_skills)
+    foreach (const Skill *skill, all_skills)
     {
         if (!skill)
         {
@@ -224,7 +224,7 @@ QList<const TriggerSkill *> Engine::getGlobalTriggerSkills() const
 
 void Engine::addPackage(Package *package)
 {
-    foreach(const Package *p, packages)
+    foreach (const Package *p, packages)
     {
         if (p->objectName() == package->objectName())
             return;
@@ -237,7 +237,7 @@ void Engine::addPackage(Package *package)
     related_skills.unite(package->getRelatedSkills());
 
     QList<Card *> all_cards = package->findChildren<Card *>();
-    foreach(Card *card, all_cards)
+    foreach (Card *card, all_cards)
     {
         card->setId(cards.length());
         cards << card;
@@ -293,13 +293,13 @@ void Engine::addPackage(Package *package)
     addSkills(package->getSkills());
 
     QList<General *> all_generals = package->findChildren<General *>();
-    foreach(General *general, all_generals)
+    foreach (General *general, all_generals)
     {
         addSkills(general->findChildren<const Skill *>());
-        foreach(const QString &skill_name, general->getExtraSkillSet())
+        foreach (const QString &skill_name, general->getExtraSkillSet())
         {
             if (skill_name.startsWith("#")) continue;
-            foreach(const Skill *related, getRelatedSkills(skill_name))
+            foreach (const Skill *related, getRelatedSkills(skill_name))
                 general->addSkill(related->objectName());
         }
         generalList << general;
@@ -309,7 +309,7 @@ void Engine::addPackage(Package *package)
     }
 
     QList<const QMetaObject *> metas = package->getMetaObjects();
-    foreach(const QMetaObject *meta, metas)
+    foreach (const QMetaObject *meta, metas)
         metaobjects.insert(meta->className(), meta);
 }
 
@@ -335,7 +335,7 @@ QString Engine::translate(const QString &toTranslate) const
 {
     QStringList list = toTranslate.split("\\");
     QString res;
-    foreach(const QString &str, list)
+    foreach (const QString &str, list)
         res.append(translations.value(str, str));
     return res;
 }
@@ -387,7 +387,7 @@ Card::HandlingMethod Engine::getCardHandlingMethod(const QString &method_name) c
 QList<const Skill *> Engine::getRelatedSkills(const QString &skill_name) const
 {
     QList<const Skill *> skills;
-    foreach(const QString &name, related_skills.values(skill_name))
+    foreach (const QString &name, related_skills.values(skill_name))
         skills << getSkill(name);
 
     return skills;
@@ -397,9 +397,9 @@ const Skill *Engine::getMainSkill(const QString &skill_name) const
 {
     const Skill *skill = getSkill(skill_name);
     if (!skill || skill->isVisible() || related_skills.contains(skill_name)) return skill;
-    foreach(const QString &key, related_skills.keys())
+    foreach (const QString &key, related_skills.keys())
     {
-        foreach(const QString &name, related_skills.values(key))
+        foreach (const QString &name, related_skills.values(key))
             if (name == skill_name) return getSkill(key);
     }
     return skill;
@@ -419,7 +419,7 @@ int Engine::getGeneralCount(bool include_banned) const
         return generalList.size();
 
     int total = generalList.size();
-    foreach(const General *general, generalList)
+    foreach (const General *general, generalList)
     {
         if (getBanPackages().contains(general->getPackage()))
             total--;
@@ -644,7 +644,7 @@ Card *Engine::cloneCard(const QString &name, Card::Suit suit, int number, const 
     card->clearFlags();
     if (!flags.isEmpty())
     {
-        foreach(const QString &flag, flags)
+        foreach (const QString &flag, flags)
             card->setFlags(flag);
     }
     return card;
@@ -695,7 +695,7 @@ QString Engine::getMODName() const
 QStringList Engine::getExtensions() const
 {
     QStringList extensions;
-    foreach(const Package *package, packages)
+    foreach (const Package *package, packages)
     {
         if (package->inherits("Scenario"))
             continue;
@@ -903,7 +903,7 @@ int Engine::getCardCount() const
 QStringList Engine::getGeneralNames() const
 {
     QStringList generalNames;
-    foreach(const General *general, generalList)
+    foreach (const General *general, generalList)
         generalNames << general->objectName();
     return generalNames;
 }
@@ -919,14 +919,14 @@ QStringList Engine::getLimitedGeneralNames() const
     QStringList general_names = getGeneralNames();
     QStringList general_names_copy = general_names;
 
-    foreach(const QString &name, general_names_copy)
+    foreach (const QString &name, general_names_copy)
     {
         if (isGeneralHidden(name) || getBanPackages().contains(getGeneral(name)->getPackage()))
             general_names.removeOne(name);
     }
 
     QStringList banned_generals = Config.value("Banlist/Generals", "").toStringList();
-    foreach(const QString &banned, banned_generals)
+    foreach (const QString &banned, banned_generals)
         general_names.removeOne(banned);
 
     return general_names;
@@ -954,7 +954,7 @@ QStringList Engine::getRandomGenerals(int count, const QSet<QString> &ban_set) c
 QList<int> Engine::getRandomCards() const
 {
     QList<int> list;
-    foreach(Card *card, cards)
+    foreach (Card *card, cards)
     {
         card->clearFlags();
 
@@ -1060,7 +1060,7 @@ const ViewAsSkill *Engine::getViewAsSkill(const QString &skill_name) const
 
 const ProhibitSkill *Engine::isProhibited(const Player *from, const Player *to, const Card *card, const QList<const Player *> &others) const
 {
-    foreach(const ProhibitSkill *skill, prohibit_skills)
+    foreach (const ProhibitSkill *skill, prohibit_skills)
     {
         if (skill->isProhibited(from, to, card, others))
             return skill;
@@ -1073,7 +1073,7 @@ int Engine::correctDistance(const Player *from, const Player *to) const
 {
     int correct = 0;
 
-    foreach(const DistanceSkill *skill, distance_skills)
+    foreach (const DistanceSkill *skill, distance_skills)
         correct += skill->getCorrect(from, to);
 
     return correct;
@@ -1083,7 +1083,7 @@ int Engine::correctMaxCards(const ServerPlayer *target, bool fixed, MaxCardsType
 {
     int extra = 0;
 
-    foreach(const MaxCardsSkill *skill, maxcards_skills)
+    foreach (const MaxCardsSkill *skill, maxcards_skills)
     {
         if (fixed)
         {
@@ -1106,7 +1106,7 @@ int Engine::correctCardTarget(const TargetModSkill::ModType type, const Player *
 
     if (type == TargetModSkill::Residue)
     {
-        foreach(const TargetModSkill *skill, targetmod_skills)
+        foreach (const TargetModSkill *skill, targetmod_skills)
         {
             ExpPattern p(skill->getPattern());
             if (p.match(from, card))
@@ -1119,7 +1119,7 @@ int Engine::correctCardTarget(const TargetModSkill::ModType type, const Player *
     }
     else if (type == TargetModSkill::DistanceLimit)
     {
-        foreach(const TargetModSkill *skill, targetmod_skills)
+        foreach (const TargetModSkill *skill, targetmod_skills)
         {
             ExpPattern p(skill->getPattern());
             if (p.match(from, card))
@@ -1132,7 +1132,7 @@ int Engine::correctCardTarget(const TargetModSkill::ModType type, const Player *
     }
     else if (type == TargetModSkill::ExtraTarget)
     {
-        foreach(const TargetModSkill *skill, targetmod_skills)
+        foreach (const TargetModSkill *skill, targetmod_skills)
         {
             ExpPattern p(skill->getPattern());
             if (p.match(from, card))
@@ -1150,7 +1150,7 @@ int Engine::correctAttackRange(const Player *target, bool include_weapon, bool f
 {
     int extra = 0;
 
-    foreach(const AttackRangeSkill *skill, attackrange_skills)
+    foreach (const AttackRangeSkill *skill, attackrange_skills)
     {
         if (fixed)
         {

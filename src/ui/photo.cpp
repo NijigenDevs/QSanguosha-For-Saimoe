@@ -282,7 +282,7 @@ bool Photo::_addCardItems(QList<CardItem *> &card_items, const CardsMoveStruct &
 
     Player::Place place = moveInfo.to_place;
 
-    foreach(CardItem *card_item, card_items)
+    foreach (CardItem *card_item, card_items)
         card_item->setHomeOpacity(homeOpacity);
     if (place == Player::PlaceEquip)
     {

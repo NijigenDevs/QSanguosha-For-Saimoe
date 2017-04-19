@@ -128,7 +128,7 @@ GuhuoBox::GuhuoBox(const QString &skillname, const QString &flag, bool playonly)
     if (cards_list.contains("b"))
     {
         QList<const BasicCard*> basics = Sanguosha->findChildren<const BasicCard*>();
-        foreach(const BasicCard *card, basics)
+        foreach (const BasicCard *card, basics)
         {
             if (!card_list["BasicCard"].contains(card->objectName())
                 && !ServerInfo.Extensions.contains("!" + card->getPackage()))
@@ -138,7 +138,7 @@ GuhuoBox::GuhuoBox(const QString &skillname, const QString &flag, bool playonly)
     if (cards_list.contains("t"))
     {
         QList<const TrickCard*> tricks = Sanguosha->findChildren<const TrickCard*>();
-        foreach(const TrickCard *card, tricks)
+        foreach (const TrickCard *card, tricks)
         {
             if (!ServerInfo.Extensions.contains("!" + card->getPackage()) && card->isNDTrick())
             {
@@ -155,7 +155,7 @@ GuhuoBox::GuhuoBox(const QString &skillname, const QString &flag, bool playonly)
     if (cards_list.contains("d"))
     {
         QList<const DelayedTrick*> delays = Sanguosha->findChildren<const DelayedTrick*>();
-        foreach(const DelayedTrick *card, delays)
+        foreach (const DelayedTrick *card, delays)
         {
             if (!card_list["DelayedTrick"].contains(card->objectName())
                 && !ServerInfo.Extensions.contains("!" + card->getPackage()))
@@ -168,7 +168,7 @@ GuhuoBox::GuhuoBox(const QString &skillname, const QString &flag, bool playonly)
         QStringList bancards = bancards_list.split(",");
         if (bancards.length() > 0)
         {
-            foreach(QString bancard, bancards)
+            foreach (QString bancard, bancards)
             {
                 if (bancard.length() == 0)
                     continue;
@@ -211,9 +211,9 @@ int GuhuoBox::getButtonWidth() const
 
     QFontMetrics fontMetrics(Button::defaultFont());
     int biggest = 0;
-    foreach(const QStringList &value, card_list.values())
+    foreach (const QStringList &value, card_list.values())
     {
-        foreach(const QString choice, value)
+        foreach (const QString choice, value)
         {
             const int width = fontMetrics.width(translate(choice));
             if (width > biggest)
@@ -269,9 +269,9 @@ void GuhuoBox::popup()
     RoomSceneInstance->getDasboard()->disableAllCards();
     RoomSceneInstance->current_guhuo_box = this;
     const int buttonWidth = getButtonWidth();
-    foreach(const QString &key, card_list.keys())
+    foreach (const QString &key, card_list.keys())
     {
-        foreach(const QString &card_name, card_list.value(key))
+        foreach (const QString &card_name, card_list.value(key))
         {
             //Button *button = new Button(translate(card_name), QSizeF(buttonWidth,
               //  defaultButtonHeight));
@@ -304,14 +304,14 @@ void GuhuoBox::popup()
     int x = 0;
     int y = 0;
     int titles_num = 0;
-    foreach(const QString &key, card_list.keys())
+    foreach (const QString &key, card_list.keys())
     {
         QPointF titlepos;
         titlepos.setX(interval);
         titlepos.setY(topBlankWidth + defaultButtonHeight*y + interval*(y - 1) + titleWidth*titles_num * 2 - 2 * titles[key]->y());
         titles[key]->setPos(titlepos);
         ++titles_num;
-        foreach(const QString &card_name, card_list.value(key))
+        foreach (const QString &card_name, card_list.value(key))
         {
             QPointF apos;
             apos.setX((x + 1)*outerBlankWidth + x*buttonWidth);
@@ -348,12 +348,12 @@ void GuhuoBox::clear()
     if (!isVisible())
         return;
 
-    foreach(GuhuoButton *button, buttons.values())
+    foreach (GuhuoButton *button, buttons.values())
         button->deleteLater();
 
     buttons.values().clear();
 
-    foreach(Title *title, titles.values())
+    foreach (Title *title, titles.values())
         title->deleteLater();
 
     titles.values().clear();

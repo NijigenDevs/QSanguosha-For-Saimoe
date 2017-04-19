@@ -36,7 +36,7 @@ public:
         {
             if (use.card->isKindOf("Slash"))
             {
-                foreach(ServerPlayer *p, use.to)
+                foreach (ServerPlayer *p, use.to)
                 {
                     QStringList blade_use = p->property("blade_use").toStringList();
                     if (!blade_use.contains(use.card->toString()))
@@ -57,7 +57,7 @@ public:
     {
         CardUseStruct use = data.value<CardUseStruct>();
         bool play_animation = false;
-        foreach(ServerPlayer *p, use.to)
+        foreach (ServerPlayer *p, use.to)
         {
             if (p->getMark("Equips_of_Others_Nullified_to_You") > 0)
                 continue;
@@ -348,7 +348,7 @@ void WoodenOxCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &
     source->addToPile("wooden_ox", subcards, false);
 
     QList<ServerPlayer *> targets;
-    foreach(ServerPlayer *p, room->getOtherPlayers(source))
+    foreach (ServerPlayer *p, room->getOtherPlayers(source))
     {
         if (!p->getTreasure())
             targets << p;
@@ -523,7 +523,7 @@ public:
             KnownBoth *kb = new KnownBoth(Card::NoSuit, 0);
             kb->setSkillName(objectName());
             QList<ServerPlayer *> targets;
-            foreach(ServerPlayer *p, room->getOtherPlayers(player))
+            foreach (ServerPlayer *p, room->getOtherPlayers(player))
             {
                 if (!player->isProhibited(p, kb) && (!p->isKongcheng() || !p->hasShownAllGenerals()))
                     targets << p;
@@ -577,7 +577,7 @@ bool Drowning::isAvailable(const Player *player) const
 {
     bool canUse = false;
     QList<const Player *> players = player->getAliveSiblings();
-    foreach(const Player *p, players)
+    foreach (const Player *p, players)
     {
         if (player->isProhibited(p, this))
             continue;
@@ -601,7 +601,7 @@ QStringList Drowning::checkTargetModSkillShow(const CardUseStruct &use) const
         QList<const Skill *> skills = from->getSkillList(false, false);
         QList<const TargetModSkill *> tarmods;
 
-        foreach(const Skill *skill, skills)
+        foreach (const Skill *skill, skills)
         {
             if (from->hasSkill(skill) && skill->inherits("TargetModSkill"))
             {
@@ -616,7 +616,7 @@ QStringList Drowning::checkTargetModSkillShow(const CardUseStruct &use) const
         int n = use.to.length() - 1;
         QList<const TargetModSkill *> tarmods_copy = tarmods;
 
-        foreach(const TargetModSkill *tarmod, tarmods_copy)
+        foreach (const TargetModSkill *tarmod, tarmods_copy)
         {
             if (tarmod->getExtraTargetNum(from, use.card) == 0)
             {
@@ -638,7 +638,7 @@ QStringList Drowning::checkTargetModSkillShow(const CardUseStruct &use) const
         tarmods_copy = tarmods;
 
         QStringList shows;
-        foreach(const TargetModSkill *tarmod, tarmods_copy)
+        foreach (const TargetModSkill *tarmod, tarmods_copy)
         {
             const Skill *main_skill = Sanguosha->getMainSkill(tarmod->objectName());
             shows << main_skill->objectName();
@@ -659,7 +659,7 @@ bool BurningCamps::isAvailable(const Player *player) const
 {
     bool canUse = false;
     QList<const Player *> players = player->getNextAlive()->getFormation();
-    foreach(const Player *p, players)
+    foreach (const Player *p, players)
     {
         if (player->isProhibited(p, this))
             continue;
@@ -675,7 +675,7 @@ void BurningCamps::onUse(Room *room, const CardUseStruct &card_use) const
 {
     CardUseStruct new_use = card_use;
     QList<const Player *> targets = card_use.from->getNextAlive()->getFormation();
-    foreach(const Player *player, targets)
+    foreach (const Player *player, targets)
     {
         const Skill *skill = room->isProhibited(card_use.from, player, this);
         ServerPlayer *splayer = room->findPlayer(player->objectName());
@@ -734,7 +734,7 @@ void LureTiger::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &tar
 {
     QStringList nullified_list = room->getTag("CardUseNullifiedList").toStringList();
     bool all_nullified = nullified_list.contains("_ALL_TARGETS");
-    foreach(ServerPlayer *target, targets)
+    foreach (ServerPlayer *target, targets)
     {
         CardEffectStruct effect;
         effect.card = this;
@@ -788,7 +788,7 @@ QStringList LureTiger::checkTargetModSkillShow(const CardUseStruct &use) const
         QList<const Skill *> skills = from->getSkillList(false, false);
         QList<const TargetModSkill *> tarmods;
 
-        foreach(const Skill *skill, skills)
+        foreach (const Skill *skill, skills)
         {
             if (from->hasSkill(skill) && skill->inherits("TargetModSkill"))
             {
@@ -803,7 +803,7 @@ QStringList LureTiger::checkTargetModSkillShow(const CardUseStruct &use) const
         int n = use.to.length() - 2;
         QList<const TargetModSkill *> tarmods_copy = tarmods;
 
-        foreach(const TargetModSkill *tarmod, tarmods_copy)
+        foreach (const TargetModSkill *tarmod, tarmods_copy)
         {
             if (tarmod->getExtraTargetNum(from, use.card) == 0)
             {
@@ -825,7 +825,7 @@ QStringList LureTiger::checkTargetModSkillShow(const CardUseStruct &use) const
         tarmods_copy = tarmods;
 
         QStringList shows;
-        foreach(const TargetModSkill *tarmod, tarmods_copy)
+        foreach (const TargetModSkill *tarmod, tarmods_copy)
         {
             const Skill *main_skill = Sanguosha->getMainSkill(tarmod->objectName());
             shows << main_skill->objectName();
@@ -861,7 +861,7 @@ public:
                 return QStringList();
         }
 
-        foreach(ServerPlayer *p, room->getOtherPlayers(player))
+        foreach (ServerPlayer *p, room->getOtherPlayers(player))
             if (p->isRemoved())
             {
                 room->setPlayerProperty(p, "removed", false);
@@ -902,7 +902,7 @@ bool FightTogether::isAvailable(const Player *player) const
         sub = subcards;
     else
         sub << getEffectiveId();
-    foreach(int id, sub)
+    foreach (int id, sub)
     {
         if (player->getPile("wooden_ox").contains(id))
         {
@@ -956,7 +956,7 @@ void FightTogether::onUse(Room *room, const CardUseStruct &card_use) const
         return;
     }
     QList<ServerPlayer *> bigs, smalls;
-    foreach(ServerPlayer *p, room->getAllPlayers())
+    foreach (ServerPlayer *p, room->getAllPlayers())
     {
         const Skill *skill = room->isProhibited(source, p, this);
         if (skill)
@@ -1089,7 +1089,7 @@ void AllianceFeast::onUse(Room *room, const CardUseStruct &card_use) const
     {
         ServerPlayer *target = card_use.to.first();
         QList<ServerPlayer *> other_players = room->getOtherPlayers(source);
-        foreach(ServerPlayer *player, other_players)
+        foreach (ServerPlayer *player, other_players)
         {
             if (!target->isFriendWith(player))
                 continue;
@@ -1126,7 +1126,7 @@ void AllianceFeast::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> 
 {
     QStringList nullified_list = room->getTag("CardUseNullifiedList").toStringList();
     bool all_nullified = nullified_list.contains("_ALL_TARGETS");
-    foreach(ServerPlayer *target, targets)
+    foreach (ServerPlayer *target, targets)
     {
         CardEffectStruct effect;
         effect.card = this;
@@ -1147,7 +1147,7 @@ void AllianceFeast::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> 
         {
             int n = 0;
             ServerPlayer *enemy = targets.last();
-            foreach(ServerPlayer *p, room->getOtherPlayers(source))
+            foreach (ServerPlayer *p, room->getOtherPlayers(source))
             {
                 if (enemy->isFriendWith(p))
                     ++n;
@@ -1269,7 +1269,7 @@ public:
         PhaseChangeStruct change = data.value<PhaseChangeStruct>();
         if (change.to != Player::NotActive)
             return list;
-        foreach(ServerPlayer *p, room->getAllPlayers())
+        foreach (ServerPlayer *p, room->getAllPlayers())
             if (p->getMark("ThreatenEmperorExtraTurn") > 0)
                 list.insert(p, QStringList(objectName()));
 
@@ -1306,7 +1306,7 @@ bool ImperialOrder::isAvailable(const Player *player) const
     bool invoke = !player->hasShownOneGeneral();
     if (!invoke)
     {
-        foreach(const Player *p, player->getAliveSiblings())
+        foreach (const Player *p, player->getAliveSiblings())
         {
             if (!p->hasShownOneGeneral() && !player->isProhibited(p, this))
             {
@@ -1322,7 +1322,7 @@ void ImperialOrder::onUse(Room *room, const CardUseStruct &card_use) const
 {
     ServerPlayer *source = card_use.from;
     QList<ServerPlayer *> targets;
-    foreach(ServerPlayer *p, room->getAllPlayers())
+    foreach (ServerPlayer *p, room->getAllPlayers())
     {
         if (p->hasShownOneGeneral())
             continue;
@@ -1467,7 +1467,7 @@ StrategicAdvantagePackage::StrategicAdvantagePackage()
         << new ThreatenEmperorSkill;
     insertRelatedSkills("lure_tiger_effect", "#lure_tiger-prohibit");
 
-    foreach(Card *card, cards)
+    foreach (Card *card, cards)
         card->setParent(this);
 
     addMetaObject<WoodenOxCard>();

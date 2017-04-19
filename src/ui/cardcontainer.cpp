@@ -93,7 +93,7 @@ void CardContainer::fillCards(const QList<int> &card_ids, const QList<int> &disa
     {
         retained_stack.push(retained());
         items_stack.push(items);
-        foreach(CardItem *item, items)
+        foreach (CardItem *item, items)
             item->hide();
         items.clear();
     }
@@ -164,7 +164,7 @@ bool CardContainer::retained()
 
 void CardContainer::clear()
 {
-    foreach(CardItem *item, items)
+    foreach (CardItem *item, items)
     {
         item->hide();
         item->deleteLater();
@@ -191,17 +191,17 @@ void CardContainer::clear()
 
 void CardContainer::freezeCards(bool is_frozen)
 {
-    foreach(CardItem *item, items)
+    foreach (CardItem *item, items)
         item->setFrozen(is_frozen);
 }
 
 QList<CardItem *> CardContainer::removeCardItems(const QList<int> &card_ids, Player::Place)
 {
     QList<CardItem *> result;
-    foreach(int card_id, card_ids)
+    foreach (int card_id, card_ids)
     {
         CardItem *to_take = NULL;
-        foreach(CardItem *item, items)
+        foreach (CardItem *item, items)
         {
             if (item->getCard()->getId() == card_id)
             {
@@ -226,7 +226,7 @@ QList<CardItem *> CardContainer::removeCardItems(const QList<int> &card_ids, Pla
 
 int CardContainer::getFirstEnabled() const
 {
-    foreach(CardItem *card, items)
+    foreach (CardItem *card, items)
     {
         if (card->isEnabled())
             return card->getCard()->getId();
@@ -237,7 +237,7 @@ int CardContainer::getFirstEnabled() const
 void CardContainer::startChoose()
 {
     confirm_button->hide();
-    foreach(CardItem *item, items)
+    foreach (CardItem *item, items)
     {
         connect(item, &CardItem::leave_hover, this, &CardContainer::grabItem);
         connect(item, &CardItem::clicked, this, &CardContainer::chooseItem);
@@ -247,7 +247,7 @@ void CardContainer::startChoose()
 void CardContainer::startGongxin(const QList<int> &enabled_ids)
 {
     if (enabled_ids.isEmpty()) return;
-    foreach(CardItem *item, items)
+    foreach (CardItem *item, items)
     {
         const Card *card = item->getCard();
         if (card && enabled_ids.contains(card->getEffectiveId()))
@@ -259,7 +259,7 @@ void CardContainer::startGongxin(const QList<int> &enabled_ids)
 
 void CardContainer::addConfirmButton()
 {
-    foreach(CardItem *card, items)
+    foreach (CardItem *card, items)
         card->setFlag(ItemIsMovable, false);
 
     confirm_button->show();
@@ -299,7 +299,7 @@ void CardContainer::view(const ClientPlayer *player)
 {
     QList<int> card_ids;
     QList<const Card *> cards = player->getHandcards();
-    foreach(const Card *card, cards)
+    foreach (const Card *card, cards)
         card_ids << card->getEffectiveId();
 
     fillCards(card_ids);

@@ -148,7 +148,7 @@ QWidget *ServerDialog::createPackageTab()
     int i = 0, j = 0;
     int row = 0, column = 0;
     const QList<const Package *> &packages = Sanguosha->getPackages();
-    foreach(const Package *package, packages)
+    foreach (const Package *package, packages)
     {
         if (package->inherits("Scenario"))
             continue;
@@ -460,7 +460,7 @@ QGroupBox *ServerDialog::createGameModeBox()
     scenario_ComboBox->setEnabled(scenario_button->isDown());
     connect(scenario_button, &QRadioButton::toggled, scenario_ComboBox, &QComboBox::setEnabled);
     QStringList names = Sanguosha->getModScenarioNames();
-    foreach(QString name, names)
+    foreach (QString name, names)
     {
         QString scenario_name = Sanguosha->translate(name);
         const Scenario *scenario = Sanguosha->getScenario(name);
@@ -541,7 +541,7 @@ void ServerDialog::onDetectButtonClicked()
 {
     QHostInfo vHostInfo = QHostInfo::fromName(QHostInfo::localHostName());
     QList<QHostAddress> vAddressList = vHostInfo.addresses();
-    foreach(const QHostAddress &address, vAddressList)
+    foreach (const QHostAddress &address, vAddressList)
     {
         if (!address.isNull() && address != QHostAddress::LocalHost
             && address.protocol() == QAbstractSocket::IPv4Protocol)
@@ -627,7 +627,7 @@ bool ServerDialog::config()
 
     QSet<QString> ban_packages;
     QList<QAbstractButton *> checkboxes = extension_group->buttons();
-    foreach(QAbstractButton *checkbox, checkboxes)
+    foreach (QAbstractButton *checkbox, checkboxes)
     {
         if (!checkbox->isChecked())
         {

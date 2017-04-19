@@ -180,7 +180,7 @@ public:
                 if (use.card != NULL && use.card->isKindOf("Slash"))
                 {
                     QStringList targets;
-                    foreach(ServerPlayer *to, use.to)
+                    foreach (ServerPlayer *to, use.to)
                         targets << to->objectName();
                     if (!targets.isEmpty())
                         return QStringList(objectName() + "->" + targets.join("+"));
@@ -588,7 +588,7 @@ public:
         if (TriggerSkill::triggerable(player) && use.card != NULL && use.card->isKindOf("Slash"))
         {
             QStringList targets;
-            foreach(ServerPlayer *to, use.to)
+            foreach (ServerPlayer *to, use.to)
                 targets << to->objectName();
             if (!targets.isEmpty())
                 return QStringList(objectName() + "->" + targets.join("+"));
@@ -740,7 +740,7 @@ public:
         if (TriggerSkill::triggerable(player) && player->getPhase() == Player::Play && use.card != NULL && use.card->isKindOf("Slash"))
         {
             QStringList targets;
-            foreach(ServerPlayer *to, use.to)
+            foreach (ServerPlayer *to, use.to)
             {
                 int handcard_num = to->getHandcardNum();
                 if (handcard_num >= player->getHp() || handcard_num <= player->getAttackRange())
@@ -948,7 +948,7 @@ public:
     {
         pangtong->throwAllHandCardsAndEquips();
         QList<const Card *> tricks = pangtong->getJudgingArea();
-        foreach(const Card *trick, tricks)
+        foreach (const Card *trick, tricks)
         {
             CardMoveReason reason(CardMoveReason::S_REASON_NATURAL_ENTER, pangtong->objectName());
             room->throwCard(trick, reason, NULL);
@@ -1045,12 +1045,12 @@ public:
     virtual bool isEnabledAtNullification(const ServerPlayer *player) const
     {
         QList <const Card *> handlist = player->getCards("h");
-        foreach(int id, player->getHandPile())
+        foreach (int id, player->getHandPile())
         {
             const Card *ca = Sanguosha->getCard(id);
             handlist.append(ca);
         }
-        foreach(const Card *ca, handlist)
+        foreach (const Card *ca, handlist)
         {
             if (ca->isBlack())
                 return true;
@@ -1540,7 +1540,7 @@ public:
         if (TriggerSkill::triggerable(player))
         {
             QList<ServerPlayer *> friends;
-            foreach(ServerPlayer *p, room->getOtherPlayers(player))
+            foreach (ServerPlayer *p, room->getOtherPlayers(player))
             {
                 if (player->willBeFriendWith(p))
                     friends << p;
@@ -1563,7 +1563,7 @@ public:
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
         QList<ServerPlayer *> friends;
-        foreach(ServerPlayer *p, room->getOtherPlayers(player))
+        foreach (ServerPlayer *p, room->getOtherPlayers(player))
         {
             if (player->willBeFriendWith(p))
                 friends << p;
@@ -1593,7 +1593,7 @@ public:
 
         ServerPlayer *to = NULL;
 
-        foreach(ServerPlayer *p, player->getRoom()->getPlayers())
+        foreach (ServerPlayer *p, player->getRoom()->getPlayers())
         {
             if (p->objectName() == target_name)
             {
@@ -1644,7 +1644,7 @@ public:
     virtual bool onPhaseChange(ServerPlayer *ganfuren) const
     {
         int handcard_num = 0;
-        foreach(const Card *card, ganfuren->getHandcards())
+        foreach (const Card *card, ganfuren->getHandcards())
         {
             if (!ganfuren->isJilei(card))
                 handcard_num++;
