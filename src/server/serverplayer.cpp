@@ -344,6 +344,7 @@ void ServerPlayer::setSocket(ClientSocket *socket)
             //this->socket->disconnectFromHost();
             this->socket->deleteLater();
         }
+
         disconnect(this, &ServerPlayer::message_ready, this, &ServerPlayer::sendMessage);
     }
 
@@ -667,6 +668,7 @@ bool ServerPlayer::hasNullification() const
 
     return false;
 }
+
 PindianStruct *ServerPlayer::pindianSelect(ServerPlayer *target, const QString &reason, const Card *card1)
 {
     LogMessage log;
@@ -818,6 +820,7 @@ bool ServerPlayer::pindian(PindianStruct *pd)
         .arg(pd->to->objectName())
         .arg(pindian_struct.to_card->getEffectiveId()));
     thread->trigger(ChoiceMade, room, this, decisionData);
+
     bool r = pindian_struct.success;
     delete pd;
     return r;
@@ -1484,6 +1487,7 @@ void ServerPlayer::showGeneral(bool head_general, bool trigger_event, bool sendL
         arg << false;
         room->doBroadcastNotify(S_COMMAND_LOG_EVENT, arg);
         room->changePlayerGeneral(this, general_name);
+
         if (!property("Duanchang").toString().split(",").contains("head"))
         {
             sendSkillsToOthers();
@@ -1564,6 +1568,7 @@ void ServerPlayer::showGeneral(bool head_general, bool trigger_event, bool sendL
         arg << false;
         room->doBroadcastNotify(S_COMMAND_LOG_EVENT, arg);
         room->changePlayerGeneral2(this, general_name);
+
         if (!property("Duanchang").toString().split(",").contains("deputy"))
         {
             sendSkillsToOthers(false);
@@ -2190,6 +2195,7 @@ void ServerPlayer::changeToLord()
                 room->setPlayerMark(this, skill->getLimitMark(), 0);
         }
     }
+
     QStringList real_generals = room->getTag(objectName()).toStringList();
     QString name = real_generals.takeFirst();
     name.prepend("lord_");

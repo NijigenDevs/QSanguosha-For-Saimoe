@@ -1267,6 +1267,7 @@ public:
         return false;
     }
 };
+
 class Zhangwu : public TriggerSkill
 {
 public:
@@ -1497,6 +1498,7 @@ public:
         return false; //return player->getHp() > 0 || player->isDead();
     }
 };
+
 FormationPackage::FormationPackage()
     : Package("formation")
 {
@@ -1732,6 +1734,7 @@ public:
         return false;
     }
 };
+
 FormationEquipPackage::FormationEquipPackage() : Package("formation_equip", CardPack)
 {
     DragonPhoenix *dp = new DragonPhoenix();

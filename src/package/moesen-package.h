@@ -12,6 +12,7 @@ class MoesenPackage : public Package
 
 public:
     MoesenPackage();
+
     void addGameGenerals();
     void addNovelGenerals();
     void addAnimationGenerals();

@@ -181,6 +181,7 @@ QStringList Player::disableShow(bool head) const
 
     return r;
 }
+
 bool Player::isAdjacentTo(const Player *another) const
 {
     return getNextAlive() == another
@@ -1259,6 +1260,7 @@ QString Player::getDeputySkillDescription() const
     }
     return description;
 }
+
 bool Player::isProhibited(const Player *to, const Card *card, const QList<const Player *> &others) const
 {
     return Sanguosha->isProhibited(this, to, card, others);

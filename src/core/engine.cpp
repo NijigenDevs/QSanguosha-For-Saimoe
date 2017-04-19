@@ -1142,6 +1142,7 @@ int Engine::correctCardTarget(const TargetModSkill::ModType type, const Player *
 
     return x;
 }
+
 int Engine::correctAttackRange(const Player *target, bool include_weapon, bool fixed) const
 {
     int extra = 0;

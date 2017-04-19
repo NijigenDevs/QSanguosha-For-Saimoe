@@ -1455,6 +1455,7 @@ public:
         room->sortByActionOrder(players);
         foreach (ServerPlayer *p, players)
             room->damage(DamageStruct(objectName(), player, p, 1, DamageStruct::Thunder));
+
         return false;
     }
 };
@@ -1642,6 +1643,7 @@ public:
         room->sortByActionOrder(players);
         foreach (ServerPlayer *p, players)
             room->damage(DamageStruct(objectName(), player, p, 1, DamageStruct::Fire));
+
         return false;
     }
 };
