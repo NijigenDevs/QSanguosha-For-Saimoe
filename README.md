@@ -36,6 +36,8 @@ BY-NC-ND 4.0)
 
 *That means: You should use those materials under their original license.*
 
+*With the dual-licensing of GPLv3 & CC BY-NC-NC 4.0, it means you are free to use the accomplishment code which is based on materials (like animation.cpp is based on the skill design of animation generals), but you don't have the same right to use the materials. **Codes Are Not Materials***
+
 **You are free to:**
 
 Share — copy and redistribute the material in any medium or format
