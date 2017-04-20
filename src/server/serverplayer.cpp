@@ -2123,6 +2123,7 @@ void ServerPlayer::summonFriends(const ArrayType type)
 QStringList ServerPlayer::getBigKingdoms(const QString &reason, MaxCardsType::MaxCardsCount _type) const
 {
     ServerPlayer *jade_seal_owner = NULL;
+    ServerPlayer *haruhi = NULL;
     foreach (ServerPlayer *p, room->getAlivePlayers())
     {
         if (p->hasTreasure("JadeSeal") && p->hasShownOneGeneral())
@@ -2131,6 +2132,15 @@ QStringList ServerPlayer::getBigKingdoms(const QString &reason, MaxCardsType::Ma
             break;
         }
     }
+    foreach (auto *p, room->getAlivePlayers())
+    {
+        if (p->hasShownSkill("zhizun"))
+        {
+            haruhi = p;
+            break; // only the first one who has zhizun is effected
+        }
+    }
+
     MaxCardsType::MaxCardsCount type = jade_seal_owner ? MaxCardsType::Max : _type;
     // if there is someone has JadeSeal, needn't trigger event because of the fucking effect of JadeSeal
     QMap<QString, int> kingdom_map;
@@ -2174,6 +2184,20 @@ QStringList ServerPlayer::getBigKingdoms(const QString &reason, MaxCardsType::Ma
             big_kingdoms << kingdom;
         }
     }
+    // deal with Haruhi Suzumiya at last so that her skill will cover the effect of JadeSeal.
+    if (haruhi != NULL)
+    {
+        big_kingdoms.clear();
+        if (haruhi->getRole() == "careerist")
+        {
+            big_kingdoms << haruhi->objectName();
+        }
+        else
+        {
+            big_kingdoms << haruhi->getKingdom();
+        }
+    }
+
     return big_kingdoms;
 }
 

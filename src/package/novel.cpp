@@ -2236,6 +2236,84 @@ public:
     }
 };
 
+//Zhizun for Haruhi (Coupling in getBigKingdoms)
+class Zhizun : public TriggerSkill
+{
+public:
+    Zhizun() : TriggerSkill("zhizun")
+    {
+        events << NonTrigger;
+        frequency = Compulsory;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *, QVariant &, ServerPlayer * &) const
+    {
+        return QStringList();
+    }
+};
+
+#include "strategic-advantage.h"
+
+//Gexin for Haruhi
+class GexinVS : public OneCardViewAsSkill
+{
+public:
+    GexinVS() : OneCardViewAsSkill("gexin")
+    {
+        response_or_use = true;
+    }
+
+    virtual bool viewFilter(const Card *to_select) const
+    {
+        return to_select->isBlack();
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const
+    {
+        return !player->hasFlag("gexin_lastroundplayer");
+    }
+
+    virtual const Card *viewAs(const Card *originalCard) const
+    {
+        auto *te = new ThreatenEmperor(originalCard->getSuit(), originalCard->getNumber());
+        te->addSubcard(originalCard);
+        te->setSkillName("gexin");
+        te->setShowSkill("zhizun");
+        return te;
+    }
+};
+
+class Gexin : public TriggerSkill
+{
+public:
+    Gexin() : TriggerSkill("gexin")
+    {
+        events << EventPhaseChanging;
+        view_as_skill = new GexinVS;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer * &) const
+    {
+        auto change = data.value<PhaseChangeStruct>();
+
+        if (change.to == Player::NotActive)
+        {
+            player->setFlags("gexin_lastroundplayer");
+        }
+        foreach (auto *p, room->getOtherPlayers(player))
+        {
+            p->setFlags("-gexin_lastroundplayer");
+        }
+
+        return QStringList();
+    }
+
+    int Gexin::getPriority() const
+    {
+        return -1;
+    }
+};
+
 void MoesenPackage::addNovelGenerals()
 {
 
@@ -2315,7 +2393,9 @@ void MoesenPackage::addNovelGenerals()
     watashi->addSkill(new Tiaoting);
     watashi->addSkill(new Jilu);
 
-    //General *haruhi = new General(this, "haruhi", "qun", 3, false); // N017
+    General *haruhi = new General(this, "haruhi", "qun", 3, false); // N017
+    haruhi->addSkill(new Zhizun);
+    haruhi->addSkill(new Gexin);
 
     //General *yuki = new General(this, "yuki", "qun", 3, false); // N018
 

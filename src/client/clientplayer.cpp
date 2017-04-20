@@ -315,6 +315,15 @@ QStringList ClientPlayer::getBigKingdoms(const QString &, MaxCardsType::MaxCards
             break;
         }
     }
+    const Player *haruhi = NULL;
+    foreach (const Player *p, players)
+    {
+        if (p->hasShownSkill("zhizun"))
+        {
+            haruhi = p;
+            break;
+        }
+    }
     if (jade_seal_owner != NULL)
     {
         if (jade_seal_owner->getRole() == "careerist")
@@ -329,6 +338,19 @@ QStringList ClientPlayer::getBigKingdoms(const QString &, MaxCardsType::MaxCards
             big_kingdoms << kingdom;
         }
     }
+    if (haruhi != NULL)
+    {
+        big_kingdoms.clear();
+        if (haruhi->getRole() == "careerist")
+        {
+            big_kingdoms << haruhi->objectName();
+        }
+        else
+        {
+            big_kingdoms << haruhi->getKingdom();
+        }
+    }
+
     return big_kingdoms;
 }
 
