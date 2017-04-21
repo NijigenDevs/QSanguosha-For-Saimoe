@@ -2677,34 +2677,34 @@ void MoesenPackage::addComicGenerals()
     General *hinagiku = new General(this, "hinagiku", "shu", 4, false); // C002
     hinagiku->addSkill(new Jiandao);
 
-    General *akari = new General(this, "akari", "shu", 3, false); // C003
-    akari->addSkill(new Wucun);
-    akari->addSkill(new Kongni);
-
-    General *nagi = new General(this, "nagi", "shu", 3, false); // C004
+    General *nagi = new General(this, "nagi", "shu", 3, false); // C003
     nagi->addSkill(new Tianzi);
     nagi->addSkill(new Yuzhai);
     nagi->addSkill(new TianziMaxCards);
     insertRelatedSkills("tianzi", "#tianzi-maxcard");
 
-    General *izumi = new General(this, "izumi", "shu", 3, false); // C005
+    General *izumi = new General(this, "izumi", "shu", 3, false); // C004
     izumi->addSkill(new Mizou);
     izumi->addSkill(new Wushu);
 
-    General *suiseiseki = new General(this, "suiseiseki", "shu", 3, false); // C006
+    General *suiseiseki = new General(this, "suiseiseki", "shu", 3, false); // C005
     suiseiseki->addSkill(new Shuimeng);
     suiseiseki->addSkill(new rosesuiseiseki);
     suiseiseki->addSkill(new meijiesuiseiseki);
 
-    General *suigintou = new General(this, "suigintou", "shu", 3, false); // C007
+    General *suigintou = new General(this, "suigintou", "shu", 3, false); // C006
     suigintou->addSkill(new Mingming);
     suigintou->addSkill(new rosesuigintouTrigger);
     suigintou->addSkill(new meijiesuigintou);
 
-    General *shinku = new General(this, "shinku", "shu", 3, false); // C008
+    General *shinku = new General(this, "shinku", "shu", 3, false); // C007
     shinku->addSkill(new Heli);
     shinku->addSkill(new roseshinku);
     shinku->addSkill(new meijieshinku);
+
+    General *akari = new General(this, "akari", "shu", 3, false); // C008
+    akari->addSkill(new Wucun);
+    akari->addSkill(new Kongni);
 
     General *t_kyouko = new General(this, "t_kyouko", "shu", 3, false); // C009
     t_kyouko->addSkill(new Ziwo);
