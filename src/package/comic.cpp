@@ -2585,7 +2585,7 @@ public:
 
     virtual bool effect(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
-        player->setFlags("fengyin-on");
+        player->setFlags("fengyin_on");
         return false;
     }
 };
