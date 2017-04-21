@@ -2314,6 +2314,118 @@ public:
     }
 };
 
+//Zixun for Yuki
+class Zixun : public TriggerSkill
+{
+public:
+    Zixun() : TriggerSkill("zixun")
+    {
+        frequency = Compulsory;
+        events << DrawNCards << EventPhaseChanging;
+    }
+
+    virtual QStringList triggerable(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer * &) const
+    {
+        if (!TriggerSkill::triggerable(player))
+        {
+            return QStringList();
+        }
+
+        if (event == EventPhaseChanging)
+        {
+            auto change = data.value<PhaseChangeStruct>();
+            if (change.from == Player::NotActive && player->hasShownSkill(this))
+            {
+                player->setMark("@zixun", player->getMark("@zixun") + 1);
+            }
+        }
+        else
+        {
+            return QStringList(objectName());
+        }
+
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        bool invoke = player->hasShownSkill(this) ? true : player->askForSkillInvoke(objectName());
+        if (invoke)
+        {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
+        data = qMin(player->getMark("@zixun"), 3);
+        return false;
+    }
+};
+
+//Tonghe for Haruhi
+TongheCard::TongheCard()
+{
+    will_throw = false;
+    handling_method = Card::MethodNone;
+}
+
+bool TongheCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *self) const
+{
+    if (targets.isEmpty())
+    {
+        return to_select->distanceTo(self) == 1 && to_select->canDiscard(to_select, "he");
+    }
+    else if (targets.length() == 1)
+    {
+        return to_select->isFriendWith(targets[0]) && to_select->canDiscard(to_select, "he");
+    }
+
+    return false;
+}
+
+bool TongheCard::targetsFeasible(const QList<const Player *> &targets, const Player *) const
+{
+    return targets.length() == 2;
+}
+
+void TongheCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const
+{
+    foreach(auto *p, targets)
+    {
+        room->askForDiscard(p, "tonghe", 1, 1, false, true, "@tonghe_discard", true);
+    }
+
+    if (targets[0]->getBigKingdoms("tonghe", MaxCardsType::Normal).contains(targets[0]->getKingdom()))
+    {
+        room->drawCards(targets, 1, "tonghe");
+    }
+}
+
+class Tonghe : public ZeroCardViewAsSkill
+{
+public:
+    Tonghe() : ZeroCardViewAsSkill("tonghe")
+    {
+        relate_to_place = "deputy";
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const
+    {
+        return !player->hasUsed("TongheCard");
+    }
+
+    virtual const Card *viewAs() const
+    {
+        auto *th = new TongheCard;
+        th->setShowSkill(objectName());
+        return th;
+    }
+};
+
 void MoesenPackage::addNovelGenerals()
 {
 
@@ -2397,7 +2509,10 @@ void MoesenPackage::addNovelGenerals()
     haruhi->addSkill(new Zhizun);
     haruhi->addSkill(new Gexin);
 
-    //General *yuki = new General(this, "yuki", "qun", 3, false); // N018
+    General *yuki = new General(this, "yuki", "qun", 4, false); // N018
+    yuki->addSkill(new Zixun);
+    yuki->addSkill(new Tonghe);
+    yuki->setDeputyMaxHpAdjustedValue(-1);
 
     addMetaObject<WeihaoCard>();
     addMetaObject<ZhuyiCard>();
@@ -2411,4 +2526,5 @@ void MoesenPackage::addNovelGenerals()
     addMetaObject<XianliCard>();
     addMetaObject<BaoyanCard>();
     addMetaObject<TiaotingCard>();
+    addMetaObject<TongheCard>();
 }
