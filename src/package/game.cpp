@@ -1923,15 +1923,7 @@ public:
                 int id = player->getPile("jian").first();
                 if (id != -1)
                 {
-                    CardMoveReason reason(CardMoveReason::S_REASON_THROW, player->objectName());
-                    room->moveCardTo(Sanguosha->getEngineCard(id), player, NULL, Player::PlaceTable, reason, true);
-                    QList<int> table_cardids = room->getCardIdsOnTable(Sanguosha->getEngineCard(id));
-                    if (!table_cardids.isEmpty())
-                    {
-                        DummyCard dummy(table_cardids);
-                        room->moveCardTo(&dummy, player, NULL, Player::DiscardPile, reason, true);
-                    }
-                    data.value<SlashEffectStruct>().to->drawCards(1, objectName());
+                    return QStringList(objectName());
                 }
             }
         }
@@ -1968,6 +1960,10 @@ public:
         else if (event == EventPhaseStart)
         {
             return (player->hasShownSkill(this) || player->askForSkillInvoke(this));
+        }
+        else if (event == SlashMissed)
+        {
+            return true;
         }
         return false;
     }
@@ -2071,6 +2067,23 @@ public:
                 }
             }
         }
+        else if (event == SlashMissed)
+        {
+            int id = player->getPile("jian").first();
+            if (id != -1)
+            {
+                CardMoveReason reason(CardMoveReason::S_REASON_THROW, player->objectName());
+                room->moveCardTo(Sanguosha->getEngineCard(id), player, NULL, Player::PlaceTable, reason, true);
+                QList<int> table_cardids = room->getCardIdsOnTable(Sanguosha->getEngineCard(id));
+                if (!table_cardids.isEmpty())
+                {
+                    DummyCard dummy(table_cardids);
+                    room->moveCardTo(&dummy, player, NULL, Player::DiscardPile, reason, true);
+                }
+                data.value<SlashEffectStruct>().to->drawCards(1, objectName());
+            }
+        }
+
         return false;
     }
 };
