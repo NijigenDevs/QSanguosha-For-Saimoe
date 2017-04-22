@@ -2131,7 +2131,7 @@ public:
     {
         if (event == EventPhaseStart)
         {
-            if (room->askForUseCard(player, "@@tiaoting", objectName()) != NULL)
+            if (room->askForUseCard(player, "@@tiaoting", "@tiaoting-targetchoose") != NULL)
             {
                 room->broadcastSkillInvoke(objectName(), 1, player);
                 return true;
