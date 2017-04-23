@@ -9,7 +9,7 @@ return {
 	----G001
 	["nanoha"] = "高町奈叶", 
 	["&nanoha"] = "高町奈叶", 
-	["#nanoha"] = "", 
+	["#nanoha"] = "旭日之心",
 	["#&nanoha"] = "魔法少女奈叶", 
 	["~nanoha"] = "", 
 	["designer:nanoha"] = "hmqgg",
@@ -28,7 +28,7 @@ return {
 	----G002
 	["fate"] = "菲特·泰斯塔罗沙", 
 	["&fate"] = "菲特", 
-	["#fate"] = "", 
+	["#fate"] = "雷光战斧", 
 	["#&fate"] = "魔法少女奈叶", 
 	["~fate"] = "", 
 	["designer:fate"] = "hmqgg",
@@ -46,7 +46,7 @@ return {
 	----G003
 	["hayate"] = "八神疾风", 
 	["&hayate"] = "八神疾风", 
-	["#hayate"] = "", 
+	["#hayate"] = "夜天之书", 
 	["#&hayate"] = "魔法少女奈叶", 
 	["~hayate"] = "", 
 	["designer:hayate"] = "hmqgg",
@@ -62,7 +62,7 @@ return {
 	----G004
 	["altria"] = "阿尔托莉雅·潘多拉贡", 
 	["&altria"] = "阿尔托莉雅·潘多拉贡", 
-	["#altria"] = "开挂打痴汉", 
+	["#altria"] = "骑士王", 
 	["#&altria"] = "Fate/stay night", 
 	["~altria"] = "", 
 	["designer:altria"] = "萝莉姬",
@@ -82,7 +82,7 @@ return {
 	----G005
 	["t_rin"] = "远坂凛", 
 	["&t_rin"] = "远坂凛", 
-	["#t_rin"] = "开挂打妹妹", 
+	["#t_rin"] = "名门之秀", 
 	["#&t_rin"] = "Fate/stay night", 
 	["~t_rin"] = "...比想象的长一倍= =", 
 	["designer:t_rin"] = "hmqgg",
@@ -101,7 +101,7 @@ return {
 	----G006
 	["rika"] = "古手梨花", 
 	["&rika"] = "古手梨花", 
-	["#rika"] = "咪啪怪", 
+	["#rika"] = "无尽轮回", 
 	["#&rika"] = "寒蝉鸣泣之时", 
 	["~rika"] = "咪啪~", 
 	["designer:rika"] = "好烦",
@@ -136,7 +136,7 @@ return {
 	----G008
 	["haruka"] = "天海春香", 
 	["&haruka"] = "天海春香", 
-	["#haruka"] = "骗钱大师", 
+	["#haruka"] = "阁下", 
 	["#&haruka"] = "偶像大师", 
 	["~haruka"] = "", 
 	["designer:haruka"] = "hmqgg",
@@ -152,7 +152,7 @@ return {
 	----G009
 	["miki"] = "星井美希", 
 	["&miki"] = "星井美希", 
-	["#miki"] = "", 
+	["#miki"] = "星光", 
 	["#&miki"] = "偶像大师", 
 	["~miki"] = "", 
 	["designer:miki"] = "hmqgg",
@@ -173,7 +173,7 @@ return {
 	----G010
 	["setsuna"] = "小木曾雪菜", 
 	["&setsuna"] = "小木曾雪菜", 
-	["#setsuna"] = "圣母高岭之花",
+	["#setsuna"] = "高岭之花",
 	["#&setsuna"] = "White Album2", 	
 	["~setsuna"] = "", 
 	["designer:setsuna"] = "昂翼天使;肥羊",
@@ -192,7 +192,7 @@ return {
 	----G011
 	["kazusa"] = "冬马和纱", 
 	["&kazusa"] = "冬马和纱", 
-	["#kazusa"] = "超级大忠犬", 
+	["#kazusa"] = "侧伴无事俏佳人", 
 	["#&kazusa"] = "White Album2", 
 	["~kazusa"] = "", 
 	["designer:kazusa"] = "昂翼天使;肥羊",
@@ -208,7 +208,7 @@ return {
 	----G012
 	["nagisa"] = "古河渚", 
 	["&nagisa"] = "古河渚", 
-	["#nagisa"] = "团子入侵", 
+	["#nagisa"] = "光玉的奇迹", 
 	["#&nagisa"] = "CLANNAD", 
 	["~nagisa"] = "朋也，抱我~", 
 	["designer:nagisa"] = "Sword Elucidator",
@@ -226,7 +226,7 @@ return {
 	----G013
 	["tomoyo"] = "坂上智代", 
 	["&tomoyo"] = "坂上智代", 
-	["#tomoyo"] = "春原の毁灭者", 
+	["#tomoyo"] = "武帝", 
 	["#&tomoyo"] = "CLANNAD", 
 	["~tomoyo"] = "", 
 	["designer:tomoyo"] = "好烦",
@@ -245,7 +245,7 @@ return {
 	----G014
 	["fuuko"] = "伊吹风子", 
 	["&fuuko"] = "伊吹风子", 
-	["#fuuko"] = "某不科学的海星使", 
+	["#fuuko"] = "海星使", 
 	["#&fuuko"] = "CLANNAD", 
 	["#$fuuko"] = "冈崎汐", 
 	["~fuuko"] = "成为风子的恋人吧！", 
@@ -284,7 +284,7 @@ return {
 	----G016
 	["ayu"] = "月宫亚由", 
 	["&ayu"] = "月宫亚由", 
-	["#ayu"] = "鲷鱼烧帝", 
+	["#ayu"] = "日光照耀的街道", 
 	["#&ayu"] = "Kanon", 
 	["~ayu"] = "", 
 	["designer:ayu"] = "Sword Elucidator",
@@ -301,7 +301,7 @@ return {
 	----G017
 	["n_rin"] = "枣铃", 
 	["&n_rin"] = "枣铃", 
-	["#n_rin"] = "欲求不满的小猫", 
+	["#n_rin"] = "铃喵", 
 	["#&n_rin"] = "Little Busters！", 
 	["~n_rin"] = "喵~~~~~~", 
 	["designer:n_rin"] = "Sword Elucidator",
@@ -317,7 +317,7 @@ return {
 	----G018
 	["komari"] = "神北小毬", 
 	["&komari"] = "神北小毬", 
-	["#komari"] = "小内内", 
+	["#komari"] = "小毛球", 
 	["#&komari"] = "Little Busters！", 
 	["~komari"] = "", 
 	["designer:komari"] = "Sword Elucidator",
