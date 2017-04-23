@@ -4,9 +4,8 @@ return {
 	----A001
 	["madoka"] = "鹿目圆", 
 	["&madoka"] = "鹿目圆", 
-	["#madoka"] = "救世主粉毛", 
+	["#madoka"] = "圆环之理", 
 	["#&madoka"] = "魔法少女小圆", 	
-	["#$madoka"] = "QB",
 	["~madoka"] = "我不想...变成魔女...", 
 	["designer:madoka"] = "兰博",
 	["cv:madoka"] = "悠木碧",
@@ -22,9 +21,8 @@ return {
 	----A002
 	["mami"] = "巴麻美", 
 	["&mami"] = "巴麻美", 
-	["#mami"] = "无头学姐", 
+	["#mami"] = "孤独之缚", 
 	["#&mami"] = "魔法少女小圆", 
-	["#$mami"] = "百江渚", 
 	["~mami"] = "啊（麻美）...啊（圆）...啊（蓝毛）...", 
 	["designer:mami"] = "御坂2623、女王受·虫、hmqgg",
 	["cv:mami"] = "水橋かおり",
@@ -40,9 +38,8 @@ return {
 	----A003
 	["s_kyouko"] = "佐仓杏子", 
 	["&s_kyouko"] = "佐仓杏子", 
-	["#s_kyouko"] = "红毛",
-	["#&s_kyouko"] = "魔法少女小圆", 	
-	["#$s_kyouko"] = "QB", 
+	["#s_kyouko"] = "正义之惘",
+	["#&s_kyouko"] = "魔法少女小圆",
 	["~s_kyouko"] = "独自一人很寂寞吧...好吧，就让我陪你一起上路吧...沙耶香...", 
 	["designer:s_kyouko"] = "昂翼天使、hmqgg",
 	["cv:s_kyouko"] = "野中藍",
@@ -62,9 +59,8 @@ return {
 	----A004	
 	["sayaka"] = "美树沙耶香", 
 	["&sayaka"] = "美树沙耶香", 
-	["#sayaka"] = "NTR蓝毛", 
+	["#sayaka"] = "恋慕之悲", 
 	["#&sayaka"] = "魔法少女小圆", 	
-	["#$sayaka"] = "QB",
 	["~sayaka"] = "我真是个笨蛋...", 
 	["designer:sayaka"] = "御坂2623",
 	["cv:sayaka"] = "喜多村英梨",
@@ -76,9 +72,8 @@ return {
 	----A005
 	["homura"] = "晓美焰", 
 	["&homura"] = "晓美焰", 
-	["#homura"] = "黑长直", 
+	["#homura"] = "轮回之绊", 
 	["#&homura"] = "魔法少女小圆",
-	["#$homura"] = "QB", 	
 	["~homura"] = "", 
 	["designer:homura"] = "御坂2623、AK",
 	["cv:homura"] = "斋藤千和",
@@ -92,11 +87,10 @@ return {
 	[":shizhi"] = "每当你使用的【杀】结算完毕时，若之未造成伤害，你可以摸一张牌。",
 
 	----A006
-	["n_azusa"] = "中野梓", 
-	["&n_azusa"] = "中野梓", 
-	["#n_azusa"] = "梓喵", 
-	["#&n_azusa"] = "轻音少女", 
-	["#$n_azusa"] = "琴吹釉", 		
+	["n_azusa"] = "中野梓",
+	["&n_azusa"] = "中野梓",
+	["#n_azusa"] = "相遇天使",
+	["#&n_azusa"] = "轻音少女",
 	["~n_azusa"] = "对不起...明明决定不哭的...笑着说恭喜毕业的...", 
 	["designer:n_azusa"] = "肥羊",
 	["cv:n_azusa"] = "竹達彩奈",
@@ -111,9 +105,8 @@ return {
 	----A007
 	["mio"] = "秋山澪", 
 	["&mio"] = "秋山澪", 
-	["#mio"] = "黑长直*2", 
+	["#mio"] = "苍空独歌", 
 	["#&mio"] = "轻音少女", 	
-	["#$mio"] = "田井中律", 
 	["~mio"] = "已经做得很好了吧！我们真的已经做得好了吧！", 
 	["designer:mio"] = "止水",
 	["cv:mio"] = "日笠陽子",
@@ -136,9 +129,8 @@ return {
 	----A008
 	["yui"] = "平泽唯", 
 	["&yui"] = "平泽唯", 
-	["#yui"] = "轻音之魂", 
+	["#yui"] = "绝对音感",
 	["#&yui"] = "轻音少女", 
-	["#$yui"] = "平泽优", 	
 	["~yui"] = "明年的学园祭一定会演出的更好哦...", 
 	["designer:yui"] = "肥羊",
 	["cv:yui"] = "豊崎愛生",
@@ -150,12 +142,11 @@ return {
 	["@yingan_friend"] = "受“音感”效果影响，请弃置一张牌",
 
 	----A009
-	["kanade"] = "立华奏", 
-	["&kanade"] = "立华奏", 
-	["#kanade"] = "大BOSS天使", 
+	["kanade"] = "立华奏",
+	["&kanade"] = "立华奏",
+	["#kanade"] = "浮华天籁",
 	["#&kanade"] = "Angel Beats！",
-	["#$kanade"] = "仲村由理", 	 	
-	["~kanade"] = "赐予我生命，真的...很感谢...", 
+	["~kanade"] = "赐予我生命，真的...很感谢...",
 	["designer:kanade"] = "昂翼天使、Sword Elucidator",
 	["cv:kanade"] = "花澤香菜",
 	["illustrator:kanade"] = "ごとｐ",
@@ -190,7 +181,7 @@ return {
 	----A011
 	["asuka"] = "惣流·明日香·兰格雷", 
 	["&asuka"] = "明日香", 
-	["#asuka"] = "被掐真爽", 
+	["#asuka"] = "飞鸟", 
 	["#&asuka"] = "EVA", 	
 	["#$asuka"] = "碇真嗣", 
 	["~asuka"] = "", 
@@ -214,7 +205,7 @@ return {
 	----A012
 	["inori"] = "楪祈", 
 	["&inori"] = "楪祈", 
-	["#inori"] = "袭胸合法", 
+	["#inori"] = "葬仪之剑", 
 	["#&inori"] = "罪恶王冠", 
 	["#$inori"] = "樱满集", 
 	["~inori"] = "", 
@@ -234,7 +225,7 @@ return {
 	----A013
 	["n_maki"] = "西木野真姬", 
 	["&n_maki"] = "西木野真姬", 
-	["#n_maki"] = "越南姬", 
+	["#n_maki"] = "绯红姬", 
 	["#&n_maki"] = "Love Live！", 
 	["~n_maki"] = "", 
 	["designer:n_maki"] = "Kayak",
@@ -249,7 +240,7 @@ return {
 	----A014
 	["mayu"] = "岛田真梦", 
 	["&mayu"] = "岛田真梦", 
-	["#mayu"] = "不认识", 
+	["#mayu"] = "青叶和歌", 
 	["#&mayu"] = "Wake Up, Girls!", 
 	["~mayu"] = "", 
 	["designer:mayu"] = "hmqgg",
@@ -268,7 +259,7 @@ return {
 	----A015
 	["lacus"] = "拉克丝·克莱茵", 
 	["&lacus"] = "拉克丝", 
-	["#lacus"] = "粉红教主", 
+	["#lacus"] = "静夜之湖",
 	["#&lacus"] = "机动战士高达SEED", 
 	["#$lacus"] = "卡嘉莉·尤拉·阿斯哈", 
 	["~lacus"] = "", 
@@ -286,7 +277,7 @@ return {
 	----A016
 	["sawa"] = "冲田纱羽", 
 	["&sawa"] = "冲田纱羽", 
-	["#sawa"] = "槽点满满", 
+	["#sawa"] = "韶华莫尽", 
 	["#&sawa"] = "TARI TARI", 
 	["~sawa"] = "", 
 	["designer:sawa"] = "hmqgg",
@@ -307,7 +298,7 @@ return {
 	----A017
 	["menma"] = "本间芽衣子", 
 	["&menma"] = "面码", 
-	["#menma"] = "找到你了", 
+	["#menma"] = "勿忘草",
 	["#&menma"] = "未闻花名", 
 	["~menma"] = "", 
 	["designer:menma"] = "钉子",
@@ -325,7 +316,7 @@ return {
 	----A018
 	["miho"] = "西住美穗", 
 	["&miho"] = "西住美穗", 
-	["#miho"] = "开坦克的",
+	["#miho"] = "军神",
 	["#&miho"] = "少女与战车", 	
 	["~miho"] = "", 
 	["designer:miho"] = "hmqgg",
