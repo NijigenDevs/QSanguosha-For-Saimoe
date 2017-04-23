@@ -2,7 +2,7 @@ return {
 	----C001
 	["sakura"] = "木之本樱", 
 	["&sakura"] = "木之本樱", 
-	["#sakura"] = "初代萌王", 
+	["#sakura"] = "库洛魔法使", 
 	["#&sakura"] = "魔卡少女樱", 
 	["~sakura"] = "", 
 	["designer:sakura"] = "阿米拉嗪",
@@ -19,7 +19,7 @@ return {
 	----C002
 	["hinagiku"] = "桂雏菊", 
 	["&hinagiku"] = "桂雏菊", 
-	["#hinagiku"] = "会长",
+	["#hinagiku"] = "剑道会长",
 	["#&hinagiku"] = "旋风管家",
 	["~hinagiku"] = "", 
 	["designer:hinagiku"] = "jordan圣帝",
@@ -34,7 +34,7 @@ return {
 	----C003
 	["nagi"] = "三千院凪", 
 	["&nagi"] = "三千院凪", 
-	["#nagi"] = "土豪千金",
+	["#nagi"] = "千金御宅",
 	["#&nagi"] = "旋风管家", 	
 	["~nagi"] = "", 
 	["designer:nagi"] = "钉子",
@@ -52,7 +52,7 @@ return {
 	----C004
 	["izumi"] = "鹭之宫伊澄", 
 	["&izumi"] = "鹭之宫伊澄", 
-	["#izumi"] = "最强", 
+	["#izumi"] = "迷途巫女", 
 	["#&izumi"] = "旋风管家", 
 	["~izumi"] = "", 
 	["designer:izumi"] = "钉子",
@@ -69,7 +69,7 @@ return {
 	----C005
 	["suiseiseki"] = "翠星石", 
 	["&suiseiseki"] = "翠星石", 
-	["#suiseiseki"] = "", 
+	["#suiseiseki"] = "梦之庭師", 
 	["#&suiseiseki"] = "蔷薇少女", 	
 	["~suiseiseki"] = "", 
 	["designer:suiseiseki"] = "御坂2623",
@@ -89,7 +89,7 @@ return {
 	----C006
 	["suigintou"] = "水银灯", 
 	["&suigintou"] = "水银灯", 
-	["#suigintou"] = "", 
+	["#suigintou"] = "孤傲的逆十字", 
 	["#&suigintou"] = "蔷薇少女", 
 	["~suigintou"] = "", 
 	["designer:suigintou"] = "御坂2623",
@@ -108,7 +108,7 @@ return {
 	----C007
 	["shinku"] = "真红", 
 	["&shinku"] = "真红", 
-	["#shinku"] = "", 
+	["#shinku"] = "优雅的女王", 
 	["#&shinku"] = "蔷薇少女", 	
 	["~shinku"] = "", 
 	["designer:shinku"] = "御坂2623",
@@ -127,7 +127,7 @@ return {
 	----C008
 	["akari"] = "赤座灯里", 
 	["&akari"] = "赤座灯里", 
-	["#akari"] = "消失の阿卡林", 
+	["#akari"] = "消逝的存在感", 
 	["#&akari"] = "摇曳百合♪♪", 
 	["~akari"] = "", 
 	["designer:akari"] = "hmqgg",
@@ -143,7 +143,7 @@ return {
 	----C009
 	["t_kyouko"] = "岁纳京子", 
 	["&t_kyouko"] = "岁纳京子", 
-	["#t_kyouko"] = "后宫王", 
+	["#t_kyouko"] = "元气无铁炮",
 	["#&t_kyouko"] = "摇曳百合♪♪", 	
 	["~t_kyouko"] = "", 
 	["designer:t_kyouko"] = "hmqgg",
@@ -162,7 +162,7 @@ return {
 	----C010
 	["tsukasa"] = "柊司", 
 	["&tsukasa"] = "柊司", 
-	["#tsukasa"] = "", 
+	["#tsukasa"] = "魔醋少女", 
 	["#&tsukasa"] = "幸运星", 
 	["~tsukasa"] = "", 
 	["designer:tsukasa"] = "official designer",
@@ -178,7 +178,7 @@ return {
 	----C011
 	["kagami"] = "柊镜", 
 	["&kagami"] = "柊镜", 
-	["#kagami"] = "", 
+	["#kagami"] = "傲娇巫女", 
 	["#&kagami"] = "幸运星", 
 	["~kagami"] = "", 
 	["designer:kagami"] = "hmqgg",
@@ -194,7 +194,7 @@ return {
 	----C012
 	["konata"] = "泉此方", 
 	["&konata"] = "泉此方", 
-	["#konata"] = "", 
+	["#konata"] = "御宅之魂", 
 	["#&konata"] = "幸运星", 
 	["~konata"] = "", 
 	["designer:konata"] = "3D吧张鲁",
@@ -211,7 +211,7 @@ return {
 	----C013
 	["ika"] = "乌贼娘", 
 	["&ika"] = "乌贼娘", 
-	["#ika"] = "", 
+	["#ika"] = "花枝触手", 
 	["#&ika"] = "侵略！乌贼娘", 
 	["~ika"] = "", 
 	["designer:ika"] = "hmqgg",
@@ -225,7 +225,7 @@ return {
 	----C014
 	["toki"] = "园城寺怜", 
 	["&toki"] = "园城寺怜", 
-	["#toki"] = "", 
+	["#toki"] = "三巡先知", 
 	["#&toki"] = "天才麻将少女", 
 	["~toki"] = "", 
 	["designer:toki"] = "hmqgg",
@@ -244,7 +244,7 @@ return {
 	----C015
 	["saki"] = "宫永咲", 
 	["&saki"] = "宫永咲", 
-	["#saki"] = "", 
+	["#saki"] = "岭上使魔王", 
 	["#&saki"] = "天才麻将少女", 
 	["~saki"] = "", 
 	["designer:saki"] = "好烦",
@@ -267,7 +267,7 @@ return {
 	----C016
 	["nodoka"] = "原村和", 
 	["&nodoka"] = "原村和", 
-	["#nodoka"] = "", 
+	["#nodoka"] = "清澄副将", 
 	["#&nodoka"] = "天才麻将少女", 
 	["~nodoka"] = "", 
 	["designer:nodoka"] = "hmqgg",
@@ -286,7 +286,7 @@ return {
 	----C017
 	["shizuno"] = "高鸭稳乃", 
 	["&shizuno"] = "高鸭稳乃", 
-	["#shizuno"] = "", 
+	["#shizuno"] = "深山支配者", 
 	["#&shizuno"] = "天才麻将少女", 
 	["~shizuno"] = "", 
 	["designer:shizuno"] = "hmqgg",
@@ -302,7 +302,7 @@ return {
 	----C018
 	["koromo"] = "天江衣", 
 	["&koromo"] = "天江衣", 
-	["#koromo"] = "", 
+	["#koromo"] = "海底的满月", 
 	["#&koromo"] = "天才麻将少女", 
 	["~koromo"] = "", 
 	["designer:koromo"] = "hmqgg",
