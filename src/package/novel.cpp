@@ -2324,7 +2324,7 @@ public:
         events << DrawNCards << EventPhaseChanging;
     }
 
-    virtual QStringList triggerable(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer * &) const
+    virtual QStringList triggerable(TriggerEvent event, Room *, ServerPlayer *player, QVariant &data, ServerPlayer * &) const
     {
         if (!TriggerSkill::triggerable(player))
         {
@@ -2359,7 +2359,7 @@ public:
         return false;
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    virtual bool effect(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *) const
     {
         data = qMin(player->getMark("@zixun"), 3);
         return false;
@@ -2392,7 +2392,7 @@ bool TongheCard::targetsFeasible(const QList<const Player *> &targets, const Pla
     return targets.length() == 2;
 }
 
-void TongheCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const
+void TongheCard::use(Room *room, ServerPlayer *, QList<ServerPlayer *> &targets) const
 {
     foreach(auto *p, targets)
     {

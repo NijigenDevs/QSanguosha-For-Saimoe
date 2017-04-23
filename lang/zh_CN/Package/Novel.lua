@@ -39,7 +39,7 @@ return {
 	["#louise"] = "欲求不满", 
 	["#&louise"] = "零之使魔", 
 	["~louise"] = "", 
-	["designer:louise"] = "钉子",
+	["designer:louise"] = "SE",
 	["cv:louise"] = "釘宮理恵",
 	["illustrator:louise"] = "ID=13745355",
 

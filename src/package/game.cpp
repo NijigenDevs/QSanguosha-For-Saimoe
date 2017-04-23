@@ -1878,7 +1878,7 @@ public:
         frequency = NotFrequent;
     }
 
-    virtual QStringList triggerable(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer * &ask_who) const
+    virtual QStringList triggerable(TriggerEvent event, Room *, ServerPlayer *player, QVariant &data, ServerPlayer * &ask_who) const
     {
         if (event == TargetChosen)
         {
