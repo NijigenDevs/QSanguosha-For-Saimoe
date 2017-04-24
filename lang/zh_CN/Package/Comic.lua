@@ -7,7 +7,7 @@ return {
 	["~sakura"] = "", 
 	["designer:sakura"] = "阿米拉嗪",
 	["cv:sakura"] = "丹下桜",
-	["illustrator:sakura"] = "ID=47194043",
+	["illustrator:sakura"] = "47194043",
 
 	["fengyin"] = "封印",
 	[":fengyin"] = "其他角色摸牌阶段开始时，你可以将一张牌置于牌堆顶，若如此做，该角色不能使用或打出其于此阶段外获得的牌直到回合结束。",
@@ -39,7 +39,7 @@ return {
 	["~nagi"] = "", 
 	["designer:nagi"] = "钉子",
 	["cv:nagi"] = "釘宮理惠",
-	["illustrator:nagi"] = "ID=38455466",
+	["illustrator:nagi"] = "38455466",
 
 	["tianzi"] = "天资",
 	[":tianzi"] = "摸牌阶段，你可以额外摸一张牌。出牌阶段限一次，你可以令此回合内你的手牌上限-1，若如此做，此回合的弃牌阶段结束时，你摸等同于此阶段内弃置的锦囊牌的张数的牌并展示之。",
@@ -57,7 +57,7 @@ return {
 	["~izumi"] = "", 
 	["designer:izumi"] = "钉子",
 	["cv:izumi"] = "松来未祐",
-	["illustrator:izumi"] = "ID=4435820",
+	["illustrator:izumi"] = "4435820",
 
 	["mizou"] = "迷走",
 	[":mizou"] = "每当你受到或造成伤害时，你可以弃置一张手牌，然后进行一次判定，若结果为红色，你令伤害来源摸一张牌，再令此伤害-1。",
@@ -74,7 +74,7 @@ return {
 	["~suiseiseki"] = "", 
 	["designer:suiseiseki"] = "御坂2623",
 	["cv:suiseiseki"] = "桑谷夏子",
-	["illustrator:suiseiseki"] = "ID=43012104",
+	["illustrator:suiseiseki"] = "43012104",
 
 	["shuimeng"] = "水梦",
 	[":shuimeng"] = "出牌阶段限一次，你可以弃置X张手牌并指定一名角色，若如此做，你令其摸X-1张牌。（X为至少为2的任意值）",
@@ -94,7 +94,7 @@ return {
 	["~suigintou"] = "", 
 	["designer:suigintou"] = "御坂2623",
 	["cv:suigintou"] = "田中理惠",
-	["illustrator:suigintou"] = "ID=56610300",
+	["illustrator:suigintou"] = "56610300",
 
 	["mingming"] = "冥冥",
 	[":mingming"] = "出牌阶段限一次，你可以弃置两张相同花色的黑色手牌，若如此做，视为你使用一张【万箭齐发】。",
@@ -113,7 +113,7 @@ return {
 	["~shinku"] = "", 
 	["designer:shinku"] = "御坂2623",
 	["cv:shinku"] = "沢城みゆき",
-	["illustrator:shinku"] = "ID=25865657",
+	["illustrator:shinku"] = "25865657",
 
 	["heli"] = "荷莉",
 	[":heli"] = "出牌阶段限一次，你可以弃置X张红色手牌并指定一名其他角色，若如此做，你对其造成X/2点伤害（向下取整，且至多为3）。（X为至少为2的变量，且不多于存活角色数）",
@@ -132,7 +132,7 @@ return {
 	["~akari"] = "", 
 	["designer:akari"] = "hmqgg",
 	["cv:akari"] = "三上枝織",
-	["illustrator:akari"] = "ID=31838608",
+	["illustrator:akari"] = "31838608",
 
 	["wucun"] = "无存",
 	[":wucun"] = "与你势力不同的角色的准备阶段开始时，若你的手牌数不多于你的体力值，且存活角色数多于2，你可以摸一张牌，然后当前回合角色视为对你使用一张【调虎离山】。",
@@ -148,7 +148,7 @@ return {
 	["~t_kyouko"] = "", 
 	["designer:t_kyouko"] = "hmqgg",
 	["cv:t_kyouko"] = "大坪由佳",
-	["illustrator:t_kyouko"] = "ID=41391831",
+	["illustrator:t_kyouko"] = "41391831",
 
 	["baozou"] = "暴走",
 	[":baozou"] = "每当你使用【杀】对目标角色造成伤害后，你可以翻开牌堆顶牌，若为【杀】，你可以视为使用之（不计入出牌阶段使用【杀】次数限制）；若不为【杀】,你可以弃置一张手牌然后获得之，否则将之置入弃牌堆。",
@@ -167,7 +167,7 @@ return {
 	["~tsukasa"] = "", 
 	["designer:tsukasa"] = "official designer",
 	["cv:tsukasa"] = "中原麻衣",
-	["illustrator:tsukasa"] = "ID=45832131",
+	["illustrator:tsukasa"] = "45832131",
 
 	["zhiyu"] = "治愈",
 	[":zhiyu"] = "出牌阶段限一次，你可以弃置两张手牌并指定一名已受伤的与你势力相同的其他角色，然后你与其各回复1点体力。",
@@ -183,7 +183,7 @@ return {
 	["~kagami"] = "", 
 	["designer:kagami"] = "hmqgg",
 	["cv:kagami"] = "小清水亜美",
-	["illustrator:kagami"] = "ID=45832131",
+	["illustrator:kagami"] = "45832131",
 
 	["tsukkomi"] = "突込",
 	[":tsukkomi"] = "每当你需要使用一张【杀】或【无懈可击】时，你可以明置此武将牌，然后视为你使用之。每阶段限一次。",
@@ -211,12 +211,12 @@ return {
 	----C013
 	["ika"] = "乌贼娘", 
 	["&ika"] = "乌贼娘", 
-	["#ika"] = "花枝触手", 
+	["#ika"] = "花枝招展", 
 	["#&ika"] = "侵略！乌贼娘", 
 	["~ika"] = "", 
 	["designer:ika"] = "hmqgg",
 	["cv:ika"] = "金元寿子",
-	["illustrator:ika"] = "ID=22329355",
+	["illustrator:ika"] = "22329355",
 
 	["qinlve"] = "侵略",
 	[":qinlve"] = "你可以跳过出牌阶段，然后与一名其他角色拼点。若你赢，视为对其使用一张【杀】，然后你可以重复此流程。",
@@ -230,7 +230,7 @@ return {
 	["~toki"] = "", 
 	["designer:toki"] = "hmqgg",
 	["cv:toki"] = "小倉唯",
-	["illustrator:toki"] = "ID=27195089",
+	["illustrator:toki"] = "27195089",
 
 	["yujian"] = "预见",
 	[":yujian"] = "每当你于出牌阶段使用的【杀】指定目标后，你可以声明：\n1、此【杀】造成伤害；\n2、此【杀】未造成伤害。\n此【杀】结算完毕时，若声明为真，你摸一张牌。",
@@ -249,7 +249,7 @@ return {
 	["~saki"] = "", 
 	["designer:saki"] = "好烦",
 	["cv:saki"] = "植田佳奈",
-	["illustrator:saki"] = "ID=4526786",
+	["illustrator:saki"] = "4526786",
 
 
 	["lingshang"] = "岭上",
@@ -272,7 +272,7 @@ return {
 	["~nodoka"] = "", 
 	["designer:nodoka"] = "hmqgg",
 	["cv:nodoka"] = "小清水亜美",
-	["illustrator:nodoka"] = "ID=6095650",
+	["illustrator:nodoka"] = "60884015",
 
 	["sugong"] = "速攻",
 	[":sugong"] = "准备阶段开始时，你可以弃置一张非基本牌，然后进行一个额外的出牌阶段。",
@@ -291,7 +291,7 @@ return {
 	["~shizuno"] = "", 
 	["designer:shizuno"] = "hmqgg",
 	["cv:shizuno"] = "悠木碧",
-	["illustrator:shizuno"] = "ID=26833880",
+	["illustrator:shizuno"] = "26833880",
 
 	["moyun"] = "末运",
 	[":moyun"] = "每当你一个区域的牌失去所有牌后，若不为回合内的手牌区，你可以摸一张牌。",
@@ -307,7 +307,7 @@ return {
 	["~koromo"] = "", 
 	["designer:koromo"] = "hmqgg",
 	["cv:koromo"] = "福原香織",
-	["illustrator:koromo"] = "ID=8759553",
+	["illustrator:koromo"] = "8759553",
 	
 	["kongyun"] = "控运",
 	[":kongyun"] = "一名角色的红色判定牌生效前，你可以打出一张手牌替换之，一名黑色判定牌生效前，你可以亮出牌堆底的一张牌替换之。",

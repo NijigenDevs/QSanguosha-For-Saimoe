@@ -9,7 +9,7 @@ return {
 	["~madoka"] = "我不想...变成魔女...", 
 	["designer:madoka"] = "兰博",
 	["cv:madoka"] = "悠木碧",
-	["illustrator:madoka"] = "ファルまろ",
+	["illustrator:madoka"] = "46401177",
 
 	["cibei"] = "慈悲",
 	[":cibei"] = "每当你对一名角色造成伤害时，你可以防止此伤害，改为弃置该角色的一张手牌和一张装备牌。 ",
@@ -26,7 +26,7 @@ return {
 	["~mami"] = "啊（麻美）...啊（圆）...啊（蓝毛）...", 
 	["designer:mami"] = "御坂2623、女王受·虫、hmqgg",
 	["cv:mami"] = "水橋かおり",
-	["illustrator:mami"] = "マルイノ",
+	["illustrator:mami"] = "50740492",
 
 	["lieqiang"] = "烈枪",
 	[":lieqiang"] = "锁定技，与你势力相同的角色使用【杀】指定目标后，若你的判定区、装备区或手牌区中至少两个区里没有牌，你令此【杀】不可被【闪】响应。",
@@ -43,7 +43,7 @@ return {
 	["~s_kyouko"] = "独自一人很寂寞吧...好吧，就让我陪你一起上路吧...沙耶香...", 
 	["designer:s_kyouko"] = "昂翼天使、hmqgg",
 	["cv:s_kyouko"] = "野中藍",
-	["illustrator:s_kyouko"] = "ファルまろ",
+	["illustrator:s_kyouko"] = "38241810",
 
 	["yingqiang"] = "缨枪",
 	[":yingqiang"] = "出牌阶段限一次，你可以将两到四张不同花色的手牌当一张无距离限制的【杀】使用；根据这些牌的花色： \n黑桃-每当此【杀】对你距离1的角色造成1点伤害后，你回复1点体力；\n红桃-每当此【杀】对一名角色造成伤害后，你令其摸X张牌，然后令其将武将牌叠置（X为其体力值）；\n梅花-此【杀】指定目标后，你无视目标的防具；\n方块-此【杀】指定目标后，你摸一张牌。",
@@ -64,7 +64,7 @@ return {
 	["~sayaka"] = "我真是个笨蛋...", 
 	["designer:sayaka"] = "御坂2623",
 	["cv:sayaka"] = "喜多村英梨",
-	["illustrator:sayaka"] = "ファルまろ",
+	["illustrator:sayaka"] = "37560505",
 	
 	["wuwei"] = "无畏",
 	[":wuwei"] = "出牌阶段限一次，你可以失去1点体力，若如此做，你将一张手牌当【杀】使用，此【杀】对目标角色造成伤害时，你令此伤害+1（此【杀】不计入出牌阶段使用次数限制）。",
@@ -77,7 +77,7 @@ return {
 	["~homura"] = "", 
 	["designer:homura"] = "御坂2623、AK",
 	["cv:homura"] = "斋藤千和",
-	["illustrator:homura"] = "ID=45754521",
+	["illustrator:homura"] = "45754521",
 
 	["shiting"] = "时停",
 	[":shiting"] = "每当与你势力相同的角色成为与你势力不同角色使用【杀】的唯一目标后，你可以弃置两张手牌（不足则全弃），然后进行一个额外的回合，此回合内，你使用的仅指定其他角色为目标的牌，于此【杀】结算完毕后依次结算之。",
@@ -94,7 +94,7 @@ return {
 	["~n_azusa"] = "对不起...明明决定不哭的...笑着说恭喜毕业的...", 
 	["designer:n_azusa"] = "肥羊",
 	["cv:n_azusa"] = "竹達彩奈",
-	["illustrator:n_azusa"] = "▽",
+	["illustrator:n_azusa"] = "11725971",
 
 	["quanmian"] = "劝勉",
 	[":quanmian"] = "出牌阶段限一次，你可以指定一名装备区里有牌的角色，你令其获得其装备区里的一张牌。若如此做，且该角色不是你，你摸一张牌。",
@@ -110,7 +110,7 @@ return {
 	["~mio"] = "已经做得很好了吧！我们真的已经做得好了吧！", 
 	["designer:mio"] = "止水",
 	["cv:mio"] = "日笠陽子",
-	["illustrator:mio"] = "茨乃",
+	["illustrator:mio"] = "5485674",
 	
 	["yinzhuang"] = "音装",
 	[":yinzhuang"] = "锁定技，每当你因打出以外的方式失去一张装备区里的牌时，若此牌为：武器牌，你摸一张牌；防具牌，视为你使用一张【杀】；坐骑牌，你回复1点体力。",
@@ -134,7 +134,7 @@ return {
 	["~yui"] = "明年的学园祭一定会演出的更好哦...", 
 	["designer:yui"] = "肥羊",
 	["cv:yui"] = "豊崎愛生",
-	["illustrator:yui"] = "hajime＠ついった",
+	["illustrator:yui"] = "10697375",
 
 	["yingan"] = "音感",
 	[":yingan"] = "每当与你势力相同的角色使用装备牌时，你可以摸一张牌，然后若你不是小势力角色，你须弃置一张牌。",
@@ -149,7 +149,7 @@ return {
 	["~kanade"] = "赐予我生命，真的...很感谢...",
 	["designer:kanade"] = "昂翼天使、Sword Elucidator",
 	["cv:kanade"] = "花澤香菜",
-	["illustrator:kanade"] = "ごとｐ",
+	["illustrator:kanade"] = "11258649",
 	
 	["yinren"] = "音刃",
 	[":yinren"] = "准备阶段或结束阶段开始时，你可以展示所有手牌，若其中的花色均不同，视为你使用一张【杀】（无距离限制）。若你以此法使用的【杀】造成伤害后，目标角色可以弃置你一张手牌。",
@@ -167,7 +167,7 @@ return {
 	["~rei"] = "", 
 	["designer:rei"] = "hmqgg",
 	["cv:rei"] = "林原めぐみ",
-	["illustrator:rei"] = "ID=36951533",
+	["illustrator:rei"] = "36951533",
 	
 	["wuxinAya"] = "无心",
 	[":wuxinAya"] = "限定技，当你受到2点以上的伤害时，你可以回复体力至体力上限，然后令一名角色获得技能“勇决”，再防止此伤害。",
@@ -187,7 +187,7 @@ return {
 	["~asuka"] = "", 
 	["designer:asuka"] = "hmqgg",
 	["cv:asuka"] = "宮村優子",
-	["illustrator:asuka"] = "ASK",
+	["illustrator:asuka"] = "31919799",
 	
 	["xiehang"] = "颉颃",
 	[":xiehang"] = "出牌阶段，你可以与一名其他角色拼点：赢的角色可以使用一张拼点牌（不计入次数的限制）。",
@@ -211,7 +211,7 @@ return {
 	["~inori"] = "", 
 	["designer:inori"] = "肥羊、昂翼天使",
 	["cv:inori"] = "茅野愛衣",
-	["illustrator:inori"] = "しる",
+	["illustrator:inori"] = "53126094",
 
 	["lingchang"] = "灵唱",
 	[":lingchang"] = "与你势力相同的角色的准备阶段开始时，若该角色已受伤，你可以展示其一张手牌，若如此做，你弃置之，然后若此牌颜色为红色，该角色回复1点体力。",
@@ -230,7 +230,7 @@ return {
 	["~n_maki"] = "", 
 	["designer:n_maki"] = "Kayak",
 	["cv:n_maki"] = "Pile",
-	["illustrator:n_maki"] = "ID=47375402",
+	["illustrator:n_maki"] = "47375402",
 	
     ["qinyin"] = "琴音",
     [":qinyin"] = "当你使用或打出红色牌时，你可以令一名体力值不大于你的角色摸一张牌，每回合限一次。当你使用或打出黑色牌时，你可以弃置一名体力值大于你的角色的一张牌，每回合限一次。",
@@ -245,7 +245,7 @@ return {
 	["~mayu"] = "", 
 	["designer:mayu"] = "hmqgg",
 	["cv:mayu"] = "吉岡茉祐",
-	["illustrator:mayu"] = "yuta",
+	["illustrator:mayu"] = "official pics",
 	
 	["liufei"] = "流蜚",
 	[":liufei"] = "锁定技，每当与你势力相同的其他角色成为攻击范围内有你的其他角色使用【杀】的目标时，若你的手牌数少于体力值，取消之。",
@@ -265,7 +265,7 @@ return {
 	["~lacus"] = "", 
 	["designer:lacus"] = "Sword Elucidator、起个名字好烦QAQ、hmqgg",
 	["cv:lacus"] = "田中理恵",
-	["illustrator:lacus"] = "黒兎",
+	["illustrator:lacus"] = "222167",
 	
 	["geji"] = "歌姬",
 	[":geji"] = "出牌阶段限一次，若你有牌，你可以选择任意名势力各不相同的其他角色，你弃置你和这些角色的各一张牌。然后以此法弃置黑桃牌的角色各摸一张牌。",
@@ -282,7 +282,7 @@ return {
 	["~sawa"] = "", 
 	["designer:sawa"] = "hmqgg",
 	["cv:sawa"] = "早見沙織",
-	["illustrator:sawa"] = "ひのほし☆＠お仕事募集中",
+	["illustrator:sawa"] = "30281038",
 	
 	["mashu_sawa"] = "马术",
 	
@@ -303,7 +303,7 @@ return {
 	["~menma"] = "", 
 	["designer:menma"] = "钉子",
 	["cv:menma"] = "内川藍維",
-	["illustrator:menma"] = "ID=38356471",
+	["illustrator:menma"] = "38356471",
 	
 	["qiyuan"] = "祈愿",
 	[":qiyuan"] = "其他角色的准备阶段开始时，你可以弃置一张手牌，令其摸牌阶段多摸一张牌。其他角色的弃牌阶段结束时，若其于此阶段内弃置的牌的张数大于你的手牌数，你可以摸一张牌。",

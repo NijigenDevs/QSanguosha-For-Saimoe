@@ -7,7 +7,7 @@ return {
 	["~taiga"] = "", 
 	["designer:taiga"] = "Sword Elucidator",
 	["cv:taiga"] = "釘宮理恵",
-	["illustrator:taiga"] = "ID=30637291",
+	["illustrator:taiga"] = "30637291",
 
 	["huxiao"] = "虎啸",
 	[":huxiao"] = "每当你失去一张装备区里的牌后，你可以将场上的一张非宝物牌移动到一名其他角色的相应位置。",	
@@ -25,7 +25,7 @@ return {
 	["~shana"] = "", 
 	["designer:shana"] = "钉子",
 	["cv:shana"] = " 釘宮理恵",
-	["illustrator:shana"] = "ID=40322063",
+	["illustrator:shana"] = "40322063",
 
 	["duanzui"] = "断罪",
 	[":duanzui"] = "出牌阶段限一次，你可以将一张装备牌当火【杀】使用，此【杀】可以额外指定一名角色为目标，且不计入出牌阶段使用【杀】次数限制。",
@@ -41,7 +41,7 @@ return {
 	["~louise"] = "", 
 	["designer:louise"] = "SE",
 	["cv:louise"] = "釘宮理恵",
-	["illustrator:louise"] = "ID=13745355",
+	["illustrator:louise"] = "55470621",
 
 	["bianchi"] = "鞭笞",
 	[":bianchi"] = "出牌阶段限一次，你可以对一名攻击范围内的其他角色造成一点伤害，然后令其摸X张牌（X为该角色失去的体力值）。若该角色因此而进入濒死阶段，将你的武将牌叠置。",	
@@ -54,7 +54,7 @@ return {
 	["~aria"] = "", 
 	["designer:aria"] = "Sword Elucidator",
 	["cv:aria"] = "釘宮理恵",
-	["illustrator:aria"] = "ID=19981312",
+	["illustrator:aria"] = "19981312",
 
 	["jingdi"] = "敬敌",
 	[":jingdi"] = "出牌阶段限一次，你可以将一张手牌中的非连横牌交给一名对你造成过伤害的角色，然后你摸一张牌。",	
@@ -70,7 +70,7 @@ return {
 	["~holo"] = "", 
 	["designer:holo"] = "昂翼天使",
 	["cv:holo"] = "小清水亜美",
-	["illustrator:holo"] = "ID=8890195",
+	["illustrator:holo"] = "8890195",
 
 	["jisui"] = "稷穗",
 	[":jisui"] = "出牌阶段限一次，你可以选择若干名势力不相同的其他角色，从牌堆顶亮出牌，你和与这些角色可以选择用一张手牌替换其中一张，然后你可以将其中任意数量的牌以任意顺序置于牌堆顶。",
@@ -102,7 +102,7 @@ return {
 	["~ruri"] = "", 
 	["designer:ruri"] = "hmqgg",
 	["cv:ruri"] = "花澤香菜",
-	["illustrator:ruri"] = "ID=815086240",
+	["illustrator:ruri"] = "815086240",
 
 	["dushe"] = "毒舌",
 	[":dushe"] = "出牌阶段，你可以将一张【杀】当【过河拆桥】使用。以此法使用的【过河拆桥】可以额外指定你攻击范围内的所有角色为目标。",	
@@ -116,7 +116,7 @@ return {
 	["~a_azusa"] = "妹妹我是土豪！", 
 	["designer:a_azusa"] = "hmqgg",
 	["cv:a_azusa"] = "石原夏織",
-	["illustrator:a_azusa"] = "スカイ",
+	["illustrator:a_azusa"] = "38191081",
 
 	["weihao"] = "伪壕",
 	[":weihao"] = "出牌阶段，你可以令你本回合手牌上限-1，然后摸一张牌。",
@@ -136,7 +136,7 @@ return {
 	["~rikka"] = "", 
 	["designer:rikka"] = "hmqgg",
 	["cv:rikka"] = "内田真礼",
-	["illustrator:rikka"] = "ID=42201199",
+	["illustrator:rikka"] = "42201199",
 
 	["fangzhu_rikka"] = "放逐",
 	[":fangzhu_rikka"] = "每当你受到1点伤害后，可令一名其他角色摸X张牌（X为你已损失的体力值），然后该角色将其武将牌叠置。",
@@ -154,7 +154,7 @@ return {
 	["~yukino"] = "", 
 	["designer:yukino"] = "hmqgg",
 	["cv:yukino"] = "小倉唯",
-	["illustrator:yukino"] = "ID=55305971",
+	["illustrator:yukino"] = "55305971",
 
 	["duran"] = "独然",
 	[":duran"] = "锁定技，体力上限多于你的角色与你的距离+1，你与体力上限少于你的角色的距离+1。出牌阶段开始时，你摸X张牌（X为攻击范围内没有你的其他势力数）。",
@@ -170,7 +170,7 @@ return {
 	["~y_yui"] = "", 
 	["designer:y_yui"] = "钉子",
 	["cv:y_yui"] = "东山奈央",
-	["illustrator:y_yui"] = "ID=34938515",
+	["illustrator:y_yui"] = "34938515",
 
 	["xianli"] = "鲜丽",
 	[":xianli"] = "主将技，此武将牌上单独的阴阳鱼个数+1。出牌阶段限一次，你可以选择一名有暗置武将牌的角色，然后其选择一项：1、令你摸一张牌；2、明置一张武将牌；3、视为你对其使用一张【知己知彼】。",
@@ -189,7 +189,7 @@ return {
 	["~mikoto"] = "", 
 	["designer:mikoto"] = "钉子",
 	["cv:mikoto"] = "佐藤利奈",
-	["illustrator:mikoto"] = "ID=36171150",
+	["illustrator:mikoto"] = "36171150",
 
 	["dianji"] = "电击",
 	[":dianji"] = "出牌阶段结束时，若你于此阶段内没有使用过【杀】，你可以将你的武将牌叠置，然后对一名角色造成1点雷电伤害。",
@@ -207,7 +207,7 @@ return {
 	["~ruiko"] = "", 
 	["designer:ruiko"] = "御坂2623",
 	["cv:ruiko"] = "伊藤かな恵",
-	["illustrator:ruiko"] = "ID=9854031",
+	["illustrator:ruiko"] = "9854031",
 
 	["xianqun"] = "掀裙",
 	[":xianqun"] = "出牌阶段限一次，你可以指定一名装备区里有牌的其他角色，你将该角色装备区里的一张牌置于其武将牌上，称为“裙”。该角色的下个回合结束后，将“裙”置入该角色的装备区里。",	
@@ -222,7 +222,7 @@ return {
 	["~asuna"] = "", 
 	["designer:asuna"] = "Sword Elucidator",
 	["cv:asuna"] = "戸松遥",
-	["illustrator:asuna"] = "ID=47371333",
+	["illustrator:asuna"] = "47371333",
 
 	["shanguang"] = "闪光",
 	[":shanguang"] = "每当你受到伤害后，你可以令伤害来源将一张手牌置于你的武将牌上，称为“烁”。锁定技，你的手牌上限+X（X为“烁”的数量）。",
@@ -239,7 +239,7 @@ return {
 	["~hitagi"] = "", 
 	["designer:hitagi"] = "Sword Elucidator",
 	["cv:hitagi"] = "斎藤千和",
-	["illustrator:hitagi"] = "ID=6693976",
+	["illustrator:hitagi"] = "6693976",
 
 	["qingyou"] = "倾诱",
 	[":qingyou"] = "每当你受到伤害后，你可以令伤害来源摸一张牌，然后手牌数少于伤害来源的角色各弃置其一张牌。",
@@ -258,7 +258,7 @@ return {
 	["~watashi"] = "", 
 	["designer:watashi"] = "钉子",
 	["cv:watashi"] = "中原麻衣",
-	["illustrator:watashi"] = "ID=28552580",
+	["illustrator:watashi"] = "28552580",
 
 	["tiaoting"] = "调停",
 	[":tiaoting"] = "结束阶段开始时，你可以指定两名势力不同的其他角色，若如此做，直到你的下个回合开始，其中一名角色对另一名角色第一次造成伤害时，防止之，然后这些角色各摸一张牌。",
@@ -275,7 +275,7 @@ return {
 	["~haruhi"] = "", 
 	["designer:haruhi"] = "钉子",
 	["cv:haruhi"] = "平野綾",
-	["illustrator:haruhi"] = "ID=46397378",
+	["illustrator:haruhi"] = "46397378",
 
 	["zhizun"] = "至尊",
 	[":zhizun"] = "锁定技，若此武将牌明置，你所属的势力成为唯一的大势力。",
@@ -291,7 +291,7 @@ return {
 	["~yuki"] = "", 
 	["designer:yuki"] = "钉子",
 	["cv:yuki"] = "茅原実里",
-	["illustrator:yuki"] = "ID=8587443",
+	["illustrator:yuki"] = "10414653",
 
 	["zixun"] = "资讯",
 	[":zixun"] = "锁定技，摸牌阶段，你改为摸X张牌（X为你此武将明置的回合数，且至多为3）。",

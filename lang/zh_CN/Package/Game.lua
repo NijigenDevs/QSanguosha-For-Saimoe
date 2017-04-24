@@ -14,7 +14,7 @@ return {
 	["~nanoha"] = "", 
 	["designer:nanoha"] = "hmqgg",
 	["cv:nanoha"] = "田村ゆかり",
-	["illustrator:nanoha"] = "ID=12383125",
+	["illustrator:nanoha"] = "official pics",
 
 	["liepo"] = "裂破",
 	[":liepo"] = "当你使用【杀】指定一名目标角色后，若目标角色的判定区里有牌，你可以选择一项：1、令此【杀】不能被【闪】抵消；2、令此【杀】对该角色造成的伤害改为普通伤害并+1。",
@@ -33,7 +33,7 @@ return {
 	["~fate"] = "", 
 	["designer:fate"] = "hmqgg",
 	["cv:fate"] = "水樹奈々",
-	["illustrator:fate"] = "ID=22623415",
+	["illustrator:fate"] = "22623415",
 
 	["leiguang"] = "雷光",
 	[":leiguang"] = "出牌阶段，你可以将一张普通【杀】当雷【杀】使用；你以此法使用的【杀】结算完毕后，可以令一名目标角色弃置一张牌，否则此【杀】不计入出牌阶段使用【杀】次数限制。",
@@ -51,7 +51,7 @@ return {
 	["~hayate"] = "", 
 	["designer:hayate"] = "hmqgg",
 	["cv:hayate"] = "植田佳奈",
-	["illustrator:hayate"] = "ID=27716067",
+	["illustrator:hayate"] = "27716067",
 
 	["yetian"] = "夜天",
 	[":yetian"] = "每当一名角色使用的非延时锦囊牌因结算完毕而置入弃牌堆后，若你于此牌结算时使用了【无懈可击】，你可以获得之。锁定技，准备阶段开始时，若你没有手牌，你失去1点体力。",
@@ -67,7 +67,7 @@ return {
 	["~altria"] = "", 
 	["designer:altria"] = "萝莉姬",
 	["cv:altria"] = "川澄綾子",
-	["illustrator:altria"] = "ID=47365633",
+	["illustrator:altria"] = "60405595",
 
 	["fengwang"] = "风王",
 	[":fengwang"] = "出牌阶段，若你没有“剑”，你可以将一张手牌扣置于你的武将牌上，称为“剑”；若你有“剑”，你可以获得你武将牌上的”剑“。\n每当你使用【杀】指定一名角色为目标后，该角色可以观看你的“剑”，若之为武器牌且你与其的距离不大于X（X为”剑“的攻击范围），其需连续使用两张【闪】才能抵消，否则，你令此【杀】无效，并将“剑”置入弃牌堆。\n锁定技，若你有“剑”，你的攻击范围无限，且你使用的【杀】无视防具。\n锁定技，若你未发动过“断钢”，你的武器牌均视为【杀】，准备阶段开始时，弃置你已装备的武器牌。",
@@ -87,7 +87,7 @@ return {
 	["~t_rin"] = "...比想象的长一倍= =", 
 	["designer:t_rin"] = "hmqgg",
 	["cv:t_rin"] = "植田佳奈",
-	["illustrator:t_rin"] = "ID=46614173",
+	["illustrator:t_rin"] = "53948782",
 
 	["canshi"] = "璨石",
 	[":canshi"] = "每当一名角色受到【杀】造成的伤害后，若其存活，你可以弃置一张牌，然后你进行一次判定，若结果为：红桃，其回复1点体力；方块，其摸两张牌；梅花，来源弃置两张牌；黑桃，来源叠置；若如此做，且你的“宝石”少于10张时，你将判定牌置于的武将牌上，称为“宝石”。",
@@ -106,7 +106,7 @@ return {
 	["~rika"] = "咪啪~", 
 	["designer:rika"] = "好烦",
 	["cv:rika"] = "田村ゆかり",
-	["illustrator:rika"] = "ID=27337974",
+	["illustrator:rika"] = "27337974",
 
 	["guiyuan"] = "鬼渊",
 	[":guiyuan"] = "其他角色的准备阶段开始时，你可以将你与其的副将的武将牌横置，然后声明两种基本牌使该角色的两种基本牌的效果交换，直到回合结束。若如此做，你可以选择一项：“皆杀”或“祭囃”：\n“皆杀”：限定技，你可以令该效果适用于所有角色，直到回合结束。\n“祭囃”：限定技，你可以令该效果适用于所有副将的武将牌横置的角色，直到回合结束。",
@@ -125,7 +125,7 @@ return {
 	["~rena"] = "啊哈哈哈哈哈哈哈哈！", 
 	["designer:rena"] = "hmqgg",
 	["cv:rena"] = "中原麻衣",
-	["illustrator:rena"] = "offical pics",
+	["illustrator:rena"] = "52365142",
 
 	["chaidao"] = "柴刀",
 	[":chaidao"] = "每当你使用【杀】对一名角色造成伤害时，你可以弃置你装备区里的武器牌，令此伤害+1；每当你受到其他角色造成的伤害时，若你的装备区里有武器牌，你可以防止此伤害，改为其视为对你使用一张【借刀杀人】。",
@@ -141,7 +141,7 @@ return {
 	["~haruka"] = "", 
 	["designer:haruka"] = "hmqgg",
 	["cv:haruka"] = "中村繪里子",
-	["illustrator:haruka"] = "ID=41139423",
+	["illustrator:haruka"] = "41139423",
 
 	["yuanqi"] = "元气",
 	[":yuanqi"] = "准备阶段开始时，你可以将其他角色判定区里的一张牌移动到你的判定区里。若如此做，你本回合的判定阶段视为出牌阶段进行。",
@@ -157,7 +157,7 @@ return {
 	["~miki"] = "", 
 	["designer:miki"] = "hmqgg",
 	["cv:miki"] = "長谷川明子",
-	["illustrator:miki"] = "ID=28740722",
+	["illustrator:miki"] = "55208786",
 
 	["yonglan"] = "慵懒",
 	[":yonglan"] = "出牌阶段，你可以将一张手牌当【乐不思蜀】对与你势力相同的一名角色使用，然后你可以令两名有手牌的角色拼点，视为赢的角色对没赢的角色使用一张【决斗】。",
@@ -231,7 +231,7 @@ return {
 	["~tomoyo"] = "", 
 	["designer:tomoyo"] = "好烦",
 	["cv:tomoyo"] = "桑島法子",
-	["illustrator:tomoyo"] = "ID=11283570",
+	["illustrator:tomoyo"] = "11283570",
 
 	["qiangqi"] = "强气",
 	[":qiangqi"] = "出牌阶段，你可以将一张非红桃【杀】置于判定区，称为“键”，然后视为使用或打出一张【杀】。\n“键”：当一名角色判定区里的这张牌移动后，该角色回复1点体力。",
@@ -272,7 +272,7 @@ return {
 	["~misuzu"] = "嘎，嘎哦..", 
 	["designer:misuzu"] = "起个名字好烦QAQ;墨忆；Sword Elucidator;hmqgg",
 	["cv:misuzu"] = "川上とも子",
-	["illustrator:misuzu"] = "ID=44873092",
+	["illustrator:misuzu"] = "44873092",
 
 	["xiaying"] = "夏影",
 	[":xiaying"] = "准备阶段开始时，与你势力相同的其他角色可以依次交给你任意数量的手牌。然后，若以此法交给你的牌的张数不多于X张（X为与你势力不同的角色与你势力相同的角色的数量），你失去1点体力。",
@@ -289,7 +289,7 @@ return {
 	["~ayu"] = "", 
 	["designer:ayu"] = "Sword Elucidator",
 	["cv:ayu"] = "堀江由衣",
-	["illustrator:ayu"] = "ID=24172883",
+	["illustrator:ayu"] = "24172883",
 
 	["huanyuan"] = "幻愿",
 	[":huanyuan"] = "准备阶段开始时，若你的判定区少于三张“键”，你可以弃置一张红桃牌或失去1点体力，然后将牌堆顶的一张牌置入你的判定区，称为“键”。你的判定区可以最多容纳三张“键”。\n“键”：当一名角色判定区里的这张牌移动后，该角色回复1点体力。",
@@ -306,7 +306,7 @@ return {
 	["~n_rin"] = "喵~~~~~~", 
 	["designer:n_rin"] = "Sword Elucidator",
 	["cv:n_rin"] = "民安ともえ",
-	["illustrator:n_rin"] = "ID=2253949",
+	["illustrator:n_rin"] = "2253949",
 
 	["pasheng"] = "怕生",
 	[":pasheng"] = "当其他角色指定你为唯一目标时，若其判定区内有牌，你可以取消之。",
@@ -322,7 +322,7 @@ return {
 	["~komari"] = "", 
 	["designer:komari"] = "Sword Elucidator",
 	["cv:komari"] = "やなせなつみ",
-	["illustrator:komari"] = "ID=42699647",
+	["illustrator:komari"] = "42699647",
 
 	["luoxuan"] = "螺旋",
 	[":luoxuan"] = "出牌阶段，你可以弃置一张【桃】或手牌里的一张装备牌并选择一名已受伤的角色，若如此做，你令该角色回复1点体力，然后你可以获得该角色装备区里的一张牌。",
