@@ -601,7 +601,7 @@ sgs.ai_skill_use_func.GejiCard = function(card, use, self)
 	targets = sgs.SPlayerList()
 	local hasShowns = sgs.SPlayerList()
 	for _,other in sgs.qlist(self.room:getOtherPlayers(self.player)) do
-		if (other:hasShownOneGeneral())
+		if other:hasShownOneGeneral() then
 			hasShowns:append(other)
 		end
 	end
