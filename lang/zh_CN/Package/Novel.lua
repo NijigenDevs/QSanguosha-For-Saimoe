@@ -1,7 +1,7 @@
 return {
 	----N001
 	["taiga"] = "逢坂大河", 
-	["&taiga"] = "逢坂大河", 
+	["&taiga"] = "掌中萌虎", 
 	["#taiga"] = "丝袜好萌", 
 	["#&taiga"] = "龙与虎", 
 	["~taiga"] = "", 
@@ -20,7 +20,7 @@ return {
 	----N002
 	["shana"] = "夏娜", 
 	["&shana"] = "夏娜", 
-	["#shana"] = "欲求不足", 
+	["#shana"] = "炎发灼眼的讨伐者", 
 	["#&shana"] = "灼眼的夏娜", 
 	["~shana"] = "", 
 	["designer:shana"] = "钉子",
@@ -36,7 +36,7 @@ return {
 	----N003
 	["louise"] = "露易丝·瓦利埃尔", 
 	["&louise"] = "露易丝", 
-	["#louise"] = "欲求不满", 
+	["#louise"] = "零之露易丝", 
 	["#&louise"] = "零之使魔", 
 	["~louise"] = "", 
 	["designer:louise"] = "SE",
@@ -49,7 +49,7 @@ return {
 	----N004
 	["aria"] = "神崎·H·亚里亚", 
 	["&aria"] = "亚里亚", 
-	["#aria"] = "欲求大大不满", 
+	["#aria"] = "双枪双剑", 
 	["#&aria"] = "绯弹的亚里亚", 
 	["~aria"] = "", 
 	["designer:aria"] = "Sword Elucidator",
@@ -65,7 +65,7 @@ return {
 	----N005
 	["holo"] = "赫萝", 
 	["&holo"] = "赫萝", 
-	["#holo"] = "狼妹妹", 
+	["#holo"] = "贤狼", 
 	["#&holo"] = "狼与香辛料",
 	["~holo"] = "", 
 	["designer:holo"] = "昂翼天使",
@@ -78,7 +78,7 @@ return {
 	----N006
 	["eru"] = "千反田爱瑠", 
 	["&eru"] = "千反田爱瑠", 
-	["#eru"] = "真·土豪", 
+	["#eru"] = "千金一笑", 
 	["#&eru"] = "冰菓", 
 	["~eru"] = "", 
 	["designer:eru"] = "hmqgg",
@@ -111,7 +111,7 @@ return {
 	----N008
 	["a_azusa"] = "小豆梓", 
 	["&a_azusa"] = "小豆梓", 
-	["#a_azusa"] = "乱讲话", 
+	["#a_azusa"] = "小豆子", 
 	["#&a_azusa"] = "变态王子与不笑猫。", 
 	["~a_azusa"] = "妹妹我是土豪！", 
 	["designer:a_azusa"] = "hmqgg",
@@ -164,7 +164,7 @@ return {
 	
 	----N011
 	["y_yui"] = "由比滨结衣", 
-	["&y_yui"] = "由比滨结衣", 
+	["&y_yui"] = "由比滨结衣",
 	["#y_yui"] = "团子", 
 	["#&y_yui"] = "我的青春恋爱物语果然有问题",
 	["~y_yui"] = "", 
@@ -184,7 +184,7 @@ return {
 	----N012
 	["mikoto"] = "御坂美琴", 
 	["&mikoto"] = "御坂美琴", 
-	["#mikoto"] = "哔哩哔哩", 
+	["#mikoto"] = "超电磁炮", 
 	["#&mikoto"] = "某科学的超电磁炮", 
 	["~mikoto"] = "", 
 	["designer:mikoto"] = "钉子",
@@ -217,7 +217,7 @@ return {
 	----N014
 	["asuna"] = "结城明日奈", 
 	["&asuna"] = "亚丝娜", 
-	["#asuna"] = "劳模一号",
+	["#asuna"] = "闪光",
 	["#&asuna"] = "刀剑神域",
 	["~asuna"] = "", 
 	["designer:asuna"] = "Sword Elucidator",
@@ -234,7 +234,7 @@ return {
 	----N015
 	["hitagi"] = "战场原黑仪", 
 	["&hitagi"] = "战场原黑仪", 
-	["#hitagi"] = "终于又见千娃娃", 
+	["#hitagi"] = "冷傲之蟹", 
 	["#&hitagi"] = "<物语>系列",
 	["~hitagi"] = "", 
 	["designer:hitagi"] = "Sword Elucidator",
@@ -286,7 +286,7 @@ return {
 	----N018
 	["yuki"] = "长门有希", 
 	["&yuki"] = "长门有希", 
-	["#yuki"] = "长门大萌神", 
+	["#yuki"] = "资讯统合思念体", 
 	["#&yuki"] = "凉宫春日的忧郁", 
 	["~yuki"] = "", 
 	["designer:yuki"] = "钉子",
