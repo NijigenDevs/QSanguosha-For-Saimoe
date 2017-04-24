@@ -599,7 +599,13 @@ end
 
 sgs.ai_skill_use_func.GejiCard = function(card, use, self)
 	targets = sgs.SPlayerList()
+	local hasShowns = sgs.SPlayerList()
 	for _,other in sgs.qlist(self.room:getOtherPlayers(self.player)) do
+		if (other:hasShownOneGeneral())
+			hasShowns:append(other)
+		end
+	end
+	for _,other in sgs.qlist(hasShowns) do
 		if other:getWeapon() and not self:isFriend(other) and other:getWeapon():getSuit() ~= sgs.Card_Spade and not other:hasSkills(sgs.lose_equip_skill) then
 			local ok = true
 			for _,p in sgs.qlist(targets) do
