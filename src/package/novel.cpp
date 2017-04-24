@@ -2278,7 +2278,7 @@ public:
         auto *te = new ThreatenEmperor(originalCard->getSuit(), originalCard->getNumber());
         te->addSubcard(originalCard);
         te->setSkillName("gexin");
-        te->setShowSkill("zhizun");
+        te->setShowSkill("gexin");
         return te;
     }
 };
