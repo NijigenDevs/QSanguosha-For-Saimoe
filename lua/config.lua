@@ -54,13 +54,7 @@ config = {
 		"StrategicAdvantage",
 		"TransformationEquip",
 
-		"Moesen",
-		"Standard",
-		"Formation",
-		"Momentum",
-		"Test",
-		"JiangeDefense",
-		"Transformation"
+		"Moesen"
 	},
 
 	easy_text = {

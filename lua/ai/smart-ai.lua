@@ -589,28 +589,7 @@ function sgs.gameProcess(update)
 		return value[a] > value[b]
 	end
 	table.sort(kingdoms, cmp)
-
-	if #anjiang_copy > 0 then
-		local anjiang_num = #anjiang_copy
-		local anjiang_value = 0
-		for _, p in ipairs(anjiang) do
-			anjiang_value = anjiang_value + 6 + sgs.getDefense(p) / 2
-		end
-		for i = 1, #kingdoms do
-			local playerNum = players:first():getPlayerNumWithSameKingdom("AI", kingdoms[i])
-			if global_room:getLord(kingdoms[i]) then
-				value[kingdoms[i]] = value[kingdoms[i]] + anjiang_value / anjiang_num / (#kingdoms - i + 1)
-				anjiang_value = anjiang_value - anjiang_value / anjiang_num / (#kingdoms - i + 1)
-				anjiang_num = anjiang_num - anjiang_num / (#kingdoms - i + 1)
-			else
-				value[kingdoms[i]] = value[kingdoms[i]] + math.min((math.floor(all_num / 2) - playerNum), anjiang_num / (#kingdoms + 1 - i)) * anjiang_value / anjiang_num
-				anjiang_value = anjiang_value - math.min((math.floor(all_num / 2) - playerNum), anjiang_num / (#kingdoms + 1 - i)) * anjiang_value / anjiang_num
-				anjiang_num = anjiang_num - math.min((math.floor(all_num / 2) - playerNum), anjiang_num / (#kingdoms + 1 - i))
-			end
-		end
-	end
-
-	table.sort(kingdoms, cmp)
+	
 	local sum_value1, sum_value2, sum_value3 = 0, 0, 0
 	for i = 2, #kingdoms do
 		sum_value1 = sum_value1 + value[kingdoms[i]]

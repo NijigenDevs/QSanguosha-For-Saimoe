@@ -1246,11 +1246,14 @@ bool PlayerCardContainer::_isSelected(QGraphicsItem *item) const
         (flags() & QGraphicsItem::ItemIsSelectable);
 }
 
+#ifdef Q_OS_ANDROID
 void PlayerCardContainer::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
-#ifdef Q_OS_ANDROID
     pressPos = event->pos();
     timerCount.start(1000);
+#else
+void PlayerCardContainer::mousePressEvent(QGraphicsSceneMouseEvent *)
+{
 #endif
 }
 
