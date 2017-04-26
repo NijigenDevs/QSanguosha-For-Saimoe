@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    The FreeType memory management macros (specification).               */
 /*                                                                         */
-/*  Copyright 1996-2016 by                                                 */
+/*  Copyright 1996-2002, 2004-2007, 2010, 2013 by                          */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg                       */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -16,8 +16,8 @@
 /***************************************************************************/
 
 
-#ifndef FTMEMORY_H_
-#define FTMEMORY_H_
+#ifndef __FTMEMORY_H__
+#define __FTMEMORY_H__
 
 
 #include <ft2build.h>
@@ -65,15 +65,13 @@ FT_BEGIN_HEADER
 
 #ifdef __cplusplus
 
-extern "C++"
-{
+  extern "C++"
   template <typename T> inline T*
   cplusplus_typeof(        T*,
                     void  *v )
   {
     return static_cast <T*> ( v );
   }
-}
 
 #define FT_ASSIGNP( p, val )  (p) = cplusplus_typeof( (p), (val) )
 
@@ -108,11 +106,9 @@ extern "C++"
 
   /*
    *  The allocation functions return a pointer, and the error code
-   *  is written to through the `p_error' parameter.
+   *  is written to through the `p_error' parameter.  See below for
+   *  for documentation.
    */
-
-  /* The `q' variants of the functions below (`q' for `quick') don't fill */
-  /* the allocated or reallocated memory with zero bytes.                 */
 
   FT_BASE( FT_Pointer )
   ft_mem_alloc( FT_Memory  memory,
@@ -144,9 +140,6 @@ extern "C++"
   ft_mem_free( FT_Memory    memory,
                const void*  P );
 
-
-  /* The `Q' variants of the macros below (`Q' for `quick') don't fill */
-  /* the allocated or reallocated memory with zero bytes.              */
 
 #define FT_MEM_ALLOC( ptr, size )                               \
           FT_ASSIGNP_INNER( ptr, ft_mem_alloc( memory,          \
@@ -222,14 +215,11 @@ extern "C++"
 #define FT_MEM_SET_ERROR( cond )  ( (cond), error != 0 )
 
 
-#define FT_MEM_SET( dest, byte, count )               \
-          ft_memset( dest, byte, (FT_Offset)(count) )
+#define FT_MEM_SET( dest, byte, count )     ft_memset( dest, byte, count )
 
-#define FT_MEM_COPY( dest, source, count )              \
-          ft_memcpy( dest, source, (FT_Offset)(count) )
+#define FT_MEM_COPY( dest, source, count )  ft_memcpy( dest, source, count )
 
-#define FT_MEM_MOVE( dest, source, count )               \
-          ft_memmove( dest, source, (FT_Offset)(count) )
+#define FT_MEM_MOVE( dest, source, count )  ft_memmove( dest, source, count )
 
 
 #define FT_MEM_ZERO( dest, count )  FT_MEM_SET( dest, 0, count )
@@ -237,19 +227,14 @@ extern "C++"
 #define FT_ZERO( p )                FT_MEM_ZERO( p, sizeof ( *(p) ) )
 
 
-#define FT_ARRAY_ZERO( dest, count )                             \
-          FT_MEM_ZERO( dest,                                     \
-                       (FT_Offset)(count) * sizeof ( *(dest) ) )
+#define FT_ARRAY_ZERO( dest, count )                        \
+          FT_MEM_ZERO( dest, (count) * sizeof ( *(dest) ) )
 
-#define FT_ARRAY_COPY( dest, source, count )                     \
-          FT_MEM_COPY( dest,                                     \
-                       source,                                   \
-                       (FT_Offset)(count) * sizeof ( *(dest) ) )
+#define FT_ARRAY_COPY( dest, source, count )                        \
+          FT_MEM_COPY( dest, source, (count) * sizeof ( *(dest) ) )
 
-#define FT_ARRAY_MOVE( dest, source, count )                     \
-          FT_MEM_MOVE( dest,                                     \
-                       source,                                   \
-                       (FT_Offset)(count) * sizeof ( *(dest) ) )
+#define FT_ARRAY_MOVE( dest, source, count )                        \
+          FT_MEM_MOVE( dest, source, (count) * sizeof ( *(dest) ) )
 
 
   /*
@@ -387,7 +372,7 @@ extern "C++"
 
 FT_END_HEADER
 
-#endif /* FTMEMORY_H_ */
+#endif /* __FTMEMORY_H__ */
 
 
 /* END */

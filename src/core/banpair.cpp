@@ -1,3 +1,23 @@
+/********************************************************************
+    Copyright (c) 2013-2015 - Mogara
+
+    This file is part of QSanguosha-Hegemony.
+
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    See the LICENSE file for more details.
+
+    Mogara
+    *********************************************************************/
+
 #include "banpair.h"
 #include "settings.h"
 
@@ -12,8 +32,7 @@ BanPair::BanPair()
 BanPair::BanPair(const QString &first, const QString &second)
     : QPair<QString, QString>(first, second)
 {
-    if (first > second)
-    {
+    if (first > second) {
         qSwap(this->first, this->second);
     }
 }
@@ -46,26 +65,21 @@ void BanPair::loadBanPairs()
     // special cases
     QStringList banlist = Config.value("Banlist/Pairs", "").toStringList();
 
-    foreach (const QString &line, banlist)
-    {
+    foreach (const QString &line, banlist) {
         QStringList names = line.split("+");
         if (names.isEmpty())
             continue;
 
         QString first = names.at(0).trimmed();
-        if (names.length() == 2)
-        {
+        if (names.length() == 2) {
             QString second = names.at(1).trimmed();
             if (first.isEmpty())
                 SecondBanSet.insert(second);
-            else
-            {
+            else {
                 BanPair pair(first, second);
                 BanPairSet.insert(pair);
             }
-        }
-        else if (names.length() == 1)
-        {
+        } else if (names.length() == 1) {
             AllBanSet.insert(first);
         }
     }

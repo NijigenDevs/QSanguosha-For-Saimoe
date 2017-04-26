@@ -1,3 +1,23 @@
+/********************************************************************
+    Copyright (c) 2013-2015 - Mogara
+
+    This file is part of QSanguosha-Hegemony.
+
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    See the LICENSE file for more details.
+
+    Mogara
+    *********************************************************************/
+
 #ifndef _SERVER_PLAYER_H
 #define _SERVER_PLAYER_H
 
@@ -21,8 +41,7 @@ struct PindianStruct;
 #ifndef QT_NO_DEBUG
 #include <QEvent>
 
-class ServerPlayerEvent : public QEvent
-{
+class ServerPlayerEvent: public QEvent {
 public:
     ServerPlayerEvent(char *property_name, QVariant &value);
 
@@ -34,7 +53,7 @@ public:
 class ServerPlayer : public Player
 {
     Q_OBJECT
-        Q_PROPERTY(QString ip READ getIp)
+    Q_PROPERTY(QString ip READ getIp)
 
 public:
     explicit ServerPlayer(Room *room);
@@ -66,14 +85,16 @@ public:
     bool askForSkillInvoke(const QString &skill_name, const QVariant &data = QVariant());
     bool askForSkillInvoke(const Skill *skill, const QVariant &data = QVariant());
     QList<int> forceToDiscard(int discard_num, bool include_equip, bool is_discard = true);
-    QList<int> forceToDiscard(int discard_num, const QString &pattern, const QString &expand_pile, bool is_discard);
+    QList<int> forceToDiscard(int discard_num, const QString &pattern, const QString &expand_pile , bool is_discard);
     QList<int> handCards() const;
     virtual QList<const Card *> getHandcards() const;
     QList<const Card *> getCards(const QString &flags) const;
     DummyCard *wholeHandCards() const;
     bool hasNullification() const;
     PindianStruct *pindianSelect(ServerPlayer *target, const QString &reason, const Card *card1 = NULL);
-    bool pindian(PindianStruct *pd); //pd is deleted after this function
+    PindianStruct *pindianSelect(const QList<ServerPlayer *> &target, const QString &reason, const Card *card1 = NULL);
+    bool pindian(PindianStruct *pd, int index = 1); //pd is deleted after this function
+
     void turnOver();
     void play(QList<Player::Phase> set_phases = QList<Player::Phase>());
     bool changePhase(Player::Phase from, Player::Phase to);
@@ -89,7 +110,7 @@ public:
     void loseAllMarks(const QString &mark_name);
 
     virtual void addSkill(const QString &skill_name, bool head_skill = true);
-    virtual void loseSkill(const QString &skill_name);
+    virtual void loseSkill(const QString &skill_name, bool head = true);
     virtual void setGender(General::Gender gender);
 
     void setAI(AI *ai);
@@ -133,6 +154,7 @@ public:
     void addToPile(const QString &pile_name, int card_id, bool open = true, QList<ServerPlayer *> open_players = QList<ServerPlayer *>());
     void addToPile(const QString &pile_name, QList<int> card_ids, bool open = true, QList<ServerPlayer *> open_players = QList<ServerPlayer *>());
     void addToPile(const QString &pile_name, QList<int> card_ids, bool open, QList<ServerPlayer *> open_players, CardMoveReason reason);
+    void pileAdd(const QString &pile_name, QList<int> card_ids);
     void gainAnExtraTurn();
 
     void copyFrom(ServerPlayer *sp);
@@ -164,14 +186,12 @@ public:
     }
     inline void drainLock(SemaphoreType type)
     {
-        while (semas[type]->tryAcquire())
-        {
+        while (semas[type]->tryAcquire()) {
         }
     }
     inline void drainAllLocks()
     {
-        for (int i = 0; i < S_NUM_SEMAPHORES; i++)
-        {
+        for (int i = 0; i < S_NUM_SEMAPHORES; i++) {
             drainLock((SemaphoreType)i);
         }
     }
@@ -193,7 +213,8 @@ public:
     // static function
     static bool CompareByActionOrder(ServerPlayer *a, ServerPlayer *b);
 
-    void showGeneral(bool head_general = true, bool trigger_event = true, bool sendLog = true);
+    bool showSkill(const QString &skill_name, const QString &skill_position = QString());
+    void showGeneral(bool head_general = true, bool trigger_event = true, bool sendLog = true, bool ignore_rule = true);
     void hideGeneral(bool head_general = true);
     void removeGeneral(bool head_general = true);
     void sendSkillsToOthers(bool head_skill = true);
@@ -213,6 +234,9 @@ public:
     bool event_received;
 
     void changeToLord();
+
+    void setActualGeneral1Name(const QString &name);
+    void setActualGeneral2Name(const QString &name);
 
 protected:
     //Synchronization helpers
@@ -237,7 +261,7 @@ private:
     QDateTime test_time;
     QVariant _m_clientResponse;
 
-    private slots:
+private slots:
     void getMessage(QByteArray request);
     void sendMessage(const QByteArray &message);
 

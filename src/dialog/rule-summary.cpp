@@ -1,3 +1,23 @@
+/********************************************************************
+    Copyright (c) 2013-2015 - Mogara
+
+    This file is part of QSanguosha-Hegemony.
+
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    See the LICENSE file for more details.
+
+    Mogara
+    *********************************************************************/
+
 #include "rule-summary.h"
 #include "engine.h"
 #include "stylehelper.h"
@@ -50,16 +70,14 @@ RuleSummary::RuleSummary(QWidget *parent)
     layout->addLayout(hLayout);
 
     QStringList names = Sanguosha->getModScenarioNames();
-    for (int i = 0; i < names.size(); ++i)
-    {
+    for (int i = 0; i < names.size(); ++i) {
         QString fileName = QString("rule/%1.html").arg(names.at(i));
         if (!QFile::exists(fileName))
             names.removeAt(i);
     }
 
     names << "hegemony" << "rule1-card" << "rule2-wording" << "rule3-extras";
-    foreach (const QString &name, names)
-    {
+    foreach (const QString &name, names) {
         QString text = Sanguosha->translate(name);
         QListWidgetItem *item = new QListWidgetItem(text, list);
         item->setData(Qt::UserRole, name);
@@ -80,8 +98,7 @@ void RuleSummary::loadContent(int row)
     QString name = list->item(row)->data(Qt::UserRole).toString();
     QString filename = QString("rule/%1.html").arg(name);
     QFile file(filename);
-    if (file.open(QIODevice::ReadOnly))
-    {
+    if (file.open(QIODevice::ReadOnly)) {
         QTextStream stream(&file);
         stream.setCodec("UTF-8");
         QString content = stream.readAll();

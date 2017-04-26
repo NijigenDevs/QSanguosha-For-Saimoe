@@ -1,3 +1,23 @@
+/********************************************************************
+    Copyright (c) 2013-2015 - Mogara
+
+    This file is part of QSanguosha-Hegemony.
+
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    See the LICENSE file for more details.
+
+    Mogara
+    *********************************************************************/
+
 #ifndef HEROSKINCONTAINER_H
 #define HEROSKINCONTAINER_H
 
@@ -16,8 +36,7 @@ public:
 
     ~HeroSkinContainer()
     {
-        if (this == m_currentTopMostContainer)
-        {
+        if (this == m_currentTopMostContainer) {
             m_currentTopMostContainer = NULL;
         }
     }
@@ -61,7 +80,7 @@ private:
 
     static HeroSkinContainer *m_currentTopMostContainer;
 
-    private slots:
+private slots:
     void close();
     void skinSelected(const int skinId);
     void scrollBarValueChanged(int newValue);

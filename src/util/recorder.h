@@ -1,3 +1,23 @@
+/********************************************************************
+    Copyright (c) 2013-2015 - Mogara
+
+    This file is part of QSanguosha-Hegemony.
+
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    See the LICENSE file for more details.
+
+    Mogara
+    *********************************************************************/
+
 #ifndef _RECORDER_H
 #define _RECORDER_H
 
@@ -19,7 +39,7 @@ public:
     bool save(const QString &filename) const;
     QList<QByteArray> getRecords() const;
 
-    public slots:
+public slots:
     void recordLine(const QByteArray &line);
 
 private:
@@ -45,7 +65,7 @@ public:
 
     int m_commandSeriesCounter;
 
-    public slots:
+public slots:
     void uniform();
     void toggle();
     void speedUp();

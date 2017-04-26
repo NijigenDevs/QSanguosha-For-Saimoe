@@ -4,8 +4,10 @@
 /*                                                                         */
 /*    The FreeType TrueType/sfnt cmap extra information service.           */
 /*                                                                         */
-/*  Copyright 2003-2016 by                                                 */
-/*  Masatake YAMATO, Redhat K.K.,                                          */
+/*  Copyright 2003 by                                                      */
+/*  Masatake YAMATO, Redhat K.K.                                           */
+/*                                                                         */
+/*  Copyright 2003, 2008, 2009, 2012, 2013 by                              */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -19,8 +21,8 @@
 /* Development of this service is support of
    Information-technology Promotion Agency, Japan. */
 
-#ifndef SVTTCMAP_H_
-#define SVTTCMAP_H_
+#ifndef __SVTTCMAP_H__
+#define __SVTTCMAP_H__
 
 #include FT_INTERNAL_SERVICE_H
 #include FT_TRUETYPE_TABLES_H
@@ -48,12 +50,11 @@ FT_BEGIN_HEADER
   /*      `ttnameid.h'.                                                    */
   /*                                                                       */
   /*    format ::                                                          */
-  /*      The cmap format.  OpenType 1.6 defines the formats 0 (byte       */
+  /*      The cmap format.  OpenType 1.5 defines the formats 0 (byte       */
   /*      encoding table), 2~(high-byte mapping through table), 4~(segment */
   /*      mapping to delta values), 6~(trimmed table mapping), 8~(mixed    */
   /*      16-bit and 32-bit coverage), 10~(trimmed array), 12~(segmented   */
-  /*      coverage), 13~(last resort font), and 14 (Unicode Variation      */
-  /*      Sequences).                                                      */
+  /*      coverage), and 14 (Unicode Variation Sequences).                 */
   /*                                                                       */
   typedef struct  TT_CMapInfo_
   {
@@ -100,7 +101,7 @@ FT_BEGIN_HEADER
 
 FT_END_HEADER
 
-#endif /* SVTTCMAP_H_ */
+#endif /* __SVTTCMAP_H__ */
 
 
 /* END */

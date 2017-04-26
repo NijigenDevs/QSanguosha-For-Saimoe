@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    The FreeType position independent code services (declaration).       */
 /*                                                                         */
-/*  Copyright 2009-2016 by                                                 */
+/*  Copyright 2009, 2012 by                                                */
 /*  Oran Agra and Mickey Gabel.                                            */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -23,8 +23,8 @@
   /*************************************************************************/
 
 
-#ifndef FTPIC_H_
-#define FTPIC_H_
+#ifndef __FTPIC_H__
+#define __FTPIC_H__
 
 
 FT_BEGIN_HEADER
@@ -65,7 +65,7 @@ FT_BEGIN_HEADER
 
 FT_END_HEADER
 
-#endif /* FTPIC_H_ */
+#endif /* __FTPIC_H__ */
 
 
 /* END */

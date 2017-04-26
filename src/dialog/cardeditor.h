@@ -1,3 +1,23 @@
+/********************************************************************
+    Copyright (c) 2013-2015 - Mogara
+
+    This file is part of QSanguosha-Hegemony.
+
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    See the LICENSE file for more details.
+
+    Mogara
+    *********************************************************************/
+
 #ifndef CARDEDITOR_H
 #define CARDEDITOR_H
 
@@ -25,7 +45,7 @@ public:
     void setOutline(int outline);
     void toCenter(const QRectF &rect);
 
-    public slots:
+public slots:
     void setText(const QString &text);
     void setFont(const QFont &font);
     void setSkip(int skip);
@@ -66,7 +86,7 @@ public:
 
     virtual QRectF boundingRect() const;
 
-    public slots:
+public slots:
     void removeSkill();
     void setSkillTitleFont(const QFont &font);
     void setSkillDescriptionFont(const QFont &font);
@@ -122,7 +142,7 @@ public:
     void loadConfig();
     void setMenu(QMenu *menu);
 
-    public slots:
+public slots:
     void setRatio(int ratio);
     void setMaxHp(int max_hp);
     void setTransMaxHp(int trans_max_hp);
@@ -185,7 +205,7 @@ private:
         const QFont &font,
         int skip,
         BlackEdgeTextItem *item
-    );
+        );
     QWidget *createPropertiesBox();
     QWidget *createSkillBox();
 
@@ -195,7 +215,7 @@ protected:
 private:
     void setMapping(QFontDialog *dialog, QPushButton *button);
 
-    private slots:
+private slots:
     void setCardFrame();
     void import();
     void saveImage();

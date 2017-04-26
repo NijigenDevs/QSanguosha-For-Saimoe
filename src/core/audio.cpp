@@ -1,3 +1,23 @@
+/********************************************************************
+    Copyright (c) 2013-2015 - Mogara
+
+    This file is part of QSanguosha-Hegemony.
+
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    See the LICENSE file for more details.
+
+    Mogara
+    *********************************************************************/
+
 #include "audio.h"
 #include "settings.h"
 
@@ -26,12 +46,10 @@ public:
 
     void play(const bool doubleVolume = false)
     {
-        if (sound)
-        {
-            FMOD_RESULT result = FMOD_System_PlaySound(System, sound, NULL, false, &channel);
+        if (sound) {
+            FMOD_RESULT result = FMOD_System_PlaySound(System, FMOD_CHANNEL_FREE, sound, false, &channel);
 
-            if (result == FMOD_OK)
-            {
+            if (result == FMOD_OK) {
                 FMOD_Channel_SetVolume(channel, (doubleVolume ? 2 : 1) * Config.EffectVolume);
                 FMOD_System_Update(System);
             }
@@ -60,8 +78,7 @@ void Audio::init()
 
 void Audio::quit()
 {
-    if (System)
-    {
+    if (System) {
         SoundCache.clear();
         FMOD_System_Release(System);
 
@@ -72,13 +89,10 @@ void Audio::quit()
 void Audio::play(const QString &filename)
 {
     Sound *sound = SoundCache[filename];
-    if (sound == NULL)
-    {
+    if (sound == NULL) {
         sound = new Sound(filename);
         SoundCache.insert(filename, sound);
-    }
-    else if (sound->isPlaying())
-    {
+    } else if (sound->isPlaying()) {
         return;
     }
 
@@ -96,11 +110,10 @@ void Audio::stop()
     if (System == NULL) return;
 
     int n;
-    FMOD_System_GetChannelsPlaying(System, &n, NULL);
+    FMOD_System_GetChannelsPlaying(System, &n);
 
     QList<FMOD_CHANNEL *> channels;
-    for (int i = 0; i < n; i++)
-    {
+    for (int i = 0; i < n; i++) {
         FMOD_CHANNEL *channel;
         FMOD_RESULT result = FMOD_System_GetChannel(System, i, &channel);
         if (result == FMOD_OK) channels << channel;
@@ -118,10 +131,9 @@ void Audio::playBGM(const QString &filename)
 {
     FMOD_RESULT result = FMOD_System_CreateStream(System, filename.toLocal8Bit(), FMOD_LOOP_NORMAL, NULL, &BGM);
 
-    if (result == FMOD_OK)
-    {
+    if (result == FMOD_OK) {
         FMOD_Sound_SetLoopCount(BGM, -1);
-        FMOD_System_PlaySound(System, BGM, NULL, false, &BGMChannel);
+        FMOD_System_PlaySound(System, FMOD_CHANNEL_FREE, BGM, false, &BGMChannel);
 
         FMOD_Channel_SetVolume(BGMChannel, Config.BGMVolume);
         FMOD_System_Update(System);

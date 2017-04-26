@@ -4,8 +4,7 @@
 /*                                                                         */
 /*    FreeType API for accessing CID font information (specification).     */
 /*                                                                         */
-/*  Copyright 2007-2016 by                                                 */
-/*  Dereg Clegg and Michael Toftdal.                                       */
+/*  Copyright 2007, 2009 by Dereg Clegg, Michael Toftdal.                  */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
 /*  modified, and distributed under the terms of the FreeType project      */
@@ -16,8 +15,8 @@
 /***************************************************************************/
 
 
-#ifndef FTCID_H_
-#define FTCID_H_
+#ifndef __FTCID_H__
+#define __FTCID_H__
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
@@ -97,8 +96,8 @@ FT_BEGIN_HEADER
    *
    * @description:
    *    Retrieve the type of the input face, CID keyed or not.  In
-   *    contrast to the @FT_IS_CID_KEYED macro this function returns
-   *    successfully also for CID-keyed fonts in an SFNT wrapper.
+   *    constrast to the @FT_IS_CID_KEYED macro this function returns
+   *    successfully also for CID-keyed fonts in an SNFT wrapper.
    *
    * @input:
    *    face ::
@@ -162,7 +161,7 @@ FT_BEGIN_HEADER
 
 FT_END_HEADER
 
-#endif /* FTCID_H_ */
+#endif /* __FTCID_H__ */
 
 
 /* END */

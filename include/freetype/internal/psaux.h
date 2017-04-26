@@ -5,7 +5,7 @@
 /*    Auxiliary functions and data structures related to PostScript fonts  */
 /*    (specification).                                                     */
 /*                                                                         */
-/*  Copyright 1996-2016 by                                                 */
+/*  Copyright 1996-2004, 2006, 2008, 2009, 2012 by                         */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -17,14 +17,13 @@
 /***************************************************************************/
 
 
-#ifndef PSAUX_H_
-#define PSAUX_H_
+#ifndef __PSAUX_H__
+#define __PSAUX_H__
 
 
 #include <ft2build.h>
 #include FT_INTERNAL_OBJECTS_H
 #include FT_INTERNAL_TYPE1_TYPES_H
-#include FT_INTERNAL_HASH_H
 #include FT_SERVICE_POSTSCRIPT_CMAPS_H
 
 
@@ -72,10 +71,10 @@ FT_BEGIN_HEADER
     (*done)( PS_Table  table );
 
     FT_Error
-    (*add)( PS_Table  table,
-            FT_Int    idx,
-            void*     object,
-            FT_UInt   length );
+    (*add)( PS_Table    table,
+            FT_Int      idx,
+            void*       object,
+            FT_PtrDist  length );
 
     void
     (*release)( PS_Table  table );
@@ -123,12 +122,12 @@ FT_BEGIN_HEADER
     FT_Byte*           block;          /* current memory block           */
     FT_Offset          cursor;         /* current cursor in memory block */
     FT_Offset          capacity;       /* current size of memory block   */
-    FT_ULong           init;
+    FT_Long            init;
 
     FT_Int             max_elems;
     FT_Int             num_elems;
     FT_Byte**          elements;       /* addresses of table elements */
-    FT_UInt*           lengths;        /* lengths of table elements   */
+    FT_PtrDist*        lengths;        /* lengths of table elements   */
 
     FT_Memory          memory;
     PS_Table_FuncsRec  funcs;
@@ -366,7 +365,7 @@ FT_BEGIN_HEADER
     (*to_bytes)( PS_Parser  parser,
                  FT_Byte*   bytes,
                  FT_Offset  max_bytes,
-                 FT_ULong*  pnum_bytes,
+                 FT_Long*   pnum_bytes,
                  FT_Bool    delimiters );
 
     FT_Int
@@ -676,10 +675,9 @@ FT_BEGIN_HEADER
     FT_Byte**            glyph_names;
 
     FT_Int               lenIV;        /* internal for sub routine calls */
-    FT_Int               num_subrs;
+    FT_UInt              num_subrs;
     FT_Byte**            subrs;
-    FT_UInt*             subrs_len;    /* array of subrs length (optional) */
-    FT_Hash              subrs_hash;   /* used if `num_subrs' was massaged */
+    FT_PtrDist*          subrs_len;    /* array of subrs length (optional) */
 
     FT_Matrix            font_matrix;
     FT_Vector            font_offset;
@@ -873,7 +871,7 @@ FT_BEGIN_HEADER
 
 FT_END_HEADER
 
-#endif /* PSAUX_H_ */
+#endif /* __PSAUX_H__ */
 
 
 /* END */

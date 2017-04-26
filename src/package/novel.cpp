@@ -161,10 +161,11 @@ void HaoqiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &tar
     QString choice = room->askForChoice(targets.first(), objectName(), choices.join("+"));
     if (choice == "halfcards")
     {
-        const Card *cards = room->askForExchange(targets.first(), objectName(), ((targets.first()->getHandcardNum() + 1) / 2));
+        auto cards = room->askForExchange(targets.first(), objectName(), ((targets.first()->getHandcardNum() + 1) / 2));
+        DummyCard dummy(cards);
         CardMoveReason reason(CardMoveReason::S_REASON_GIVE, targets.first()->objectName(),
             source->objectName(), "haoqi", QString());
-        room->moveCardTo(cards, source, Player::PlaceHand, reason);
+        room->moveCardTo(&dummy, source, Player::PlaceHand, reason);
     }
     else if (choice == "showallgenerals")
     {
@@ -394,14 +395,14 @@ void JisuiCard::onEffect(const CardEffectStruct &effect) const
 
         QList<CardsMoveStruct> exchangeMove;
 
-        const Card *excard = room->askForExchange(effect.to, "jisui", 1, 0, "@jisui-exchange", "", ".");
+        auto excard = room->askForExchange(effect.to, "jisui", 1, 0, "@jisui-exchange", "", ".");
 
-        if (excard)
+        if (excard.length() > 0)
         {
             int card_id = room->askForAG(effect.to, card_ids, false, objectName());
             card_ids.removeOne(card_id);
 
-            CardsMoveStruct move1(excard->getEffectiveId(), NULL, Player::PlaceTable,
+            CardsMoveStruct move1(excard.first(), NULL, Player::PlaceTable,
                 CardMoveReason(CardMoveReason::S_REASON_SWAP, effect.to->objectName(), NULL, "jisui", NULL));
             CardsMoveStruct move2(card_id, effect.to, Player::PlaceHand,
                 CardMoveReason(CardMoveReason::S_REASON_SWAP, NULL, effect.to->objectName(), "jisui", NULL));
@@ -409,10 +410,10 @@ void JisuiCard::onEffect(const CardEffectStruct &effect) const
             exchangeMove.push_back(move2);
             room->moveCardsAtomic(exchangeMove, true);
 
-            card_ids << excard->getEffectiveId();
+            card_ids << excard.first();
 
             ag_list.removeOne(card_id);
-            ag_list << excard->getEffectiveId();
+            ag_list << excard.first();
 
             room->setTag("Jisui_Card", ag_list);
         }

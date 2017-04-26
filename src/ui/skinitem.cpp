@@ -1,3 +1,23 @@
+/********************************************************************
+    Copyright (c) 2013-2015 - Mogara
+
+    This file is part of QSanguosha-Hegemony.
+
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    See the LICENSE file for more details.
+
+    Mogara
+    *********************************************************************/
+
 #include "skinitem.h"
 #include "skinbank.h"
 #include "engine.h"
@@ -47,8 +67,7 @@ void SkinItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidge
     tempPainter.setPen(pen);
     tempPainter.drawRoundedRect(SKIN_ITEM_AREA, 8, 8);
 
-    if (m_hoverEnter)
-    {
+    if (m_hoverEnter) {
         tempPainter.setClipRect(SKIN_ITEM_RECT);
         tempPainter.drawPixmap(SKIN_ITEM_RECT, getSelectFrameIcon());
     }
@@ -58,8 +77,7 @@ void SkinItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidge
 
 void SkinItem::hoverEnterEvent(QGraphicsSceneHoverEvent *)
 {
-    if (!m_used)
-    {
+    if (!m_used) {
         m_hoverEnter = true;
         update();
     }
@@ -67,8 +85,7 @@ void SkinItem::hoverEnterEvent(QGraphicsSceneHoverEvent *)
 
 void SkinItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *)
 {
-    if (!m_used)
-    {
+    if (!m_used) {
         m_hoverEnter = false;
         update();
     }
@@ -81,8 +98,7 @@ void SkinItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
 
 void SkinItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *)
 {
-    if (!m_used && isUnderMouse())
-    {
+    if (!m_used && isUnderMouse()) {
         m_hoverEnter = false;
         update();
 

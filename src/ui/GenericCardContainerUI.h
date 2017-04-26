@@ -1,3 +1,23 @@
+/********************************************************************
+    Copyright (c) 2013-2015 - Mogara
+
+    This file is part of QSanguosha-Hegemony.
+
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    See the LICENSE file for more details.
+
+    Mogara
+    *********************************************************************/
+
 #ifndef _GENERAL_CARD_CONTAINER_UI_H
 #define _GENERAL_CARD_CONTAINER_UI_H
 
@@ -8,6 +28,7 @@
 #include "timedprogressbar.h"
 #include "magatamasitem.h"
 #include "rolecombobox.h"
+#include "pixmapanimation.h"
 
 #include <QGraphicsScene>
 #include <QGraphicsItem>
@@ -15,6 +36,7 @@
 #include <QParallelAnimationGroup>
 #include <QGraphicsEffect>
 #include <QLabel>
+#include <QTimer>
 
 class GraphicsPixmapHoverItem;
 
@@ -40,10 +62,10 @@ protected:
     void _playMoveCardsAnimation(QList<CardItem *> &cards, bool destroyCards);
     int _m_highestZ;
 
-    protected slots:
+protected slots:
     virtual void onAnimationFinished();
 
-    private slots:
+private slots:
     void _doUpdate();
     void _destroyCard();
 
@@ -92,6 +114,8 @@ public:
     virtual void killPlayer();
     virtual void revivePlayer();
     virtual QGraphicsItem *getMouseClickReceiver() = 0;
+    virtual void startHuaShen(QStringList generalName);
+    virtual void stopHuaShen();
     inline virtual QGraphicsItem *getMouseClickReceiver2()
     {
         return NULL;
@@ -111,7 +135,7 @@ public:
 
     void stopHeroSkinChangingAnimation();
 
-    public slots:
+public slots:
     virtual void updateAvatar();
     virtual void updateSmallAvatar();
     virtual void updatePhase();
@@ -141,10 +165,19 @@ public:
     void updateReformState();
     void showDistance();
     void hideDistance();
+    void showLiegong();
+    void hideLiegong();
     void onRemovedChanged();
     virtual void showSeat();
     virtual void showPile();
+    virtual void hidePile();
     virtual void refresh();
+#ifdef Q_OS_ANDROID
+    void longPressTimeOut();
+    void showSkillDescription(QPointF pressPos);
+    void hideSkillDescription();
+
+#endif
 
     QPixmap getHeadAvatarIcon(const QString &generalName);
     QPixmap getDeputyAvatarIcon(const QString &generalName);
@@ -225,7 +258,6 @@ protected:
     GraphicsPixmapHoverItem *_m_avatarIcon, *_m_smallAvatarIcon;
     QGraphicsPixmapItem *_m_circleItem;
     QGraphicsPixmapItem *_m_screenNameItem;
-    QGraphicsPixmapItem *_m_chainIcon, *_m_chainIcon2;
     QGraphicsPixmapItem *_m_duanchangMask, *_m_duanchangMask2;
     QGraphicsPixmapItem *_m_faceTurnedIcon, *_m_faceTurnedIcon2;
     QGraphicsPixmapItem *_m_handCardBg, *_m_handCardNumText;
@@ -283,7 +315,20 @@ protected:
     // The following stuffs for showing seat
     QGraphicsPixmapItem *_m_seatItem;
 
-    protected slots:
+    // The following stuffs for showing liegong
+    QGraphicsPixmapItem *_m_liegongItem;
+
+    // animations
+    QAbstractAnimation *_m_huashenAnimation;
+    QGraphicsItem *_m_huashenItem;
+    QStringList _m_huashenGeneralNames;
+
+    PixmapAnimation *_m_chainIcon, *_m_chainIcon2;  //move here by weidouncle
+    void _createChainAnimation();
+    //QHash<QString, PixmapAnimation *> _m_muti_kills;
+    //void _createMutiKillsAnimation();
+
+protected slots:
     virtual void _onEquipSelectChanged();
 
 private:
@@ -291,9 +336,18 @@ private:
     void clearVotes();
     int _lastZ;
     bool _allZAdjusted;
+#ifdef Q_OS_ANDROID
+    QTimer timerCount;
+    QPointF pressPos;
+#endif
 signals:
+#ifdef Q_OS_ANDROID
+    void longPress(QPointF pressLocation);
+    void longPressRelease();
+#endif
     void selected_changed();
     void enable_changed();
+    void global_selected_changed(const ClientPlayer *player, int id = -1);
 };
 
 #endif

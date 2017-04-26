@@ -463,15 +463,17 @@ void ShuimengCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &
         {
             source->hideGeneral(false);
             room->setPlayerDisableShow(source, "d", "rosesuiseiseki");
-            int d_num = room->askForDiscardNum(source, "shuimeng", 2, 2, false, false, "shuimeng_discard", true);
-            if (d_num == 2)
+            bool d_num = room->askForDiscard(source, "shuimeng", 2, 2, false, false, "shuimeng_discard", true);
+            if (d_num)
                 master->drawCards(qMin(5, master->getHandcardNum()));
         }
         else
         {
-            int d_num = room->askForDiscardNum(source, "shuimeng", 999, 2, false, false, "shuimeng_discard", true);
-            if (d_num >= 2)
-                master->drawCards(d_num - 1);
+            auto d_num = room->askForExchange(source, "shuimeng", 999, 2, "shuimeng_discard", "", ".!");
+            DummyCard dummy(d_num);
+            room->throwCard(&dummy, source, source, "shuimeng");
+            if (d_num.length() >= 2)
+                master->drawCards(d_num.length() - 1);
         }
     }
 }
@@ -1165,11 +1167,11 @@ public:
         {
             if (p->getHandcardNum() > 0)
             {
-                const Card *card = room->askForExchange(p, objectName(), 1, 0, "@xipin_give", "", ".");
-                if (card)
+                auto card = room->askForExchange(p, objectName(), 1, 0, "@xipin_give", "", ".");
+                if (!card.isEmpty())
                 {
                     CardsMoveStruct move;
-                    move.card_ids << card->getEffectiveId();
+                    move.card_ids << card.first();
                     move.from = p;
                     move.from_place = Player::PlaceHand;
                     move.to = player;
@@ -2291,23 +2293,22 @@ public:
         }
         else
         {
-            const Card *ex = room->askForExchange(player, "laoyue", 2, 2, "@laoyue-put", NULL, ".!");
-            if (ex->subcardsLength() == 2)
+            auto ex = room->askForExchange(player, "laoyue", 2, 2, "@laoyue-put", NULL, ".!");
+            if (ex.length() == 2)
             {
-                QList<int> exs = ex->getSubcards();
                 CardsMoveStruct move1(QList<int>(), player, NULL, Player::PlaceHand, Player::DrawPileBottom,
                     CardMoveReason(CardMoveReason::S_REASON_OVERRIDE, player->objectName(), "laoyue", QString()));
                 CardsMoveStruct move2(QList<int>(), NULL, player, Player::DrawPileBottom, Player::PlaceHand,
                     CardMoveReason(CardMoveReason::S_REASON_OVERRIDE, player->objectName(), "laoyue", QString()));
                 move2.card_ids.append(ids);
-                while (exs.length() > 0)
+                while (ex.length() > 0)
                 {
-                    room->fillAG(ex->getSubcards(), player);
-                    int id = room->askForAG(player, exs, false, "laoyue");
+                    room->fillAG(ex, player);
+                    int id = room->askForAG(player, ex, false, "laoyue");
                     if (id != -1)
                     {
                         move1.card_ids.append(id);
-                        exs.removeOne(id);
+                        ex.removeOne(id);
                     }
                     room->clearAG(player);
                 }

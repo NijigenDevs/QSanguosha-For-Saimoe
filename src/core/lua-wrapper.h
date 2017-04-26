@@ -1,8 +1,30 @@
+/********************************************************************
+    Copyright (c) 2013-2015 - Mogara
+
+    This file is part of QSanguosha-Hegemony.
+
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    See the LICENSE file for more details.
+
+    Mogara
+    *********************************************************************/
+
 #ifndef _LUA_WRAPPER_H
 #define _LUA_WRAPPER_H
 
 #include "skill.h"
 #include "standard.h"
+
+
 struct lua_State;
 typedef int LuaFunction;
 
@@ -86,6 +108,30 @@ public:
     int priority;
 };
 
+class LuaProhibitSkill : public ProhibitSkill
+{
+    Q_OBJECT
+
+public:
+    LuaProhibitSkill(const char *name);
+
+    virtual bool isProhibited(const Player *from, const Player *to, const Card *card, const QList<const Player *> &others = QList<const Player *>()) const;
+
+    LuaFunction is_prohibited;
+};
+
+class LuaFixCardSkill : public FixCardSkill
+{
+    Q_OBJECT
+
+public:
+    LuaFixCardSkill(const char *name);
+
+    virtual bool isCardFixed(const Player *from, const Player *to, const QString &flags, Card::HandlingMethod method) const;
+
+    LuaFunction is_cardfixed;
+};
+
 class LuaViewAsSkill : public ViewAsSkill
 {
     Q_OBJECT
@@ -102,6 +148,7 @@ public:
     virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const;
     virtual const Card *viewAs(const QList<const Card *> &cards) const;
 
+
     void pushSelf(lua_State *L) const;
 
     LuaFunction view_filter;
@@ -110,14 +157,31 @@ public:
     LuaFunction enabled_at_play;
     LuaFunction enabled_at_response;
     LuaFunction enabled_at_nullification;
+    LuaFunction in_pile;
 
     virtual bool isEnabledAtPlay(const Player *player) const;
     virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const;
     virtual bool isEnabledAtNullification(const ServerPlayer *player) const;
+    virtual QString getExpandPile() const;
 
 protected:
     QString guhuo_type;
 
+};
+
+class LuaViewHasSkill : public ViewHasSkill
+{
+    Q_OBJECT
+
+public:
+    LuaViewHasSkill(const char *name);
+
+    virtual bool ViewHas(const Player *player, const QString &skill_name, const QString &flag) const;
+    LuaFunction is_viewhas;
+    inline void setGlobal(bool global)
+    {
+        this->global = global;
+    }
 };
 
 class LuaFilterSkill : public FilterSkill
@@ -127,7 +191,7 @@ class LuaFilterSkill : public FilterSkill
 public:
     LuaFilterSkill(const char *name);
 
-    virtual bool viewFilter(const Card *to_select) const;
+    virtual bool viewFilter(const Card *to_select, ServerPlayer *player) const;
     virtual const Card *viewAs(const Card *originalCard) const;
 
     LuaFunction view_filter;
@@ -361,11 +425,9 @@ public:
     {
         if (strcmp(cardType, "LuaCard") == 0 || QString(cardType) == class_name)
             return true;
-        else
-        {
+        else {
             if (Card::isKindOf(cardType)) return true;
-            switch (subclass)
-            {
+            switch (subclass) {
                 case TypeSingleTargetTrick: return strcmp(cardType, "SingleTargetTrick") == 0; break;
                 case TypeDelayedTrick: return strcmp(cardType, "DelayedTrick") == 0; break;
                 case TypeAOE: return strcmp(cardType, "AOE") == 0; break;
@@ -460,6 +522,7 @@ public:
 private:
     QString class_name;
 };
+
 
 class LuaTreasure : public Treasure
 {

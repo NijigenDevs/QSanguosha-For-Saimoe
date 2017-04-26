@@ -1,12 +1,35 @@
+/********************************************************************
+    Copyright (c) 2013-2015 - Mogara
+
+    This file is part of QSanguosha-Hegemony.
+
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    See the LICENSE file for more details.
+
+    Mogara
+    *********************************************************************/
+
 #ifndef _CHOOSE_GENERAL_BOX_H
 #define _CHOOSE_GENERAL_BOX_H
 
 #include "carditem.h"
 #include "timedprogressbar.h"
 #include "graphicsbox.h"
+#include "protocol.h"
+#include <QTimer>
 
 class Button;
 class QGraphicsDropShadowEffect;
+class CardContainer;
 
 class GeneralCardItem : public CardItem
 {
@@ -20,13 +43,23 @@ public:
 protected:
     virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
     virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
+#ifdef Q_OS_ANDROID
+    virtual void mousePressEvent(QGraphicsSceneMouseEvent *event);
+    virtual void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
+#endif
 
 private:
     GeneralCardItem(const QString &generalName, const int skinId);
 
     bool hasCompanion;
+#ifdef Q_OS_ANDROID
+    QTimer timerLongPress;
+    QPointF pressPos;
+    qreal moveRange;
+    bool outOfRange;
+#endif
 
-    public slots:
+public slots:
     virtual void changeGeneral(const QString &generalName);
 };
 
@@ -41,8 +74,8 @@ public:
     QRectF boundingRect() const;
     void clear();
 
-    public slots:
-    void chooseGeneral(const QStringList &generals, bool m_viewOnly = false, bool single_result = false, const QString &reason = QString(), const Player *player = NULL);
+public slots:
+    void chooseGeneral(const QStringList &generals, bool m_viewOnly = false, bool single_result = false, const QString &reason = QString(), const Player *player = NULL, const bool can_convert = false);
     void reply();
     void adjustItems();
 
@@ -65,12 +98,15 @@ private:
     Button *confirm;
     QGraphicsProxyWidget *progress_bar_item;
     QSanCommandProgressBar *progress_bar;
+    CardContainer *convertContainer;
 
     void _initializeItems();
 
-    private slots:
+private slots:
     void _adjust();
     void _onItemClicked();
+    void _onConvertButtonClicked();
+    void _onConvertClicked();
 };
 
 #endif // _CHOOSE_GENERAL_BOX_H

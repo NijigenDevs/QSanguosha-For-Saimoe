@@ -1,3 +1,29 @@
+/********************************************************************
+    Copyright (c) 2013-2015 - Mogara
+
+    This file is part of QSanguosha-Hegemony.
+
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    See the LICENSE file for more details.
+
+    Mogara
+    *********************************************************************/
+
+#if defined(WIN32) && !defined(GPP) && !defined(QT_NO_DEBUG) && !defined(WINRT)
+#include <vld/vld.h>
+#endif
+
+#define _ALLOW_RTCc_IN_STL
+
 #include <QFile>
 #include <QCoreApplication>
 #include <QApplication>
@@ -25,8 +51,7 @@ using namespace google_breakpad;
 
 static bool callback(const wchar_t *, const wchar_t *id, void *, EXCEPTION_POINTERS *, MDRawAssertionInfo *, bool succeeded)
 {
-    if (succeeded && QFile::exists("QSanSMTPClient.exe"))
-    {
+    if (succeeded && QFile::exists("QSanSMTPClient.exe")) {
         char ID[16000];
         memset(ID, 0, sizeof(ID));
 #ifdef _MSC_VER
@@ -51,22 +76,16 @@ int main(int argc, char *argv[])
     bool noGui = argc > 1 && strcmp(argv[1], "-server") == 0;
 
     if (noGui)
-    {
         new QCoreApplication(argc, argv);
-    }
     else
-    {
-        QGuiApplication::setAttribute(Qt::AA_EnableHighDpiScaling, true);
         new QApplication(argc, argv);
-    }
 
 #if defined(Q_OS_MAC) || defined(Q_OS_ANDROID)
 #define showSplashMessage(message)
 #define SPLASH_DISABLED
 #else
     QSplashScreen *splash = NULL;
-    if (!noGui)
-    {
+    if (!noGui) {
         QPixmap raraLogo;
         QDate currentDate = QDate::currentDate();
         if (currentDate.month() == 11 && currentDate.day() == 30)
@@ -82,7 +101,7 @@ int main(int argc, char *argv[])
     if (splash == NULL) {\
         puts(message.toUtf8().constData());\
         } else {\
-        splash->showMessage(message, Qt::AlignBottom | Qt::AlignHCenter, Qt::white);\
+        splash->showMessage(message, Qt::AlignBottom | Qt::AlignHCenter, Qt::cyan);\
         qApp->processEvents();\
         }
 #endif
@@ -100,12 +119,9 @@ int main(int argc, char *argv[])
 #ifdef Q_OS_LINUX
     showSplashMessage(QSplashScreen::tr("Checking game path..."));
     QDir dir(QString("lua"));
-    if (dir.exists() && (dir.exists(QString("config.lua"))))
-    {
+    if (dir.exists() && (dir.exists(QString("config.lua")))) {
         // things look good and use current dir
-    }
-    else
-    {
+    } else {
         showSplashMessage(QSplashScreen::tr("Setting game path..."));
 #ifndef Q_OS_ANDROID
         QDir::setCurrent(qApp->applicationFilePath().replace("games", "share"));
@@ -113,29 +129,24 @@ int main(int argc, char *argv[])
         bool found = false;
         QDir storageDir("/storage");
         QStringList sdcards = storageDir.entryList(QDir::Dirs | QDir::NoDotAndDotDot);
-        foreach (const QString &sdcard, sdcards)
-        {
+        foreach (const QString &sdcard, sdcards) {
             QDir root(QString("/storage/%1/Android/data/org.qsgsrara.qsanguosha").arg(sdcard));
-            if (root.exists("lua/config.lua"))
-            {
+            if (root.exists("lua/config.lua")) {
                 QDir::setCurrent(root.absolutePath());
                 found = true;
                 break;
             }
         }
-        if (!found)
-        {
+        if (!found) {
             QDir root("/sdcard/Android/data/org.qsgsrara.qsanguosha");
-            if (root.exists("lua/config.lua"))
-            {
+            if (root.exists("lua/config.lua")) {
                 QDir::setCurrent(root.absolutePath());
                 found = true;
             }
         }
 
 
-        if (!found)
-        {
+        if (!found) {
             QString m = QObject::tr("Game data not found, please download QSanguosha-For-Hegemony PC version, and put the files and folders into /sdcard/Android/data/org.qsgsrara.qsanguosha");
             if (!noGui)
                 QMessageBox::critical(NULL, QObject::tr("Error"), m);
@@ -167,11 +178,15 @@ int main(int argc, char *argv[])
 
     showSplashMessage(QSplashScreen::tr("Loading user's configurations..."));
     Config.init();
-    if (!noGui)
-        qApp->setFont(Config.AppFont);
+    if (!noGui) {
+        QFont f = Config.AppFont;
+#ifdef Q_OS_ANDROID
+        f.setPointSize(12);
+#endif
+        qApp->setFont(f);
+    }
 
-    if (qApp->arguments().contains("-server"))
-    {
+    if (qApp->arguments().contains("-server")) {
         Server *server = new Server(qApp);
         printf("Server is starting on port %u\n", Config.ServerPort);
 
@@ -186,16 +201,14 @@ int main(int argc, char *argv[])
     showSplashMessage(QSplashScreen::tr("Loading style sheet..."));
     QFile file("style-sheet/sanguosha.qss");
     QString styleSheet;
-    if (file.open(QIODevice::ReadOnly))
-    {
+    if (file.open(QIODevice::ReadOnly)) {
         QTextStream stream(&file);
         styleSheet = stream.readAll();
     }
 
 #ifdef Q_OS_WIN
     QFile winFile("style-sheet/windows-extra.qss");
-    if (winFile.open(QIODevice::ReadOnly))
-    {
+    if (winFile.open(QIODevice::ReadOnly)) {
         QTextStream winStream(&winFile);
         styleSheet += winStream.readAll();
     }
@@ -217,18 +230,15 @@ int main(int argc, char *argv[])
     Sanguosha->setParent(&main_window);
     main_window.show();
 #ifndef SPLASH_DISABLED
-    if (splash != NULL)
-    {
+    if (splash != NULL) {
         splash->finish(&main_window);
         delete splash;
     }
 #endif
 
-    foreach (const QString &_arg, qApp->arguments())
-    {
+    foreach (const QString &_arg, qApp->arguments()) {
         QString arg = _arg;
-        if (arg.startsWith("-connect:"))
-        {
+        if (arg.startsWith("-connect:")) {
             arg.remove("-connect:");
             Config.HostAddress = arg;
             Config.setValue("HostAddress", arg);

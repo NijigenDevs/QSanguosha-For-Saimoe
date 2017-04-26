@@ -1,3 +1,23 @@
+/********************************************************************
+    Copyright (c) 2013-2015 - Mogara
+
+    This file is part of QSanguosha-Hegemony.
+
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    See the LICENSE file for more details.
+
+    Mogara
+    *********************************************************************/
+
 #ifndef _GENERAL_H
 #define _GENERAL_H
 
@@ -15,14 +35,14 @@ class QSize;
 class General : public QObject
 {
     Q_OBJECT
-        Q_ENUMS(Gender)
-        Q_PROPERTY(QString kingdom READ getKingdom CONSTANT)
-        Q_PROPERTY(int maxhp READ getDoubleMaxHp CONSTANT)
-        Q_PROPERTY(bool male READ isMale STORED false CONSTANT)
-        Q_PROPERTY(bool female READ isFemale STORED false CONSTANT)
-        Q_PROPERTY(Gender gender READ getGender CONSTANT)
-        Q_PROPERTY(bool lord READ isLord CONSTANT)
-        Q_PROPERTY(bool hidden READ isHidden CONSTANT)
+    Q_ENUMS(Gender)
+    Q_PROPERTY(QString kingdom READ getKingdom CONSTANT)
+    Q_PROPERTY(int maxhp READ getDoubleMaxHp CONSTANT)
+    Q_PROPERTY(bool male READ isMale STORED false CONSTANT)
+    Q_PROPERTY(bool female READ isFemale STORED false CONSTANT)
+    Q_PROPERTY(Gender gender READ getGender CONSTANT)
+    Q_PROPERTY(bool lord READ isLord CONSTANT)
+    Q_PROPERTY(bool hidden READ isHidden CONSTANT)
 
 public:
     explicit General(Package *package, const QString &name, const QString &kingdom,
@@ -61,7 +81,7 @@ public:
 
     QString getPackage() const;
     QString getCompanions() const;
-    QString getSkillDescription(bool include_name = false, bool inToolTip = true) const;
+    QString getSkillDescription(bool include_name = false, bool inToolTip = true, bool include_related = false) const;
 
     inline QSet<QString> getExtraSkillSet() const
     {
@@ -79,7 +99,7 @@ public:
     void tryLoadingSkinTranslation(const int skinId) const;
     QString getTitle(const int skinId = 0) const;
 
-    public slots:
+public slots:
     void lastWord(const int skinId) const;
 
 private:

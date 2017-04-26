@@ -1,3 +1,23 @@
+/********************************************************************
+    Copyright (c) 2013-2015 - Mogara
+
+    This file is part of QSanguosha-Hegemony.
+
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    See the LICENSE file for more details.
+
+    Mogara
+    *********************************************************************/
+
 #include "configdialog.h"
 #ifdef Q_OS_IOS
 #include "ui_configdialog_ios.h"
@@ -15,11 +35,22 @@
 #include <QColorDialog>
 #include <QTextStream>
 #include <QLineEdit>
+#include <QDesktopWidget>
 
 ConfigDialog::ConfigDialog(QWidget *parent)
     : FlatDialog(parent, false), ui(new Ui::ConfigDialog)
 {
     ui->setupUi(this);
+#ifdef Q_OS_ANDROID
+    QDesktopWidget* desktop = qApp->desktop();
+    setMinimumSize(desktop->width(), desktop->height());
+    setStyleSheet("background-color: #F0FFF0; color: black;");
+    ui->layoutWidget->setGeometry(QRect(1, 1, desktop->width() - 2, desktop->height() - 1));
+    ui->layoutWidget4->setMinimumSize(desktop->width() - 200, desktop->height() - 250);
+    delete ui->toolTipBackgroundColorButton;
+    //delete ui->gameRecordFrame;
+    delete ui->fontSetupFrame;
+#endif
 
     connect(this, &ConfigDialog::windowTitleChanged, ui->windowTitle, &QLabel::setText);
 
@@ -29,12 +60,12 @@ ConfigDialog::ConfigDialog(QWidget *parent)
     ui->tableBgPathLineEdit->setText(Config.TableBgImage);
 
     QFont font = Config.AppFont;
-#if !defined(Q_OS_IOS)
+#if (!defined(Q_OS_IOS) && !defined(Q_OS_ANDROID))
     showFont(ui->appFontLineEdit, font);
 #endif
 
     font = Config.UIFont;
-#if !defined(Q_OS_IOS)
+#if (!defined(Q_OS_IOS) && !defined(Q_OS_ANDROID))
     showFont(ui->textEditFontLineEdit, font);
 #endif
 
@@ -43,7 +74,7 @@ ConfigDialog::ConfigDialog(QWidget *parent)
     QColor color = Config.TextEditColor;
     int aver = (color.red() + color.green() + color.blue()) / 3;
     palette.setColor(QPalette::Base, aver >= 208 ? Qt::black : Qt::white);
-#if !defined(Q_OS_IOS)
+#if (!defined(Q_OS_IOS) && !defined(Q_OS_ANDROID))
     ui->textEditFontLineEdit->setPalette(palette);
 #endif
 
@@ -107,8 +138,7 @@ void ConfigDialog::showFont(QLineEdit *lineedit, const QFont &font)
 
 void ConfigDialog::doCallback(ConfigDialog::Callback callback, const QVariant &oldValue, const QVariant &newValue)
 {
-    if (!resetCallbacks.contains(callback))
-    {
+    if (!resetCallbacks.contains(callback)) {
         resetCallbacks << callback;
         callbackArgs << oldValue;
     }
@@ -139,18 +169,15 @@ void ConfigDialog::setTooltipBackgroundColor(const QVariant &color)
 
     QFile file("style-sheet/sanguosha.qss");
     static QString styleSheet;
-    if (styleSheet.isEmpty())
-    {
-        if (file.open(QIODevice::ReadOnly))
-        {
+    if (styleSheet.isEmpty()) {
+        if (file.open(QIODevice::ReadOnly)) {
             QTextStream stream(&file);
             styleSheet = stream.readAll();
         }
 
 #ifdef Q_OS_WIN
         QFile winFile("style-sheet/windows-extra.qss");
-        if (winFile.open(QIODevice::ReadOnly))
-        {
+        if (winFile.open(QIODevice::ReadOnly)) {
             QTextStream winStream(&winFile);
             styleSheet += winStream.readAll();
         }
@@ -164,7 +191,7 @@ void ConfigDialog::setAppFont(const QVariant &font)
 {
     QFont newFont = font.value<QFont>();
     Config.AppFont = newFont;
-#if !defined(Q_OS_IOS)
+#if (!defined(Q_OS_IOS) && !defined(Q_OS_ANDROID))
     showFont(ui->appFontLineEdit, newFont);
 #endif
 
@@ -175,7 +202,7 @@ void ConfigDialog::setTextEditFont(const QVariant &font)
 {
     QFont newFont = font.value<QFont>();
     Config.UIFont = newFont;
-#if !defined(Q_OS_IOS)
+#if (!defined(Q_OS_IOS) && !defined(Q_OS_ANDROID))
     showFont(ui->textEditFontLineEdit, newFont);
 #endif
     QApplication::setFont(newFont, "QTextEdit");
@@ -231,16 +258,12 @@ void ConfigDialog::setLastWordEnabled(const QVariant &enabled)
 void ConfigDialog::setBGMEnabled(const QVariant &enabled)
 {
 #ifdef AUDIO_SUPPORT
-    if (RoomSceneInstance != NULL)
-    {
+    if (RoomSceneInstance != NULL) {
         bool play = enabled.toBool();
-        if (play)
-        {
+        if (play) {
             Audio::playBGM(Config.value("BackgroundMusic",
                 "audio/system/background.ogg").toString());
-        }
-        else
-        {
+        } else {
             Audio::stopBGM();
         }
     }
@@ -416,8 +439,7 @@ void ConfigDialog::on_browseBgMusicButton_clicked()
         tr("Select a background music"),
         "audio/system",
         tr("Audio files (*.wav *.mp3 *.ogg)"));
-    if (!fileName.isEmpty() && fileName != ui->bgMusicPathLineEdit->text())
-    {
+    if (!fileName.isEmpty() && fileName != ui->bgMusicPathLineEdit->text()) {
         doCallback(&ConfigDialog::setBgMusic, Config.value("BackgroundMusic"), fileName);
     }
 }
@@ -425,8 +447,7 @@ void ConfigDialog::on_browseBgMusicButton_clicked()
 void ConfigDialog::on_resetBgMusicButton_clicked()
 {
     QString defaultMusic = "audio/system/background.ogg";
-    if (defaultMusic != ui->bgMusicPathLineEdit->text())
-    {
+    if (defaultMusic != ui->bgMusicPathLineEdit->text()) {
         doCallback(&ConfigDialog::setBgMusic, Config.value("BackgroundMusic"), defaultMusic);
     }
 }
@@ -457,8 +478,7 @@ void ConfigDialog::on_setTextEditColorButton_clicked()
 void ConfigDialog::on_toolTipFontColorButton_clicked()
 {
     QColor color = QColorDialog::getColor(Config.SkillDescriptionInToolTipColor, this);
-    if (color.isValid() && color != Config.SkillDescriptionInToolTipColor)
-    {
+    if (color.isValid() && color != Config.SkillDescriptionInToolTipColor) {
         doCallback(&ConfigDialog::setTooltipFontColor, Config.SkillDescriptionInToolTipColor, color);
     }
 }
@@ -466,8 +486,7 @@ void ConfigDialog::on_toolTipFontColorButton_clicked()
 void ConfigDialog::on_overviewFontColorButton_clicked()
 {
     QColor color = QColorDialog::getColor(QColor(Config.SkillDescriptionInOverviewColor), this);
-    if (color.isValid() && color != Config.SkillDescriptionInOverviewColor)
-    {
+    if (color.isValid() && color != Config.SkillDescriptionInOverviewColor) {
         doCallback(&ConfigDialog::setOverviewFontColor, Config.SkillDescriptionInOverviewColor, color);
     }
 }
@@ -475,8 +494,7 @@ void ConfigDialog::on_overviewFontColorButton_clicked()
 void ConfigDialog::on_toolTipBackgroundColorButton_clicked()
 {
     QColor color = QColorDialog::getColor(QColor(Config.ToolTipBackgroundColor), this);
-    if (color.isValid() && color != Config.ToolTipBackgroundColor)
-    {
+    if (color.isValid() && color != Config.ToolTipBackgroundColor) {
         doCallback(&ConfigDialog::setTooltipBackgroundColor, Config.ToolTipBackgroundColor, color);
     }
 }

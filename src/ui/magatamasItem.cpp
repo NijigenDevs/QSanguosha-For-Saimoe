@@ -1,3 +1,23 @@
+/********************************************************************
+    Copyright (c) 2013-2015 - Mogara
+
+    This file is part of QSanguosha-Hegemony.
+
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    See the LICENSE file for more details.
+
+    Mogara
+    *********************************************************************/
+
 #include "magatamasitem.h"
 #include <QPropertyAnimation>
 #include <QParallelAnimationGroup>
@@ -26,8 +46,7 @@ void MagatamasBoxItem::setOrientation(Qt::Orientation orientation)
 
 void MagatamasBoxItem::_updateLayout()
 {
-    for (int i = 0; i < 4; i++)
-    {
+    for (int i = 0; i < 4; i++) {
         _icons[i] = G_ROOM_SKIN.getPixmap(QString(QSanRoomSkin::S_SKIN_KEY_MAGATAMAS).arg(QString::number(i)))
             .scaled(m_iconSize, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
     }
@@ -101,25 +120,20 @@ void MagatamasBoxItem::_doHpChangeAnimation(int newHp)
     int width = m_imageArea.width();
     int height = m_imageArea.height();
     int xStep, yStep;
-    if (this->m_orientation == Qt::Horizontal)
-    {
+    if (this->m_orientation == Qt::Horizontal) {
         xStep = width;
         yStep = 0;
-    }
-    else
-    {
+    } else {
         xStep = 0;
         yStep = height;
     }
 
     int mHp = m_hp;
-    if (m_hp < 0)
-    {
+    if (m_hp < 0) {
         newHp -= m_hp;
         mHp = 0;
     }
-    for (int i = qMax(newHp, mHp - 10), j = 0; i < mHp; ++i, ++j)
-    {
+    for (int i = qMax(newHp, mHp - 10), j = 0; i < mHp; ++i, ++j) {
         Sprite *aniMaga = new Sprite;
         aniMaga->setPixmap(_icons[qBound(0, i, 3)]);
         aniMaga->setParentItem(this);
@@ -165,16 +179,13 @@ void MagatamasBoxItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *
     int xStep, yStep;
     double blank;
     int bgWidth, bgHeight;
-    if (this->m_orientation == Qt::Horizontal)
-    {
+    if (this->m_orientation == Qt::Horizontal) {
         xStep = m_iconSize.width();
         yStep = 0;
         blank = (xStep - m_imageArea.width()) / 2;
         bgWidth = xStep * qMin(m_maxHp, 4) + 5;
         bgHeight = m_iconSize.height() + 2;
-    }
-    else
-    {
+    } else {
         xStep = 0;
         yStep = m_iconSize.height();
         blank = (yStep - m_imageArea.height()) / 2;
@@ -182,30 +193,24 @@ void MagatamasBoxItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *
         bgHeight = yStep * qMin(m_maxHp, 4) + 5;
     }
 
-    if (m_showBackground)
-    {
+    if (m_showBackground) {
         QRect rect(-2, -2, bgWidth, bgHeight);
         painter->drawPixmap(rect, G_ROOM_SKIN.getPixmap(QSanRoomSkin::S_SKIN_KEY_MAGATAMAS_BG));
     }
 
-    if (m_maxHp <= 4)
-    {
+    if (m_maxHp <= 4) {
         int i;
-        for (i = 0; i < m_maxHp - qMax(m_hp, 0); i++)
-        {
+        for (i = 0; i < m_maxHp - qMax(m_hp, 0); i++) {
             QRect rect(xStep * i + blank, yStep * i + blank, m_imageArea.width(), m_imageArea.height());
             //rect.translate(m_imageArea.topLeft());
             painter->drawPixmap(rect, _icons[0]);
         }
-        for (; i < m_maxHp; i++)
-        {
+        for (; i < m_maxHp; i++) {
             QRect rect(xStep * i + blank, yStep * i + blank, m_imageArea.width(), m_imageArea.height());
             //rect.translate(m_imageArea.topLeft());
             painter->drawPixmap(rect, _icons[imageIndex]);
         }
-    }
-    else
-    {
+    } else {
         painter->drawPixmap(m_imageArea, _icons[imageIndex]);
         QRect rect(xStep, yStep, m_imageArea.width(), m_imageArea.height());
         rect.translate(m_imageArea.topLeft());

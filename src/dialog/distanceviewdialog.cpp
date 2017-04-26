@@ -1,3 +1,23 @@
+/********************************************************************
+    Copyright (c) 2013-2015 - Mogara
+
+    This file is part of QSanguosha-Hegemony.
+
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    See the LICENSE file for more details.
+
+    Mogara
+    *********************************************************************/
+
 #include "distanceviewdialog.h"
 
 #include "client.h"
@@ -34,13 +54,10 @@ public:
         horse_edit->setObjectName("HorseCorrect");
         horse_edit->setReadOnly(true);
         distance_edits << horse_edit;
-        foreach (const DistanceSkill *skill, skills)
-        {
+        foreach (const DistanceSkill *skill, skills) {
             bool show_skill = false;
-            foreach (const ClientPlayer *p, ClientInstance->getPlayers())
-            {
-                if (p->hasShownSkill(skill))
-                {
+            foreach (const ClientPlayer *p, ClientInstance->getPlayers()) {
+                if (p->hasShownSkill(skill)) {
                     show_skill = true;
                     break;
                 }
@@ -121,14 +138,11 @@ void DistanceViewDialog::showDistance()
     const ClientPlayer *from = ClientInstance->getPlayer(from_name);
     const ClientPlayer *to = ClientInstance->getPlayer(to_name);
 
-    if (from->isRemoved() || to->isRemoved())
-    {
+    if (from->isRemoved() || to->isRemoved()) {
         ui->right->setText(tr("Not exist"));
         ui->left->setText(tr("Not exist"));
         ui->min->setText(tr("Not exist"));
-    }
-    else
-    {
+    } else {
         int right_distance = from->originalRightDistanceTo(to);
         ui->right->setText(QString::number(right_distance));
 
@@ -142,8 +156,7 @@ void DistanceViewDialog::showDistance()
             .arg(min));
     }
 
-    foreach (QLineEdit *edit, ui->distance_edits)
-    {
+    foreach (QLineEdit *edit, ui->distance_edits) {
         QString skill_name = edit->objectName();
         if (skill_name == "HorseCorrect")
             skill_name = "Horse";

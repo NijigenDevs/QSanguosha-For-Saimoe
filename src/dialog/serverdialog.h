@@ -1,3 +1,23 @@
+/********************************************************************
+    Copyright (c) 2013-2015 - Mogara
+
+    This file is part of QSanguosha-Hegemony.
+
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    See the LICENSE file for more details.
+
+    Mogara
+    *********************************************************************/
+
 #ifndef SERVERDIALOG_H
 #define SERVERDIALOG_H
 
@@ -6,6 +26,7 @@
 class QGroupBox;
 class QLineEdit;
 class QSpinBox;
+class QSlider;
 class QCheckBox;
 class QButtonGroup;
 class QAbstractButton;
@@ -50,7 +71,7 @@ public:
 
 private:
     QWidget *createBasicTab();
-#ifdef Q_OS_IOS
+#if ((defined Q_OS_IOS) || (defined Q_OS_ANDROID))
     QWidget *createGameModeTab();
     QWidget *createAiTab();
 #endif
@@ -92,6 +113,7 @@ private:
 
     QLineEdit *server_name_edit;
     QSpinBox *timeout_spinbox;
+    QSlider *timeout_slider;
     QCheckBox *nolimit_checkbox;
     QCheckBox *random_seat_checkbox;
     QCheckBox *enable_cheat_checkbox;
@@ -113,6 +135,8 @@ private:
     QSpinBox *ai_delay_spinbox;
     QCheckBox *ai_delay_altered_checkbox;
     QSpinBox *ai_delay_ad_spinbox;
+    QSlider *ai_deley_slider;
+    QSlider *ai_delay_ad_slider;
     QCheckBox *surrender_at_death_checkbox;
     QLabel *luck_card_label;
     QSpinBox *luck_card_spinbox;
@@ -133,7 +157,7 @@ private:
 
     QComboBox *scenario_ComboBox;
 
-    private slots:
+private slots:
     void onOkButtonClicked();
     void onDetectButtonClicked();
     void editBanlist();

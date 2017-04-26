@@ -1,3 +1,23 @@
+/********************************************************************
+    Copyright (c) 2013-2015 - Mogara
+
+    This file is part of QSanguosha-Hegemony.
+
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    See the LICENSE file for more details.
+
+    Mogara
+    *********************************************************************/
+
 #include "connectiondialog.h"
 #ifdef Q_OS_IOS
 #include "ui_connectiondialog_ios.h"
@@ -15,6 +35,7 @@
 #include <QRadioButton>
 #include <QBoxLayout>
 #include <QScrollBar>
+#include <QDesktopWidget>
 
 static const int ShrinkWidth = 317;
 static const int ExpandWidth = 619;
@@ -22,8 +43,13 @@ static const int ExpandWidth = 619;
 ConnectionDialog::ConnectionDialog(QWidget *parent)
     : FlatDialog(parent, false), ui(new Ui::ConnectionDialog)
 {
+#ifdef Q_OS_ANDROID
+    QFont f = this->font();
+    f.setPointSize(3);
+    setFont(f);
+#endif
     ui->setupUi(this);
-
+    //QMetaObject::connect(ui->cancelButton, SIGNAL(QPushButton::click()), this, SLOT(reject());)
     ui->nameLineEdit->setText(Config.UserName.left(8));
 
     ui->hostComboBox->addItems(Config.HistoryIPs);
@@ -41,7 +67,29 @@ ConnectionDialog::ConnectionDialog(QWidget *parent)
     QScrollBar *bar = ui->avatarList->verticalScrollBar();
     bar->setStyleSheet(StyleHelper::styleSheetOfScrollBar());
 
+#ifdef Q_OS_ANDROID
+    QDesktopWidget* desktop = qApp->desktop();
+    setMinimumSize(desktop->width(), desktop->height());
+    setStyleSheet("background-color: #F0FFF0; color: black;");
+    ui->groupBox->setMinimumSize(desktop->width() / 2, desktop->height() / 5 * 4);
+    ui->layoutWidget1->setGeometry(QRect(10, 17, desktop->width() / 2, 310));
+    ui->nameLineEdit->setMinimumSize(desktop->width() / 3, 100);
+    ui->hostComboBox->setMinimumSize(desktop->width() / 3, 150);
+    ui->nameLabel->setMinimumSize(100, 20);
+    ui->hostLabel->setMinimumSize(100, 20);
+
+    ui->avatarLabel->setGeometry(QRect(20, 320, 42, 80));
+    ui->avatarPixmap->setGeometry(QRect(15, 400, 114, 136));
+    ui->changeAvatarButton->setGeometry(QRect(140, 600, 400, 100));
+    ui->detectLANButton->setGeometry(QRect(140, 400, 400, 100));
+    ui->clearHistoryButton->setGeometry(QRect(140, 500, 400, 100));
+    ui->frame->setGeometry(QRect(desktop->width() / 2 + 20, desktop->height() / 4, desktop->width(), desktop->height()));
+    ui->reconnectionCheckBox->setGeometry(QRect(30, 10, 400, 60));
+    ui->connectButton->setGeometry(QRect(30, 170, 300, 100));
+    ui->cancelButton->setGeometry(QRect(30, 280, 300, 100));
+#else
     resize(ShrinkWidth, height());
+#endif
 
     ui->avatarList->hide();
 }
@@ -61,12 +109,10 @@ void ConnectionDialog::showAvatarList()
 {
     if (ui->avatarList->isVisible()) return;
 
-    if (ui->avatarList->model() == NULL)
-    {
+    if (ui->avatarList->model() == NULL) {
         QList<const General *> generals = Sanguosha->getGeneralList();
         QMutableListIterator<const General *> itor = generals;
-        while (itor.hasNext())
-        {
+        while (itor.hasNext()) {
             if (itor.next()->isTotallyHidden())
                 itor.remove();
         }
@@ -82,8 +128,7 @@ void ConnectionDialog::on_connectButton_clicked()
 {
     QString username = ui->nameLineEdit->text();
 
-    if (username.isEmpty())
-    {
+    if (username.isEmpty()) {
         QMessageBox::warning(this, tr("Warning"), tr("The user name can not be empty!"));
         return;
     }
@@ -100,25 +145,23 @@ void ConnectionDialog::on_connectButton_clicked()
 
 void ConnectionDialog::on_changeAvatarButton_clicked()
 {
-    if (ui->avatarList->isVisible())
-    {
+    if (ui->avatarList->isVisible()) {
         QModelIndex index = ui->avatarList->currentIndex();
-        if (index.isValid())
-        {
+        if (index.isValid()) {
             on_avatarList_doubleClicked(index);
-        }
-        else
-        {
+        } else {
             hideAvatarList();
+#ifndef Q_OS_ANDROID
             resize(ShrinkWidth, height());
+#endif
         }
-    }
-    else
-    {
+    } else {
         showAvatarList();
         //Avoid violating the constraints
         //setFixedWidth(ExpandWidth);
+#ifndef Q_OS_ANDROID
         resize(ExpandWidth, height());
+#endif
     }
 }
 
@@ -130,8 +173,9 @@ void ConnectionDialog::on_avatarList_doubleClicked(const QModelIndex &index)
     Config.UserAvatar = general_name;
     Config.setValue("UserAvatar", general_name);
     hideAvatarList();
-
+#ifndef Q_OS_ANDROID
     resize(ShrinkWidth, height());
+#endif
 }
 
 void ConnectionDialog::on_clearHistoryButton_clicked()

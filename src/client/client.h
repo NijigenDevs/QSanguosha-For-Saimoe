@@ -1,3 +1,23 @@
+/********************************************************************
+    Copyright (c) 2013-2015 - Mogara
+
+    This file is part of QSanguosha-Hegemony.
+
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    See the LICENSE file for more details.
+
+    Mogara
+    *********************************************************************/
+
 #ifndef _CLIENT_H
 #define _CLIENT_H
 
@@ -16,9 +36,9 @@ class QTextDocument;
 class Client : public QObject
 {
     Q_OBJECT
-        Q_PROPERTY(Client::Status status READ getStatus WRITE setStatus)
+    Q_PROPERTY(Client::Status status READ getStatus WRITE setStatus)
 
-        Q_ENUMS(Status)
+    Q_ENUMS(Status)
 
 public:
     enum Status
@@ -43,6 +63,7 @@ public:
         AskForCardChosen = 0x010011,
         AskForSuit = 0x010012,
         AskForMoveCards = 0x000013,
+        GlobalCardChosen = 0x000014,
 
         RespondingUse = 0x000101,
         RespondingForDiscard = 0x000201,
@@ -96,6 +117,7 @@ public:
     Replayer *getReplayer() const;
     QString getPlayerName(const QString &str);
     QString getSkillNameToInvoke() const;
+    QString getSkillToHighLight() const;
 
     QTextDocument *getLinesDoc() const;
     QTextDocument *getPromptDoc() const;
@@ -148,6 +170,7 @@ public:
     void updateCard(const QVariant &val);
     void mirrorGuanxingStep(const QVariant &args);
     void mirrorMoveCardsStep(const QVariant &args);
+    void setActualGeneral(const QVariant &args);
 
     void fillAG(const QVariant &cards_str);
     void takeAG(const QVariant &take_var);
@@ -167,6 +190,7 @@ public:
     void askForNullification(const QVariant &);
     void askForPindian(const QVariant &);
     void askForCardChosen(const QVariant &ask_str);
+    void globalCardChosen(const QVariant &ask_str);
     void askForPlayerChosen(const QVariant &players);
     void askForGeneral(const QVariant &);
     void askForYiji(const QVariant &);
@@ -195,6 +219,10 @@ public:
     inline virtual RoomState *getRoomState()
     {
         return &_m_roomState;
+    }
+    inline virtual bool *getRaceState()
+    {
+        return &_m_race;
     }
     inline virtual Card *getCard(int cardId) const
     {
@@ -237,25 +265,32 @@ public:
     QStringList players_to_choose;
     int choose_max_num;
     int choose_min_num;
+    int type;
+    bool handcard_visible;
+    QList<int> disabled_ids;
 
     int exchange_max;
     int exchange_min;
     QString exchange_pattern;
     QString exchange_expand_pile;
     QString exchange_reason;
+    bool _m_race = false;
+    QHash<QString, QList<int>> targets_cards;
+    QString text;
 
-    public slots:
+public slots:
     void signup();
     void onPlayerChooseGeneral(const QString &_name);
     void onPlayerMakeChoice(const QString &choice);
     void onPlayerChooseCard(int index, int card_id = -2);
+    void onPlayerChooseCards(const QList<int> &ids = QList<int>());
     void onPlayerChooseAG(int card_id);
     void onPlayerChoosePlayer(const QList<const Player *> &players);
     void onPlayerChooseTriggerOrder(const QString &choice);
     void onPlayerChangeSkin(int skin_id, bool is_head = true);
     void onPlayerChooseSuit(const QString &suit);
     void onPlayerChooseKingdom();
-    void preshow(const QString &skill_name, const bool isPreshowed);
+    void preshow(const QString &skill_name, const bool isPreshowed, bool head);
     void trust();
     void addRobot();
     void fillRobots();
@@ -285,6 +320,7 @@ private:
     QTextDocument *lines_doc, *prompt_doc;
     int pile_num;
     QString skill_to_invoke;
+    QString skill_position;
     QList<int> available_cards;
 
     unsigned int _m_lastServerSerial;
@@ -297,7 +333,7 @@ private:
     bool _loseSingleCard(int card_id, CardsMoveStruct move);
     bool _getSingleCard(int card_id, CardsMoveStruct move);
 
-    private slots:
+private slots:
     void processServerPacket(const QByteArray &cmd);
     bool processServerRequest(const QSanProtocol::Packet &packet);
     void processObsoleteServerPacket(const QString &cmd);
@@ -312,7 +348,7 @@ signals:
     void player_added(ClientPlayer *new_player);
     void player_removed(const QString &player_name);
     // choice signal
-    void generals_got(const QStringList &generals, const bool single_result);
+    void generals_got(const QStringList &generals, const bool single_result, const bool can_convert);
     void kingdoms_got(const QStringList &kingdoms);
     void suits_got(const QStringList &suits);
     void options_got(const QString &skillName, const QStringList &options);
@@ -339,7 +375,7 @@ signals:
     void card_moved_incardchoosebox(bool enable);
     void gongxin(const QList<int> &card_ids, bool enable_heart, QList<int> enabled_ids);
     void focus_moved(const QStringList &focus, QSanProtocol::Countdown countdown);
-    void emotion_set(const QString &target, const QString &emotion);
+    void emotion_set(const QString &target, const QString &emotion, bool playback, int duration);
     void skill_invoked(const QString &who, const QString &skill_name);
     void skill_acquired(const ClientPlayer *player, const QString &skill_name, const bool &head);
     void animated(int name, const QStringList &args);
@@ -358,7 +394,7 @@ signals:
     void move_cards_got(int moveId, QList<CardsMoveStruct> moves);
 
     void skill_attached(const QString &skill_name, bool from_left);
-    void skill_detached(const QString &skill_name);
+    void skill_detached(const QString &skill_name, bool head = true);
     void do_filter();
 
     void nullification_asked(bool asked);
@@ -393,6 +429,10 @@ signals:
     void deputy_preshowed();
 
     void update_handcard_num();
+
+    void startPindian(const QString &requestor, const QString &reason, const QStringList &targets);
+    void onPindianReply(const QString &who, int card_id);
+    void pindianSuccess(int type, int index);
 };
 
 extern Client *ClientInstance;

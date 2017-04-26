@@ -1,3 +1,23 @@
+/********************************************************************
+    Copyright (c) 2013-2015 - Mogara
+
+    This file is part of QSanguosha-Hegemony.
+
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    See the LICENSE file for more details.
+
+    Mogara
+    *********************************************************************/
+
 #include "banlistdialog.h"
 #include "banpair.h"
 #include "skinbank.h"
@@ -22,22 +42,18 @@ BanListDialog::BanListDialog(QWidget *parent, bool view)
     layout->addWidget(tab);
     connect(tab, &QTabWidget::currentChanged, this, &BanListDialog::switchTo);
 
-    foreach (const QString &item, ban_list)
-    {
+    foreach (const QString &item, ban_list) {
         QWidget *apage = new QWidget;
 
         list = new QListWidget;
         list->setObjectName(item);
 
-        if (item == "Pairs")
-        {
-            foreach (const BanPair &pair, BanPair::getBanPairSet().toList())
+        if (item == "Pairs") {
+            foreach(const BanPair &pair, BanPair::getBanPairSet().toList())
                 addPair(pair.first, pair.second);
-        }
-        else
-        {
+        } else {
             QStringList banlist = Config.value(QString("Banlist/%1").arg(item)).toStringList();
-            foreach (const QString &name, banlist)
+            foreach(const QString &name, banlist)
                 addGeneral(name);
         }
 
@@ -63,8 +79,7 @@ BanListDialog::BanListDialog(QWidget *parent, bool view)
 
     QHBoxLayout *hlayout = new QHBoxLayout;
     hlayout->addStretch();
-    if (!view)
-    {
+    if (!view) {
         hlayout->addWidget(add);
         hlayout->addWidget(remove);
         list = lists.first();
@@ -76,8 +91,7 @@ BanListDialog::BanListDialog(QWidget *parent, bool view)
 
     layout->addLayout(hlayout);
 
-    foreach (QListWidget *alist, lists)
-    {
+    foreach (QListWidget *alist, lists) {
         if (alist->objectName() == "Pairs")
             continue;
         alist->setViewMode(QListView::IconMode);
@@ -88,19 +102,15 @@ BanListDialog::BanListDialog(QWidget *parent, bool view)
 
 void BanListDialog::addGeneral(const QString &name)
 {
-    if (list->objectName() == "Pairs")
-    {
+    if (list->objectName() == "Pairs") {
         if (banned_items["Pairs"].contains(name)) return;
         banned_items["Pairs"].append(name);
         QString text = QString(tr("Banned for all: %1")).arg(Sanguosha->translate(name));
         QListWidgetItem *item = new QListWidgetItem(text);
         item->setData(Qt::UserRole, QVariant::fromValue(name));
         list->addItem(item);
-    }
-    else
-    {
-        foreach (const QString &general_name, name.split("+"))
-        {
+    } else {
+        foreach (const QString &general_name, name.split("+")) {
             if (banned_items[list->objectName()].contains(general_name)) continue;
             banned_items[list->objectName()].append(general_name);
             QIcon icon(G_ROOM_SKIN.getGeneralPixmap(general_name, QSanRoomSkin::S_GENERAL_ICON_SIZE_TINY));
@@ -136,8 +146,7 @@ void BanListDialog::doAddButton()
 void BanListDialog::doRemoveButton()
 {
     int row = list->currentRow();
-    if (row != -1)
-    {
+    if (row != -1) {
         banned_items[list->objectName()].removeOne(list->item(row)->data(Qt::UserRole).toString());
         delete list->takeItem(row);
     }
@@ -156,8 +165,7 @@ void BanListDialog::save()
 
 void BanListDialog::saveAll()
 {
-    for (int i = 0; i < lists.length(); i++)
-    {
+    for (int i = 0; i < lists.length(); i++) {
         switchTo(i);
         save();
     }

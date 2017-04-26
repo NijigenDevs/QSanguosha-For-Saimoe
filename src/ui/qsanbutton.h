@@ -1,3 +1,23 @@
+/********************************************************************
+    Copyright (c) 2013-2015 - Mogara
+
+    This file is part of QSanguosha-Hegemony.
+
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    See the LICENSE file for more details.
+
+    Mogara
+    *********************************************************************/
+
 #ifndef _QSAN_BUTTON_H
 #define _QSAN_BUTTON_H
 
@@ -86,7 +106,7 @@ public:
 
     void setFirstState(bool isFirstState);
 
-    public slots:
+public slots:
     void click();
 
 protected:
@@ -125,7 +145,7 @@ public:
     enum SkillType
     {
         S_SKILL_PROACTIVE, S_SKILL_COMPULSORY,
-        S_SKILL_ONEOFF_SPELL, S_SKILL_ARRAY, S_NUM_SKILL_TYPES
+        S_SKILL_ONEOFF_SPELL, S_SKILL_ARRAY, S_SKILL_AWAKEN, S_SKILL_ATTACHEDLORD, S_NUM_SKILL_TYPES
     };
 
     inline static QString getSkillTypeString(SkillType type)
@@ -135,6 +155,8 @@ public:
         else if (type == QSanSkillButton::S_SKILL_COMPULSORY) arg1 = "compulsory";
         else if (type == QSanSkillButton::S_SKILL_ONEOFF_SPELL) arg1 = "oneoff";
         else if (type == QSanSkillButton::S_SKILL_PROACTIVE) arg1 = "proactive";
+        else if (type == QSanSkillButton::S_SKILL_AWAKEN) arg1 = "awaken";
+        else if (type == QSanSkillButton::S_SKILL_ATTACHEDLORD) arg1 = "attachedlord";
         return arg1;
     }
     virtual void setSkill(const Skill *skill);
@@ -163,7 +185,7 @@ protected:
     const Skill *_m_skill;
     const ViewAsSkill *_m_viewAsSkill;
 
-    protected slots:
+protected slots:
     void onMouseClick();
 
 signals:

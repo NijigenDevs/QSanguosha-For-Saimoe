@@ -5,7 +5,7 @@
 /*    Basic SFNT/TrueType tables definitions and interface                 */
 /*    (specification only).                                                */
 /*                                                                         */
-/*  Copyright 1996-2016 by                                                 */
+/*  Copyright 1996-2005, 2008-2014 by                                      */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -17,8 +17,8 @@
 /***************************************************************************/
 
 
-#ifndef TTTABLES_H_
-#define TTTABLES_H_
+#ifndef __TTTABLES_H__
+#define __TTTABLES_H__
 
 
 #include <ft2build.h>
@@ -371,7 +371,7 @@ FT_BEGIN_HEADER
     FT_Short   xAvgCharWidth;
     FT_UShort  usWeightClass;
     FT_UShort  usWidthClass;
-    FT_UShort  fsType;
+    FT_Short   fsType;
     FT_Short   ySubscriptXSize;
     FT_Short   ySubscriptYSize;
     FT_Short   ySubscriptXOffset;
@@ -587,7 +587,7 @@ FT_BEGIN_HEADER
   /*                                                                       */
   /*    FT_SFNT_HHEA :: To access the font's @TT_HoriHeader structure.     */
   /*                                                                       */
-  /*    FT_SFNT_VHEA :: To access the font's @TT_VertHeader structure.     */
+  /*    FT_SFNT_VHEA :: To access the font's @TT_VertHeader struture.      */
   /*                                                                       */
   /*    FT_SFNT_POST :: To access the font's @TT_Postscript structure.     */
   /*                                                                       */
@@ -823,7 +823,7 @@ FT_BEGIN_HEADER
 
 FT_END_HEADER
 
-#endif /* TTTABLES_H_ */
+#endif /* __TTTABLES_H__ */
 
 
 /* END */

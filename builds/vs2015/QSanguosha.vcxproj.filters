@@ -959,14 +959,32 @@
     <ClCompile Include="Release\moc_cardchooseBox.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
-    <ClCompile Include="Debug\moc_animation.cpp">
+    <ClCompile Include="..\..\src\package\transformation.cpp">
+      <Filter>package</Filter>
+    </ClCompile>
+    <ClCompile Include="Debug\moc_transformation.cpp">
       <Filter>Generated Files\Debug</Filter>
     </ClCompile>
-    <ClCompile Include="Release\moc_animation.cpp">
+    <ClCompile Include="Release\moc_transformation.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\package\comic.cpp">
-      <Filter>package</Filter>
+    <ClCompile Include="..\..\src\ui\lightboxanimation.cpp">
+      <Filter>ui</Filter>
+    </ClCompile>
+    <ClCompile Include="Debug\moc_lightboxanimation.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="Release\moc_lightboxanimation.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ui\pindianbox.cpp">
+      <Filter>ui</Filter>
+    </ClCompile>
+    <ClCompile Include="Debug\moc_pindianbox.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="Release\moc_pindianbox.cpp">
+      <Filter>Generated Files\Release</Filter>
     </ClCompile>
     <ClCompile Include="Debug\moc_comic.cpp">
       <Filter>Generated Files\Debug</Filter>
@@ -1002,6 +1020,15 @@
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\package\animation.cpp">
+      <Filter>package</Filter>
+    </ClCompile>
+    <ClCompile Include="Debug\moc_animation.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="Release\moc_animation.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\package\comic.cpp">
       <Filter>package</Filter>
     </ClCompile>
   </ItemGroup>
@@ -1306,8 +1333,14 @@
     <CustomBuild Include="..\..\src\ui\cardchooseBox.h">
       <Filter>ui</Filter>
     </CustomBuild>
-    <CustomBuild Include="..\..\src\package\animation.h">
+    <CustomBuild Include="..\..\src\package\transformation.h">
       <Filter>package</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\src\ui\lightboxanimation.h">
+      <Filter>ui</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\src\ui\pindianbox.h">
+      <Filter>ui</Filter>
     </CustomBuild>
     <CustomBuild Include="..\..\src\package\comic.h">
       <Filter>package</Filter>
@@ -1319,6 +1352,9 @@
       <Filter>package</Filter>
     </CustomBuild>
     <CustomBuild Include="..\..\src\package\novel.h">
+      <Filter>package</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\src\package\animation.h">
       <Filter>package</Filter>
     </CustomBuild>
   </ItemGroup>

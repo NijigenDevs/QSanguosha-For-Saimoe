@@ -1,3 +1,23 @@
+/********************************************************************
+    Copyright (c) 2013-2015 - Mogara
+
+    This file is part of QSanguosha-Hegemony.
+
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    See the LICENSE file for more details.
+
+    Mogara
+    *********************************************************************/
+
 #include "tile.h"
 
 #include <QFile>
@@ -40,8 +60,7 @@ void Tile::init()
 void Tile::setIcon(QString path)
 {
     QRegExp fileName("[\\w-.]+");
-    if (fileName.exactMatch(path))
-    {
+    if (fileName.exactMatch(path)) {
         path = QString("image/system/button/icon/%1.png").arg(path);
     }
 
@@ -53,21 +72,16 @@ void Tile::setIcon(QString path)
 
 void Tile::addScrollTexts(const QStringList &texts)
 {
-    if (scroll_timer == NULL)
-    {
+    if (scroll_timer == NULL) {
         scroll_timer = new QTimer(this);
         scroll_timer->setSingleShot(true);
-    }
-    else
-    {
+    } else {
         scroll_timer->stop();
         disconnect(scroll_timer, &QTimer::timeout, this, &Tile::scrollToNextContent);
     }
 
-    if (!texts.isEmpty())
-    {
-        foreach (const QString &text, texts)
-        {
+    if (!texts.isEmpty()) {
+        foreach (const QString &text, texts) {
             Title *title = new Title(this, text, font_name, font_size - 2);
             title->setOpacity(0.0);
             title->setX(boundingRect().width() / 10);
@@ -128,13 +142,10 @@ void Tile::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
     QPointF pos = event->pos();
     bool inside = boundingRect().contains(pos);
-    if (down && !inside)
-    {
+    if (down && !inside) {
         down = false;
         reset();
-    }
-    else if (inside && boundingRect().contains(event->buttonDownPos(Qt::LeftButton)))
-    {
+    } else if (inside && boundingRect().contains(event->buttonDownPos(Qt::LeftButton))) {
         down = true;
         if (mouse_area != getMouseArea(pos))
             doTransform(pos);
@@ -152,8 +163,7 @@ void Tile::mousePressEvent(QGraphicsSceneMouseEvent *event)
 void Tile::mouseReleaseEvent(QGraphicsSceneMouseEvent *)
 {
     reset();
-    if (down)
-    {
+    if (down) {
         down = false;
         emit clicked();
     }
@@ -169,57 +179,51 @@ void Tile::doTransform(const QPointF &pos)
 
     QList<QGraphicsTransform *> transforms;
 
-    switch (getMouseArea(pos))
-    {
-        case Right:
-        {
-            origin.setX(0);
-            axis.setY(1);
-            angle = 15;
-            break;
-        }
-        case Left:
-        {
-            origin.setX(width);
-            axis.setY(1);
-            angle = -15;
-            break;
-        }
-        case Top:
-        {
-            origin.setY(height);
-            axis.setX(1);
-            angle = 15;
-            break;
-        }
-        case Bottom:
-        {
-            origin.setY(0);
-            axis.setX(1);
-            angle = -15;
-            break;
-        }
-        default:
-        {
-            scale = new QGraphicsScale;
-            QPropertyAnimation *xScale_animation = new QPropertyAnimation(scale, "xScale", this);
-            xScale_animation->setDuration(100);
-            xScale_animation->setStartValue(1);
-            xScale_animation->setEndValue(0.95);
-            QPropertyAnimation *yScale_animation = new QPropertyAnimation(scale, "yScale", this);
-            yScale_animation->setDuration(100);
-            yScale_animation->setStartValue(1);
-            yScale_animation->setEndValue(0.95);
+    switch (getMouseArea(pos)) {
+    case Right: {
+        origin.setX(0);
+        axis.setY(1);
+        angle = 15;
+        break;
+    }
+    case Left: {
+        origin.setX(width);
+        axis.setY(1);
+        angle = -15;
+        break;
+    }
+    case Top: {
+        origin.setY(height);
+        axis.setX(1);
+        angle = 15;
+        break;
+    }
+    case Bottom: {
+        origin.setY(0);
+        axis.setX(1);
+        angle = -15;
+        break;
+    }
+    default: {
+        scale = new QGraphicsScale;
+        QPropertyAnimation *xScale_animation = new QPropertyAnimation(scale, "xScale", this);
+        xScale_animation->setDuration(100);
+        xScale_animation->setStartValue(1);
+        xScale_animation->setEndValue(0.95);
+        QPropertyAnimation *yScale_animation = new QPropertyAnimation(scale, "yScale", this);
+        yScale_animation->setDuration(100);
+        yScale_animation->setStartValue(1);
+        yScale_animation->setEndValue(0.95);
 
-            scale->setOrigin(QVector3D(width / 2.0, height / 2.0, 0));
+        scale->setOrigin(QVector3D(width / 2.0, height / 2.0, 0));
 
-            transforms << scale;
+        transforms << scale;
 
-            setTransformations(transforms);
-            xScale_animation->start(QAbstractAnimation::DeleteWhenStopped);
-            yScale_animation->start(QAbstractAnimation::DeleteWhenStopped);
-            return;
-        }
+        setTransformations(transforms);
+        xScale_animation->start(QAbstractAnimation::DeleteWhenStopped);
+        yScale_animation->start(QAbstractAnimation::DeleteWhenStopped);
+        return;
+    }
     }
 
     rotation = new QGraphicsRotation;
@@ -241,8 +245,7 @@ void Tile::reset()
 {
     QList<QGraphicsTransform *> transforms;
 
-    if (scale)
-    {
+    if (scale) {
         QPropertyAnimation *xScale_animation = new QPropertyAnimation(scale, "xScale", this);
         xScale_animation->setDuration(100);
         xScale_animation->setEndValue(1);
@@ -257,8 +260,7 @@ void Tile::reset()
         yScale_animation->start(QAbstractAnimation::DeleteWhenStopped);
     }
 
-    if (rotation)
-    {
+    if (rotation) {
         QPropertyAnimation *rotation_animation = new QPropertyAnimation(rotation, "angle", this);
         rotation_animation->setDuration(100);
         rotation_animation->setEndValue(0);

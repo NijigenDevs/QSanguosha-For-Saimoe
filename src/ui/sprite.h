@@ -1,3 +1,23 @@
+/********************************************************************
+    Copyright (c) 2013-2015 - Mogara
+
+    This file is part of QSanguosha-Hegemony.
+
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    See the LICENSE file for more details.
+
+    Mogara
+    *********************************************************************/
+
 #ifndef _SPRITE_H
 #define _SPRITE_H
 
@@ -13,9 +33,9 @@
 class Sprite : public QObject, public QGraphicsPixmapItem
 {
     Q_OBJECT
-        Q_INTERFACES(QGraphicsItem)
-        Q_PROPERTY(qreal opacity READ opacity WRITE setOpacity)
-        Q_PROPERTY(qreal scale READ scale WRITE setScale)
+    Q_INTERFACES(QGraphicsItem)
+    Q_PROPERTY(qreal opacity READ opacity WRITE setOpacity)
+    Q_PROPERTY(qreal scale READ scale WRITE setScale)
 
 public:
     Sprite(QGraphicsItem *parent = NULL) : QGraphicsPixmapItem(parent)
@@ -26,7 +46,7 @@ public:
 class AnimatedEffect : public QGraphicsEffect
 {
     Q_OBJECT
-        Q_PROPERTY(int index READ getIndex WRITE setIndex)
+    Q_PROPERTY(int index READ getIndex WRITE setIndex)
 
 public:
     void setStay(bool stay);
@@ -64,7 +84,7 @@ public:
     void effectOut(QGraphicsItem *map);
     void deleteEffect(AnimatedEffect *effect);
 
-    public slots:
+public slots:
     void deleteEffect();
 
 private:

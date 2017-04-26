@@ -4,8 +4,7 @@
 /*                                                                         */
 /*    The FreeType CID font services (specification).                      */
 /*                                                                         */
-/*  Copyright 2007-2016 by                                                 */
-/*  Derek Clegg and Michael Toftdal.                                       */
+/*  Copyright 2007, 2009, 2012 by Derek Clegg, Michael Toftdal.            */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
 /*  modified, and distributed under the terms of the FreeType project      */
@@ -16,8 +15,8 @@
 /***************************************************************************/
 
 
-#ifndef SVCID_H_
-#define SVCID_H_
+#ifndef __SVCID_H__
+#define __SVCID_H__
 
 #include FT_INTERNAL_SERVICE_H
 
@@ -84,7 +83,7 @@ FT_BEGIN_HEADER
 FT_END_HEADER
 
 
-#endif /* SVCID_H_ */
+#endif /* __SVCID_H__ */
 
 
 /* END */

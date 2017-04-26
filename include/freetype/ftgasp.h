@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    Access of TrueType's `gasp' table (specification).                   */
 /*                                                                         */
-/*  Copyright 2007-2016 by                                                 */
+/*  Copyright 2007, 2008, 2011 by                                          */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -16,8 +16,8 @@
 /***************************************************************************/
 
 
-#ifndef FTGASP_H_
-#define FTGASP_H_
+#ifndef _FT_GASP_H_
+#define _FT_GASP_H_
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
@@ -123,7 +123,7 @@
   /* */
 
 
-#endif /* FTGASP_H_ */
+#endif /* _FT_GASP_H_ */
 
 
 /* END */

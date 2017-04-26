@@ -1,3 +1,23 @@
+/********************************************************************
+    Copyright (c) 2013-2015 - Mogara
+
+    This file is part of QSanguosha-Hegemony.
+
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    See the LICENSE file for more details.
+
+    Mogara
+    *********************************************************************/
+
 #include "serverdialog.h"
 #include "package.h"
 #include "settings.h"
@@ -19,6 +39,7 @@
 #include <QRadioButton>
 #include <QHostInfo>
 #include <QComboBox>
+class QFont;
 
 static QLayout *HLay(QWidget *left, QWidget *right)
 {
@@ -35,14 +56,14 @@ ServerDialog::ServerDialog(QWidget *parent)
 
     QTabWidget *tab_widget = new QTabWidget;
     //changed by SE for ios
-#ifdef Q_OS_IOS
+#if ((defined Q_OS_IOS) || (defined Q_OS_ANDROID))
     tab_widget->addTab(createGameModeTab(), tr("Game mode"));
 #endif
     tab_widget->addTab(createBasicTab(), tr("Basic"));
     tab_widget->addTab(createPackageTab(), tr("Game Pacakge Selection"));
     tab_widget->addTab(createAdvancedTab(), tr("Advanced"));
     tab_widget->addTab(createConversionTab(), tr("Conversion Selection"));
-#ifdef Q_OS_IOS
+#if ((defined Q_OS_IOS) || (defined Q_OS_ANDROID))
     tab_widget->addTab(createAiTab(), tr("AI"));
 #endif
     tab_widget->addTab(createMiscTab(), tr("Miscellaneous"));
@@ -53,6 +74,9 @@ ServerDialog::ServerDialog(QWidget *parent)
     //change by SE for ios
 #ifdef Q_OS_IOS
     setMinimumSize(480, 320);
+#elif defined Q_OS_ANDROID
+    setMinimumSize(parent->width(), parent->height());
+    setStyleSheet("background-color: #F0FFF0; color: black;");
 #else
     setMinimumSize(574, 380);
 #endif
@@ -64,9 +88,9 @@ QWidget *ServerDialog::createBasicTab()
     server_name_edit->setText(Config.ServerName);
 
     timeout_spinbox = new QSpinBox;
-    timeout_spinbox->setMinimum(5);
-    timeout_spinbox->setMaximum(60);
+    timeout_spinbox->setRange(5, 60);
     timeout_spinbox->setValue(Config.OperationTimeout);
+
     timeout_spinbox->setSuffix(tr(" seconds"));
     nolimit_checkbox = new QCheckBox(tr("No limit"));
     nolimit_checkbox->setChecked(Config.OperationNoLimit);
@@ -92,8 +116,18 @@ QWidget *ServerDialog::createBasicTab()
     QFormLayout *form_layout = new QFormLayout;
     form_layout->addRow(tr("Server name"), server_name_edit);
 
+
     QHBoxLayout *lay = new QHBoxLayout;
     lay->addWidget(timeout_spinbox);
+#ifdef Q_OS_ANDROID
+    timeout_spinbox->setMinimumHeight(80);
+    timeout_slider = new QSlider(Qt::Horizontal);
+    timeout_slider->setRange(5, 60);
+    timeout_slider->setValue(Config.OperationTimeout);
+    QObject::connect(timeout_slider, SIGNAL(valueChanged(int)), timeout_spinbox, SLOT(setValue(int)));
+    QObject::connect(timeout_spinbox, SIGNAL(valueChanged(int)), timeout_slider, SLOT(setValue(int)));
+    lay->addWidget(timeout_slider);
+#endif
     lay->addWidget(nolimit_checkbox);
     lay->addWidget(edit_button);
     form_layout->addRow(tr("Operation timeout"), lay);
@@ -101,7 +135,9 @@ QWidget *ServerDialog::createBasicTab()
     form_layout->addRow(HLay(pile_swapping_label, pile_swapping_spinbox));
     form_layout->addRow(HLay(hegemony_maxchoice_label, hegemony_maxchoice_spinbox));
 #else
+#ifndef Q_OS_ANDROID
     form_layout->addRow(createGameModeBox());
+#endif
 #endif
 
 
@@ -112,7 +148,7 @@ QWidget *ServerDialog::createBasicTab()
     return widget;
 }
 
-#ifdef Q_OS_IOS
+#if ((defined Q_OS_IOS) || (defined Q_OS_ANDROID))
 QWidget *ServerDialog::createGameModeTab()
 {
     QFormLayout *form_layout = new QFormLayout;
@@ -146,14 +182,18 @@ QWidget *ServerDialog::createPackageTab()
     int i = 0, j = 0;
     int row = 0, column = 0;
     const QList<const Package *> &packages = Sanguosha->getPackages();
-    foreach (const Package *package, packages)
-    {
+    foreach (const Package *package, packages) {
         if (package->inherits("Scenario"))
             continue;
 
         const QString &extension = package->objectName();
         bool forbid_package = Config.value("ForbidPackages").toStringList().contains(extension);
         QCheckBox *checkbox = new QCheckBox;
+#ifdef Q_OS_ANDROID
+        QFont f = checkbox->font();
+        f.setPointSize(6);
+        checkbox->setFont(f);
+#endif
         checkbox->setObjectName(extension);
         checkbox->setText(Sanguosha->translate(extension));
         checkbox->setChecked(!ban_packages.contains(extension) && !forbid_package);
@@ -161,28 +201,25 @@ QWidget *ServerDialog::createPackageTab()
 
         extension_group->addButton(checkbox);
 
-        switch (package->getType())
-        {
-            case Package::GeneralPack:
-            {
-                row = i / 5;
-                column = i % 5;
-                i++;
+        switch (package->getType()) {
+        case Package::GeneralPack: {
+            row = i / 5;
+            column = i % 5;
+            i++;
 
-                layout1->addWidget(checkbox, row, column + 1);
-                break;
-            }
-            case Package::CardPack:
-            {
-                row = j / 5;
-                column = j % 5;
-                j++;
+            layout1->addWidget(checkbox, row, column + 1);
+            break;
+        }
+        case Package::CardPack: {
+            row = j / 5;
+            column = j % 5;
+            j++;
 
-                layout2->addWidget(checkbox, row, column + 1);
-                break;
-            }
-            default:
-                break;
+            layout2->addWidget(checkbox, row, column + 1);
+            break;
+        }
+        default:
+            break;
         }
     }
 
@@ -222,11 +259,17 @@ QWidget *ServerDialog::createAdvancedTab()
     pile_swapping_label = new QLabel(tr("Pile-swapping limitation"));
     pile_swapping_label->setToolTip(tr("<font color=%1>-1 means no limitations</font>").arg(Config.SkillDescriptionInToolTipColor.name()));
     pile_swapping_spinbox = new QSpinBox;
+#ifdef Q_OS_ANDROID
+    pile_swapping_spinbox->setMinimumHeight(80);
+#endif
     pile_swapping_spinbox->setRange(-1, 15);
     pile_swapping_spinbox->setValue(Config.value("PileSwappingLimitation", 5).toInt());
 
     hegemony_maxchoice_label = new QLabel(tr("Upperlimit for hegemony"));
     hegemony_maxchoice_spinbox = new QSpinBox;
+#ifdef Q_OS_ANDROID
+    hegemony_maxchoice_spinbox->setMinimumHeight(80);
+#endif
     hegemony_maxchoice_spinbox->setRange(5, 7); //wait for a new extension
     hegemony_maxchoice_spinbox->setValue(Config.value("HegemonyMaxChoice", 7).toInt());
 #endif
@@ -249,11 +292,12 @@ QWidget *ServerDialog::createAdvancedTab()
     layout->addLayout(HLay(pile_swapping_label, pile_swapping_spinbox));
     layout->addLayout(HLay(hegemony_maxchoice_label, hegemony_maxchoice_spinbox));
 #endif
+#ifndef Q_OS_ANDROID
     layout->addLayout(HLay(new QLabel(tr("Address")), address_edit));
     layout->addWidget(detect_button);
     layout->addLayout(HLay(new QLabel(tr("Port")), port_edit));
     layout->addStretch();
-
+#endif
     QWidget *widget = new QWidget;
     widget->setLayout(layout);
 
@@ -312,9 +356,15 @@ QWidget *ServerDialog::createMiscTab()
     luck_card_spinbox->setRange(0, 3);
     luck_card_spinbox->setValue(Config.LuckCardLimitation);
 
+#ifdef Q_OS_ANDROID
+    game_start_spinbox->setMinimumHeight(80);
+    nullification_spinbox->setMinimumHeight(80);
+    luck_card_spinbox->setMinimumHeight(80);
+#endif
+
     reward_the_first_showing_player_checkbox = new QCheckBox(tr("The first player to show general can draw 2 cards"));
     reward_the_first_showing_player_checkbox->setChecked(Config.RewardTheFirstShowingPlayer);
-#if !defined(Q_OS_IOS)
+#if !defined(Q_OS_IOS) && !defined(Q_OS_ANDROID)
     QGroupBox *ai_groupbox = new QGroupBox(tr("Artificial intelligence"));
     ai_groupbox->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
     QVBoxLayout *layout = new QVBoxLayout;
@@ -330,6 +380,7 @@ QWidget *ServerDialog::createMiscTab()
     ai_delay_spinbox = new QSpinBox;
     ai_delay_spinbox->setMinimum(0);
     ai_delay_spinbox->setMaximum(5000);
+    ai_delay_spinbox->setRange(0, 5000);
     ai_delay_spinbox->setValue(Config.OriginAIDelay);
     ai_delay_spinbox->setSuffix(tr(" millisecond"));
     ai_delay_spinbox->setDisabled(Config.ForbidAddingRobot);
@@ -363,7 +414,7 @@ QWidget *ServerDialog::createMiscTab()
     tablayout->addLayout(HLay(minimize_dialog_checkbox, surrender_at_death_checkbox));
     tablayout->addLayout(HLay(luck_card_label, luck_card_spinbox));
     tablayout->addWidget(reward_the_first_showing_player_checkbox);
-#if !defined(Q_OS_IOS)
+#if !defined(Q_OS_IOS) && !defined(Q_OS_ANDROID)
     tablayout->addWidget(ai_groupbox);
 #endif
     tablayout->addStretch();
@@ -373,7 +424,7 @@ QWidget *ServerDialog::createMiscTab()
     return widget;
 }
 
-#ifdef Q_OS_IOS
+#if ((defined Q_OS_IOS) || (defined Q_OS_ANDROID))
 QWidget *ServerDialog::createAiTab()
 {
     QVBoxLayout *layout = new QVBoxLayout;
@@ -388,11 +439,18 @@ QWidget *ServerDialog::createAiTab()
 
     ai_delay_spinbox = new QSpinBox;
     ai_delay_spinbox->setMinimum(0);
+    ai_delay_spinbox->setMinimumHeight(80);
     ai_delay_spinbox->setMaximum(5000);
     ai_delay_spinbox->setValue(Config.OriginAIDelay);
     ai_delay_spinbox->setSuffix(tr(" millisecond"));
     ai_delay_spinbox->setDisabled(Config.ForbidAddingRobot);
     connect(forbid_adding_robot_checkbox, &QCheckBox::toggled, ai_delay_spinbox, &QSpinBox::setDisabled);
+
+    ai_deley_slider = new QSlider(Qt::Horizontal);
+    ai_deley_slider->setRange(0, 5000);
+    ai_deley_slider->setValue(Config.OriginAIDelay);
+    QObject::connect(ai_deley_slider, SIGNAL(valueChanged(int)), ai_delay_spinbox, SLOT(setValue(int)));
+    QObject::connect(ai_delay_spinbox, SIGNAL(valueChanged(int)), ai_deley_slider, SLOT(setValue(int)));
 
     ai_delay_altered_checkbox = new QCheckBox(tr("Alter AI Delay After Death"));
     ai_delay_altered_checkbox->setChecked(Config.AlterAIDelayAD);
@@ -400,6 +458,7 @@ QWidget *ServerDialog::createAiTab()
     connect(forbid_adding_robot_checkbox, &QCheckBox::toggled, ai_delay_altered_checkbox, &QCheckBox::setDisabled);
 
     ai_delay_ad_spinbox = new QSpinBox;
+    ai_delay_ad_spinbox->setMinimumHeight(80);
     ai_delay_ad_spinbox->setMinimum(0);
     ai_delay_ad_spinbox->setMaximum(5000);
     ai_delay_ad_spinbox->setValue(Config.AIDelayAD);
@@ -409,11 +468,18 @@ QWidget *ServerDialog::createAiTab()
     connect(ai_delay_altered_checkbox, &QCheckBox::toggled, ai_delay_ad_spinbox, &QSpinBox::setEnabled);
     connect(forbid_adding_robot_checkbox, &QCheckBox::toggled, ai_delay_ad_spinbox, &QSpinBox::setDisabled);
 
+    ai_delay_ad_slider = new QSlider(Qt::Horizontal);
+    ai_delay_ad_slider->setRange(0, 5000);
+    ai_delay_ad_slider->setValue(Config.AIDelayAD);
+    QObject::connect(ai_delay_ad_slider, SIGNAL(valueChanged(int)), ai_delay_ad_spinbox, SLOT(setValue(int)));
+    QObject::connect(ai_delay_ad_spinbox, SIGNAL(valueChanged(int)), ai_delay_ad_slider, SLOT(setValue(int)));
+
     layout->addLayout(HLay(forbid_adding_robot_checkbox, ai_chat_checkbox));
     layout->addLayout(HLay(new QLabel(tr("AI delay")), ai_delay_spinbox));
+    layout->addWidget(ai_deley_slider);
     layout->addWidget(ai_delay_altered_checkbox);
     layout->addLayout(HLay(new QLabel(tr("AI delay After Death")), ai_delay_ad_spinbox));
-
+    layout->addWidget(ai_delay_ad_slider);
 
     QWidget *widget = new QWidget;
     widget->setLayout(layout);
@@ -433,8 +499,7 @@ QGroupBox *ServerDialog::createGameModeBox()
     // normal modes
     QMap<QString, QString> modes = Sanguosha->getAvailableModes();
     QMapIterator<QString, QString> itor(modes);
-    while (itor.hasNext())
-    {
+    while (itor.hasNext()) {
         itor.next();
 
         QRadioButton *button = new QRadioButton(itor.value());
@@ -456,50 +521,41 @@ QGroupBox *ServerDialog::createGameModeBox()
     scenario_ComboBox = new QComboBox;
     scenario_ComboBox->setFocusPolicy(Qt::WheelFocus);
     scenario_ComboBox->setEnabled(scenario_button->isDown());
-    connect(scenario_button, &QRadioButton::toggled, scenario_ComboBox, &QComboBox::setEnabled);
+    connect(scenario_button,&QRadioButton::toggled,scenario_ComboBox,&QComboBox::setEnabled);
     QStringList names = Sanguosha->getModScenarioNames();
-    foreach (QString name, names)
-    {
+    foreach (QString name, names) {
         QString scenario_name = Sanguosha->translate(name);
         const Scenario *scenario = Sanguosha->getScenario(name);
-        if (scenario)
-        { //crash,sometimes.
+        if (scenario){ //crash,sometimes.
             QString text = tr("%1 (%2 persons)").arg(scenario_name).arg(scenario->getPlayerCount());
-            scenario_ComboBox->addItem(text, name);
+            scenario_ComboBox->addItem(text,name);
         }
     }
     item_list << scenario_ComboBox;
 
-    if (mode_group->checkedButton() == NULL)
-    {
+    if (mode_group->checkedButton() == NULL) {
         int index = names.indexOf(Config.GameMode);
-        if (index != -1)
-        {
+        if (index != -1) {
             scenario_button->setChecked(true);
             scenario_ComboBox->setCurrentIndex(index);
-        }
-        else
+        } else 
             mode_group->buttons().first()->setChecked(true); // for Lua Scenario.
     }
-
+    
     // ============
 
     QVBoxLayout *left = new QVBoxLayout;
     QVBoxLayout *right = new QVBoxLayout;
 
-    for (int i = 0; i < item_list.length(); i++)
-    {
+    for (int i = 0; i < item_list.length(); i++) {
         QObject *item = item_list.at(i);
 
         QVBoxLayout *side = i < (item_list.length() + 1) / 2 ? left : right;
 
-        if (item->isWidgetType())
-        {
+        if (item->isWidgetType()) {
             QWidget *widget = qobject_cast<QWidget *>(item);
             side->addWidget(widget);
-        }
-        else
-        {
+        } else {
             QLayout *item_layout = qobject_cast<QLayout *>(item);
             side->addLayout(item_layout);
         }
@@ -539,11 +595,9 @@ void ServerDialog::onDetectButtonClicked()
 {
     QHostInfo vHostInfo = QHostInfo::fromName(QHostInfo::localHostName());
     QList<QHostAddress> vAddressList = vHostInfo.addresses();
-    foreach (const QHostAddress &address, vAddressList)
-    {
+    foreach (const QHostAddress &address, vAddressList) {
         if (!address.isNull() && address != QHostAddress::LocalHost
-            && address.protocol() == QAbstractSocket::IPv4Protocol)
-        {
+            && address.protocol() == QAbstractSocket::IPv4Protocol) {
             address_edit->setText(address.toString());
             return;
         }
@@ -588,8 +642,7 @@ bool ServerDialog::config()
 
     // game mode
 
-    if (mode_group->checkedButton())
-    {
+    if (mode_group->checkedButton()) {
         QString objname = mode_group->checkedButton()->objectName();
         if (objname == "scenario")
             Config.GameMode = scenario_ComboBox->itemData(scenario_ComboBox->currentIndex()).toString();
@@ -625,10 +678,8 @@ bool ServerDialog::config()
 
     QSet<QString> ban_packages;
     QList<QAbstractButton *> checkboxes = extension_group->buttons();
-    foreach (QAbstractButton *checkbox, checkboxes)
-    {
-        if (!checkbox->isChecked())
-        {
+    foreach (QAbstractButton *checkbox, checkboxes) {
+        if (!checkbox->isChecked()) {
             QString package_name = checkbox->objectName();
             Sanguosha->addBanPackage(package_name);
             ban_packages.insert(package_name);

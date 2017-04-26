@@ -1,3 +1,23 @@
+/********************************************************************
+    Copyright (c) 2013-2015 - Mogara
+
+    This file is part of QSanguosha-Hegemony.
+
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    See the LICENSE file for more details.
+
+    Mogara
+    *********************************************************************/
+
 #include "jiange-defense.h"
 #include "skill.h"
 #include "engine.h"
@@ -20,10 +40,8 @@ public:
 
     virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer* &) const
     {
-        if (TriggerSkill::triggerable(player) && player->getPhase() == Player::Finish)
-        {
-            foreach (ServerPlayer *p, room->getAlivePlayers())
-            {
+        if (TriggerSkill::triggerable(player) && player->getPhase() == Player::Finish) {
+            foreach (ServerPlayer *p, room->getAlivePlayers()) {
                 if (p->isFriendWith(player) && p->isWounded())
                     return QStringList(objectName());
             }
@@ -42,10 +60,8 @@ public:
         room->sendCompulsoryTriggerLog(target, objectName());
 
         QList<ServerPlayer *> draw_list;
-        foreach (ServerPlayer *p, room->getAlivePlayers())
-        {
-            if (p->isFriendWith(target) && p->isWounded())
-            {
+        foreach (ServerPlayer *p, room->getAlivePlayers()) {
+            if (p->isFriendWith(target) && p->isWounded()) {
                 room->doAnimate(QSanProtocol::S_ALL_ALIVE_PLAYERS, target->objectName(), p->objectName());
                 draw_list << p;
             }
@@ -91,11 +107,9 @@ public:
         DummyCard dummy(cardids);
         room->obtainCard(target, &dummy);
 
-        if (Sanguosha->getCard(cardids.first())->getColor() != Sanguosha->getCard(cardids.last())->getColor())
-        {
+        if (Sanguosha->getCard(cardids.first())->getColor() != Sanguosha->getCard(cardids.last())->getColor()) {
             QList<ServerPlayer *> players;
-            foreach (ServerPlayer *p, room->getOtherPlayers(target))
-            {
+            foreach (ServerPlayer *p, room->getOtherPlayers(target)) {
                 if (!p->isFriendWith(target))
                     players << p;
             }
@@ -130,30 +144,21 @@ public:
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const
     {
-        if (triggerEvent == EventPhaseStart && TriggerSkill::triggerable(player))
-        {
-            if (player->getPhase() == Player::RoundStart)
-            {
-                foreach (ServerPlayer *p, room->getAlivePlayers())
-                {
+        if (triggerEvent == EventPhaseStart && TriggerSkill::triggerable(player)) {
+            if (player->getPhase() == Player::RoundStart) {
+                foreach (ServerPlayer *p, room->getAlivePlayers()) {
                     p->loseAllMarks("@gale");
                     p->loseAllMarks("@fog");
                 }
-            }
-            else if (player->getPhase() == Player::Start)
+            } else if (player->getPhase() == Player::Start)
                 return QStringList(objectName());
-        }
-        else if ((player != NULL && (triggerEvent == Death && player->hasSkill(objectName()) && data.value<DeathStruct>().who == player))
-            || (triggerEvent == EventLoseSkill && data.toString() == objectName()))
-        {
-            foreach (ServerPlayer *p, room->getAlivePlayers())
-            {
+        } else if ((player != NULL && (triggerEvent == Death && player->hasSkill(objectName()) && data.value<DeathStruct>().who == player))
+            || (triggerEvent == EventLoseSkill && data.toString().split(":").first() == objectName())) {
+            foreach (ServerPlayer *p, room->getAlivePlayers()) {
                 p->loseAllMarks("@gale");
                 p->loseAllMarks("@fog");
             }
-        }
-        else if (triggerEvent == FinishJudge)
-        {
+        } else if (triggerEvent == FinishJudge) {
             JudgeStruct *judge = data.value<JudgeStruct *>();
             if (judge->reason == objectName())
                 judge->pattern = judge->card->isRed() ? "r" : "b";
@@ -179,29 +184,21 @@ public:
 
         room->judge(judge);
 
-        if (judge.pattern == "r")
-        {
-            foreach (ServerPlayer *p, room->getAlivePlayers())
-            {
-                if (!p->isFriendWith(player))
-                {
+        if (judge.pattern == "r") {
+            foreach (ServerPlayer *p, room->getAlivePlayers()) {
+                if (!p->isFriendWith(player)) {
                     room->doAnimate(QSanProtocol::S_ANIMATE_INDICATE, player->objectName(), p->objectName());
                     p->gainMark("@gale", 1);
                 }
             }
-        }
-        else if (judge.pattern == "b")
-        {
-            foreach (ServerPlayer *p, room->getAlivePlayers())
-            {
-                if (p->isFriendWith(player))
-                {
+        } else if (judge.pattern == "b") {
+            foreach (ServerPlayer *p, room->getAlivePlayers()) {
+                if (p->isFriendWith(player)) {
                     room->doAnimate(QSanProtocol::S_ANIMATE_INDICATE, player->objectName(), p->objectName());
                     p->gainMark("@fog", 1);
                 }
             }
-        }
-        else
+        } else
             Q_ASSERT(false);
 
         return false;
@@ -324,8 +321,7 @@ public:
 
         player->tag.remove("jggongshen");
 
-        foreach (ServerPlayer *p, room->getOtherPlayers(player))
-        {
+        foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
             if (p->getGeneral()->objectName().contains("machine"))
                 return QStringList(objectName());
         }
@@ -336,8 +332,7 @@ public:
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
         QList<ServerPlayer *> players;
-        foreach (ServerPlayer *p, room->getOtherPlayers(player))
-        {
+        foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
             if (p->getGeneral()->objectName().contains("machine"))
                 players << p;
         }
@@ -346,8 +341,7 @@ public:
             return false;
 
         ServerPlayer *target = room->askForPlayerChosen(player, players, objectName(), "@jggongshen", true, true);
-        if (target != NULL)
-        {
+        if (target != NULL) {
             player->tag["jggongshen"] = QVariant::fromValue(target);
             return true;
         }
@@ -359,17 +353,14 @@ public:
     {
         ServerPlayer *target = player->tag["jggongshen"].value<ServerPlayer *>();
         player->tag.remove("jggongshen");
-        if (target != NULL)
-        {
+        if (target != NULL) {
             Room *room = target->getRoom();
-            if (player->isFriendWith(target))
-            {
+            if (player->isFriendWith(target)) {
                 RecoverStruct recover;
                 recover.recover = 1;
                 recover.who = player;
                 room->recover(target, recover);
-            }
-            else
+            } else
                 room->damage(DamageStruct(objectName(), player, target, 1, DamageStruct::Fire));
         }
         return false;
@@ -412,10 +403,8 @@ public:
         bool has_equip = false;
         bool has_trick = false;
 
-        foreach (int id, ids)
-        {
-            switch (Sanguosha->getCard(id)->getTypeId())
-            {
+        foreach (int id, ids) {
+            switch (Sanguosha->getCard(id)->getTypeId()) {
                 case Card::TypeTrick:
                     has_trick = true;
                     break;
@@ -434,15 +423,12 @@ public:
             choices << "Trick";
 
         QList<int> remaining_ids = ids;
-        if (!choices.isEmpty())
-        {
+        if (!choices.isEmpty()) {
             QString choice = room->askForChoice(target, objectName(), choices.join("+"), IntList2StringList(ids));
             QList<int> selected_ids;
-            foreach (int id, ids)
-            {
+            foreach (int id, ids) {
                 const Card *c = Sanguosha->getCard(id);
-                if ((c->getTypeId() == Card::TypeTrick && choice == "Trick") || (c->getTypeId() == Card::TypeEquip && choice == "Equip"))
-                {
+                if ((c->getTypeId() == Card::TypeTrick && choice == "Trick") || (c->getTypeId() == Card::TypeEquip && choice == "Equip")) {
                     selected_ids << id;
                     remaining_ids.removeOne(id);
                 }
@@ -451,8 +437,7 @@ public:
             room->fillAG(selected_ids, target);
 
             QList<ServerPlayer *> friends;
-            foreach (ServerPlayer *p, room->getAlivePlayers())
-            {
+            foreach (ServerPlayer *p, room->getAlivePlayers()) {
                 if (p->isFriendWith(target))
                     friends << p;
             }
@@ -575,13 +560,10 @@ public:
             return QStringList();
 
         CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-        if (move.from == player && (move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_DISCARD)
-        {
+        if (move.from == player && (move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_DISCARD) {
             bool cardok = false;
-            for (int i = 0; i < move.card_ids.length(); ++i)
-            {
-                if (Sanguosha->getCard(move.card_ids.at(i))->getSuit() == Card::Club && (move.from_places.at(i) == Player::PlaceHand || move.from_places.at(i) == Player::PlaceEquip))
-                {
+            for (int i = 0; i < move.card_ids.length(); ++i) {
+                if (Sanguosha->getCard(move.card_ids.at(i))->getSuit() == Card::Club && (move.from_places.at(i) == Player::PlaceHand || move.from_places.at(i) == Player::PlaceEquip)) {
                     cardok = true;
                     break;
                 }
@@ -590,8 +572,7 @@ public:
             if (!cardok)
                 return QStringList();
 
-            foreach (ServerPlayer *p, room->getOtherPlayers(player))
-            {
+            foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
                 if (p->isFriendWith(player) && p->isWounded())
                     return QStringList(objectName());
             }
@@ -603,14 +584,12 @@ public:
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
         QList<ServerPlayer *> players;
-        foreach (ServerPlayer *p, room->getOtherPlayers(player))
-        {
+        foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
             if (p->isFriendWith(player) && p->isWounded())
                 players << p;
         }
         ServerPlayer *target = room->askForPlayerChosen(player, players, objectName(), "@jgqiwu", false, true);
-        if (target != NULL)
-        {
+        if (target != NULL) {
             player->tag[objectName()] = QVariant::fromValue(target);
             return true;
         }
@@ -621,8 +600,7 @@ public:
     {
         ServerPlayer *target = player->tag[objectName()].value<ServerPlayer *>();
         player->tag.remove(objectName());
-        if (target != NULL)
-        {
+        if (target != NULL) {
             RecoverStruct rec;
             rec.recover = 1;
             rec.who = player;
@@ -651,8 +629,7 @@ public:
         if (!TriggerSkill::triggerable(player) || player->getPhase() != Player::Finish)
             return QStringList();
 
-        foreach (ServerPlayer *p, room->getOtherPlayers(player))
-        {
+        foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
             if (!p->isFriendWith(player) && !p->isChained())
                 return QStringList(objectName());
         }
@@ -672,10 +649,8 @@ public:
 
         QList<ServerPlayer *> targets;
 
-        foreach (ServerPlayer *p, room->getOtherPlayers(player))
-        {
-            if (!p->isFriendWith(player) && !p->isChained())
-            {
+        foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
+            if (!p->isFriendWith(player) && !p->isChained()) {
                 targets << p;
                 room->doAnimate(QSanProtocol::S_ANIMATE_INDICATE, player->objectName(), p->objectName());
             }
@@ -683,8 +658,7 @@ public:
 
         room->sortByActionOrder(targets);
 
-        foreach (ServerPlayer *p, targets)
-        {
+        foreach (ServerPlayer *p, targets) {
             p->setChained(true);
             room->setEmotion(p, "chain");
             room->broadcastProperty(p, "chained");
@@ -767,8 +741,7 @@ public:
         ArcheryAttack *aa = new ArcheryAttack(Card::NoSuit, 0);
         aa->setSkillName("_" + objectName());
 
-        foreach (ServerPlayer *p, room->getOtherPlayers(player))
-        {
+        foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
             if (!p->isFriendWith(player) && !player->isProhibited(p, aa))
                 targets << p;
         }
@@ -791,8 +764,7 @@ public:
         if (from->isFriendWith(to))
             return 0;
 
-        foreach (const Player *p, to->getAliveSiblings())
-        {
+        foreach (const Player *p, to->getAliveSiblings()) {
             if (p->isFriendWith(to) && p != to && p->hasShownSkill(objectName()))
                 return 1;
         }
@@ -816,10 +788,8 @@ public:
 
     virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer* &) const
     {
-        if (TriggerSkill::triggerable(player) && player->getPhase() == Player::Start)
-        {
-            foreach (ServerPlayer *p, room->getOtherPlayers(player))
-            {
+        if (TriggerSkill::triggerable(player) && player->getPhase() == Player::Start) {
+            foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
                 if (!p->isFriendWith(player) && p->getGeneral()->objectName().contains("machine"))
                     return QStringList(objectName());
             }
@@ -839,17 +809,14 @@ public:
         room->sendCompulsoryTriggerLog(player, objectName());
 
         ServerPlayer *victim = NULL;
-        foreach (ServerPlayer *p, room->getOtherPlayers(player))
-        {
-            if (!p->isFriendWith(player) && p->getGeneral()->objectName().contains("machine"))
-            {
+        foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
+            if (!p->isFriendWith(player) && p->getGeneral()->objectName().contains("machine")) {
                 victim = p;
                 break;
             }
         }
 
-        if (victim != NULL)
-        {
+        if (victim != NULL) {
             room->doAnimate(QSanProtocol::S_ANIMATE_INDICATE, player->objectName(), victim->objectName());
             room->damage(DamageStruct(objectName(), player, victim, 2, DamageStruct::Thunder));
         }
@@ -878,8 +845,7 @@ public:
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
         QList<ServerPlayer *> players;
-        foreach (ServerPlayer *p, room->getOtherPlayers(player))
-        {
+        foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
             if (!p->isFriendWith(player))
                 players << p;
         }
@@ -890,8 +856,7 @@ public:
         player->tag.remove("jgtianyun");
         ServerPlayer *victim = room->askForPlayerChosen(player, players, objectName(), "@jgtianyun", true, true);
 
-        if (victim != NULL)
-        {
+        if (victim != NULL) {
             player->tag["jgtianyun"] = QVariant::fromValue(victim);
             room->loseHp(player);
             return true;
@@ -909,8 +874,7 @@ public:
         Room *room = player->getRoom();
         room->damage(DamageStruct(objectName(), player, victim, 2, DamageStruct::Fire));
         QList<const Card *> cards = victim->getEquips();
-        if (!cards.isEmpty())
-        {
+        if (!cards.isEmpty()) {
             DummyCard dummy;
             dummy.addSubcards(cards);
             room->throwCard(&dummy, victim, player);
@@ -975,10 +939,8 @@ public:
 
     virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer* &) const
     {
-        if (TriggerSkill::triggerable(player) && player->getPhase() == Player::Finish)
-        {
-            foreach (ServerPlayer *p, room->getOtherPlayers(player))
-            {
+        if (TriggerSkill::triggerable(player) && player->getPhase() == Player::Finish) {
+            foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
                 if (p->isFriendWith(player) && p->isWounded())
                     return QStringList(objectName());
             }
@@ -988,8 +950,7 @@ public:
 
     virtual bool cost(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
-        if (player->askForSkillInvoke(this))
-        {
+        if (player->askForSkillInvoke(this)) {
             player->turnOver();
             return true;
         }
@@ -1002,10 +963,8 @@ public:
 
         QList<ServerPlayer *> targets;
 
-        foreach (ServerPlayer *p, room->getOtherPlayers(player))
-        {
-            if (p->isFriendWith(player) && p->isWounded())
-            {
+        foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
+            if (p->isFriendWith(player) && p->isWounded()) {
                 targets << p;
                 room->doAnimate(QSanProtocol::S_ANIMATE_INDICATE, player->objectName(), p->objectName());
             }
@@ -1013,8 +972,7 @@ public:
 
         room->sortByActionOrder(targets);
 
-        foreach (ServerPlayer *p, targets)
-        {
+        foreach (ServerPlayer *p, targets) {
             RecoverStruct rec;
             rec.recover = 1;
             rec.who = player;
@@ -1041,8 +999,7 @@ public:
     virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer * &ask_who) const
     {
         ServerPlayer *zidan = room->findPlayerBySkillName(objectName());
-        if (zidan != NULL && player != NULL && zidan->isFriendWith(player))
-        {
+        if (zidan != NULL && player != NULL && zidan->isFriendWith(player)) {
             ask_who = zidan;
             DamageStruct damage = data.value<DamageStruct>();
             if (damage.damage >= 2)
@@ -1085,8 +1042,7 @@ public:
         if (from->isFriendWith(to))
             return 0;
 
-        foreach (const Player *p, from->getAliveSiblings())
-        {
+        foreach (const Player *p, from->getAliveSiblings()) {
             if (p->isFriendWith(from) && p != from && p->hasShownSkill(objectName()))
                 return -1;
         }
@@ -1112,8 +1068,7 @@ public:
         if (!TriggerSkill::triggerable(player) || player->getPhase() != Player::Finish)
             return QStringList();
 
-        foreach (ServerPlayer *p, room->getOtherPlayers(player))
-        {
+        foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
             if (p->getHp() >= player->getHp())
                 return QStringList(objectName());
         }
@@ -1124,15 +1079,13 @@ public:
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
         QList<ServerPlayer *> players;
-        foreach (ServerPlayer *p, room->getOtherPlayers(player))
-        {
+        foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
             if (p->getHp() >= player->getHp())
                 players << p;
         }
 
         ServerPlayer *victim = room->askForPlayerChosen(player, players, objectName(), "@jgchuanyun", true, true);
-        if (victim != NULL)
-        {
+        if (victim != NULL) {
             player->tag["jgchuanyun"] = QVariant::fromValue(victim);
             return true;
         }
@@ -1178,8 +1131,7 @@ public:
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
     {
         QList<ServerPlayer *> players;
-        foreach (ServerPlayer *p, room->getOtherPlayers(player))
-        {
+        foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
             if (!p->isFriendWith(player))
                 players << p;
         }
@@ -1187,8 +1139,7 @@ public:
         players.removeOne(damage.to);// another one
 
         ServerPlayer *victim = room->askForPlayerChosen(player, players, objectName(), "@jgleili", true, true);
-        if (victim != NULL)
-        {
+        if (victim != NULL) {
             player->tag["jgleili"] = QVariant::fromValue(victim);
             return true;
         }
@@ -1227,16 +1178,14 @@ public:
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
         QList<ServerPlayer *> players;
-        foreach (ServerPlayer *p, room->getOtherPlayers(player))
-        {
+        foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
             if (!p->isFriendWith(player))
                 players << p;
         }
 
         player->tag.remove("jgfengxing");
         ServerPlayer *victim = room->askForPlayerChosen(player, players, objectName(), "@jgfengxing", true/*, true*/);
-        if (victim != NULL)
-        {
+        if (victim != NULL) {
             player->tag["jgfengxing"] = QVariant::fromValue(victim);
             return true;
         }
@@ -1247,8 +1196,7 @@ public:
     {
         ServerPlayer *victim = target->tag["jgfengxing"].value<ServerPlayer *>();
         target->tag.remove("jgfengxing");
-        if (victim != NULL)
-        {
+        if (victim != NULL) {
             Slash *slash = new Slash(Card::NoSuit, 0);
             slash->setSkillName("_" + objectName());
             slash->setShowSkill(objectName());
@@ -1280,8 +1228,7 @@ public:
     virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *, QVariant &data, ServerPlayer* &ask_who) const
     {
         DamageStruct damage = data.value<DamageStruct>();
-        if (damage.from && damage.from->hasSkill("jgkonghun") && damage.reason == "jgkonghun" && !damage.transfer && !damage.chain)
-        {
+        if (damage.from && damage.from->hasSkill("jgkonghun") && damage.reason == "jgkonghun" && !damage.transfer && !damage.chain) {
             ask_who = damage.from;
             return QStringList(objectName());
         }
@@ -1321,8 +1268,7 @@ public:
             return QStringList();
 
         int num = 0;
-        foreach (ServerPlayer *p, room->getOtherPlayers(player))
-        {
+        foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
             if (!p->isFriendWith(player))
                 ++num;
         }
@@ -1344,24 +1290,21 @@ public:
         Room *room = player->getRoom();
 
         QList<ServerPlayer *> players;
-        foreach (ServerPlayer *p, room->getAlivePlayers())
-        {
-            if (!p->isFriendWith(player))
-            {
+        foreach (ServerPlayer *p, room->getAlivePlayers()) {
+            if (!p->isFriendWith(player)) {
                 room->doAnimate(QSanProtocol::S_ANIMATE_INDICATE, player->objectName(), p->objectName());
                 players << p;
             }
         }
 
         room->sortByActionOrder(players);
-        foreach (ServerPlayer *p, players)
+        foreach(ServerPlayer *p, players)
             room->damage(DamageStruct(objectName(), player, p, 1, DamageStruct::Thunder));
 
         int n = player->getMark("jgkonghun");
         player->setMark("jgkonghun", 0);
 
-        if (n > 0)
-        {
+        if (n > 0) {
             RecoverStruct rec;
             rec.recover = n;
             rec.who = player;
@@ -1423,8 +1366,7 @@ public:
         if (!TriggerSkill::triggerable(player) || player->getPhase() != Player::Start)
             return QStringList();
 
-        foreach (ServerPlayer *p, room->getOtherPlayers(player))
-        {
+        foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
             if (!p->isFriendWith(player) && !p->getJudgingArea().isEmpty())
                 return QStringList(objectName());
         }
@@ -1443,18 +1385,17 @@ public:
         room->sendCompulsoryTriggerLog(player, objectName());
 
         QList<ServerPlayer *> players;
-        foreach (ServerPlayer *p, room->getAlivePlayers())
-        {
-            if (!p->isFriendWith(player) && !p->getJudgingArea().isEmpty())
-            {
+        foreach (ServerPlayer *p, room->getAlivePlayers()) {
+            if (!p->isFriendWith(player) && !p->getJudgingArea().isEmpty()) {
                 room->doAnimate(QSanProtocol::S_ANIMATE_INDICATE, player->objectName(), p->objectName());
                 players << p;
             }
         }
 
         room->sortByActionOrder(players);
-        foreach (ServerPlayer *p, players)
+        foreach(ServerPlayer *p, players)
             room->damage(DamageStruct(objectName(), player, p, 1, DamageStruct::Thunder));
+
 
         return false;
     }
@@ -1478,8 +1419,7 @@ public:
         if (!TriggerSkill::triggerable(player) || player->getPhase() != Player::Finish)
             return QStringList();
 
-        foreach (ServerPlayer *p, room->getAlivePlayers())
-        {
+        foreach (ServerPlayer *p, room->getAlivePlayers()) {
             if (p->isFriendWith(player) && !p->faceUp())
                 return QStringList(objectName());
         }
@@ -1490,16 +1430,14 @@ public:
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
         QList<ServerPlayer *> players;
-        foreach (ServerPlayer *p, room->getAlivePlayers())
-        {
+        foreach (ServerPlayer *p, room->getAlivePlayers()) {
             if (!p->isFriendWith(player))
                 players << p;
         }
 
         player->tag.remove("jghuodi");
         ServerPlayer *victim = room->askForPlayerChosen(player, players, objectName(), "@jghuodi", true, true);
-        if (victim != NULL)
-        {
+        if (victim != NULL) {
             player->tag["jghuodi"] = QVariant::fromValue(victim);
             return true;
         }
@@ -1576,16 +1514,14 @@ public:
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
         QList<ServerPlayer *> players;
-        foreach (ServerPlayer *p, room->getAlivePlayers())
-        {
+        foreach (ServerPlayer *p, room->getAlivePlayers()) {
             if (!p->isFriendWith(player))
                 players << p;
         }
 
         player->tag.remove("jgdidong");
         ServerPlayer *victim = room->askForPlayerChosen(player, players, objectName(), "@jgdidong", true, true);
-        if (victim != NULL)
-        {
+        if (victim != NULL) {
             player->tag["jgdidong"] = QVariant::fromValue(victim);
             return true;
         }
@@ -1631,18 +1567,17 @@ public:
         Room *room = player->getRoom();
 
         QList<ServerPlayer *> players;
-        foreach (ServerPlayer *p, room->getAlivePlayers())
-        {
-            if (!p->isFriendWith(player))
-            {
+        foreach (ServerPlayer *p, room->getAlivePlayers()) {
+            if (!p->isFriendWith(player)) {
                 room->doAnimate(QSanProtocol::S_ANIMATE_INDICATE, player->objectName(), p->objectName());
                 players << p;
             }
         }
 
         room->sortByActionOrder(players);
-        foreach (ServerPlayer *p, players)
+        foreach(ServerPlayer *p, players)
             room->damage(DamageStruct(objectName(), player, p, 1, DamageStruct::Fire));
+
 
         return false;
     }
@@ -1691,8 +1626,7 @@ public:
         if (!TriggerSkill::triggerable(player) || player->getPhase() != Player::Start)
             return QStringList();
 
-        foreach (ServerPlayer *p, room->getAlivePlayers())
-        {
+        foreach (ServerPlayer *p, room->getAlivePlayers()) {
             if (!p->isFriendWith(player) && p->getHandcardNum() > player->getHandcardNum())
                 return QStringList(objectName());
         }
@@ -1711,10 +1645,8 @@ public:
         room->sendCompulsoryTriggerLog(target, objectName());
 
         QList<ServerPlayer *> players;
-        foreach (ServerPlayer *p, room->getAlivePlayers())
-        {
-            if (!p->isFriendWith(target) && p->getHandcardNum() > target->getHandcardNum())
-            {
+        foreach (ServerPlayer *p, room->getAlivePlayers()) {
+            if (!p->isFriendWith(target) && p->getHandcardNum() > target->getHandcardNum()) {
                 room->doAnimate(QSanProtocol::S_ANIMATE_INDICATE, target->objectName(), p->objectName());
                 players << p;
             }
@@ -1722,7 +1654,7 @@ public:
 
         room->sortByActionOrder(players);
 
-        foreach (ServerPlayer *p, players)
+        foreach(ServerPlayer *p, players)
             room->damage(DamageStruct(objectName(), target, p));
 
         return false;
@@ -1749,8 +1681,7 @@ public:
 
     virtual bool cost(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
-        if (player->askForSkillInvoke(this))
-        {
+        if (player->askForSkillInvoke(this)) {
             player->turnOver();
             return true;
         }
@@ -1763,10 +1694,8 @@ public:
 
         QList<ServerPlayer *> targets;
 
-        foreach (ServerPlayer *p, room->getOtherPlayers(player))
-        {
-            if (!p->isFriendWith(player))
-            {
+        foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
+            if (!p->isFriendWith(player)) {
                 room->doAnimate(QSanProtocol::S_ANIMATE_INDICATE, player->objectName(), p->objectName());
                 targets << p;
             }
@@ -1774,7 +1703,7 @@ public:
 
         room->sortByActionOrder(targets);
 
-        foreach (ServerPlayer *p, targets)
+        foreach(ServerPlayer *p, targets)
             p->throwAllEquips();
         return false;
     }

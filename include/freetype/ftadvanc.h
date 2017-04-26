@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    Quick computation of advance widths (specification only).            */
 /*                                                                         */
-/*  Copyright 2008-2016 by                                                 */
+/*  Copyright 2008, 2013, 2014 by                                          */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -16,8 +16,8 @@
 /***************************************************************************/
 
 
-#ifndef FTADVANC_H_
-#define FTADVANC_H_
+#ifndef __FTADVANC_H__
+#define __FTADVANC_H__
 
 
 #include <ft2build.h>
@@ -77,7 +77,7 @@ FT_BEGIN_HEADER
   /*    and hinting of the glyph outline, are extremely slow by            */
   /*    comparison.                                                        */
   /*                                                                       */
-#define FT_ADVANCE_FLAG_FAST_ONLY  0x20000000L
+#define FT_ADVANCE_FLAG_FAST_ONLY  0x20000000UL
 
 
   /*************************************************************************/
@@ -181,7 +181,7 @@ FT_BEGIN_HEADER
 
 FT_END_HEADER
 
-#endif /* FTADVANC_H_ */
+#endif /* __FTADVANC_H__ */
 
 
 /* END */

@@ -1,3 +1,23 @@
+/********************************************************************
+    Copyright (c) 2013-2015 - Mogara
+
+    This file is part of QSanguosha-Hegemony.
+
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    See the LICENSE file for more details.
+
+    Mogara
+    *********************************************************************/
+
 #include "nativesocket.h"
 #include "settings.h"
 #include "clientplayer.h"
@@ -28,8 +48,7 @@ void NativeServerSocket::daemonize()
 
 void NativeServerSocket::processNewDatagram()
 {
-    while (daemon->hasPendingDatagrams())
-    {
+    while (daemon->hasPendingDatagrams()) {
         QHostAddress from;
         char ask_str[256];
 
@@ -76,14 +95,11 @@ void NativeClientSocket::connectToHost()
     QString address = "127.0.0.1";
     ushort port = 9527u;
 
-    if (Config.HostAddress.contains(QChar(':')))
-    {
+    if (Config.HostAddress.contains(QChar(':'))) {
         QStringList texts = Config.HostAddress.split(QChar(':'));
         address = texts.value(0);
         port = texts.value(1).toUShort();
-    }
-    else
-    {
+    } else {
         address = Config.HostAddress;
         if (address == "127.0.0.1")
             port = Config.value("ServerPort", 9527u).toUInt();
@@ -105,8 +121,7 @@ void NativeClientSocket::connectToHost(const QHostAddress &address, ushort port)
 
 void NativeClientSocket::getMessage()
 {
-    while (socket->canReadLine())
-    {
+    while (socket->canReadLine()) {
         QByteArray msg = socket->readLine();
 #ifndef QT_NO_DEBUG
         printf("recv: %s", msg.constData());
@@ -126,8 +141,7 @@ void NativeClientSocket::send(const QByteArray &message)
         return;
 
     socket->write(message);
-    if (!message.endsWith('\n'))
-    {
+    if (!message.endsWith('\n')) {
         socket->write("\n");
     }
 
@@ -165,26 +179,24 @@ void NativeClientSocket::raiseError(QAbstractSocket::SocketError socket_error)
 {
     // translate error message
     QString reason;
-    switch (socket_error)
-    {
-        case QAbstractSocket::ConnectionRefusedError:
-            reason = tr("Connection was refused or timeout"); break;
-        case QAbstractSocket::RemoteHostClosedError:
-        {
-            if (Self && Self->hasFlag("is_kicked"))
-                reason = tr("You are kicked from server");
-            else
-                reason = tr("Remote host close this connection");
+    switch (socket_error) {
+    case QAbstractSocket::ConnectionRefusedError:
+        reason = tr("Connection was refused or timeout"); break;
+    case QAbstractSocket::RemoteHostClosedError:{
+        if (Self && Self->hasFlag("is_kicked"))
+            reason = tr("You are kicked from server");
+        else
+            reason = tr("Remote host close this connection");
 
-            break;
-        }
-        case QAbstractSocket::HostNotFoundError:
-            reason = tr("Host not found"); break;
-        case QAbstractSocket::SocketAccessError:
-            reason = tr("Socket access error"); break;
-        case QAbstractSocket::NetworkError:
-            return; // this error is ignored ...
-        default: reason = tr("Unknown error"); break;
+        break;
+    }
+    case QAbstractSocket::HostNotFoundError:
+        reason = tr("Host not found"); break;
+    case QAbstractSocket::SocketAccessError:
+        reason = tr("Socket access error"); break;
+    case QAbstractSocket::NetworkError:
+        return; // this error is ignored ...
+    default: reason = tr("Unknown error"); break;
     }
 
     emit error_message(tr("Connection failed, error code = %1\n reason:\n %2").arg(socket_error).arg(reason));

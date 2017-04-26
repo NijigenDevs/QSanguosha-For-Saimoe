@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    The FreeType PostScript charmap service (specification).             */
 /*                                                                         */
-/*  Copyright 2003-2016 by                                                 */
+/*  Copyright 2003, 2006, 2009, 2012 by                                    */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -16,8 +16,8 @@
 /***************************************************************************/
 
 
-#ifndef SVPSCMAP_H_
-#define SVPSCMAP_H_
+#ifndef __SVPSCMAP_H__
+#define __SVPSCMAP_H__
 
 #include FT_INTERNAL_OBJECTS_H
 
@@ -171,7 +171,7 @@ FT_BEGIN_HEADER
 FT_END_HEADER
 
 
-#endif /* SVPSCMAP_H_ */
+#endif /* __SVPSCMAP_H__ */
 
 
 /* END */

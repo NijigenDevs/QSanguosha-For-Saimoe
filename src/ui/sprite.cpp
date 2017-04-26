@@ -1,3 +1,23 @@
+/********************************************************************
+    Copyright (c) 2013-2015 - Mogara
+
+    This file is part of QSanguosha-Hegemony.
+
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    See the LICENSE file for more details.
+
+    Mogara
+    *********************************************************************/
+
 #include "sprite.h"
 
 #include <QAnimationGroup>
@@ -16,8 +36,7 @@ EffectAnimation::EffectAnimation()
 void EffectAnimation::fade(QGraphicsItem *map)
 {
     AnimatedEffect *effect = qobject_cast<AnimatedEffect *>(map->graphicsEffect());
-    if (effect)
-    {
+    if (effect) {
         effectOut(map);
         effect = registered.value(map);
         if (effect) effect->deleteLater();
@@ -34,8 +53,7 @@ void EffectAnimation::fade(QGraphicsItem *map)
 void EffectAnimation::emphasize(QGraphicsItem *map, bool stay)
 {
     AnimatedEffect *effect = qobject_cast<AnimatedEffect *>(map->graphicsEffect());
-    if (effect)
-    {
+    if (effect) {
         effectOut(map);
         effect = registered.value(map);
         if (effect) effect->deleteLater();
@@ -51,8 +69,7 @@ void EffectAnimation::emphasize(QGraphicsItem *map, bool stay)
 void EffectAnimation::sendBack(QGraphicsItem *map)
 {
     AnimatedEffect *effect = qobject_cast<AnimatedEffect *>(map->graphicsEffect());
-    if (effect)
-    {
+    if (effect) {
         effectOut(map);
         effect = registered.value(map);
         if (effect) effect->deleteLater();
@@ -68,8 +85,7 @@ void EffectAnimation::sendBack(QGraphicsItem *map)
 void EffectAnimation::effectOut(QGraphicsItem *map)
 {
     AnimatedEffect *effect = qobject_cast<AnimatedEffect *>(map->graphicsEffect());
-    if (effect)
-    {
+    if (effect) {
         connect(effect, &AnimatedEffect::loop_finished, this, (void (EffectAnimation::*)()) (&EffectAnimation::deleteEffect));
         effect->setStay(false);
     }
@@ -92,8 +108,7 @@ void EffectAnimation::deleteEffect(AnimatedEffect *effect)
     if (!effect) return;
     effect->deleteLater();
     QGraphicsItem *pix = effects.key(effect);
-    if (pix)
-    {
+    if (pix) {
         AnimatedEffect *effect = registered.value(pix);
         if (effect) effect->reset();
         pix->setGraphicsEffect(registered.value(pix));
@@ -147,8 +162,7 @@ QRectF EmphasizeEffect::boundingRectFor(const QRectF &sourceRect) const
 void AnimatedEffect::setStay(bool stay)
 {
     this->stay = stay;
-    if (!stay)
-    {
+    if (!stay) {
         QPropertyAnimation *anim = new QPropertyAnimation(this, "index");
         anim->setEndValue(0);
         anim->setDuration(index * 5);
@@ -191,8 +205,7 @@ void SentbackEffect::draw(QPainter *painter)
     QPoint offset;
     QPixmap pixmap = sourcePixmap(Qt::LogicalCoordinates, &offset);
 
-    if (!grayed)
-    {
+    if (!grayed) {
         grayed = new QImage(pixmap.size(), QImage::Format_ARGB32);
 
         QImage image = pixmap.toImage();
@@ -202,10 +215,8 @@ void SentbackEffect::draw(QPainter *painter)
 
         QRgb col;
 
-        for (int i = 0; i < width; ++i)
-        {
-            for (int j = 0; j < height; ++j)
-            {
+        for (int i = 0; i < width; ++i) {
+            for (int j = 0; j < height; ++j) {
                 col = image.pixel(i, j);
                 gray = qGray(col) >> 1;
                 grayed->setPixel(i, j, qRgba(gray, gray, gray, qAlpha(col)));
@@ -222,8 +233,7 @@ void SentbackEffect::draw(QPainter *painter)
 
 SentbackEffect::~SentbackEffect()
 {
-    if (grayed)
-    {
+    if (grayed) {
         delete grayed;
         grayed = NULL;
     }

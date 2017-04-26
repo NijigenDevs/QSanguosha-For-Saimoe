@@ -1,3 +1,23 @@
+/********************************************************************
+    Copyright (c) 2013-2015 - Mogara
+
+    This file is part of QSanguosha-Hegemony.
+
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    See the LICENSE file for more details.
+
+    Mogara
+    *********************************************************************/
+
 #include "protocol.h"
 #include "json.h"
 
@@ -17,45 +37,37 @@ bool QSanProtocol::Countdown::tryParse(const QVariant &var)
     JsonArray val = var.value<JsonArray>();
 
     //compatible with old JSON representation of Countdown
-    if (JsonUtils::isString(val[0]))
-    {
+    if (JsonUtils::isString(val[0])) {
         if (val[0].toString() == "MG_COUNTDOWN")
             val.removeFirst();
         else
             return false;
     }
 
-    if (val.size() == 2)
-    {
+    if (val.size() == 2) {
         if (!JsonUtils::isNumberArray(val, 0, 1)) return false;
         current = (time_t)val[0].toInt();
         max = (time_t)val[1].toInt();
         type = S_COUNTDOWN_USE_SPECIFIED;
         return true;
 
-    }
-    else if (val.size() == 1 && val[0].canConvert<int>())
-    {
+    } else if (val.size() == 1 && val[0].canConvert<int>()) {
         CountdownType type = (CountdownType)val[0].toInt();
         if (type != S_COUNTDOWN_NO_LIMIT && type != S_COUNTDOWN_USE_DEFAULT)
             return false;
         else this->type = type;
         return true;
 
-    }
-    else
+    } else
         return false;
 }
 
 QVariant QSanProtocol::Countdown::toVariant() const
 {
     JsonArray val;
-    if (type == S_COUNTDOWN_NO_LIMIT || type == S_COUNTDOWN_USE_DEFAULT)
-    {
+    if (type == S_COUNTDOWN_NO_LIMIT || type == S_COUNTDOWN_USE_DEFAULT) {
         val << (int)type;
-    }
-    else
-    {
+    } else {
         val << (int)current;
         val << (int)max;
     }
@@ -77,8 +89,7 @@ unsigned int QSanProtocol::Packet::createGlobalSerial()
 
 bool QSanProtocol::Packet::parse(const QByteArray &raw)
 {
-    if (raw.length() > S_MAX_PACKET_SIZE)
-    {
+    if (raw.length() > S_MAX_PACKET_SIZE) {
         return false;
     }
 

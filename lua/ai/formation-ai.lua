@@ -104,7 +104,7 @@ local function huyuan_validate(self, equip_type, is_handcard)
 	if is_handcard then targets = self.friends else targets = self.friends_noself end
 	if equip_type == "SilverLion" then
 		for _, enemy in ipairs(self.enemies) do
-			if enemy:hasShownSkill("bazhen") and not enemy:getArmor() then table.insert(targets, enemy) end
+			if self:hasSkill("bazhen", enemy) and not enemy:getArmor() then table.insert(targets, enemy) end
 		end
 	end
 	for _, friend in ipairs(targets) do
@@ -115,7 +115,7 @@ local function huyuan_validate(self, equip_type, is_handcard)
 				break
 			end
 		end
-		if not has_equip and not ((equip_type == "Armor" or equip_type == "SilverLion") and friend:hasShownSkill("bazhen")) then
+		if not has_equip and not ((equip_type == "Armor" or equip_type == "SilverLion") and self:hasSkill("bazhen", friend)) then
 			self:sort(self.enemies, "defense")
 			for _, enemy in ipairs(self.enemies) do
 				if friend:distanceTo(enemy) == 1 and self.player:canDiscard(enemy, "he") then
@@ -190,7 +190,7 @@ sgs.ai_skill_playerchosen.huyuan = function(self, targets)
 end
 
 sgs.ai_card_intention.HuyuanCard = function(self, card, from, to)
-	if to[1]:hasShownSkill("bazhen") then
+	if self:hasSkill("bazhen", to[1]) then
 		if sgs.Sanguosha:getCard(card:getEffectiveId()):isKindOf("SilverLion") then
 			sgs.updateIntention(from, to[1], 10)
 			return
@@ -235,10 +235,9 @@ tiaoxin_skill.getTurnUseCard = function(self)
 end
 
 sgs.ai_skill_use_func.TiaoxinCard = function(TXCard, use, self)
-	local distance = use.defHorse and 1 or 0
 	local targets = {}
 	for _, enemy in ipairs(self.enemies) do
-		if enemy:distanceTo(self.player, distance) <= enemy:getAttackRange() and not self:doNotDiscard(enemy) and self:isTiaoxinTarget(enemy) then
+		if enemy:inMyAttackRange(self.player) and not self:doNotDiscard(enemy) and self:isTiaoxinTarget(enemy) then
 			table.insert(targets, enemy)
 		end
 	end
@@ -265,6 +264,14 @@ end
 sgs.ai_skill_cardask["@tiaoxin-slash"] = function(self, data, pattern, target)
 	if target then
 		local cards = self:getCards("Slash")
+
+		local halberd ={}
+		for _, c in ipairs(cards) do
+			if c:isKindOf("HalberdCard") then table.insert(halberd, c) end
+		end
+		table.removeTable(cards, halberd)
+
+		local theslash
 		self:sortByUseValue(cards)
 		for _, slash in ipairs(cards) do
 			if self:isFriend(target) and self:slashIsEffective(slash, target) then
@@ -316,20 +323,46 @@ end
 
 sgs.ai_skill_use_func.ShangyiCard = function(card, use, self)
 	self:sort(self.enemies, "handcard")
-
+	self.shangyi = nil
 	for index = #self.enemies, 1, -1 do
 		if not self.enemies[index]:isKongcheng() and self:objectiveLevel(self.enemies[index]) > 0 then
 			use.card = card
+			self.shangyi = "handcards"
 			if use.to then
 				use.to:append(self.enemies[index])
 			end
 			return
 		end
 	end
+	if self.player:hasSkill("shangyi") then
+		for _, p in sgs.qlist(self.room:getOtherPlayers(self.player)) do
+			if sgs.ai_explicit[p:objectName()] == "unknown" then
+				use.card = card
+				self.shangyi = "hidden_general"
+				if use.to then
+					use.to:append(self.enemies[index])
+				end
+				return
+			end
+		end
+	end
 end
 
 sgs.ai_skill_choice.shangyi = function(self, choices)
-	return "handcards"
+	return self.shangyi
+end
+
+sgs.ai_choicemade_filter.skillChoice.shangyi = function(self, from, promptlist)
+	local choice = promptlist[#promptlist]
+	if choice ~= "handcards" then
+		for _, to in sgs.qlist(self.room:getOtherPlayers(from)) do
+			if to:hasFlag("shangyiTarget") then
+				to:setMark(("KnownBoth_%s_%s"):format(from:objectName(), to:objectName()), 1)
+				from:setTag("KnownBoth_" .. to:objectName(), sgs.QVariant(to:getActualGeneral1Name() .. "+" .. to:getActualGeneral2Name()))
+				break
+			end
+		end
+	end
 end
 
 sgs.ai_use_value.ShangyiCard = 4
@@ -448,7 +481,7 @@ local function will_discard_zhendu(self)
 			local slash = sgs.cloneCard("slash")
 			local trend = 3
 			if current:hasWeapon("Axe") then trend = trend - 1
-			elseif current:hasShownSkills("liegong|tieqi|wushuang|niaoxiang") then trend = trend - 0.4 end
+			elseif self:hasSkill("liegong|tieqi|wushuang|niaoxiang", current) then trend = trend - 0.4 end
 			for _, enemy in ipairs(self.enemies) do
 				if ((enemy:getHp() < 3 and enemy:getHandcardNum() < 3) or (enemy:getHandcardNum() < 2)) and current:canSlash(enemy) and not self:slashProhibit(slash, enemy, current)
 					and self:slashIsEffective(slash, enemy, current) and sgs.isGoodTarget(enemy, self.enemies, self, true) then
@@ -492,7 +525,7 @@ function sgs.ai_weapon_value.DragonPhoenix(self, enemy, player)
 			break
 		end
 	end
-	if lordliubei and player:getWeapon() and not player:hasShownSkill("xiaoji") then
+	if lordliubei and player:getWeapon() and not self:hasSkill("xiaoji", player) then
 		return -10
 	end
 	if enemy and enemy:getHp() <= 1 and (sgs.card_lack[enemy:objectName()]["Jink"] == 1 or getCardsNum("Jink", enemy, self.player) == 0) then
@@ -596,9 +629,9 @@ sgs.ai_skill_choice.DragonPhoenix = function(self, choices, data)
 		table.removeOne(choices_t, "zhangjiao")
 
 	end
-
-	if #choices_pri > 0 then
-		return choices_pri[math.random(1, #choices_pri)]
+	
+	if #choices_pri > 0 then 
+		return choices_pri[math.random(1, #choices_pri)] 
 	end
 	if #choices_t == 0 then choices_t = string.split(choices, "+") end
 	return choices_t[math.random(1, #choices_t)]

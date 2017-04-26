@@ -1,3 +1,23 @@
+/********************************************************************
+    Copyright (c) 2013-2015 - Mogara
+
+    This file is part of QSanguosha-Hegemony.
+
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    See the LICENSE file for more details.
+
+    Mogara
+    *********************************************************************/
+
 #ifndef CHOOSETRIGGERORDERBOX_H
 #define CHOOSETRIGGERORDERBOX_H
 
@@ -22,7 +42,7 @@ signals:
     void clicked();
     void hovered(bool entering);
 
-    public slots:
+public slots:
     void needDisabled(bool disabled);
 
 protected:
@@ -39,18 +59,20 @@ private:
     TriggerOptionButton(QGraphicsObject *parent, const QString &player, const QString &skillStr, const int width);
     bool isPreferentialSkillOf(const TriggerOptionButton *other) const;
 
+    int getSkinId(const QString &playerName, const QString &generalName) const;
     QString getGeneralNameBySkill() const;
 
     QString m_skillStr;
     QString m_text;
     QString playerName;
+    QString position;
     int width;
 };
 
 class GeneralButton : public QGraphicsObject
 {
     Q_OBJECT
-        friend class ChooseTriggerOrderBox;
+    friend class ChooseTriggerOrderBox;
 
 signals:
     void clicked();
@@ -81,7 +103,7 @@ public:
     void chooseOption(const QString &reason, const QStringList &options, const bool optional);
     void clear();
 
-    public slots:
+public slots:
     void reply();
 
 private:

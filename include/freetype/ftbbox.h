@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    FreeType exact bbox computation (specification).                     */
 /*                                                                         */
-/*  Copyright 1996-2016 by                                                 */
+/*  Copyright 1996-2001, 2003, 2007, 2011, 2013 by                         */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -27,8 +27,8 @@
   /*************************************************************************/
 
 
-#ifndef FTBBOX_H_
-#define FTBBOX_H_
+#ifndef __FTBBOX_H__
+#define __FTBBOX_H__
 
 
 #include <ft2build.h>
@@ -90,7 +90,7 @@ FT_BEGIN_HEADER
 
 FT_END_HEADER
 
-#endif /* FTBBOX_H_ */
+#endif /* __FTBBOX_H__ */
 
 
 /* END */

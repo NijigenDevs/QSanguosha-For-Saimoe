@@ -1763,15 +1763,11 @@ public:
     {
     }
 
-    virtual bool viewFilter(const Card *to_select) const
+    virtual bool viewFilter(const Card *to_select, ServerPlayer *player) const
     {
         Room *room = Sanguosha->currentRoom();
-        foreach (ServerPlayer *p, room->getPlayers())
-        {
-            if (p->ownSkill("fengwang") && p->hasShownSkill("fengwang") && p->getMark("@excalibur") > 0)
-                return to_select->isKindOf("Weapon") && room->getCardPlace(to_select->getEffectiveId()) == Player::PlaceHand;
-        }
-        return false;
+        return player->ownSkill("fengwang") && player->hasShownSkill("fengwang") && player->getMark("@excalibur") > 0 && 
+            to_select->isKindOf("Weapon") && room->getCardPlace(to_select->getEffectiveId()) == Player::PlaceHand;
     }
 
     virtual const Card *viewAs(const Card *originalCard) const
@@ -2673,16 +2669,16 @@ public:
     {
     }
 
-    virtual bool viewFilter(const Card *to_select) const
+    virtual bool viewFilter(const Card *to_select, ServerPlayer *player) const
     {
-        if (Self == NULL || to_select == NULL)
+        if (player == NULL || to_select == NULL)
             return false;
-        if (Self->getMark("guiyuan_bool") == 1)
+        if (player->getMark("guiyuan_bool") == 1)
         {
             QString guiyuan_type1;
             QString guiyuan_type2;
-            int index1 = Self->getMark("guiyuan_type1");
-            int index2 = Self->getMark("guiyuan_type2");
+            int index1 = player->getMark("guiyuan_type1");
+            int index2 = player->getMark("guiyuan_type2");
             switch (index1)
             {
                 case 1: guiyuan_type1 = "slash"; break;

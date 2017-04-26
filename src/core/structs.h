@@ -1,3 +1,23 @@
+/********************************************************************
+    Copyright (c) 2013-2015 - Mogara
+
+    This file is part of QSanguosha-Hegemony.
+
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    See the LICENSE file for more details.
+
+    Mogara
+    *********************************************************************/
+
 #ifndef _STRUCTS_H
 #define _STRUCTS_H
 
@@ -347,11 +367,13 @@ struct PindianStruct
     bool isSuccess() const;
 
     ServerPlayer *from;
+    QList<ServerPlayer *>tos;
     ServerPlayer *to;
     const Card *from_card;
+    QList<const Card *> to_cards;
     const Card *to_card;
-    int from_number;
-    int to_number;
+    int from_number, to_number;
+    QList<int> to_numbers;
     QString reason;
     bool success;
 };

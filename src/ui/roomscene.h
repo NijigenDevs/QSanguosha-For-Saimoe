@@ -1,3 +1,23 @@
+/********************************************************************
+    Copyright (c) 2013-2015 - Mogara
+
+    This file is part of QSanguosha-Hegemony.
+
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    See the LICENSE file for more details.
+
+    Mogara
+    *********************************************************************/
+
 #ifndef _ROOM_SCENE_H
 #define _ROOM_SCENE_H
 
@@ -18,6 +38,7 @@ class Button;
 class CardContainer;
 class GuanxingBox;
 class CardChooseBox;
+class PindianBox;
 class QSanButton;
 class QGroupBox;
 class ChooseGeneralBox;
@@ -40,9 +61,6 @@ struct RoomLayout;
 #include <QHBoxLayout>
 #include <QMutex>
 #include <QStack>
-#include <QQmlEngine>
-#include <QQmlContext>
-#include <QQmlComponent>
 
 class ScriptExecutor : public QDialog
 {
@@ -51,7 +69,7 @@ class ScriptExecutor : public QDialog
 public:
     ScriptExecutor(QWidget *parent);
 
-    public slots:
+public slots:
     void doScript();
 };
 
@@ -87,7 +105,7 @@ private:
 
     void fillComboBox(QComboBox *ComboBox);
 
-    private slots:
+private slots:
     void disableSource(const QString &currentNature);
 };
 
@@ -100,7 +118,7 @@ public:
     static QString FormatTime(int secs);
     virtual QRectF boundingRect() const;
 
-    public slots:
+public slots:
     void setTime(int secs);
     void setSpeed(qreal speed);
 
@@ -136,6 +154,11 @@ public:
         return cancel_button != NULL && cancel_button->isEnabled();
     }
 
+    inline bool isOkButtonEnabled() const
+    {
+        return ok_button != NULL && ok_button->isEnabled();
+    }
+
     void stopHeroSkinChangingAnimations();
 
     bool m_skillButtonSank;
@@ -149,7 +172,9 @@ public:
 
     GuhuoBox *current_guhuo_box;
 
-    public slots:
+    void updateGlobalCardBox(const ClientPlayer *player, int id = -1);
+
+public slots:
     void addPlayer(ClientPlayer *player);
     void removePlayer(const QString &player_name);
     void loseCards(int moveId, QList<CardsMoveStruct> moves);
@@ -157,7 +182,7 @@ public:
     void keepLoseCardLog(const CardsMoveStruct &move);
     void keepGetCardLog(const CardsMoveStruct &move);
     // choice dialog
-    void chooseGeneral(const QStringList &generals, const bool single_result);
+    void chooseGeneral(const QStringList &generals, const bool single_result, const bool can_convert);
     void chooseSuit(const QStringList &suits);
     void chooseCard(const ClientPlayer *playerName, const QString &flags, const QString &reason,
         bool handcard_visible, Card::HandlingMethod method, QList<int> disabled_ids, QList<int> handcards);
@@ -175,6 +200,7 @@ public:
     void useSelectedCard();
     void updateStatus(Client::Status oldStatus, Client::Status newStatus);
     void cardMovedinCardchooseBox(const bool enable);
+    void playPindianSuccess(int type, int index);
     void killPlayer(const QString &who);
     void revivePlayer(const QString &who);
     void setDashboardShadow(const QString &who);
@@ -192,6 +218,7 @@ public:
     void handleGameEvent(const QVariant &args);
 
     void doOkButton();
+    void resetButton();
     void doCancelButton();
     void doDiscardButton();
 
@@ -203,6 +230,10 @@ public:
     }
 
     void doGongxin(const QList<int> &card_ids, bool enable_heart, QList<int> enabled_ids);
+
+    void showPile(const QList<int> &card_ids, const QString &nam, const ClientPlayer *target);
+    QString getCurrentShownPileName();
+    void hidePile();
 
     void onTransferButtonActivated();
     void onSkillDeactivated();
@@ -237,6 +268,10 @@ private:
     QMap<int, QList<QList<CardItem *> > > _m_cardsMoveStash;
     Button *add_robot, *fill_robots, *return_to_start_scene;
     QList<Photo *> photos;
+    QList<const ClientPlayer *> global_targets;
+    QHash<const ClientPlayer *, PlayerCardBox *> card_boxes;
+    QList<int> selected_ids;
+    QHash<int, const ClientPlayer *> selected_targets_ids;
     QMap<QString, Photo *> name2photo;
     Dashboard *dashboard;
     TablePile *m_tablePile;
@@ -244,7 +279,6 @@ private:
     QSanButton *ok_button, *cancel_button, *discard_button;
     QMenu *miscellaneous_menu;
     Window *prompt_box;
-    Window *pindian_box;
     CardItem *pindian_from_card, *pindian_to_card;
     QGraphicsItem *control_panel;
     QMap<PlayerCardContainer *, const ClientPlayer *> item2player;
@@ -255,6 +289,7 @@ private:
 
     QList<QGraphicsPixmapItem *> role_items;
     CardContainer *m_cardContainer;
+    CardContainer *pileContainer;
 
     QList<QSanSkillButton *> m_skillButtons;
 
@@ -270,6 +305,8 @@ private:
     GuanxingBox *m_guanxingBox;
 
     CardChooseBox *m_cardchooseBox;
+
+    PindianBox *m_pindianBox;
 
     ChooseGeneralBox *m_chooseGeneralBox;
 
@@ -348,14 +385,13 @@ private:
     void cancelViewAsSkill();
     void highlightSkillButton(const QString &skillName,
         const CardUseStruct::CardUseReason reason = CardUseStruct::CARD_USE_REASON_UNKNOWN,
-        const QString &pattern = QString());
+        const QString &pattern = QString(), const QString &head = QString());
 
     void freeze();
     void addRestartButton(QDialog *dialog);
     QGraphicsItem *createDashboardButtons();
     void createReplayControlBar();
 
-    void showPindianBox(const QString &from_name, int from_id, const QString &to_name, int to_id, const QString &reason);
     void setChatBoxVisible(bool show);
 
     QRect getBubbleChatBoxShowArea(const QString &who) const;
@@ -368,9 +404,9 @@ private:
     void doAppearingAnimation(const QString &name, const QStringList &args);
     void doLightboxAnimation(const QString &name, const QStringList &args);
     void doIndicate(const QString &name, const QStringList &args);
-    void doHuashen(const QString &, const QStringList &args);
+    void doHuashen(const QString &name, const QStringList &args);
+    void doBattleArray(const QString &name, const QStringList &args);
     EffectAnimation *animations;
-    bool pindian_success;
 
     // re-layout attempts
     void _dispersePhotos(QList<Photo *> &photos, QRectF disperseRegion, Qt::Orientation orientation, Qt::Alignment align);
@@ -381,13 +417,9 @@ private:
 
     QRectF _m_infoPlane;
 
-    QQmlEngine *_m_animationEngine;
-    QQmlContext *_m_animationContext;
-    QQmlComponent *_m_animationComponent;
-
     QSet<HeroSkinContainer *> m_heroSkinContainers;
 
-    private slots:
+private slots:
     void onSceneRectChanged(const QRectF &rect);
 
     void fillCards(const QList<int> &card_ids, const QList<int> &disabled_ids = QList<int>());
@@ -400,8 +432,8 @@ private:
     void changeHp(const QString &who, int delta, DamageStruct::Nature nature, bool losthp);
     void changeMaxHp(const QString &who, int delta);
     void moveFocus(const QStringList &who, QSanProtocol::Countdown);
-    void setEmotion(const QString &who, const QString &emotion);
-    void setEmotion(const QString &who, const QString &emotion, bool permanent);
+    void setEmotion(const QString &who, const QString &emotion, bool playback = false, int duration = 0);
+    void setEmotion(const QString &who, const QString &emotion, bool permanent, bool playback, int duration);
     void showSkillInvocation(const QString &who, const QString &skill_name);
     void doAnimation(int name, const QStringList &args);
     void showOwnerButtons(bool owner);
@@ -429,9 +461,7 @@ private:
     void takeAmazingGrace(ClientPlayer *taker, int card_id, bool move_cards);
 
     void attachSkill(const QString &skill_name, const bool &head = true);
-    void detachSkill(const QString &skill_name);
-
-    void doPindianAnimation();
+    void detachSkill(const QString &skill_name, bool head);
 
     void updateHandcardNum();
 

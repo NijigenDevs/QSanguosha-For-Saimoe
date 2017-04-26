@@ -1,22 +1,42 @@
+/********************************************************************
+    Copyright (c) 2013-2015 - Mogara
+
+    This file is part of QSanguosha-Hegemony.
+
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    See the LICENSE file for more details.
+
+    Mogara
+    *********************************************************************/
+
 #ifndef _WRAPPED_CARD_H
 #define _WRAPPED_CARD_H
 
 #include "card.h"
 
-    // This is a wrapper class around a card. Each card id should have one and only one WrappedCard
-    // copy in each room after game initialization is done. Each room's WrappedCards are isolated,
-    // but inside the room they are shared and synced between server/client.
-    //
-    // WrappedCard's internal card is only intended to provide CardEffect (the card face). The suit,
-    // number should not be modified to reflect the updated suit/number of WrappedCard. The modified
-    // suit/number/flags/... are maintained in WrappedCard's own member variables.
-    //
-    // All WrappedCard's member function that takes a Card as parameter will take over the Card passed
-    // in, meaning that the caller is resposible for allocating the memory, but WrappedCard is responsible
-    // for destroying it. No caller should ever delete any card that has been passed in to any member function
-    // of WrappedCard that takes Card * as parameter (unless the parameter is (const Card *)).
-    //
-    // WrappedCard should never have any subcard!!! It's a concrete, single piece card in the room no matter when.
+// This is a wrapper class around a card. Each card id should have one and only one WrappedCard
+// copy in each room after game initialization is done. Each room's WrappedCards are isolated,
+// but inside the room they are shared and synced between server/client.
+//
+// WrappedCard's internal card is only intended to provide CardEffect (the card face). The suit,
+// number should not be modified to reflect the updated suit/number of WrappedCard. The modified
+// suit/number/flags/... are maintained in WrappedCard's own member variables.
+//
+// All WrappedCard's member function that takes a Card as parameter will take over the Card passed
+// in, meaning that the caller is resposible for allocating the memory, but WrappedCard is responsible
+// for destroying it. No caller should ever delete any card that has been passed in to any member function
+// of WrappedCard that takes Card * as parameter (unless the parameter is (const Card *)).
+//
+// WrappedCard should never have any subcard!!! It's a concrete, single piece card in the room no matter when.
 
 class WrappedCard : public Card
 {

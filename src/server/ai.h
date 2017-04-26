@@ -1,3 +1,23 @@
+/********************************************************************
+    Copyright (c) 2013-2015 - Mogara
+
+    This file is part of QSanguosha-Hegemony.
+
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    See the LICENSE file for more details.
+
+    Mogara
+    *********************************************************************/
+
 #ifndef _AI_H
 #define _AI_H
 
@@ -19,7 +39,7 @@ typedef int LuaFunction;
 class AI : public QObject
 {
     Q_OBJECT
-        Q_ENUMS(Relation)
+    Q_ENUMS(Relation)
 
 public:
     AI(ServerPlayer *player);
@@ -45,6 +65,7 @@ public:
     virtual QMap<QString, QList<int> > askForMoveCards(const QList<int> &upcards, const QList<int> &downcards, const QString &reason, const QString &pattern, int min_num, int max_num) = 0;
     virtual const Card *askForNullification(const Card *trick, ServerPlayer *from, ServerPlayer *to, bool positive) = 0;
     virtual int askForCardChosen(ServerPlayer *who, const QString &flags, const QString &reason, Card::HandlingMethod method, const QList<int> &disabled_ids) = 0;
+    virtual QList<int> askForCardsChosen(const QList<ServerPlayer *> &targets, const QString &flags, const QString &reason, int min, int max, const QList<int> &disabled_ids) = 0;
     virtual const Card *askForCard(const QString &pattern, const QString &prompt, const QVariant &data) = 0;
     virtual QString askForUseCard(const QString &pattern, const QString &prompt, const Card::HandlingMethod method) = 0;
     virtual int askForAG(const QList<int> &card_ids, bool refusable, const QString &reason) = 0;
@@ -79,12 +100,13 @@ public:
     virtual QMap<QString, QList<int> >askForMoveCards(const QList<int> &upcards, const QList<int> &downcards, const QString &reason, const QString &pattern, int min_num, int max_num);
     virtual const Card *askForNullification(const Card *trick, ServerPlayer *from, ServerPlayer *to, bool positive);
     virtual int askForCardChosen(ServerPlayer *who, const QString &flags, const QString &reason, Card::HandlingMethod method, const QList<int> &disabled_ids);
+    virtual QList<int> askForCardsChosen(const QList<ServerPlayer *> &targets, const QString &flags, const QString &reason, int min, int max, const QList<int> &disabled_ids);
     virtual const Card *askForCard(const QString &pattern, const QString &prompt, const QVariant &data);
     virtual QString askForUseCard(const QString &pattern, const QString &prompt, const Card::HandlingMethod method);
     virtual int askForAG(const QList<int> &card_ids, bool refusable, const QString &reason);
     virtual const Card *askForCardShow(ServerPlayer *requestor, const QString &reason);
     virtual const Card *askForPindian(ServerPlayer *requestor, const QString &reason);
-    virtual QList<ServerPlayer *> askForPlayersChosen(const QList<ServerPlayer *> &targets, const QString &reason, int max_num, int min_num);
+    virtual QList<ServerPlayer *> askForPlayersChosen(const QList<ServerPlayer *> &targets, const QString &reason,int max_num, int min_num);
     virtual const Card *askForSinglePeach(ServerPlayer *dying);
     virtual ServerPlayer *askForYiji(const QList<int> &cards, const QString &reason, int &card_id);
     virtual void askForGuanxing(const QList<int> &cards, QList<int> &up, QList<int> &bottom, int guanxing_type);
@@ -113,8 +135,9 @@ public:
     virtual const Card *askForNullification(const Card *trick, ServerPlayer *from, ServerPlayer *to, bool positive);
     virtual QString askForChoice(const QString &skill_name, const QString &choices, const QVariant &data);
     virtual int askForCardChosen(ServerPlayer *who, const QString &flags, const QString &reason, Card::HandlingMethod method, const QList<int> &disabled_ids);
+    virtual QList<int> askForCardsChosen(const QList<ServerPlayer *> &targets, const QString &flags, const QString &reason, int min, int max, const QList<int> &disabled_ids);
     virtual const Card *askForCard(const QString &pattern, const QString &prompt, const QVariant &data);
-    virtual QList<ServerPlayer *> askForPlayersChosen(const QList<ServerPlayer *> &targets, const QString &reason, int max, int min);
+    virtual QList<ServerPlayer *> askForPlayersChosen(const QList<ServerPlayer *> &targets, const QString &reason,int max,int min);
     virtual int askForAG(const QList<int> &card_ids, bool refusable, const QString &reason);
     virtual const Card *askForSinglePeach(ServerPlayer *dying);
     virtual const Card *askForPindian(ServerPlayer *requestor, const QString &reason);
@@ -133,6 +156,7 @@ private:
     void pushQIntList(lua_State *L, const QList<int> &list);
     void reportError(lua_State *L);
     bool getTable(lua_State *L, QList<int> &table);
+    bool StringListgetTable(lua_State *L, QStringList &table);
 };
 
 #endif

@@ -1,3 +1,23 @@
+/********************************************************************
+    Copyright (c) 2013-2015 - Mogara
+
+    This file is part of QSanguosha-Hegemony.
+
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    See the LICENSE file for more details.
+
+    Mogara
+    *********************************************************************/
+
 #ifndef _ENGINE_H
 #define _ENGINE_H
 
@@ -95,6 +115,9 @@ public:
     void addScenario(Scenario *scenario);
     const Scenario *getScenario(const QString &name) const;
     void addPackage(const QString &name);
+    //void addConvertGenerals();
+    QStringList getConvertGenerals(const QString &name) const;
+    QString getMainGenerals(const QString &name) const;
 
     const General *getGeneral(const QString &name) const;
     int getGeneralCount(bool include_banned = false) const;
@@ -163,7 +186,7 @@ public:
     // Mogara
     // March 17 2014
     //************************************
-    QStringList getLimitedGeneralNames() const;
+    QStringList getLimitedGeneralNames(bool include_convert = false) const;
     QStringList getGeneralNames() const;
     GeneralList getGeneralList() const;
 
@@ -172,6 +195,8 @@ public:
     void playSkillAudioEffect(const QString &skill_name, int index) const;
 
     const ProhibitSkill *isProhibited(const Player *from, const Player *to, const Card *card, const QList<const Player *> &others = QList<const Player *>()) const;
+    const FixCardSkill *isCardFixed(const Player *from, const Player *to, const QString &flags, Card::HandlingMethod method) const;
+    const ViewHasSkill *ViewHas(const Player *player, const QString &skill_name, const QString &flag) const;
     int correctDistance(const Player *from, const Player *to) const;
     int correctMaxCards(const ServerPlayer *target, bool fixed = false, MaxCardsType::MaxCardsCount type = MaxCardsType::Max) const;
     int correctCardTarget(const TargetModSkill::ModType type, const Player *from, const Card *card) const;
@@ -189,6 +214,7 @@ public:
     bool isGeneralHidden(const QString &general_name) const;
 
     TransferSkill *getTransfer() const;
+    QList<Card *> getCards() const;
 
 private:
     void _loadMiniScenarios();
@@ -204,11 +230,14 @@ private:
     QHash<QThread *, QObject *> m_rooms;
     QMap<QString, QString> modes;
     QMultiMap<QString, QString> related_skills;
+    //QMultiMap<QString, QString> related_generals;
     mutable QMap<QString, const CardPattern *> patterns;
     mutable QList<ExpPattern *> enginePatterns;
 
     // special skills
     QList<const ProhibitSkill *> prohibit_skills;
+    QList<const FixCardSkill *> fixcard_skills;
+    QList<const ViewHasSkill *> viewhas_skills;
     QList<const DistanceSkill *> distance_skills;
     QList<const MaxCardsSkill *> maxcards_skills;
     QList<const TargetModSkill *> targetmod_skills;

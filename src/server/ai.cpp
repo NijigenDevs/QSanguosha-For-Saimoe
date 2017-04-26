@@ -1,3 +1,23 @@
+/********************************************************************
+    Copyright (c) 2013-2015 - Mogara
+
+    This file is part of QSanguosha-Hegemony.
+
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    See the LICENSE file for more details.
+
+    Mogara
+    *********************************************************************/
+
 #include "ai.h"
 #include "serverplayer.h"
 #include "engine.h"
@@ -79,7 +99,7 @@ QList<ServerPlayer *> AI::getEnemies() const
 {
     QList<ServerPlayer *> players = room->getOtherPlayers(self);
     QList<ServerPlayer *> enemies;
-    foreach (ServerPlayer *p, players)
+    foreach(ServerPlayer *p, players)
         if (isEnemy(p)) enemies << p;
 
     return enemies;
@@ -89,7 +109,7 @@ QList<ServerPlayer *> AI::getFriends() const
 {
     QList<ServerPlayer *> players = room->getOtherPlayers(self);
     QList<ServerPlayer *> friends;
-    foreach (ServerPlayer *p, players)
+    foreach(ServerPlayer *p, players)
         if (isFriend(p)) friends << p;
 
     return friends;
@@ -114,12 +134,9 @@ TrustAI::~TrustAI()
 void TrustAI::activate(CardUseStruct &card_use)
 {
     QList<const Card *> cards = self->getHandcards();
-    foreach (const Card *card, cards)
-    {
-        if (card->targetFixed())
-        {
-            if (useCard(card))
-            {
+    foreach (const Card *card, cards) {
+        if (card->targetFixed()) {
+            if (useCard(card)) {
                 card_use.card = card;
                 card_use.from = self;
                 return;
@@ -130,45 +147,42 @@ void TrustAI::activate(CardUseStruct &card_use)
 
 bool TrustAI::useCard(const Card *card)
 {
-    if (card->isKindOf("EquipCard"))
-    {
+    if (card->isKindOf("EquipCard")) {
         const EquipCard *equip = qobject_cast<const EquipCard *>(card->getRealCard());
-        switch (equip->location())
-        {
-            case EquipCard::WeaponLocation:
-            {
-                WrappedCard *weapon = self->getWeapon();
-                if (weapon == NULL)
-                    return true;
-                const Weapon *new_weapon = qobject_cast<const Weapon *>(equip);
-                const Weapon *ole_weapon = qobject_cast<const Weapon *>(weapon->getRealCard());
-                return new_weapon->getRange() > ole_weapon->getRange();
-            }
-            case EquipCard::ArmorLocation: return !self->getArmor();
-            case EquipCard::OffensiveHorseLocation: return !self->getOffensiveHorse();
-            case EquipCard::DefensiveHorseLocation: return !self->getDefensiveHorse();
-            case EquipCard::TreasureLocation: return !self->getTreasure();
-            default:
+        switch (equip->location()) {
+        case EquipCard::WeaponLocation: {
+            WrappedCard *weapon = self->getWeapon();
+            if (weapon == NULL)
                 return true;
+            const Weapon *new_weapon = qobject_cast<const Weapon *>(equip);
+            const Weapon *ole_weapon = qobject_cast<const Weapon *>(weapon->getRealCard());
+            return new_weapon->getRange() > ole_weapon->getRange();
+        }
+        case EquipCard::ArmorLocation: return !self->getArmor();
+        case EquipCard::OffensiveHorseLocation: return !self->getOffensiveHorse();
+        case EquipCard::DefensiveHorseLocation: return !self->getDefensiveHorse();
+        case EquipCard::TreasureLocation: return !self->getTreasure();
+        default:
+            return true;
         }
     }
     return false;
 }
 
-QList<int> TrustAI::askForExchange(const QString &, const QString &pattern, int, int min_num, const QString &expand_pile)
+QList<int> TrustAI::askForExchange(const QString &, const QString &pattern, int , int min_num, const QString &expand_pile)
 {
     QList<int> to_discard;
     if (min_num == 0)
         return to_discard;
     else
-        return self->forceToDiscard(min_num, pattern, expand_pile, false);
+        return self->forceToDiscard(min_num,pattern,expand_pile,false);
 }
 
 QList<ServerPlayer *> TrustAI::askForPlayersChosen(const QList<ServerPlayer *> &targets, const QString &reason, int min_num, int max_num)
 {
     Q_UNUSED(reason)
-        Q_UNUSED(max_num)
-        QList<ServerPlayer *> result;
+    Q_UNUSED(max_num)
+    QList<ServerPlayer *> result;
     QList<ServerPlayer *> copy = targets;
     while (result.length() < min_num)
         result << copy.takeAt(qrand() % copy.length());
@@ -221,9 +235,14 @@ const Card *TrustAI::askForNullification(const Card *, ServerPlayer *, ServerPla
     return NULL;
 }
 
-int TrustAI::askForCardChosen(ServerPlayer *, const QString &, const QString &, Card::HandlingMethod, const QList<int> &)
+int TrustAI::askForCardChosen(ServerPlayer *, const QString &, const QString &, Card::HandlingMethod,const QList<int> &)
 {
     return -1;
+}
+
+QList<int> TrustAI::askForCardsChosen(const QList<ServerPlayer *> &, const QString &, const QString &, int, int, const QList<int> &)
+{
+    return QList<int>();
 }
 
 const Card *TrustAI::askForCard(const QString &pattern, const QString &prompt, const QVariant &data)
@@ -233,7 +252,7 @@ const Card *TrustAI::askForCard(const QString &pattern, const QString &prompt, c
 
     response_skill->setPattern(pattern);
     QList<const Card *> cards = self->getHandcards();
-    foreach (const Card *card, cards)
+    foreach(const Card *card, cards)
         if (response_skill->matchPattern(self, card)) return card;
 
     return NULL;
@@ -284,11 +303,9 @@ const Card *TrustAI::askForPindian(ServerPlayer *requestor, const QString &)
 
 const Card *TrustAI::askForSinglePeach(ServerPlayer *dying)
 {
-    if (isFriend(dying))
-    {
+    if (isFriend(dying)) {
         QList<const Card *> cards = self->getHandcards();
-        foreach (const Card *card, cards)
-        {
+        foreach (const Card *card, cards) {
             if (card->isKindOf("Peach") && !self->hasFlag("Global_PreventPeach"))
                 return card;
             if (card->isKindOf("Analeptic") && dying == self)
@@ -306,13 +323,10 @@ ServerPlayer *TrustAI::askForYiji(const QList<int> &, const QString &, int &)
 
 void TrustAI::askForGuanxing(const QList<int> &cards, QList<int> &up, QList<int> &bottom, int guanxing_type)
 {
-    if (guanxing_type == Room::GuanxingDownOnly)
-    {
+    if (guanxing_type == Room::GuanxingDownOnly) {
         bottom = cards;
         up.clear();
-    }
-    else
-    {
+    } else {
         up = cards;
         bottom.clear();
     }
@@ -339,8 +353,7 @@ QString LuaAI::askForUseCard(const QString &pattern, const QString &prompt, cons
     const char *result = lua_tostring(L, -1);
     lua_pop(L, 1);
 
-    if (error)
-    {
+    if (error) {
         const char *error_msg = result;
         room->output(error_msg);
         return ".";
@@ -361,8 +374,7 @@ QList<int> LuaAI::askForDiscard(const QString &reason, int discard_num, int min_
     lua_pushboolean(L, include_equip);
 
     int error = lua_pcall(L, 6, 1, 0);
-    if (error)
-    {
+    if (error) {
         reportError(L);
         return TrustAI::askForDiscard(reason, discard_num, min_num, optional, include_equip);
     }
@@ -387,21 +399,18 @@ QMap<QString, QList<int> > LuaAI::askForMoveCards(const QList<int> &upcards, con
     lua_pushinteger(L, max_num);
 
     int error = lua_pcall(L, 7, 2, 0);
-    if (error)
-    {
+    if (error) {
         reportError(L);
         return TrustAI::askForMoveCards(upcards, downcards, reason, pattern, min_num, max_num);
     }
 
     QList<int> top_cards, bottom_cards;
-    if (getTable(L, bottom_cards) && getTable(L, top_cards))
-    {
+    if (getTable(L, bottom_cards) && getTable(L, top_cards)) {
         QMap<QString, QList<int> > returns;
         returns["top"] = top_cards;
         returns["bottom"] = bottom_cards;
         return returns;
-    }
-    else
+    } else
         return TrustAI::askForMoveCards(upcards, downcards, reason, pattern, min_num, max_num);
 }
 
@@ -417,33 +426,50 @@ QList<int> LuaAI::askForExchange(const QString &reason, const QString &pattern, 
     lua_pushstring(L, expand_pile.toLatin1());
 
     int error = lua_pcall(L, 6, 1, 0);
-    if (error)
-    {
+    if (error) {
         reportError(L);
-        return TrustAI::askForExchange(reason, pattern, max_num, min_num, expand_pile);
+        return TrustAI::askForExchange(reason,pattern,max_num,min_num,expand_pile);
     }
 
     QList<int> result;
     if (getTable(L, result))
         return result;
     else
-        return TrustAI::askForExchange(reason, pattern, max_num, min_num, expand_pile);
+        return TrustAI::askForExchange(reason,pattern,max_num,min_num,expand_pile);
 }
 
 bool LuaAI::getTable(lua_State *L, QList<int> &table)
 {
-    if (!lua_istable(L, -1))
-    {
+    if (!lua_istable(L, -1)) {
         lua_pop(L, 1);
         return false;
     }
 
     size_t len = lua_rawlen(L, -1);
     size_t i;
-    for (i = 0; i < len; i++)
-    {
+    for (i = 0; i < len; i++) {
         lua_rawgeti(L, -1, i + 1);
         table << lua_tointeger(L, -1);
+        lua_pop(L, 1);
+    }
+
+    lua_pop(L, 1);
+
+    return true;
+}
+
+bool LuaAI::StringListgetTable(lua_State *L, QStringList &table)
+{
+    if (!lua_istable(L, -1)) {
+        lua_pop(L, 1);
+        return false;
+    }
+
+    size_t len = lua_rawlen(L, -1);
+    size_t i;
+    for (i = 0; i < len; i++) {
+        lua_rawgeti(L, -1, i + 1);
+        table << lua_tostring(L, -1);
         lua_pop(L, 1);
     }
 
@@ -462,8 +488,7 @@ int LuaAI::askForAG(const QList<int> &card_ids, bool refusable, const QString &r
     lua_pushstring(L, reason.toLatin1());
 
     int error = lua_pcall(L, 4, 1, 0);
-    if (error)
-    {
+    if (error) {
         reportError(L);
         return TrustAI::askForAG(card_ids, refusable, reason);
     }
@@ -486,8 +511,7 @@ void LuaAI::pushQIntList(lua_State *L, const QList<int> &list)
 {
     lua_createtable(L, list.length(), 0);
 
-    for (int i = 0; i < list.length(); i++)
-    {
+    for (int i = 0; i < list.length(); i++) {
         lua_pushinteger(L, list.at(i));
         lua_rawseti(L, -2, i + 1);
     }
@@ -509,8 +533,7 @@ void LuaAI::askForGuanxing(const QList<int> &cards, QList<int> &up, QList<int> &
     lua_pushinteger(L, guanxing_type);
 
     int error = lua_pcall(L, 3, 2, 0);
-    if (error)
-    {
+    if (error) {
         reportError(L);
         return TrustAI::askForGuanxing(cards, up, bottom, guanxing_type);
     }

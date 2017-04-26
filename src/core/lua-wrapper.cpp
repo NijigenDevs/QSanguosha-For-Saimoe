@@ -1,3 +1,23 @@
+/********************************************************************
+    Copyright (c) 2013-2015 - Mogara
+
+    This file is part of QSanguosha-Hegemony.
+
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    See the LICENSE file for more details.
+
+    Mogara
+    *********************************************************************/
+
 #include "lua-wrapper.h"
 #include "util.h"
 
@@ -39,9 +59,19 @@ int LuaBattleArraySkill::getPriority() const
     return priority;
 }
 
+LuaProhibitSkill::LuaProhibitSkill(const char *name)
+    : ProhibitSkill(name), is_prohibited(0)
+{
+}
+
+LuaFixCardSkill::LuaFixCardSkill(const char *name)
+    : FixCardSkill(name), is_cardfixed(0)
+{
+}
+
 LuaViewAsSkill::LuaViewAsSkill(const char *name, const char *response_pattern, bool response_or_use, const char *expand_pile, const char *limit_mark)
     : ViewAsSkill(name), view_filter(0), view_as(0),
-    enabled_at_play(0), enabled_at_response(0), enabled_at_nullification(0)
+    enabled_at_play(0), enabled_at_response(0), enabled_at_nullification(0), in_pile(0)
 {
     this->response_pattern = response_pattern;
     this->response_or_use = response_or_use;
@@ -55,6 +85,11 @@ LuaViewAsSkill::LuaViewAsSkill(const char *name, const char *response_pattern, b
 QString LuaViewAsSkill::getGuhuoBox() const
 {
     return guhuo_type;
+}
+
+LuaViewHasSkill::LuaViewHasSkill(const char *name)
+    : ViewHasSkill(name), is_viewhas(0)
+{
 }
 
 LuaFilterSkill::LuaFilterSkill(const char *name)
@@ -92,11 +127,9 @@ LuaSkillCard::LuaSkillCard(const char *name, const char *skillName)
     on_validate(0), on_validate_in_response(0),
     extra_cost(0), on_turn_broken(0)
 {
-    if (name)
-    {
+    if (name) {
         LuaSkillCards.insert(name, this);
-        if (skillName)
-        {
+        if (skillName) {
             m_skillName = skillName;
             LuaSkillCardsSkillName.insert(name, skillName);
         }
@@ -136,8 +169,7 @@ LuaSkillCard *LuaSkillCard::Parse(const QString &str)
     QRegExp e_rx("#(\\w*)\\[(\\w+):(.+)\\]:(.*):(.*)&(.*)");
 
     static QMap<QString, Card::Suit> suit_map;
-    if (suit_map.isEmpty())
-    {
+    if (suit_map.isEmpty()) {
         suit_map.insert("spade", Card::Spade);
         suit_map.insert("club", Card::Club);
         suit_map.insert("heart", Card::Heart);
@@ -153,16 +185,13 @@ LuaSkillCard *LuaSkillCard::Parse(const QString &str)
     QString user_string;
     QString show_skill;
 
-    if (rx.exactMatch(str))
-    {
+    if (rx.exactMatch(str)) {
         texts = rx.capturedTexts();
         name = texts.at(1);
         subcard_str = texts.at(2);
         user_string = texts.at(3);
         show_skill = texts.at(4);
-    }
-    else if (e_rx.exactMatch(str))
-    {
+    } else if (e_rx.exactMatch(str)) {
         texts = e_rx.capturedTexts();
         name = texts.at(1);
         suit = texts.at(2);
@@ -170,8 +199,7 @@ LuaSkillCard *LuaSkillCard::Parse(const QString &str)
         subcard_str = texts.at(4);
         user_string = texts.at(5);
         show_skill = texts.at(6);
-    }
-    else
+    } else
         return NULL;
 
     const LuaSkillCard *c = LuaSkillCards.value(name, NULL);
@@ -185,8 +213,7 @@ LuaSkillCard *LuaSkillCard::Parse(const QString &str)
 
     if (!suit.isEmpty())
         new_card->setSuit(suit_map.value(suit, Card::NoSuit));
-    if (!number.isEmpty())
-    {
+    if (!number.isEmpty()) {
         int num = 0;
         if (number == "A")
             num = 1;
@@ -319,6 +346,7 @@ LuaArmor *LuaArmor::clone(Card::Suit suit, int number) const
 
     return new_card;
 }
+
 
 LuaTreasure::LuaTreasure(Card::Suit suit, int number, const char *obj_name, const char *class_name)
     : Treasure(suit, number)

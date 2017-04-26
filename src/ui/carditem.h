@@ -1,3 +1,23 @@
+/********************************************************************
+    Copyright (c) 2013-2015 - Mogara
+
+    This file is part of QSanguosha-Hegemony.
+
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    See the LICENSE file for more details.
+
+    Mogara
+    *********************************************************************/
+
 #ifndef _CARD_ITEM_H
 #define _CARD_ITEM_H
 
@@ -29,7 +49,7 @@ private:
     int _id;
     CardItem *_cardItem;
 
-    private slots:
+private slots:
     void onClicked();
 
 signals:
@@ -78,7 +98,7 @@ public:
 
     void showFrame(const QString &frame);
     void hideFrame();
-    void showAvatar(const General *general);
+    void showAvatar(const General *general, const QString card_name = QString());
     void hideAvatar();
     void setAutoBack(bool auto_back);
     void setFootnote(const QString &desc);
@@ -157,6 +177,7 @@ protected:
 
 private:
     int m_cardId;
+    const Card *Vcard = NULL;
     QString _m_frameType, _m_avatarName;
     QPointF home_pos;
     bool outerGlowEffectEnabled;
@@ -177,10 +198,10 @@ signals:
     void general_changed();
     void hoverChanged(const bool &enter);
 
-    private slots:
+private slots:
     void currentAnimationDestroyed();
 
-    public slots:
+public slots:
     virtual void changeGeneral(const QString &generalName);
     void onTransferEnabledChanged();
 };

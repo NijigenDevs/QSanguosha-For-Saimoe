@@ -1,3 +1,23 @@
+/********************************************************************
+    Copyright (c) 2013-2015 - Mogara
+
+    This file is part of QSanguosha-Hegemony.
+
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    See the LICENSE file for more details.
+
+    Mogara
+    *********************************************************************/
+
 #include "clientstruct.h"
 #include "engine.h"
 #include "client.h"
@@ -33,8 +53,7 @@ time_t ServerInfoStruct::getCommandTimeout(QSanProtocol::CommandType command, QS
 bool ServerInfoStruct::parse(const QString &str)
 {
     QRegExp rx("(.*):(@?\\w+):(\\d+):(\\d+):([\\w-]+(?:\\+[\\w-]+)*)?:([RCFAMS]*)");
-    if (!rx.exactMatch(str))
-    {
+    if (!rx.exactMatch(str)) {
         // older version, just take the player count
         int count = str.split(":").at(1).toInt();
         GameMode = QString("%1p").arg(count, 2, 10, QChar('0'));
@@ -42,12 +61,9 @@ bool ServerInfoStruct::parse(const QString &str)
     }
 
     QStringList texts = rx.capturedTexts();
-    if (texts.isEmpty())
-    {
+    if (texts.isEmpty()) {
         DuringGame = false;
-    }
-    else
-    {
+    } else {
         DuringGame = true;
 
         Name = texts.at(1);
@@ -59,8 +75,7 @@ bool ServerInfoStruct::parse(const QString &str)
         QStringList ban_packages = texts.at(5).split("+");
         const QList<const Package *> &packages = Sanguosha->getPackages();
         Extensions.clear();
-        foreach (const Package *package, packages)
-        {
+        foreach (const Package *package, packages) {
             QString package_name = package->objectName();
             if (ban_packages.contains(package_name))
                 package_name = "!" + package_name;
@@ -113,12 +128,10 @@ ServerInfoWidget::ServerInfoWidget(bool show_lack)
     layout->addRow(tr("Operation time"), time_limit_label);
     layout->addRow(tr("Extension packages"), list_widget);
 
-    if (show_lack)
-    {
+    if (show_lack) {
         lack_label = new QLabel;
         layout->addRow(tr("Lack"), lack_label);
-    }
-    else
+    } else
         lack_label = NULL;
 
     setLayout(layout);
@@ -149,8 +162,7 @@ void ServerInfoWidget::fill(const ServerInfoStruct &info, const QString &address
     static QIcon enabled_icon("image/system/enabled.png");
     static QIcon disabled_icon("image/system/disabled.png");
 
-    foreach (const QString &_extension, info.Extensions)
-    {
+    foreach (const QString &_extension, info.Extensions) {
         QString extension = _extension;
         bool checked = !extension.startsWith("!");
         if (!checked)
@@ -166,8 +178,7 @@ void ServerInfoWidget::fill(const ServerInfoStruct &info, const QString &address
 
 void ServerInfoWidget::updateLack(int count)
 {
-    if (lack_label)
-    {
+    if (lack_label) {
         QString path = QString("image/system/number/%1.png").arg(count);
         lack_label->setPixmap(QPixmap(path));
     }

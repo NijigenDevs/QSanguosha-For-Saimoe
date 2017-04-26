@@ -1,3 +1,23 @@
+/********************************************************************
+    Copyright (c) 2013-2015 - Mogara
+
+    This file is part of QSanguosha-Hegemony.
+
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    See the LICENSE file for more details.
+
+    Mogara
+    *********************************************************************/
+
 #include "aux-skills.h"
 #include "client.h"
 #include "standard-shu-generals.h"
@@ -46,13 +66,11 @@ bool DiscardSkill::viewFilter(const QList<const Card *> &selected, const Card *c
 
 const Card *DiscardSkill::viewAs(const QList<const Card *> &cards) const
 {
-    if (cards.length() >= minnum)
-    {
+    if (cards.length() >= minnum) {
         card->clearSubcards();
         card->addSubcards(cards);
         return card;
-    }
-    else
+    } else
         return NULL;
 }
 
@@ -78,11 +96,9 @@ bool ResponseSkill::matchPattern(const Player *player, const Card *card) const
 {
     if (request != Card::MethodNone && player->isCardLimited(card, request))
         return false;
-    if (pattern)
-    {
+    if (pattern) {
         QString pat = pattern->getPatternString();
-        if ((request == Card::MethodUse || request == Card::MethodResponse) && pat.contains("hand"))
-        {
+        if ((request == Card::MethodUse || request == Card::MethodResponse) && pat.contains("hand")) {
             pat.replace("hand", player->getHandPileList().join(","));
         }
         ExpPattern exp_pattern(pat);
@@ -275,12 +291,10 @@ bool ExchangeSkill::viewFilter(const QList<const Card *> &selected, const Card *
 const Card *ExchangeSkill::viewAs(const QList<const Card *> &cards) const
 {
     if (cards.length() == 0) return NULL;
-    if (cards.length() >= minnum)
-    {
+    if (cards.length() >= minnum) {
         card->clearSubcards();
         card->addSubcards(cards);
         return card;
-    }
-    else
+    } else
         return NULL;
 }

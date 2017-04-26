@@ -1,3 +1,23 @@
+/********************************************************************
+    Copyright (c) 2013-2015 - Mogara
+
+    This file is part of QSanguosha-Hegemony.
+
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    See the LICENSE file for more details.
+
+    Mogara
+    *********************************************************************/
+
 #include "carditem.h"
 #include "engine.h"
 #include "skill.h"
@@ -59,16 +79,25 @@ QRectF CardItem::boundingRect() const
 
 void CardItem::setCard(const Card *card)
 {
-    if (card != NULL)
-    {
-        m_cardId = card->getId();
-        const Card *engineCard = Sanguosha->getEngineCard(m_cardId);
-        Q_ASSERT(engineCard != NULL);
-        setObjectName(engineCard->objectName());
-        setToolTip(engineCard->getDescription());
-    }
-    else
-    {
+    if (card != NULL) {
+        if (card->isVirtualCard()) {
+            m_cardId = Card::S_UNKNOWN_CARD_ID;
+            Vcard = card;
+            setObjectName(card->objectName());
+            for (int i = 0; i <= Sanguosha->getCardCount() - 1; i++) {
+                if (Sanguosha->getEngineCard(i)->objectName() == card->objectName()) {
+                    setToolTip(Sanguosha->getEngineCard(i)->getDescription());
+                    break;
+                }
+            }
+        } else {
+            m_cardId = card->getId();
+            const Card *engineCard = Sanguosha->getEngineCard(m_cardId);
+            Q_ASSERT(engineCard != NULL);
+            setObjectName(engineCard->objectName());
+            setToolTip(engineCard->getDescription());
+        }
+    } else {
         m_cardId = Card::S_UNKNOWN_CARD_ID;
         setObjectName("unknown");
     }
@@ -82,8 +111,7 @@ void CardItem::setEnabled(bool enabled)
 CardItem::~CardItem()
 {
     m_animationMutex.lock();
-    if (m_currentAnimation != NULL)
-    {
+    if (m_currentAnimation != NULL) {
         m_currentAnimation->deleteLater();
         m_currentAnimation = NULL;
     }
@@ -94,13 +122,10 @@ void CardItem::changeGeneral(const QString &generalName)
 {
     setObjectName(generalName);
     const General *general = Sanguosha->getGeneral(generalName);
-    if (general)
-    {
+    if (general) {
         _m_isUnknownGeneral = false;
         setToolTip(general->getSkillDescription(true));
-    }
-    else
-    {
+    } else {
         _m_isUnknownGeneral = true;
         setToolTip(QString());
     }
@@ -130,17 +155,13 @@ QPointF CardItem::homePos() const
 
 void CardItem::goBack(bool playAnimation, bool doFade)
 {
-    if (playAnimation)
-    {
+    if (playAnimation) {
         getGoBackAnimation(doFade);
         if (m_currentAnimation != NULL)
             m_currentAnimation->start();
-    }
-    else
-    {
+    } else {
         m_animationMutex.lock();
-        if (m_currentAnimation != NULL)
-        {
+        if (m_currentAnimation != NULL) {
             m_currentAnimation->stop();
             delete m_currentAnimation;
             m_currentAnimation = NULL;
@@ -153,8 +174,7 @@ void CardItem::goBack(bool playAnimation, bool doFade)
 QAbstractAnimation *CardItem::getGoBackAnimation(bool doFade, bool smoothTransition, int duration)
 {
     m_animationMutex.lock();
-    if (m_currentAnimation != NULL)
-    {
+    if (m_currentAnimation != NULL) {
         m_currentAnimation->stop();
         delete m_currentAnimation;
         m_currentAnimation = NULL;
@@ -164,15 +184,13 @@ QAbstractAnimation *CardItem::getGoBackAnimation(bool doFade, bool smoothTransit
     goback->setEasingCurve(QEasingCurve::OutQuad);
     goback->setDuration(duration);
 
-    if (doFade)
-    {
+    if (doFade) {
         QParallelAnimationGroup *group = new QParallelAnimationGroup;
         QPropertyAnimation *disappear = new QPropertyAnimation(this, "opacity");
         double middleOpacity = qMax(opacity(), m_opacityAtHome);
         if (middleOpacity == 0) middleOpacity = 1.0;
         disappear->setEndValue(m_opacityAtHome);
-        if (!smoothTransition)
-        {
+        if (!smoothTransition) {
             disappear->setKeyValueAt(0.2, middleOpacity);
             disappear->setKeyValueAt(0.8, middleOpacity);
             disappear->setDuration(duration);
@@ -182,9 +200,7 @@ QAbstractAnimation *CardItem::getGoBackAnimation(bool doFade, bool smoothTransit
         group->addAnimation(disappear);
 
         m_currentAnimation = group;
-    }
-    else
-    {
+    } else {
         m_currentAnimation = goback;
     }
     m_animationMutex.unlock();
@@ -210,9 +226,11 @@ void CardItem::hideFrame()
     _m_frameType = QString();
 }
 
-void CardItem::showAvatar(const General *general)
+void CardItem::showAvatar(const General *general, const QString card_name)
 {
-    _m_avatarName = general->objectName();
+    QString name = general->objectName();
+    if (!card_name.isEmpty()) name = name + ":" + card_name;
+    _m_avatarName = name;
 }
 
 void CardItem::hideAvatar()
@@ -234,8 +252,7 @@ bool CardItem::isEquipped() const
 
 void CardItem::setFrozen(bool is_frozen, bool update_movable)
 {
-    if (frozen != is_frozen)
-    {
+    if (frozen != is_frozen) {
         frozen = is_frozen;
         if (update_movable || frozen)
             setFlag(QGraphicsItem::ItemIsMovable, !frozen);
@@ -245,10 +262,8 @@ void CardItem::setFrozen(bool is_frozen, bool update_movable)
 
 CardItem *CardItem::FindItem(const QList<CardItem *> &items, int card_id)
 {
-    foreach (CardItem *item, items)
-    {
-        if (item->getCard() == NULL)
-        {
+    foreach (CardItem *item, items) {
+        if (item->getCard() == NULL) {
             if (card_id == Card::S_UNKNOWN_CARD_ID)
                 return item;
             else
@@ -264,10 +279,8 @@ CardItem *CardItem::FindItem(const QList<CardItem *> &items, int card_id)
 void CardItem::setOuterGlowEffectEnabled(const bool &willPlay)
 {
     if (outerGlowEffectEnabled == willPlay) return;
-    if (willPlay)
-    {
-        if (outerGlowEffect == NULL)
-        {
+    if (willPlay) {
+        if (outerGlowEffect == NULL) {
             outerGlowEffect = new QGraphicsDropShadowEffect(this);
             outerGlowEffect->setOffset(0);
             outerGlowEffect->setBlurRadius(18);
@@ -276,11 +289,8 @@ void CardItem::setOuterGlowEffectEnabled(const bool &willPlay)
             setGraphicsEffect(outerGlowEffect);
         }
         connect(this, &CardItem::hoverChanged, outerGlowEffect, &QGraphicsDropShadowEffect::setEnabled);
-    }
-    else
-    {
-        if (outerGlowEffect != NULL)
-        {
+    } else {
+        if (outerGlowEffect != NULL) {
             disconnect(this, &CardItem::hoverChanged, outerGlowEffect, &QGraphicsDropShadowEffect::setEnabled);
             outerGlowEffect->setEnabled(false);
         }
@@ -308,18 +318,18 @@ QColor CardItem::getOuterGlowColor() const
 void CardItem::setTransferable(const bool transferable)
 {
     _transferable = transferable;
-    if (transferable && _transferButton == NULL)
-    {
+    if (transferable && _transferButton == NULL) {
         _transferButton = new TransferButton(this);
+#ifdef Q_OS_ANDROID
+        _transferButton->setScale(2);
+#endif
         _transferButton->setPos(0, -20);
         _transferButton->setEnabled(false);
         _transferButton->hide();
         connect(_transferButton, &TransferButton::_activated, RoomSceneInstance, &RoomScene::onTransferButtonActivated);
         connect(_transferButton, &TransferButton::_deactivated, RoomSceneInstance, &RoomScene::onSkillDeactivated);
         connect(_transferButton, &TransferButton::enabledChanged, this, &CardItem::onTransferEnabledChanged);
-    }
-    else if (!transferable)
-    {
+    } else if (!transferable) {
         _transferButton->hide();
     }
 }
@@ -348,8 +358,7 @@ void CardItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *mouseEvent)
     else
         emit released();
 
-    if (auto_back)
-    {
+    if (auto_back) {
         goBack(true, false);
     }
 }
@@ -359,8 +368,7 @@ void CardItem::mouseMoveEvent(QGraphicsSceneMouseEvent *mouseEvent)
     if (!(flags() & QGraphicsItem::ItemIsMovable)) return;
     QPointF newPos = mapToParent(mouseEvent->pos());
     QPointF totalMove = newPos - _m_lastMousePressScenePos;
-    if (totalMove.x() * totalMove.x() + totalMove.y() * totalMove.y() >= _S_CLICK_JITTER_TOLERANCE)
-    {
+    if (totalMove.x() * totalMove.x() + totalMove.y() * totalMove.y() >= _S_CLICK_JITTER_TOLERANCE) {
         QPointF down_pos = mouseEvent->buttonDownPos(Qt::LeftButton);
         setPos(newPos - this->transform().map(down_pos));
     }
@@ -370,12 +378,10 @@ void CardItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
 {
     if (frozen) return;
 
-    if (hasFocus())
-    {
+    if (hasFocus()) {
         event->accept();
         emit double_clicked();
-    }
-    else
+    } else
         emit toggle_discards();
 }
 
@@ -403,47 +409,67 @@ void CardItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidge
     if (!_m_frameType.isEmpty())
         painter->drawPixmap(G_COMMON_LAYOUT.m_cardFrameArea, G_ROOM_SKIN.getCardAvatarPixmap(_m_frameType));
 
-    if (frozen || !isEnabled())
-    {
+    if (frozen || !isEnabled()) {
         painter->fillRect(G_COMMON_LAYOUT.m_cardMainArea, QColor(100, 100, 100, 255 * opacity()));
         painter->setOpacity(0.7 * opacity());
     }
 
     const Card *card = Sanguosha->getEngineCard(m_cardId);
-    if (!_m_isUnknownGeneral)
-    {
-        if (card || objectName() == "unknown")
-        {
+    if (!_m_isUnknownGeneral) {
+        const General *general = Sanguosha->getGeneral(objectName());
+        if (!card && objectName() != "unknown" && !general) {
             painter->drawPixmap(G_COMMON_LAYOUT.m_cardMainArea,
                 G_ROOM_SKIN.getCardMainPixmap(objectName()));
         }
-        else
-        {
+        else if (card || objectName() == "unknown") {
+            painter->drawPixmap(G_COMMON_LAYOUT.m_cardMainArea,
+                G_ROOM_SKIN.getCardMainPixmap(objectName()));
+        } else {
             painter->drawPixmap(G_COMMON_LAYOUT.m_cardMainArea,
                 G_ROOM_SKIN.getGeneralCardPixmap(objectName(), _skinId));
         }
-    }
-    else
-    {
+    } else {
         painter->drawPixmap(G_COMMON_LAYOUT.m_cardMainArea,
             G_ROOM_SKIN.getPixmap("generalCardBack"));
     }
-    if (card)
-    {
+    if (card) {
         painter->drawPixmap(G_COMMON_LAYOUT.m_cardSuitArea, G_ROOM_SKIN.getCardSuitPixmap(card->getSuit()));
         painter->drawPixmap(G_COMMON_LAYOUT.m_cardNumberArea, G_ROOM_SKIN.getCardNumberPixmap(card->getNumber(), card->isBlack()));
         if (card->isTransferable())
             painter->drawPixmap(G_COMMON_LAYOUT.m_cardTransferableIconArea,
-                G_ROOM_SKIN.getPixmap(QSanRoomSkin::S_SKIN_KEY_CARD_TRANSFERABLE_ICON));
+            G_ROOM_SKIN.getPixmap(QSanRoomSkin::S_SKIN_KEY_CARD_TRANSFERABLE_ICON));
 
         QRect rect = G_COMMON_LAYOUT.m_cardFootnoteArea;
         // Deal with stupid QT...
         if (_m_showFootnote)
             painter->drawImage(rect, _m_footnoteImage);
+    } else if (Vcard != NULL && Vcard->isVirtualCard()) {
+        painter->drawPixmap(G_COMMON_LAYOUT.m_cardSuitArea, G_ROOM_SKIN.getCardSuitPixmap(Vcard->getSuit()));
+
+        if (Vcard->getNumber() > 0)
+            painter->drawPixmap(G_COMMON_LAYOUT.m_cardNumberArea, G_ROOM_SKIN.getCardNumberPixmap(Vcard->getNumber(), !Vcard->isRed()));
+
+        if (Vcard->isTransferable())
+            painter->drawPixmap(G_COMMON_LAYOUT.m_cardTransferableIconArea,
+            G_ROOM_SKIN.getPixmap(QSanRoomSkin::S_SKIN_KEY_CARD_TRANSFERABLE_ICON));
     }
 
-    if (!_m_avatarName.isEmpty())
-        painter->drawPixmap(G_COMMON_LAYOUT.m_cardAvatarArea, G_ROOM_SKIN.getCardAvatarPixmap(_m_avatarName));
+    if (!_m_avatarName.isEmpty()) {
+        QStringList names = _m_avatarName.split(":");
+        painter->drawPixmap(G_COMMON_LAYOUT.m_cardAvatarArea, G_ROOM_SKIN.getCardAvatarPixmap(names.first()));
+        if (names.length() > 1) {
+            IQSanComponentSkin::QSanShadowTextFont font = G_DASHBOARD_LAYOUT.m_skillTextFonts[0];
+            font.m_color = Qt::white;
+            font.m_shadowColor = Qt::darkGray;
+            QString card_name = Sanguosha->translate(names.last());
+            QRect rect = G_COMMON_LAYOUT.m_cardAvatarArea;
+            rect.setX(rect.left() - 10);
+            rect.setY(rect.bottom() - 10);
+            rect.setWidth(60);
+            rect.setHeight(15);
+            font.paintText(painter, rect, Qt::AlignHCenter, card_name);
+        }
+    }
 }
 
 void CardItem::setFootnote(const QString &desc)

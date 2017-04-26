@@ -1,3 +1,23 @@
+/********************************************************************
+    Copyright (c) 2013-2015 - Mogara
+
+    This file is part of QSanguosha-Hegemony.
+
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    See the LICENSE file for more details.
+
+    Mogara
+    *********************************************************************/
+
 #include "banipdialog.h"
 #include "server.h"
 #include "room.h"
@@ -62,13 +82,10 @@ BanIpDialog::BanIpDialog(QWidget *parent, Server *server)
     connect(remove, &QPushButton::clicked, this, &BanIpDialog::removeClicked);
     connect(kick, &QPushButton::clicked, this, &BanIpDialog::kickClicked);
 
-    if (server)
-    {
+    if (server) {
         connect(server, &Server::newPlayer, this, &BanIpDialog::addPlayer);
         loadIPList();
-    }
-    else
-    {
+    } else {
         QMessageBox::warning(this, tr("Warning!"), tr("There is no server running!"));
     }
 
@@ -81,10 +98,8 @@ void BanIpDialog::loadIPList()
 {
     left->clear();
 
-    foreach (Room *room, server->rooms)
-    {
-        foreach (ServerPlayer *p, room->getPlayers())
-        {
+    foreach (Room *room, server->rooms) {
+        foreach (ServerPlayer *p, room->getPlayers()) {
             if (p->getState() != "offline" && p->getState() != "robot")
                 addPlayer(p);
         }
@@ -102,12 +117,10 @@ void BanIpDialog::loadBannedList()
 void BanIpDialog::insertClicked()
 {
     int row = left->currentRow();
-    if (row != -1)
-    {
-        QString ip = left->currentItem()->text().split("::").last();
-
-        if (ip.startsWith("127."))
-        {
+    if (row != -1) {
+        QString ip = "::" + left->currentItem()->text().split("::").last();
+        
+        if (ip.contains(QRegularExpression("127\\.\\d+\\.\\d+\\.\\d+"))) {
             QMessageBox::warning(this, tr("Warning!"), tr("This is your local Loopback Address and can't be banned!"));
             return;
         }
@@ -126,12 +139,11 @@ void BanIpDialog::removeClicked()
 void BanIpDialog::kickClicked()
 {
     int row = left->currentRow();
-    if (row != -1)
-    {
+    if (row != -1) {
         ServerPlayer *p = sp_list[row];
         QStringList split_data = left->currentItem()->text().split("::");
-        QString ip = split_data.takeLast();
-        QString screenName = split_data.join("::");
+        QString ip = "::" + split_data.takeLast();
+        QString screenName = split_data.first();
         if (p->screenName() == screenName && p->getIp() == ip)
             p->kick(); // procedure kick
     }
@@ -160,11 +172,9 @@ void BanIpDialog::addPlayer(ServerPlayer *player)
 void BanIpDialog::removePlayer()
 {
     ServerPlayer *player = qobject_cast<ServerPlayer *>(sender());
-    if (player)
-    {
+    if (player) {
         int row = sp_list.indexOf(player);
-        if (row != -1)
-        {
+        if (row != -1) {
             delete left->takeItem(row);
             sp_list.removeAt(row);
         }

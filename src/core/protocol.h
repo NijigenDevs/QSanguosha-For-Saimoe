@@ -1,3 +1,23 @@
+/********************************************************************
+    Copyright (c) 2013-2015 - Mogara
+
+    This file is part of QSanguosha-Hegemony.
+
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    See the LICENSE file for more details.
+
+    Mogara
+    *********************************************************************/
+
 #ifndef _PROTOCOL_H
 #define _PROTOCOL_H
 
@@ -144,7 +164,9 @@ namespace QSanProtocol
         S_COMMAND_CHANGE_SKIN,
         S_COMMAND_SKILL_MOVECARDS,
         S_COMMAND_MIRROR_MOVECARDS_STEP,
-        S_COMMAND_SET_VISIBLE_CARDS
+        S_COMMAND_SET_VISIBLE_CARDS,
+        S_COMMAND_SET_ACTULGENERAL,
+        S_COMMAND_GLOBAL_CHOOSECARD
     };
 
     enum GameEventType
@@ -164,7 +186,8 @@ namespace QSanProtocol
         S_GAME_EVENT_PLAYER_REFORM,
         S_GAME_EVENT_SKILL_INVOKED,
         S_GAME_EVENT_PAUSE,
-        S_GAME_EVENT_REVEAL_PINDIAN
+        S_GAME_EVENT_REVEAL_PINDIAN,
+        S_GAME_EVENT_HUASHEN
     };
 
     enum AnimateType
@@ -177,6 +200,7 @@ namespace QSanProtocol
         S_ANIMATE_FIRE,
         S_ANIMATE_LIGHTNING,
         S_ANIMATE_HUASHEN,
+        S_ANIMATE_BATTLEARRAY,
     };
 
     enum Game3v3ChooseOrderCommand

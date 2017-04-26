@@ -1,3 +1,23 @@
+/********************************************************************
+    Copyright (c) 2013-2015 - Mogara
+
+    This file is part of QSanguosha-Hegemony.
+
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    See the LICENSE file for more details.
+
+    Mogara
+    *********************************************************************/
+
 #include "uiutils.h"
 
 #include <QPixmap>
@@ -18,10 +38,8 @@ void QSanUiUtils::paintShadow(QPainter *painter, const QImage &image, QColor sha
 #define _NEW_PIXEL_CHANNEL(x, y, channel) (newImage[(y * cols + x) * 4 + channel])
 #define _NEW_PIXEL(x, y) _NEW_PIXEL_CHANNEL(x, y, 3)
 #define _OLD_PIXEL(x, y) (oldImage[(y * cols + x) * 4 + 3])
-    for (int Y = 0; Y < rows; Y++)
-    {
-        for (int X = 0; X < cols; X++)
-        {
+    for (int Y = 0; Y < rows; Y++) {
+        for (int X = 0; X < cols; X++) {
             _NEW_PIXEL_CHANNEL(X, Y, 0) = shadowColor.blue();
             _NEW_PIXEL_CHANNEL(X, Y, 1) = shadowColor.green();
             _NEW_PIXEL_CHANNEL(X, Y, 2) = shadowColor.red();
@@ -29,16 +47,12 @@ void QSanUiUtils::paintShadow(QPainter *painter, const QImage &image, QColor sha
         }
     }
 
-    for (int Y = 0; Y < rows; Y++)
-    {
-        for (int X = 0; X < cols; X++)
-        {
+    for (int Y = 0; Y < rows; Y++) {
+        for (int X = 0; X < cols; X++) {
             uchar oldVal = _OLD_PIXEL(X, Y);
             if (oldVal == 0) continue;
-            for (int dy = -radius; dy <= radius; dy++)
-            {
-                for (int dx = -radius; dx <= radius; dx++)
-                {
+            for (int dy = -radius; dy <= radius; dy++) {
+                for (int dx = -radius; dx <= radius; dx++) {
                     int wx = X + dx;
                     int wy = Y + dy;
                     int dist = dx * dx + dy * dy;
@@ -69,10 +83,8 @@ void QSanUiUtils::paintShadow(QPainter *painter, const QImage &image, QColor sha
 void QSanUiUtils::makeGray(QPixmap &pixmap)
 {
     QImage img = pixmap.toImage();
-    for (int i = 0; i < img.width(); i++)
-    {
-        for (int j = 0; j < img.height(); j++)
-        {
+    for (int i = 0; i < img.width(); i++) {
+        for (int j = 0; j < img.height(); j++) {
             QColor color = QColor::fromRgba(img.pixel(i, j));
             int gray = qGray(color.rgb());
             img.setPixel(i, j, qRgba(gray, gray, gray, color.alpha()));
@@ -91,13 +103,10 @@ static bool _ftLibInitialized = false;
 bool QSanUiUtils::QSanFreeTypeFont::init()
 {
     FT_Error error = FT_Init_FreeType(&_ftlib);
-    if (error)
-    {
+    if (error) {
         qWarning("error loading library");
         return false;
-    }
-    else
-    {
+    } else {
         _ftLibInitialized = true;
         return true;
     }
@@ -105,8 +114,7 @@ bool QSanUiUtils::QSanFreeTypeFont::init()
 
 void QSanUiUtils::QSanFreeTypeFont::quit()
 {
-    if (_ftLibInitialized)
-    {
+    if (_ftLibInitialized) {
         FT_Done_FreeType(_ftlib);
     }
 }
@@ -116,8 +124,7 @@ QString QSanUiUtils::QSanFreeTypeFont::resolveFont(const QString &fontName)
     QString result;
     if (QFile::exists(fontName))
         result = fontName;
-    else
-    {
+    else {
         QStringList dirsToResolve;
         QStringList extsToTry;
         QString sysfolder = QStandardPaths::writableLocation(QStandardPaths::FontsLocation);
@@ -126,14 +133,11 @@ QString QSanUiUtils::QSanFreeTypeFont::resolveFont(const QString &fontName)
         dirsToResolve.push_back("./font");
         extsToTry.push_back("ttf");
         extsToTry.push_back("ttc");
-        foreach (const QString &sdir, dirsToResolve)
-        {
-            foreach (const QString &ext, extsToTry)
-            {
+        foreach (const QString &sdir, dirsToResolve) {
+            foreach (const QString &ext, extsToTry) {
                 QDir dir(sdir);
                 QString filePath = dir.filePath(QString("%1.%2").arg(fontName).arg(ext));
-                if (QFile::exists(filePath))
-                {
+                if (QFile::exists(filePath)) {
                     result = filePath;
                     break;
                 }
@@ -192,31 +196,26 @@ bool QSanUiUtils::QSanFreeTypeFont::paintQString(QPainter *painter, QString text
     QPoint topLeft = boundingBox.topLeft();
     boundingBox.moveTopLeft(QPoint(0, 0));
 
-    if (orient == Qt::Vertical)
-    {
+    if (orient == Qt::Vertical) {
         xstep = 0;
         if (fontSize.width() > boundingBox.width())
             fontSize.setWidth(boundingBox.width());
         ystep = spacing + fontSize.height();
         // AlignJustify means the text should fill out the whole rect space
         // so we increase the step
-        if (align & Qt::AlignJustify)
-        {
+        if (align & Qt::AlignJustify) {
             ystep = boundingBox.height() / len;
             if (fontSize.height() + spacing > ystep)
                 fontSize.setHeight(ystep - spacing);
         }
-    }
-    else
-    {
+    } else {
         ystep = 0;
         if (fontSize.height() > boundingBox.height())
             fontSize.setHeight(boundingBox.height());
         xstep = spacing + fontSize.width();
         // AlignJustifx means the text should fill out the whole rect space
         // so we increase the step
-        if (align & Qt::AlignJustify)
-        {
+        if (align & Qt::AlignJustify) {
             xstep = boundingBox.width() / len;
             if (fontSize.width() + spacing > xstep)
                 fontSize.setWidth(xstep - spacing);
@@ -230,8 +229,7 @@ bool QSanUiUtils::QSanFreeTypeFont::paintQString(QPainter *painter, QString text
     int imageBytes = imageSize * 4;
     uchar *newImage = new uchar[imageBytes];
 
-    for (int i = 0; i < imageBytes;)
-    {
+    for (int i = 0; i < imageBytes;) {
         newImage[i++] = color.blue();
         newImage[i++] = color.green();
         newImage[i++] = color.red();
@@ -254,27 +252,22 @@ bool QSanUiUtils::QSanFreeTypeFont::paintQString(QPainter *painter, QString text
     FT_UInt previous = 0;
     int currentX = 0;
     int currentY = 0;
-    for (int i = 0; i < len; i++)
-    {
+    for (int i = 0; i < len; i++) {
         FT_Vector  delta;
         FT_UInt glyph_index = FT_Get_Char_Index(face, charcodes[i]);
         error = FT_Load_Glyph(face, glyph_index, FT_LOAD_DEFAULT | FT_LOAD_NO_BITMAP);
         if (error) continue;
 
-        if (useKerning && previous && glyph_index)
-        {
+        if (useKerning && previous && glyph_index) {
             error = FT_Get_Kerning(face, previous, glyph_index, FT_KERNING_DEFAULT, &delta);
             currentX += delta.x >> 6;
         }
         previous = glyph_index;
 
         FT_Bitmap bitmap;
-        if (weight == 0)
-        {
+        if (weight == 0) {
             FT_Load_Glyph(face, glyph_index, FT_LOAD_RENDER);
-        }
-        else
-        {
+        } else {
             FT_Outline_Embolden(&slot->outline, weight);
             FT_Render_Glyph(face->glyph, FT_RENDER_MODE_NORMAL);
         }
@@ -297,8 +290,7 @@ bool QSanUiUtils::QSanFreeTypeFont::paintQString(QPainter *painter, QString text
         // now paint the bitmap to the new region;
         if (currentX < 0) currentX = 0;
         if (currentY < 0) currentY = 0;
-        for (int y = 0; y < fontRows; y++)
-        {
+        for (int y = 0; y < fontRows; y++) {
             if (currentY + y >= rows)
                 break;
             uchar *fontPtr = &_FONT_PIXEL(0, y);
@@ -308,25 +300,19 @@ bool QSanUiUtils::QSanFreeTypeFont::paintQString(QPainter *painter, QString text
                 fontClippedCols = fontCols;
             else
                 fontClippedCols = cols - 1 - currentX;
-            if (!mono)
-            {
-                for (int x = 0; x < fontClippedCols; x++)
-                {
+            if (!mono) {
+                for (int x = 0; x < fontClippedCols; x++) {
                     *imagePtr = *fontPtr;
                     fontPtr++;
                     imagePtr += 4;
                 }
-            }
-            else
-            {
+            } else {
                 int mask = 0x80;
-                for (int x = 0; x < fontClippedCols; x++)
-                {
+                for (int x = 0; x < fontClippedCols; x++) {
                     if (*fontPtr & mask)
                         *imagePtr = 255;
                     mask = mask >> 1;
-                    if (mask == 0)
-                    {
+                    if (mask == 0) {
                         fontPtr++;
                         mask = 0x80;
                     }
@@ -345,16 +331,14 @@ bool QSanUiUtils::QSanFreeTypeFont::paintQString(QPainter *painter, QString text
     _paintTextMutex.unlock();
 
     int xstart = 0, ystart = 0;
-    if (orient == Qt::Vertical)
-    {
+    if (orient == Qt::Vertical) {
         if (hAlign & Qt::AlignLeft)
             xstart = spacing;
         else if (hAlign & Qt::AlignHCenter)
             xstart = (boundingBox.width() - fontSize.width()) / 2;
         else if (hAlign & Qt::AlignRight)
             xstart = boundingBox.right() - spacing - fontSize.width();
-        else
-        {
+        else {
             xstart = 0;
             Q_ASSERT(false);
         }
@@ -365,22 +349,18 @@ bool QSanUiUtils::QSanFreeTypeFont::paintQString(QPainter *painter, QString text
             ystart = (boundingBox.height() - currentY) / 2;
         else if (vAlign & Qt::AlignBottom)
             ystart = boundingBox.height() - currentY - spacing;
-        else
-        {
+        else {
             ystart = 0;
             Q_ASSERT(false);
         }
-    }
-    else
-    {
+    } else {
         if (vAlign & Qt::AlignTop)
             ystart = spacing;
         else if (vAlign & Qt::AlignVCenter)
             ystart = (boundingBox.height() - fontSize.height()) / 2;
         else if (vAlign & Qt::AlignBottom)
             ystart = boundingBox.bottom() - spacing - fontSize.height();
-        else
-        {
+        else {
             ystart = 0;
             Q_ASSERT(false);
         }
@@ -391,8 +371,7 @@ bool QSanUiUtils::QSanFreeTypeFont::paintQString(QPainter *painter, QString text
             xstart = (boundingBox.width() - currentX) / 2;
         else if (hAlign & Qt::AlignRight)
             xstart = boundingBox.right() - currentX - spacing;
-        else
-        {
+        else {
             xstart = 0;
             Q_ASSERT(false);
         }
@@ -440,8 +419,7 @@ bool QSanUiUtils::QSanFreeTypeFont::paintQStringMultiLine(QPainter *painter, QSt
     int imageBytes = imageSize * 4;
     uchar *newImage = new uchar[imageBytes];
 
-    for (int i = 0; i < imageBytes;)
-    {
+    for (int i = 0; i < imageBytes;) {
         newImage[i++] = color.blue();
         newImage[i++] = color.green();
         newImage[i++] = color.red();
@@ -460,13 +438,11 @@ bool QSanUiUtils::QSanFreeTypeFont::paintQStringMultiLine(QPainter *painter, QSt
     _paintTextMutex.lock();
     FT_GlyphSlot slot = face->glyph;
     FT_Error error = FT_Set_Pixel_Sizes(face, fontSize.width(), fontSize.height());
-    for (int i = 0; i < len; i++)
-    {
+    for (int i = 0; i < len; i++) {
         int line = i / charsPerLine;
         int cursor = i % charsPerLine;
         // whenever we start a new line, reset X and increment Y
-        if (cursor == 0 && line > 0)
-        {
+        if (cursor == 0 && line > 0) {
             currentY += ystep;
             currentX = 0;
         }
@@ -476,8 +452,7 @@ bool QSanUiUtils::QSanFreeTypeFont::paintQStringMultiLine(QPainter *painter, QSt
         error = FT_Load_Glyph(face, glyph_index, FT_LOAD_RENDER);
         if (error) continue;
 
-        if (useKerning && previous && glyph_index)
-        {
+        if (useKerning && previous && glyph_index) {
             error = FT_Get_Kerning(face, previous, glyph_index, FT_KERNING_DEFAULT, &delta);
             currentX += delta.x >> 6;
         }
@@ -497,8 +472,7 @@ bool QSanUiUtils::QSanFreeTypeFont::paintQStringMultiLine(QPainter *painter, QSt
             mono = false;
         // now paint the bitmap to the new region;
         Q_ASSERT(currentX >= 0 && currentY >= 0);
-        for (int y = 0; y < fontRows; y++)
-        {
+        for (int y = 0; y < fontRows; y++) {
             if (currentY + y >= rows)
                 break;
 #if (defined(_NEW_PIXEL) || defined(_FONT_PIXEL))
@@ -515,25 +489,19 @@ bool QSanUiUtils::QSanFreeTypeFont::paintQStringMultiLine(QPainter *painter, QSt
                 fontClippedCols = fontCols;
             else
                 fontClippedCols = cols - 1 - currentX;
-            if (!mono)
-            {
-                for (int x = 0; x < fontClippedCols; x++)
-                {
+            if (!mono) {
+                for (int x = 0; x < fontClippedCols; x++) {
                     *imagePtr = *fontPtr;
                     fontPtr++;
                     imagePtr += 4;
                 }
-            }
-            else
-            {
+            } else {
                 int mask = 0x80;
-                for (int x = 0; x < fontClippedCols; x++)
-                {
+                for (int x = 0; x < fontClippedCols; x++) {
                     if (*fontPtr & mask)
                         *imagePtr = 255;
                     mask = mask >> 1;
-                    if (mask == 0)
-                    {
+                    if (mask == 0) {
                         fontPtr++;
                         mask = 0x80;
                     }
@@ -559,8 +527,7 @@ bool QSanUiUtils::QSanFreeTypeFont::paintQStringMultiLine(QPainter *painter, QSt
         xstart = (boundingBox.width() - maxX) / 2;
     else if (hAlign & Qt::AlignRight)
         xstart = boundingBox.right() - maxX - spacing;
-    else
-    {
+    else {
         xstart = 0;
         Q_ASSERT(false);
     }
@@ -571,8 +538,7 @@ bool QSanUiUtils::QSanFreeTypeFont::paintQStringMultiLine(QPainter *painter, QSt
         ystart = (boundingBox.height() - maxY) / 2;
     else if (vAlign & Qt::AlignBottom)
         ystart = boundingBox.height() - maxY - spacing;
-    else
-    {
+    else {
         ystart = 0;
         Q_ASSERT(false);
     }

@@ -1,3 +1,23 @@
+/********************************************************************
+    Copyright (c) 2013-2015 - Mogara
+
+    This file is part of QSanguosha-Hegemony.
+
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    See the LICENSE file for more details.
+
+    Mogara
+    *********************************************************************/
+
 #include "graphicsbox.h"
 #include "skinbank.h"
 #include "roomscene.h"
@@ -50,7 +70,15 @@ void GraphicsBox::stylize(QGraphicsObject *target)
 void GraphicsBox::moveToCenter(QGraphicsObject *target)
 {
     const QRectF rect = target->boundingRect();
+#ifdef Q_OS_ANDROID
+    int height = RoomSceneInstance->sceneRect().height() - G_DASHBOARD_LAYOUT.m_normalHeight - 200 - rect.height();
+    if (height > 0)
+        target->setPos(RoomSceneInstance->tableCenterPos().x() - rect.width() / 2, height / 2);
+    else
+        target->setPos(RoomSceneInstance->tableCenterPos().x() - rect.width() / 2, 0);
+#else
     target->setPos(RoomSceneInstance->tableCenterPos() - QPointF(rect.width() / 2, rect.height() / 2));
+#endif
 }
 
 void GraphicsBox::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)

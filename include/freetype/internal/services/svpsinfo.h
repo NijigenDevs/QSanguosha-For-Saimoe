@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    The FreeType PostScript info service (specification).                */
 /*                                                                         */
-/*  Copyright 2003-2016 by                                                 */
+/*  Copyright 2003, 2004, 2009, 2011, 2012 by                              */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -16,8 +16,8 @@
 /***************************************************************************/
 
 
-#ifndef SVPSINFO_H_
-#define SVPSINFO_H_
+#ifndef __SVPSINFO_H__
+#define __SVPSINFO_H__
 
 #include FT_INTERNAL_SERVICE_H
 #include FT_INTERNAL_TYPE1_TYPES_H
@@ -105,7 +105,7 @@ FT_BEGIN_HEADER
 FT_END_HEADER
 
 
-#endif /* SVPSINFO_H_ */
+#endif /* __SVPSINFO_H__ */
 
 
 /* END */

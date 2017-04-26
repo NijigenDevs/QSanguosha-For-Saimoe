@@ -1,3 +1,23 @@
+/********************************************************************
+    Copyright (c) 2013-2015 - Mogara
+
+    This file is part of QSanguosha-Hegemony.
+
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    See the LICENSE file for more details.
+
+    Mogara
+    *********************************************************************/
+
 #ifndef _SKIN_BANK_H
 #define _SKIN_BANK_H
 
@@ -136,6 +156,7 @@ public:
         QSize m_maximumSceneSize;
         QSize m_minimumSceneSize10Player;
         QSize m_maximumSceneSize10Player;
+        double scale;
     };
 
     struct PlayerCardContainerLayout
@@ -354,14 +375,16 @@ public:
     QPixmap getCardFramePixmap(const QString &frameType) const;
     QPixmap getCardAvatarPixmap(const QString &generalName) const;
     QPixmap getGeneralPixmap(const QString &generalName, GeneralIconSize size, const int skinId = 0) const;
-
-    QPixmap getCardTinyPixmap(const QString &card_object_name) const;
-
     QString getPlayerAudioEffectPath(const QString &eventName, bool isMale, int index = -1) const;
-    QString getPlayerAudioEffectPath(const QString &eventName, const QString &category, int index = -1, const Player *player = NULL) const;
+    QString getPlayerAudioEffectPath(const QString &eventName, const QString &category, int index = -1, const Player *player = NULL, const QString &postion = QString()) const;
     QPixmap getProgressBarPixmap(int percentile) const;
+    QPixmap getCardTinyPixmap(const QString &card_name) const;
 
     bool generalHasSkin(const QString &general, const int skinId = 1, const bool isCard = false) const;
+
+    // Animations
+    QAbstractAnimation *createHuaShenAnimation(QPixmap &huashenAvatar, QPoint topLeft, QGraphicsItem *parent,
+        QGraphicsItem *&huashenItemCreated) const;
 
     // static consts
     // main keys
@@ -431,8 +454,6 @@ public:
     static const char *S_SKIN_KEY_HEAD_ICON;
     static const char *S_SKIN_KEY_DEPUTY_ICON;
     static const char *S_SKIN_KEY_DISABLE_SHOW_LOCK;
-
-    static const char *S_SKIN_KEY_CARD_TINY_ICON;
 
     //CardContainer
 

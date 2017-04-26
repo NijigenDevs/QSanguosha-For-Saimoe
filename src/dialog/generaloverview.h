@@ -1,3 +1,23 @@
+/********************************************************************
+    Copyright (c) 2013-2015 - Mogara
+
+    This file is part of QSanguosha-Hegemony.
+
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    See the LICENSE file for more details.
+
+    Mogara
+    *********************************************************************/
+
 #ifndef GENERALOVERVIEW_H
 #define GENERALOVERVIEW_H
 
@@ -45,14 +65,13 @@ private:
     QWidget *createInfoTab();
     QLayout *createButtonLayout();
 
-    private slots:
+private slots:
     void clearAll();
     void selectAllPackages();
     void unselectAllPackages();
 };
 
-namespace Ui
-{
+namespace Ui {
     class GeneralOverview;
 }
 
@@ -85,11 +104,11 @@ private:
     QString getCvInfo(const QString &generalName);
     QString getIllustratorInfo(const QString &generalName);
 
-    public slots:
+public slots:
     void startSearch(const SearchDetails &detail);
     void startSearch(bool include_hidden, const QString &nickname, const QString &name, const QStringList &genders, const QStringList &kingdoms, int lower, int upper, const QStringList &packages);
 
-    private slots:
+private slots:
     void playAudioEffect();
     void copyLines();
     void showNextSkin();

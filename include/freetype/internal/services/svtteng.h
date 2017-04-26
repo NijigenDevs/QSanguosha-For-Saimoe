@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    The FreeType TrueType engine query service (specification).          */
 /*                                                                         */
-/*  Copyright 2006-2016 by                                                 */
+/*  Copyright 2006 by                                                      */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -16,8 +16,8 @@
 /***************************************************************************/
 
 
-#ifndef SVTTENG_H_
-#define SVTTENG_H_
+#ifndef __SVTTENG_H__
+#define __SVTTENG_H__
 
 #include FT_INTERNAL_SERVICE_H
 #include FT_MODULE_H
@@ -47,7 +47,7 @@ FT_BEGIN_HEADER
 FT_END_HEADER
 
 
-#endif /* SVTTENG_H_ */
+#endif /* __SVTTENG_H__ */
 
 
 /* END */

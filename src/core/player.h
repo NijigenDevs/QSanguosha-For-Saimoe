@@ -1,3 +1,23 @@
+/********************************************************************
+    Copyright (c) 2013-2015 - Mogara
+
+    This file is part of QSanguosha-Hegemony.
+
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    See the LICENSE file for more details.
+
+    Mogara
+    *********************************************************************/
+
 #ifndef _PLAYER_H
 #define _PLAYER_H
 
@@ -20,45 +40,45 @@ class Player : public QObject
 {
     Q_OBJECT
 
-        Q_PROPERTY(QString screenname READ screenName WRITE setScreenName)
-        Q_PROPERTY(int hp READ getHp WRITE setHp)
-        Q_PROPERTY(int maxhp READ getMaxHp WRITE setMaxHp)
-        Q_PROPERTY(QString kingdom READ getKingdom WRITE setKingdom)
-        Q_PROPERTY(bool wounded READ isWounded STORED false)
-        Q_PROPERTY(QString role READ getRole WRITE setRole)
-        Q_PROPERTY(QString general READ getGeneralName WRITE setGeneralName)
-        Q_PROPERTY(QString general2 READ getGeneral2Name WRITE setGeneral2Name)
-        Q_PROPERTY(QString state READ getState WRITE setState)
-        Q_PROPERTY(int handcard_num READ getHandcardNum)
-        Q_PROPERTY(int seat READ getSeat WRITE setSeat)
-        Q_PROPERTY(QString phase READ getPhaseString WRITE setPhaseString)
-        Q_PROPERTY(bool faceup READ faceUp WRITE setFaceUp)
-        Q_PROPERTY(bool alive READ isAlive WRITE setAlive)
-        Q_PROPERTY(QString flags READ getFlags WRITE setFlags)
-        Q_PROPERTY(bool chained READ isChained WRITE setChained)
-        Q_PROPERTY(bool removed READ isRemoved WRITE setRemoved)
-        Q_PROPERTY(bool owner READ isOwner WRITE setOwner)
-        Q_PROPERTY(bool role_shown READ hasShownRole WRITE setShownRole)
+    Q_PROPERTY(QString screenname READ screenName WRITE setScreenName)
+    Q_PROPERTY(int hp READ getHp WRITE setHp)
+    Q_PROPERTY(int maxhp READ getMaxHp WRITE setMaxHp)
+    Q_PROPERTY(QString kingdom READ getKingdom WRITE setKingdom)
+    Q_PROPERTY(bool wounded READ isWounded STORED false)
+    Q_PROPERTY(QString role READ getRole WRITE setRole)
+    Q_PROPERTY(QString general READ getGeneralName WRITE setGeneralName)
+    Q_PROPERTY(QString general2 READ getGeneral2Name WRITE setGeneral2Name)
+    Q_PROPERTY(QString state READ getState WRITE setState)
+    Q_PROPERTY(int handcard_num READ getHandcardNum)
+    Q_PROPERTY(int seat READ getSeat WRITE setSeat)
+    Q_PROPERTY(QString phase READ getPhaseString WRITE setPhaseString)
+    Q_PROPERTY(bool faceup READ faceUp WRITE setFaceUp)
+    Q_PROPERTY(bool alive READ isAlive WRITE setAlive)
+    Q_PROPERTY(QString flags READ getFlags WRITE setFlags)
+    Q_PROPERTY(bool chained READ isChained WRITE setChained)
+    Q_PROPERTY(bool removed READ isRemoved WRITE setRemoved)
+    Q_PROPERTY(bool owner READ isOwner WRITE setOwner)
+    Q_PROPERTY(bool role_shown READ hasShownRole WRITE setShownRole)
 
-        Q_PROPERTY(bool kongcheng READ isKongcheng)
-        Q_PROPERTY(bool nude READ isNude)
-        Q_PROPERTY(bool all_nude READ isAllNude)
+    Q_PROPERTY(bool kongcheng READ isKongcheng)
+    Q_PROPERTY(bool nude READ isNude)
+    Q_PROPERTY(bool all_nude READ isAllNude)
 
-        Q_PROPERTY(QString actual_general1 READ getActualGeneral1Name WRITE setActualGeneral1Name)
-        Q_PROPERTY(QString actual_general2 READ getActualGeneral2Name WRITE setActualGeneral2Name)
-        Q_PROPERTY(bool general1_showed READ hasShownGeneral1 WRITE setGeneral1Showed)
-        Q_PROPERTY(bool general2_showed READ hasShownGeneral2 WRITE setGeneral2Showed)
+    Q_PROPERTY(QString actual_general1 READ getActualGeneral1Name WRITE setActualGeneral1Name)
+    Q_PROPERTY(QString actual_general2 READ getActualGeneral2Name WRITE setActualGeneral2Name)
+    Q_PROPERTY(bool general1_showed READ hasShownGeneral1 WRITE setGeneral1Showed)
+    Q_PROPERTY(bool general2_showed READ hasShownGeneral2 WRITE setGeneral2Showed)
 
-        Q_PROPERTY(QString next READ getNextName WRITE setNext)
+    Q_PROPERTY(QString next READ getNextName WRITE setNext)
 
-        Q_PROPERTY(bool scenario_role_shown READ getScenarioRoleShown WRITE setScenarioRoleShown)
+    Q_PROPERTY(bool scenario_role_shown READ getScenarioRoleShown WRITE setScenarioRoleShown)
 
-        Q_PROPERTY(int head_skin_id READ getHeadSkinId WRITE setHeadSkinId)
-        Q_PROPERTY(int deputy_skin_id READ getDeputySkinId WRITE setDeputySkinId)
+    Q_PROPERTY(int head_skin_id READ getHeadSkinId WRITE setHeadSkinId)
+    Q_PROPERTY(int deputy_skin_id READ getDeputySkinId WRITE setDeputySkinId)
 
-        Q_ENUMS(Phase)
-        Q_ENUMS(Place)
-        Q_ENUMS(Role)
+    Q_ENUMS(Phase)
+    Q_ENUMS(Place)
+    Q_ENUMS(Role)
 
 public:
     enum Phase
@@ -103,6 +123,7 @@ public:
     void setDisableShow(const QString &flags, const QString &reason);
     void removeDisableShow(const QString &reason);
     QStringList disableShow(bool head) const;
+    bool canShowGeneral(const QString &flags = QString()) const;
 
     QString getKingdom() const;
     void setKingdom(const QString &kingdom);
@@ -158,10 +179,10 @@ public:
     bool isLord() const;
 
     void acquireSkill(const QString &skill_name, bool head = true);
-    void detachSkill(const QString &skill_name);
+    void detachSkill(const QString &skill_name, bool head = true);
     void detachAllSkills();
     virtual void addSkill(const QString &skill_name, bool head_skill = true);
-    virtual void loseSkill(const QString &skill_name);
+    virtual void loseSkill(const QString &skill_name, bool head = true);
     bool hasSkill(const QString &skill_name, bool include_lose = false) const;
     bool hasSkill(const Skill *skill, bool include_lose = false) const;
     bool hasSkills(const QString &skill_name, bool include_lose = false) const;
@@ -204,6 +225,9 @@ public:
 
     bool canDiscard(const Player *to, const QString &flags) const;
     bool canDiscard(const Player *to, int card_id) const;
+    bool canGetCard(const Player *to, const QString &flags) const;
+    bool canGetCard(const Player *to, int card_id) const;
+    bool canTransform() const;
 
     void addMark(const QString &mark, int add_num = 1);
     void removeMark(const QString &mark, int remove_num = 1);
@@ -246,8 +270,10 @@ public:
     QSet<const TriggerSkill *> getTriggerSkills() const;
     QSet<const Skill *> getSkills(bool include_equip = false, bool visible_only = true) const;
     QList<const Skill *> getSkillList(bool include_equip = false, bool visible_only = true) const;
-    QList<const Skill *> getHeadSkillList(bool visible_only = true) const;
-    QList<const Skill *> getDeputySkillList(bool visible_only = true) const;
+    QList<const Skill *> getHeadSkillList(bool visible_only = true, bool include_acquired = false, bool include_equip = false) const;
+    QList<const Skill *> getDeputySkillList(bool visible_only = true, bool include_acquired = false, bool include_equip = false) const;
+    QList<const Skill *> getHeadActivedSkills() const;
+    QList<const Skill *> getDeputyActivedSkills() const;
     QSet<const Skill *> getVisibleSkills(bool include_equip = false) const;
     QList<const Skill *> getVisibleSkillList(bool include_equip = false) const;
     QSet<QString> getAcquiredSkills() const;
@@ -309,10 +335,10 @@ public:
     void setGeneral2Showed(bool showed);
     bool hasShownOneGeneral() const;
     bool hasShownAllGenerals() const;
-    void setSkillPreshowed(const QString &skill, bool preshowed = true);
+    void setSkillPreshowed(const QString &skill, bool preshowed = true, bool head = true);
     void setSkillsPreshowed(const QString &falgs = "hd", bool preshowed = true);
-    bool hasPreshowedSkill(const QString &name) const;
-    bool hasPreshowedSkill(const Skill *skill) const;
+    bool hasPreshowedSkill(const QString &name, bool head) const;
+    bool hasPreshowedSkill(const Skill *skill, bool head) const;
     bool isHidden(const bool &head_general) const;
 
     inline bool getScenarioRoleShown() const

@@ -1,3 +1,23 @@
+/********************************************************************
+    Copyright (c) 2013-2015 - Mogara
+
+    This file is part of QSanguosha-Hegemony.
+
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    See the LICENSE file for more details.
+
+    Mogara
+    *********************************************************************/
+
 #include "flatdialog.h"
 #include "stylehelper.h"
 
@@ -16,8 +36,7 @@ FlatDialog::FlatDialog(QWidget *parent, bool initialLayoutWithTitle)
     setAttribute(Qt::WA_TranslucentBackground);
     mousePressed = false;
 
-    if (initialLayoutWithTitle)
-    {
+    if (initialLayoutWithTitle) {
         layout = new QVBoxLayout;
         title = new QLabel;
         title->setAlignment(Qt::AlignTop | Qt::AlignLeft);
@@ -27,8 +46,7 @@ FlatDialog::FlatDialog(QWidget *parent, bool initialLayoutWithTitle)
         setLayout(layout);
     }
 
-    if (StyleHelper::backgroundColorOfFlatDialog().alpha() <= 100)
-    {
+    if (StyleHelper::backgroundColorOfFlatDialog().alpha() <= 100) {
         QGraphicsDropShadowEffect *effect = new QGraphicsDropShadowEffect(this);
         effect->setBlurRadius(18);
         QColor color = StyleHelper::backgroundColorOfFlatDialog();
@@ -38,8 +56,7 @@ FlatDialog::FlatDialog(QWidget *parent, bool initialLayoutWithTitle)
         setGraphicsEffect(effect);
     }
 #else
-    if (initialLayoutWithTitle)
-    {
+    if (initialLayoutWithTitle) {
         layout = new QVBoxLayout;
         setLayout(layout);
     }
@@ -71,8 +88,7 @@ void FlatDialog::paintEvent(QPaintEvent *)
 
 void FlatDialog::mousePressEvent(QMouseEvent *event)
 {
-    if (event->button() & Qt::LeftButton)
-    {
+    if (event->button() & Qt::LeftButton) {
         mousePressedPoint = event->globalPos() - frameGeometry().topLeft();
         mousePressed = true;
     }

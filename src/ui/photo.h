@@ -1,9 +1,30 @@
+/********************************************************************
+    Copyright (c) 2013-2015 - Mogara
+
+    This file is part of QSanguosha-Hegemony.
+
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    See the LICENSE file for more details.
+
+    Mogara
+    *********************************************************************/
+
 #ifndef _PHOTO_H
 #define _PHOTO_H
 
 #include "qsanselectableitem.h"
 #include "player.h"
 #include "carditem.h"
+#include "pixmapanimation.h"
 
 #include "genericcardcontainerui.h"
 #include "sprite.h"
@@ -29,7 +50,7 @@ public:
     virtual void repaintAll();
     QList<CardItem *> removeCardItems(const QList<int> &card_id, Player::Place place);
 
-    void setEmotion(const QString &emotion, bool permanent = false);
+    void setEmotion(const QString &emotion, bool permanent = false, bool playback = false, int duration = 0);
     void tremble();
     void showSkillName(const QString &skill_name);
 
@@ -47,7 +68,9 @@ public:
     virtual QRectF boundingRect() const;
     QGraphicsItem *getMouseClickReceiver();
 
-    public slots:
+    void playBattleArrayAnimations();
+
+public slots:
     void updatePhase();
     void hideEmotion();
     void hideSkillName();
@@ -118,6 +141,10 @@ protected:
     QGraphicsPixmapItem *_m_onlineStatusItem;
 
     QParallelAnimationGroup *_blurEffect;
+
+    QHash<QString, PixmapAnimation *> _m_frameBorders;
+    QHash<QString, PixmapAnimation *> _m_roleBorders;
+    void _createBattleArrayAnimations();
 };
 
 #endif

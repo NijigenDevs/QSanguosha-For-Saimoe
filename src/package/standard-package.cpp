@@ -1,34 +1,48 @@
+/********************************************************************
+    Copyright (c) 2013-2015 - Mogara
+
+    This file is part of QSanguosha-Hegemony.
+
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    See the LICENSE file for more details.
+
+    Mogara
+    *********************************************************************/
+
 #include "standard-package.h"
 #include "exppattern.h"
 #include "card.h"
 #include "skill.h"
 
-    //Xusine: we can put some global skills in here,for example,the Global FakeMove.
-    //just for convenience.
+//Xusine: we can put some global skills in here,for example,the Global FakeMove.
+//just for convenience.
 
-class GlobalFakeMoveSkill : public TriggerSkill
-{
+class GlobalFakeMoveSkill : public TriggerSkill { 
 public:
-    GlobalFakeMoveSkill() : TriggerSkill("global-fake-move")
-    {
+    GlobalFakeMoveSkill() : TriggerSkill("global-fake-move") {
         events << BeforeCardsMove << CardsMoveOneTime;
         global = true;
     }
 
-    virtual int getPriority() const
-    {
+    virtual int getPriority() const{
         return 10;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *target, QVariant &, ServerPlayer * &) const
-    {
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *target, QVariant &, ServerPlayer * &) const{
         return (target != NULL) ? QStringList(objectName()) : QStringList();
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *) const
-    {
-        foreach (ServerPlayer *p, room->getAllPlayers())
-        {
+    virtual bool effect(TriggerEvent , Room *room, ServerPlayer *, QVariant &, ServerPlayer *) const{
+        foreach (ServerPlayer *p, room->getAllPlayers()) {
             if (p->hasFlag("Global_InTempMoving"))
                 return true;
         }
@@ -79,7 +93,7 @@ ADD_PACKAGE(Standard)
 
 
 TestPackage::TestPackage()
-    : Package("test")
+: Package("test")
 {
     new General(this, "sujiang", "god", 5, true, true);
     new General(this, "sujiangf", "god", 5, false, true);
@@ -96,7 +110,7 @@ ADD_PACKAGE(Test)
 
 
 StandardCardPackage::StandardCardPackage()
-    : Package("standard_cards", Package::CardPack)
+: Package("standard_cards", Package::CardPack)
 {
     QList<Card *> cards;
 

@@ -1,3 +1,23 @@
+/********************************************************************
+    Copyright (c) 2013-2015 - Mogara
+
+    This file is part of QSanguosha-Hegemony.
+
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    See the LICENSE file for more details.
+
+    Mogara
+    *********************************************************************/
+
 #include "structs.h"
 #include "json.h"
 #include "exppattern.h"
@@ -11,14 +31,11 @@ bool CardsMoveStruct::tryParse(const QVariant &arg)
     if ((!JsonUtils::isNumber(args[0]) && !args[0].canConvert<JsonArray>()) ||
         !JsonUtils::isNumberArray(args, 1, 2) || !JsonUtils::isStringArray(args, 3, 6)) return false;
 
-    if (JsonUtils::isNumber(args[0]))
-    {
+    if (JsonUtils::isNumber(args[0])) {
         int size = args[0].toInt();
         for (int i = 0; i < size; i++)
             card_ids.append(Card::S_UNKNOWN_CARD_ID);
-    }
-    else if (!JsonUtils::tryParse(args[0], card_ids))
-    {
+    } else if (!JsonUtils::tryParse(args[0], card_ids)) {
         return false;
     }
 
@@ -35,12 +52,9 @@ bool CardsMoveStruct::tryParse(const QVariant &arg)
 QVariant CardsMoveStruct::toVariant() const
 {
     JsonArray arg;
-    if (open)
-    {
+    if (open) {
         arg << JsonUtils::toJsonArray(card_ids);
-    }
-    else
-    {
+    } else {
         arg << card_ids.size();
     }
 
@@ -299,8 +313,7 @@ bool CardUseStruct::tryParse(const QVariant &usage, Room *room)
     card = Card::Parse(use[0].toString());
     JsonArray targets = use[1].value<JsonArray>();
 
-    foreach (const QVariant &target, targets)
-    {
+    foreach (const QVariant &target, targets) {
         if (!JsonUtils::isString(target)) return false;
         this->to << room->findChild<ServerPlayer *>(target.toString());
     }
@@ -320,8 +333,7 @@ void CardUseStruct::parse(const QString &str, Room *room)
 
     card = Card::Parse(card_str);
 
-    if (target_str != ".")
-    {
+    if (target_str != ".") {
         QStringList target_names = target_str.split("+");
         foreach (const QString &target_name, target_names)
             to << room->findChild<ServerPlayer *>(target_name);

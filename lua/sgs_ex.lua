@@ -95,6 +95,37 @@ function sgs.CreateTriggerSkill(spec)
 	return skill
 end
 
+function sgs.CreateProhibitSkill(spec)
+	assert(type(spec.name) == "string")
+	assert(type(spec.is_prohibited) == "function")
+
+	local skill = sgs.LuaProhibitSkill(spec.name)
+	skill.is_prohibited = spec.is_prohibited
+
+	return skill
+end
+
+function sgs.CreateFixCardSkill(spec)
+	assert(type(spec.name) == "string")
+	assert(type(spec.is_cardfixed) == "function")
+
+	local skill = sgs.LuaFixCardSkill(spec.name)
+	skill.is_cardfixed = spec.is_cardfixed
+
+	return skill
+end
+
+function sgs.CreateViewHasSkill(spec)
+	assert(type(spec.name) == "string")
+	assert(type(spec.is_viewhas) == "function")
+
+	local skill = sgs.LuaViewHasSkill(spec.name)
+	skill.is_viewhas = spec.is_viewhas
+	if type(spec.global) == "boolean" then skill:setGlobal(spec.global) end
+
+	return skill
+end
+
 function sgs.CreateFilterSkill(spec)
 	assert(type(spec.name) == "string")
 	assert(type(spec.view_filter) == "function")
@@ -559,6 +590,7 @@ function sgs.CreateViewAsSkill(spec)
 	skill.enabled_at_play = spec.enabled_at_play
 	skill.enabled_at_response = spec.enabled_at_response
 	skill.enabled_at_nullification = spec.enabled_at_nullification
+	skill.in_pile = spec.in_pile
 
 	return skill
 end
@@ -602,6 +634,7 @@ function sgs.CreateOneCardViewAsSkill(spec)
 	skill.enabled_at_play = spec.enabled_at_play
 	skill.enabled_at_response = spec.enabled_at_response
 	skill.enabled_at_nullification = spec.enabled_at_nullification
+	skill.in_pile = spec.in_pile
 
 	if type(spec.guhuo_type) == "string" and spec.guhuo_type ~= ""then
 		skill:setGuhuoType(spec.guhuo_type)
@@ -635,6 +668,7 @@ function sgs.CreateZeroCardViewAsSkill(spec)
 	skill.enabled_at_play = spec.enabled_at_play
 	skill.enabled_at_response = spec.enabled_at_response
 	skill.enabled_at_nullification = spec.enabled_at_nullification
+	skill.in_pile = spec.in_pile
 
 	if type(spec.guhuo_type) == "string" and spec.guhuo_type ~= ""then
 		skill:setGuhuoType(spec.guhuo_type)

@@ -1,3 +1,23 @@
+/********************************************************************
+    Copyright (c) 2013-2015 - Mogara
+
+    This file is part of QSanguosha-Hegemony.
+
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    See the LICENSE file for more details.
+
+    Mogara
+    *********************************************************************/
+
 #ifndef CUSTOMASSIGNDIALOG_H
 #define CUSTOMASSIGNDIALOG_H
 
@@ -140,7 +160,7 @@ private:
 
     QMap<QString, int> m_kingdomIndex;
 
-    private slots:
+private slots:
     void updateKingdom(int index);
     void updateNumber(int num);
     void updateListItems();
@@ -196,7 +216,7 @@ private:
     void doPlayerShows(bool toggled);
     void doPlayerShows2(bool toggled);
 
-    public slots:
+public slots:
     void getChosenGeneral(QString generalName);
     void getEquipCard(int card_id);
     void getHandCard(int card_id);
@@ -219,7 +239,7 @@ private:
     QButtonGroup *group;
     QWidget *createTab(const QList<const General *> &generals);
 
-    private slots:
+private slots:
     void chooseGeneral();
     void clearGeneral();
 
@@ -243,7 +263,7 @@ private:
     QString m_className;
     QList<int> m_excludedCards;
 
-    private slots:
+private slots:
     void askCard();
     void updateCardList();
     void updateExcluded(int cardId);
@@ -268,7 +288,7 @@ private:
 
     QStringList m_updatedSkills;
 
-    private slots:
+private slots:
     void selectSkill();
     void deleteSkill();
     void addSkill();

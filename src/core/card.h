@@ -1,3 +1,23 @@
+/********************************************************************
+    Copyright (c) 2013-2015 - Mogara
+
+    This file is part of QSanguosha-Hegemony.
+
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    See the LICENSE file for more details.
+
+    Mogara
+    *********************************************************************/
+
 #ifndef _CARD_H
 #define _CARD_H
 
@@ -18,22 +38,22 @@ struct CardUseStruct;
 class Card : public QObject
 {
     Q_OBJECT
-        Q_PROPERTY(QString suit READ getSuitString CONSTANT)
-        Q_PROPERTY(bool red READ isRed STORED false CONSTANT)
-        Q_PROPERTY(bool black READ isBlack STORED false CONSTANT)
-        Q_PROPERTY(int id READ getId CONSTANT)
-        Q_PROPERTY(int number READ getNumber WRITE setNumber)
-        Q_PROPERTY(QString number_string READ getNumberString CONSTANT)
-        Q_PROPERTY(QString type READ getType CONSTANT)
-        Q_PROPERTY(bool target_fixed READ targetFixed)
-        Q_PROPERTY(bool mute READ isMute CONSTANT)
-        Q_PROPERTY(bool equipped READ isEquipped)
-        Q_PROPERTY(Color color READ getColor)
-        Q_PROPERTY(bool transferable READ isTransferable WRITE setTransferable)
+    Q_PROPERTY(QString suit READ getSuitString CONSTANT)
+    Q_PROPERTY(bool red READ isRed STORED false CONSTANT)
+    Q_PROPERTY(bool black READ isBlack STORED false CONSTANT)
+    Q_PROPERTY(int id READ getId CONSTANT)
+    Q_PROPERTY(int number READ getNumber WRITE setNumber)
+    Q_PROPERTY(QString number_string READ getNumberString CONSTANT)
+    Q_PROPERTY(QString type READ getType CONSTANT)
+    Q_PROPERTY(bool target_fixed READ targetFixed)
+    Q_PROPERTY(bool mute READ isMute CONSTANT)
+    Q_PROPERTY(bool equipped READ isEquipped)
+    Q_PROPERTY(Color color READ getColor)
+    Q_PROPERTY(bool transferable READ isTransferable WRITE setTransferable)
 
-        Q_ENUMS(Suit)
-        Q_ENUMS(CardType)
-        Q_ENUMS(HandlingMethod)
+    Q_ENUMS(Suit)
+    Q_ENUMS(CardType)
+    Q_ENUMS(HandlingMethod)
 
 public:
     // enumeration type
@@ -47,7 +67,7 @@ public:
     };
     enum HandlingMethod
     {
-        MethodNone, MethodUse, MethodResponse, MethodDiscard, MethodRecast, MethodPindian
+        MethodNone, MethodUse, MethodResponse, MethodDiscard, MethodRecast, MethodPindian, MethodGet
     };
 
     static const Suit AllSuits[4];
@@ -180,13 +200,16 @@ public:
     static QString Suit2String(Suit suit);
     static const int S_UNKNOWN_CARD_ID;
 
-    static const Card *Parse(const QString &str);
+    static const Card *Parse(const QString &card_str);
     virtual QString toString(bool hidden = false) const;
 
     virtual QString getEffectName() const;
 
     virtual bool isTransferable() const;
     virtual void setTransferable(const bool transferbale);
+
+    virtual void setSkillPosition(const QString &position);
+    virtual QString getSkillPosition() const;
 
 protected:
     QList<int> subcards;
@@ -205,6 +228,8 @@ protected:
     QString show_skill;
 
     mutable QStringList flags;
+
+    QString m_skill_position;
 };
 
 typedef QList<const Card *> CardList;
@@ -235,6 +260,16 @@ class ArraySummonCard : public SkillCard
 
 public:
     Q_INVOKABLE ArraySummonCard(const QString &name);
+
+    const Card *validate(CardUseStruct &card_use) const;
+};
+
+class ShowDistanceCard : public SkillCard
+{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE ShowDistanceCard();
 
     const Card *validate(CardUseStruct &card_use) const;
 };

@@ -1,3 +1,23 @@
+/********************************************************************
+    Copyright (c) 2013-2015 - Mogara
+
+    This file is part of QSanguosha-Hegemony.
+
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    See the LICENSE file for more details.
+
+    Mogara
+    *********************************************************************/
+
 #ifndef _UI_UTILS_H
 #define _UI_UTILS_H
 
@@ -6,16 +26,14 @@
 #include <QRect>
 #include <QPainter>
 
-namespace QSanUiUtils
-{
+namespace QSanUiUtils {
     // This is in no way a generic diation fuction. It is some dirty trick that
     // produces a shadow image for a pixmap whose foreground mask is binaryImage
     void paintShadow(QPainter *painter, const QImage &image, QColor shadowColor, int radius, double decade, const QRect boundingBox);
     void paintShadow(QPainter *painter, const QImage &image, QColor shadowColor, int radius, double decade, const int x, const int y);
     void makeGray(QPixmap &pixmap);
 
-    namespace QSanFreeTypeFont
-    {
+    namespace QSanFreeTypeFont {
         bool init();
         void quit();
 

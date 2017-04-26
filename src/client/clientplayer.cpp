@@ -1,3 +1,23 @@
+/********************************************************************
+    Copyright (c) 2013-2015 - Mogara
+
+    This file is part of QSanguosha-Hegemony.
+
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    See the LICENSE file for more details.
+
+    Mogara
+    *********************************************************************/
+
 #include "clientplayer.h"
 #include "skill.h"
 #include "client.h"
@@ -19,11 +39,10 @@ ClientPlayer::ClientPlayer(Client *client)
 int ClientPlayer::aliveCount(bool includeRemoved) const
 {
     int n = ClientInstance->alivePlayerCount();
-    if (!includeRemoved)
-    {
+    if (!includeRemoved) {
         if (isRemoved())
             n--;
-        foreach (const Player *p, getAliveSiblings())
+        foreach(const Player *p, getAliveSiblings())
             if (p->isRemoved())
                 n--;
     }
@@ -37,22 +56,18 @@ int ClientPlayer::getHandcardNum() const
 
 void ClientPlayer::addCard(const Card *card, Place place)
 {
-    switch (place)
-    {
-        case PlaceHand:
-        {
+    switch (place) {
+        case PlaceHand: {
             if (card) known_cards << card;
             handcard_num++;
             break;
         }
-        case PlaceEquip:
-        {
+        case PlaceEquip: {
             WrappedCard *equip = Sanguosha->getWrappedCard(card->getEffectiveId());
             setEquip(equip);
             break;
         }
-        case PlaceDelayedTrick:
-        {
+        case PlaceDelayedTrick: {
             addDelayedTrick(card);
             break;
         }
@@ -69,27 +84,19 @@ void ClientPlayer::addKnownHandCard(const Card *card)
 
 bool ClientPlayer::isLastHandCard(const Card *card, bool contain) const
 {
-    if (!card->isVirtualCard())
-    {
+    if (!card->isVirtualCard()) {
         if (known_cards.length() != 1)
             return false;
         return known_cards.first()->getId() == card->getEffectiveId();
-    }
-    else if (card->getSubcards().length() > 0)
-    {
-        if (!contain)
-        {
-            foreach (int card_id, card->getSubcards())
-            {
+    } else if (card->getSubcards().length() > 0) {
+        if (!contain) {
+            foreach (int card_id, card->getSubcards()) {
                 if (!known_cards.contains(Sanguosha->getCard(card_id)))
                     return false;
             }
             return known_cards.length() == card->getSubcards().length();
-        }
-        else
-        {
-            foreach (const Card *ncard, known_cards)
-            {
+        } else {
+            foreach (const Card *ncard, known_cards) {
                 if (!card->getSubcards().contains(ncard->getEffectiveId()))
                     return false;
             }
@@ -101,26 +108,21 @@ bool ClientPlayer::isLastHandCard(const Card *card, bool contain) const
 
 void ClientPlayer::removeCard(const Card *card, Place place)
 {
-    switch (place)
-    {
-        case PlaceHand:
-        {
+    switch (place) {
+        case PlaceHand: {
             handcard_num--;
-            if (card)
-            {
+            if (card) {
                 known_cards.removeOne(card);
                 visible_cards.removeOne(card);
             }
             break;
         }
-        case PlaceEquip:
-        {
+        case PlaceEquip:{
             WrappedCard *equip = Sanguosha->getWrappedCard(card->getEffectiveId());
             removeEquip(equip);
             break;
         }
-        case PlaceDelayedTrick:
-        {
+        case PlaceDelayedTrick:{
             removeDelayedTrick(card);
             break;
         }
@@ -137,7 +139,7 @@ QList<const Card *> ClientPlayer::getHandcards() const
 void ClientPlayer::setCards(const QList<int> &card_ids)
 {
     known_cards.clear();
-    foreach (int cardId, card_ids)
+    foreach(int cardId, card_ids)
         known_cards.append(Sanguosha->getCard(cardId));
 }
 
@@ -148,13 +150,13 @@ QList<const Card *> ClientPlayer::getVisiblecards() const
 
 void ClientPlayer::addVisibleCards(const QList<int> &card_ids)
 {
-    foreach (int cardId, card_ids)
+    foreach(int cardId, card_ids)
         visible_cards.append(Sanguosha->getCard(cardId));
 }
 
 void ClientPlayer::removeVisibleCards(const QList<int> &card_ids)
 {
-    foreach (int cardId, card_ids)
+    foreach(int cardId, card_ids)
         visible_cards.removeOne(Sanguosha->getCard(cardId));
 }
 
@@ -173,18 +175,13 @@ static bool compareByNumber(int c1, int c2)
 
 void ClientPlayer::changePile(const QString &name, bool add, QList<int> card_ids)
 {
-    if (add)
-    {
+    if (add) {
         piles[name].append(card_ids);
-        if (name == "buqu")
-        {
+        if (name == "buqu") {
             qSort(piles["buqu"].begin(), piles["buqu"].end(), compareByNumber);
         }
-    }
-    else
-    {
-        foreach (int card_id, card_ids)
-        {
+    } else {
+        foreach (int card_id, card_ids) {
             if (piles[name].isEmpty()) break;
             if (piles[name].contains(Card::S_UNKNOWN_CARD_ID) && !piles[name].contains(card_id))
                 piles[name].removeOne(Card::S_UNKNOWN_CARD_ID);
@@ -244,11 +241,9 @@ void ClientPlayer::setMark(const QString &mark, int value)
     // set mark doc
     QString text = "";
     QMapIterator<QString, int> itor(marks);
-    while (itor.hasNext())
-    {
+    while (itor.hasNext()) {
         itor.next();
-        if (itor.key().startsWith("@") && itor.value() > 0)
-        {
+        if (itor.key().startsWith("@") && itor.value() > 0) {
             QString mark_text = QString("<img src='image/mark/%1.png' />").arg(itor.key());
             if (itor.value() != 1)
                 mark_text.append(QString("%1").arg(itor.value()));
@@ -272,12 +267,10 @@ QStringList ClientPlayer::getBigKingdoms(const QString &, MaxCardsType::MaxCards
     kingdom_map.insert("qun", 0);
     QList<const Player *> players = getAliveSiblings();
     players.prepend(this);
-    foreach (const Player *p, players)
-    {
+    foreach (const Player *p, players) {
         if (!p->hasShownOneGeneral())
             continue;
-        if (p->getRole() == "careerist")
-        {
+        if (p->getRole() == "careerist") {
             kingdom_map["careerist"] = 1;
             continue;
         }
@@ -286,71 +279,38 @@ QStringList ClientPlayer::getBigKingdoms(const QString &, MaxCardsType::MaxCards
     if (type == MaxCardsType::Max && hasLordSkill("hongfa") && !getPile("heavenly_army").isEmpty())
         kingdom_map["qun"] += getPile("heavenly_army").length();
     QStringList big_kingdoms;
-    foreach (const QString &key, kingdom_map.keys())
-    {
+    foreach (const QString &key, kingdom_map.keys()) {
         if (kingdom_map[key] == 0)
             continue;
-        if (big_kingdoms.isEmpty())
-        {
+        if (big_kingdoms.isEmpty()) {
             if (kingdom_map[key] > 1)
                 big_kingdoms << key;
             continue;
         }
-        if (kingdom_map[key] == kingdom_map[big_kingdoms.first()])
-        {
+        if (kingdom_map[key] == kingdom_map[big_kingdoms.first()]) {
             big_kingdoms << key;
-        }
-        else if (kingdom_map[key] > kingdom_map[big_kingdoms.first()])
-        {
+        } else if (kingdom_map[key] > kingdom_map[big_kingdoms.first()]) {
             big_kingdoms.clear();
             big_kingdoms << key;
         }
     }
     const Player *jade_seal_owner = NULL;
-    foreach (const Player *p, players)
-    {
-        if (p->hasTreasure("JadeSeal") && p->hasShownOneGeneral())
-        {
+    foreach (const Player *p, players) {
+        if (p->hasTreasure("JadeSeal") && p->hasShownOneGeneral()) {
             jade_seal_owner = p;
             break;
         }
     }
-    const Player *haruhi = NULL;
-    foreach (const Player *p, players)
-    {
-        if (p->hasShownSkill("zhizun"))
-        {
-            haruhi = p;
-            break;
-        }
-    }
-    if (jade_seal_owner != NULL)
-    {
-        if (jade_seal_owner->getRole() == "careerist")
-        {
+    if (jade_seal_owner != NULL) {
+        if (jade_seal_owner->getRole() == "careerist") {
             big_kingdoms.clear();
             big_kingdoms << jade_seal_owner->objectName(); // record player's objectName who has JadeSeal.
-        }
-        else
-        { // has shown one general but isn't careerist
+        } else { // has shown one general but isn't careerist
             QString kingdom = jade_seal_owner->getKingdom();
             big_kingdoms.clear();
             big_kingdoms << kingdom;
         }
     }
-    if (haruhi != NULL)
-    {
-        big_kingdoms.clear();
-        if (haruhi->getRole() == "careerist")
-        {
-            big_kingdoms << haruhi->objectName();
-        }
-        else
-        {
-            big_kingdoms << haruhi->getKingdom();
-        }
-    }
-
     return big_kingdoms;
 }
 
@@ -359,8 +319,7 @@ void ClientPlayer::setHeadSkinId(int id)
     if (headSkinId == id || (this != Self && Config.IgnoreOthersSwitchesOfSkin))
         return;
 
-    if (id <= general->skinCount())
-    {
+    if (id <= general->skinCount()) {
         headSkinId = id;
         emit headSkinIdChanged(general->objectName());
     }
@@ -374,8 +333,7 @@ void ClientPlayer::setDeputySkinId(int id)
     if (deputySkinId == id || (this != Self && Config.IgnoreOthersSwitchesOfSkin))
         return;
 
-    if (id <= general2->skinCount())
-    {
+    if (id <= general2->skinCount()) {
         deputySkinId = id;
         emit deputySkinIdChanged(general2->objectName());
     }

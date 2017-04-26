@@ -1,3 +1,23 @@
+/********************************************************************
+    Copyright (c) 2013-2015 - Mogara
+
+    This file is part of QSanguosha-Hegemony.
+
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    See the LICENSE file for more details.
+
+    Mogara
+    *********************************************************************/
+
 #include "heroskincontainer.h"
 #include "skinitem.h"
 #include "qsanbutton.h"
@@ -45,8 +65,7 @@ HeroSkinContainer::HeroSkinContainer(const QString &generalName,
     PlayerCardContainer::_paintPixmap(positionIcon, QRect(9, 3, 29, 24), G_ROOM_SKIN.getPixmap(key), this);
 
     QString name = Sanguosha->translate("&" + m_generalName);
-    if (name.startsWith("&"))
-    {
+    if (name.startsWith("&")) {
         name = Sanguosha->translate(m_generalName);
     }
 
@@ -88,8 +107,7 @@ void HeroSkinContainer::initSkins()
         createSkinItem(++i, dummyRectItem);
 
     //default skin
-    if (0 != skinIndexUsed)
-    {
+    if (0 != skinIndexUsed) {
         createSkinItem(0, dummyRectItem);
     }
 }
@@ -105,20 +123,17 @@ void HeroSkinContainer::createSkinItem(int skinId, QGraphicsItem *parent, bool u
 void HeroSkinContainer::fillSkins()
 {
     int skinCount = m_skins.count();
-    if (0 == skinCount)
-    {
+    if (0 == skinCount) {
         return;
     }
 
     int columns = (skinCount > 3) ? 3 : skinCount;
     int rows = skinCount / columns;
-    if (skinCount % columns != 0)
-    {
+    if (skinCount % columns != 0) {
         ++rows;
     }
 
-    if (skinCount > 3)
-    {
+    if (skinCount > 3) {
         m_vScrollBar = new QScrollBar(Qt::Vertical);
         m_vScrollBar->setStyleSheet(StyleHelper::styleSheetOfScrollBar());
         m_vScrollBar->setFocusPolicy(Qt::StrongFocus);
@@ -139,15 +154,12 @@ void HeroSkinContainer::fillSkins()
     int x = xStartPos;
     int y = Y_START_POS;
     int skinItemIndex = 0;
-    for (int i = 0; i < rows; ++i)
-    {
-        for (int j = 0; j < columns; ++j)
-        {
+    for (int i = 0; i < rows; ++i) {
+        for (int j = 0; j < columns; ++j) {
             m_skins[skinItemIndex]->setPos(x, y);
 
             ++skinItemIndex;
-            if (skinItemIndex >= skinCount)
-            {
+            if (skinItemIndex >= skinCount) {
                 return;
             }
 
@@ -182,8 +194,7 @@ void HeroSkinContainer::skinSelected(const int skinId)
 
     swapWithSkinItemUsed(skinId);
 
-    if (NULL != m_vScrollBar)
-    {
+    if (NULL != m_vScrollBar) {
         m_vScrollBar->setValue(0);
     }
 }
@@ -226,10 +237,8 @@ void HeroSkinContainer::mousePressEvent(QGraphicsSceneMouseEvent *)
 
 void HeroSkinContainer::bringToTopMost()
 {
-    if (NULL != m_currentTopMostContainer)
-    {
-        if (this == m_currentTopMostContainer)
-        {
+    if (NULL != m_currentTopMostContainer) {
+        if (this == m_currentTopMostContainer) {
             return;
         }
 
@@ -243,8 +252,7 @@ void HeroSkinContainer::bringToTopMost()
 
 void HeroSkinContainer::wheelEvent(QGraphicsSceneWheelEvent *event)
 {
-    if (NULL != m_vScrollBar)
-    {
+    if (NULL != m_vScrollBar) {
         int deltaValue = event->delta();
         int scrollBarValue = m_vScrollBar->value();
         scrollBarValue += (-deltaValue / 120) * m_vScrollBar->pageStep();

@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    FreeType API for accessing BDF-specific strings (specification).     */
 /*                                                                         */
-/*  Copyright 2002-2016 by                                                 */
+/*  Copyright 2002-2004, 2006, 2009, 2014 by                               */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -16,8 +16,8 @@
 /***************************************************************************/
 
 
-#ifndef FTBDF_H_
-#define FTBDF_H_
+#ifndef __FTBDF_H__
+#define __FTBDF_H__
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
@@ -204,7 +204,7 @@ FT_BEGIN_HEADER
 
 FT_END_HEADER
 
-#endif /* FTBDF_H_ */
+#endif /* __FTBDF_H__ */
 
 
 /* END */

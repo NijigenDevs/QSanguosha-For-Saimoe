@@ -1,3 +1,23 @@
+/********************************************************************
+    Copyright (c) 2013-2015 - Mogara
+
+    This file is part of QSanguosha-Hegemony.
+
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    See the LICENSE file for more details.
+
+    Mogara
+    *********************************************************************/
+
 #include "settings.h"
 #include "photo.h"
 #include "card.h"
@@ -39,19 +59,15 @@ Settings::Settings()
 
 void Settings::init()
 {
-    if (!qApp->arguments().contains("-server"))
-    {
+    if (!qApp->arguments().contains("-server")) {
         QString font_path = value("DefaultFontPath", "font/simli.ttf").toString();
         int font_id = QFontDatabase::addApplicationFont(font_path);
-        if (font_id != -1)
-        {
+        if (font_id != -1) {
             QString font_family = QFontDatabase::applicationFontFamilies(font_id).first();
             BigFont.setFamily(font_family);
             SmallFont.setFamily(font_family);
             TinyFont.setFamily(font_family);
-        }
-        else
-        {
+        } else {
             QMessageBox::warning(NULL, tr("Warning"), tr("Font file %1 could not be loaded!").arg(font_path));
         }
 
@@ -144,8 +160,7 @@ void Settings::init()
     Config.RemovedHiddenGenerals = GetConfigFromLuaState(lua, "removed_hidden_generals").toStringList();
 
     QStringList forbid_packages = value("ForbidPackages").toStringList();
-    if (forbid_packages.isEmpty())
-    {
+    if (forbid_packages.isEmpty()) {
         forbid_packages << "test" << "jiange-defense";
         setValue("ForbidPackages", forbid_packages);
     }

@@ -1,3 +1,23 @@
+/********************************************************************
+    Copyright (c) 2013-2015 - Mogara
+
+    This file is part of QSanguosha-Hegemony.
+
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    See the LICENSE file for more details.
+
+    Mogara
+    *********************************************************************/
+
 #include "window.h"
 #include "settings.h"
 #include "button.h"
@@ -27,10 +47,8 @@ Window::Window(const QString &title, const QSizeF &size, const QString &path)
 
     qreal xc = (w - 2 * pad) / (tw - 2 * pad), yc = (h - 2 * pad) / (th - 2 * pad);
 
-    for (int i = 0; i < tw; i++)
-    {
-        for (int j = 0; j < th; j++)
-        {
+    for (int i = 0; i < tw; i++) {
+        for (int j = 0; j < th; j++) {
             int x = i, y = j;
 
             if (x >= pad && x <= (tw - pad))

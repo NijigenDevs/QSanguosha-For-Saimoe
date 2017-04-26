@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    FreeType path stroker (specification).                               */
 /*                                                                         */
-/*  Copyright 2002-2016 by                                                 */
+/*  Copyright 2002-2006, 2008, 2009, 2011-2012, 2014 by                    */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -16,8 +16,8 @@
 /***************************************************************************/
 
 
-#ifndef FTSTROKE_H_
-#define FTSTROKE_H_
+#ifndef __FT_STROKE_H__
+#define __FT_STROKE_H__
 
 #include <ft2build.h>
 #include FT_OUTLINE_H
@@ -774,7 +774,7 @@ FT_BEGIN_HEADER
 
 FT_END_HEADER
 
-#endif /* FTSTROKE_H_ */
+#endif /* __FT_STROKE_H__ */
 
 
 /* END */

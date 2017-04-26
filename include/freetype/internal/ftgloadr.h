@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    The FreeType glyph loader (specification).                           */
 /*                                                                         */
-/*  Copyright 2002-2016 by                                                 */
+/*  Copyright 2002, 2003, 2005, 2006 by                                    */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg                       */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -16,8 +16,8 @@
 /***************************************************************************/
 
 
-#ifndef FTGLOADR_H_
-#define FTGLOADR_H_
+#ifndef __FTGLOADR_H__
+#define __FTGLOADR_H__
 
 
 #include <ft2build.h>
@@ -36,6 +36,24 @@ FT_BEGIN_HEADER
   /*    The glyph loader is an internal object used to load several glyphs */
   /*    together (for example, in the case of composites).                 */
   /*                                                                       */
+  /* <Note>                                                                */
+  /*    The glyph loader implementation is not part of the high-level API, */
+  /*    hence the forward structure declaration.                           */
+  /*                                                                       */
+  typedef struct FT_GlyphLoaderRec_*  FT_GlyphLoader ;
+
+
+#if 0  /* moved to freetype.h in version 2.2 */
+#define FT_SUBGLYPH_FLAG_ARGS_ARE_WORDS          1
+#define FT_SUBGLYPH_FLAG_ARGS_ARE_XY_VALUES      2
+#define FT_SUBGLYPH_FLAG_ROUND_XY_TO_GRID        4
+#define FT_SUBGLYPH_FLAG_SCALE                   8
+#define FT_SUBGLYPH_FLAG_XY_SCALE             0x40
+#define FT_SUBGLYPH_FLAG_2X2                  0x80
+#define FT_SUBGLYPH_FLAG_USE_MY_METRICS      0x200
+#endif
+
+
   typedef struct  FT_SubGlyphRec_
   {
     FT_Int     index;
@@ -71,7 +89,7 @@ FT_BEGIN_HEADER
 
     void*            other;            /* for possible future extension? */
 
-  } FT_GlyphLoaderRec, *FT_GlyphLoader;
+  } FT_GlyphLoaderRec;
 
 
   /* create new empty glyph loader */
@@ -103,25 +121,23 @@ FT_BEGIN_HEADER
                               FT_UInt         n_contours );
 
 
-#define FT_GLYPHLOADER_CHECK_P( _loader, _count )       \
-  ( (_count) == 0                                    || \
-    ( (FT_UInt)(_loader)->base.outline.n_points    +    \
-      (FT_UInt)(_loader)->current.outline.n_points +    \
-      (FT_UInt)(_count) ) <= (_loader)->max_points   )
+#define FT_GLYPHLOADER_CHECK_P( _loader, _count )           \
+  ( (_count) == 0                                        || \
+    ( (_loader)->base.outline.n_points    +                 \
+      (_loader)->current.outline.n_points +                 \
+      (unsigned long)(_count) ) <= (_loader)->max_points )
 
-#define FT_GLYPHLOADER_CHECK_C( _loader, _count )         \
-  ( (_count) == 0                                      || \
-    ( (FT_UInt)(_loader)->base.outline.n_contours    +    \
-      (FT_UInt)(_loader)->current.outline.n_contours +    \
-      (FT_UInt)(_count) ) <= (_loader)->max_contours   )
+#define FT_GLYPHLOADER_CHECK_C( _loader, _count )            \
+  ( (_count) == 0                                         || \
+    ( (_loader)->base.outline.n_contours    +                \
+      (_loader)->current.outline.n_contours +                \
+      (unsigned long)(_count)) <= (_loader)->max_contours )
 
-#define FT_GLYPHLOADER_CHECK_POINTS( _loader, _points, _contours ) \
-  ( ( FT_GLYPHLOADER_CHECK_P( _loader, _points )   &&              \
-      FT_GLYPHLOADER_CHECK_C( _loader, _contours ) )               \
-    ? 0                                                            \
-    : FT_GlyphLoader_CheckPoints( (_loader),                       \
-                                  (FT_UInt)(_points),              \
-                                  (FT_UInt)(_contours) ) )
+#define FT_GLYPHLOADER_CHECK_POINTS( _loader, _points, _contours )      \
+  ( ( FT_GLYPHLOADER_CHECK_P( _loader, _points )   &&                   \
+      FT_GLYPHLOADER_CHECK_C( _loader, _contours ) )                    \
+    ? 0                                                                 \
+    : FT_GlyphLoader_CheckPoints( (_loader), (_points), (_contours) ) )
 
 
   /* check that there is enough space to add `n_subs' sub-glyphs to */
@@ -148,7 +164,7 @@ FT_BEGIN_HEADER
 
 FT_END_HEADER
 
-#endif /* FTGLOADR_H_ */
+#endif /* __FTGLOADR_H__ */
 
 
 /* END */

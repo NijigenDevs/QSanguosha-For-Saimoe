@@ -1,3 +1,23 @@
+/********************************************************************
+    Copyright (c) 2013-2015 - Mogara
+
+    This file is part of QSanguosha-Hegemony.
+
+    This game is free software; you can redistribute it and/or
+    modify it under the terms of the GNU General Public License as
+    published by the Free Software Foundation; either version 3.0
+    of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    See the LICENSE file for more details.
+
+    Mogara
+    *********************************************************************/
+
 #ifndef _DASHBOARD_H
 #define _DASHBOARD_H
 
@@ -23,7 +43,7 @@ class GraphicsPixmapHoverItem;
 class Dashboard : public PlayerCardContainer
 {
     Q_OBJECT
-        Q_ENUMS(SortType)
+    Q_ENUMS(SortType)
 
 public:
     enum SortType
@@ -59,7 +79,7 @@ public:
     void showControlButtons();
     virtual void showProgressBar(QSanProtocol::Countdown countdown);
 
-    QSanSkillButton *removeSkillButton(const QString &skillName);
+    QSanSkillButton *removeSkillButton(const QString &skillName, bool head);
     QSanSkillButton *addSkillButton(const QString &skillName, const bool &head = true);
     bool isAvatarUnderMouse();
 
@@ -144,7 +164,9 @@ public:
     void addTransferButton(TransferButton *button);
     QList<TransferButton *> getTransferButtons() const;
 
-    public slots:
+    void playBattleArrayAnimations();
+
+public slots:
     void sortCards();
     void beginSorting();
     void reverseSelection();
@@ -295,6 +317,11 @@ protected:
     HeroSkinContainer *m_headHeroSkinContainer;
     HeroSkinContainer *m_deputyHeroSkinContainer;
 
+    // for battle arry
+    QHash<QString, PixmapAnimation *> _m_frameBorders;
+    QHash<QString, PixmapAnimation *> _m_roleBorders;
+    void _createBattleArrayAnimations();
+
 private:
     static const int CARDITEM_Z_DATA_KEY = 0413;
 
@@ -313,10 +340,10 @@ private:
 
     int maxCardsNumInFirstLine() const;
 
-    protected slots:
+protected slots:
     virtual void _onEquipSelectChanged();
 
-    private slots:
+private slots:
     void onCardItemClicked();
     void onCardItemDoubleClicked();
     void onCardItemThrown();
