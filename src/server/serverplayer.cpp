@@ -2097,6 +2097,29 @@ QStringList ServerPlayer::getBigKingdoms(const QString &reason, MaxCardsType::Ma
             big_kingdoms << kingdom;
         }
     }
+
+    const Player *haruhi = NULL;
+    foreach(auto *p, room->getAlivePlayers())
+    {
+        if (p->hasShownSkill("zhizun"))
+        {
+            haruhi = p;
+            break;
+        }
+    }
+
+    if (haruhi != NULL)
+    {
+        big_kingdoms.clear();
+        if (haruhi->getRole() == "careerist")
+        {
+            big_kingdoms << haruhi->objectName();
+        }
+        else
+        {
+            big_kingdoms << haruhi->getKingdom();
+        }
+    }
     return big_kingdoms;
 }
 

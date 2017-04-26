@@ -800,7 +800,24 @@ void Card::onUse(Room *room, const CardUseStruct &use) const
     }
 
     thread->trigger(CardUsed, room, player, data);
-    thread->trigger(CardFinished, room, player, data);
+
+    if (card_use.card->hasFlag("cardNotTriggerCardFinished"))
+    {
+        room->clearCardFlag(card_use.card);
+
+        if (card_use.card->isNDTrick())
+            room->removeTag(card_use.card->toString() + "HegNullificationTargets");
+
+        foreach(ServerPlayer *p, room->getAlivePlayers())
+            room->doNotify(p, QSanProtocol::S_COMMAND_NULLIFICATION_ASKED, QString("."));
+
+        if (card_use.card->isKindOf("Slash"))
+            card_use.from->tag.remove("Jink_" + use.card->toString());
+    }
+    else
+    {
+        thread->trigger(CardFinished, room, player, data);
+    }
     if (!card_use.card->getSkillPosition().isEmpty()) {
         QStringList skill_positions = room->getTag(card_use.card->getSkillName(true) + player->objectName()).toStringList();        //remove this record when finish
         if (!skill_positions.isEmpty()) {

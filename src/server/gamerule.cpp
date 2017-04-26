@@ -220,6 +220,14 @@ void GameRule::onPhaseProceed(ServerPlayer *player) const
     }
     case Player::Judge: {
         QList<const Card *> tricks = player->getJudgingArea();
+        // Coupling
+        foreach(auto trick, tricks)
+        {
+            if (trick->isKindOf("Key"))
+            {
+                tricks.removeOne(trick);
+            }
+        }
         while (!tricks.isEmpty() && player->isAlive()) {
             const Card *trick = tricks.takeLast();
             bool on_effect = room->cardEffect(trick, NULL, player);

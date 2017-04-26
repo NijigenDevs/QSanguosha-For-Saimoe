@@ -261,7 +261,7 @@ void ClientPlayer::setMark(const QString &mark, int value)
 QStringList ClientPlayer::getBigKingdoms(const QString &, MaxCardsType::MaxCardsCount type) const
 {
     QMap<QString, int> kingdom_map;
-    kingdom_map.insert("wei", 0);
+    kingdom_map.insert("wei", 0); // TODO: this is coupling with four kingdoms inserted, plan to get it replaced by getting kingdoms in packages
     kingdom_map.insert("shu", 0);
     kingdom_map.insert("wu", 0);
     kingdom_map.insert("qun", 0);
@@ -309,6 +309,29 @@ QStringList ClientPlayer::getBigKingdoms(const QString &, MaxCardsType::MaxCards
             QString kingdom = jade_seal_owner->getKingdom();
             big_kingdoms.clear();
             big_kingdoms << kingdom;
+        }
+    }
+
+    const Player *haruhi = NULL;
+    foreach (auto *p, players)
+    {
+        if (p->hasShownSkill("zhizun"))
+        {
+            haruhi = p;
+            break;
+        }
+    }
+
+    if (haruhi != NULL)
+    {
+        big_kingdoms.clear();
+        if (haruhi->getRole() == "careerist")
+        {
+            big_kingdoms << haruhi->objectName();
+        }
+        else
+        {
+            big_kingdoms << haruhi->getKingdom();
         }
     }
     return big_kingdoms;
