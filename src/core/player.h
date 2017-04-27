@@ -145,6 +145,7 @@ public:
     virtual void setFlags(const QString &flag);
     bool hasFlag(const QString &flag) const;
     void clearFlags();
+    virtual void removeFlagsWithPattern(const QString &regex);
 
     bool faceUp() const;
     void setFaceUp(bool face_up);

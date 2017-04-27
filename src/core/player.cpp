@@ -248,6 +248,20 @@ void Player::clearFlags()
     flags.clear();
 }
 
+#include <QRegularExpression> 
+
+void Player::removeFlagsWithPattern(const QString &regex)
+{
+    QRegularExpression re(regex);
+    foreach (auto flag, flags)
+    {
+        if (re.match(flag).hasMatch())
+        {
+            flags.remove(flag);
+        }
+    }
+}
+
 int Player::getAttackRange(bool include_weapon) const
 {
     if (hasFlag("InfinityAttackRange") || getMark("InfinityAttackRange") > 0)
