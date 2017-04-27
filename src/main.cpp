@@ -86,14 +86,11 @@ int main(int argc, char *argv[])
 #else
     QSplashScreen *splash = NULL;
     if (!noGui) {
-        QPixmap raraLogo;
+        QPixmap logo;
         QDate currentDate = QDate::currentDate();
-        if (currentDate.month() == 11 && currentDate.day() == 30)
-            raraLogo.load("image/system/developers/logo_rara.png");
-        else
-            raraLogo.load("image/system/developers/logo.png");
+        logo.load("image/system/developers/logo.png");
 
-        splash = new QSplashScreen(raraLogo);
+        splash = new QSplashScreen(logo);
         splash->show();
         qApp->processEvents();
     }
@@ -101,7 +98,7 @@ int main(int argc, char *argv[])
     if (splash == NULL) {\
         puts(message.toUtf8().constData());\
         } else {\
-        splash->showMessage(message, Qt::AlignBottom | Qt::AlignHCenter, Qt::cyan);\
+        splash->showMessage(message, Qt::AlignBottom | Qt::AlignHCenter, Qt::white);\
         qApp->processEvents();\
         }
 #endif
