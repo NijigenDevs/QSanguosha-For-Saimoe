@@ -70,3 +70,5 @@ src/bot_version.cpp
 
 *.iobj
 *.ipdb
+
+*.vcxproj.user
