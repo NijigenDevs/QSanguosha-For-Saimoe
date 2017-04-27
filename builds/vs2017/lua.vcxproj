@@ -74,16 +74,18 @@
     <OutDir>$(SolutionDir)..\..\lib\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IntDir>$(ProjectDir)$(Configuration)\</IntDir>
+    <IntDir>$(Platform)\$(Configuration)\lua\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IntDir>$(ProjectDir)$(Configuration)\</IntDir>
+    <IntDir>$(Platform)\$(Configuration)\lua\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>$(SolutionDir)..\..\lib\</OutDir>
+    <IntDir>$(Platform)\$(Configuration)\lua\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(SolutionDir)..\..\lib\</OutDir>
+    <IntDir>$(Platform)\$(Configuration)\lua\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
