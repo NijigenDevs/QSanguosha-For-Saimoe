@@ -119,14 +119,14 @@ public:
             << GeneralRemoved << EventLoseSkill << EventAcquireSkill;
     }
 
-    virtual QStringList triggerable(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &, ServerPlayer * &) const
+    virtual QStringList triggerable(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer * &) const
     {
-        if (event == EventPhaseEnd && player->getPhase() == Player::Finish)
+        if (event == EventPhaseChanging && data.value<PhaseChangeStruct>().to == Player::NotActive)
         {
             player->loseAllMarks("@weihao");
             player->loseAllMarks("@zhenhao");
         }
-        if (player->ownSkill(this))
+        if (player != NULL && player->isAlive() && player->ownSkill(this))
             room->setPlayerMark(player, "azusa_maxcards", player->getMaxCards(MaxCardsType::Normal));
         return QStringList();
     }

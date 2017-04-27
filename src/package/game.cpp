@@ -2980,7 +2980,9 @@ public:
 
     virtual int getExtra(const ServerPlayer *target, MaxCardsType::MaxCardsCount) const
     {
-        return 2 * target->getLostHp();
+        if (target->hasShownSkill(this))
+            return 2 * target->getLostHp();
+        return 0;
     }
 };
 

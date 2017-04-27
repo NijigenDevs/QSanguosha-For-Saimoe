@@ -142,9 +142,8 @@ public:
         else if (event == CardsMoveOneTime)
         {
             CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-            if (player->getMark("@tianzi_draw") > 0 && move.from != NULL && player->getPhase() == Player::Discard
-                && move.to_place == Player::DiscardPile
-                && (move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_DISCARD)
+            if (player == move.from && player->getMark("@tianzi_draw") > 0 && player->getPhase() == Player::Discard
+                && (move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_DISCARD && move.to_place == Player::PlaceTable)
             {
                 foreach (int id, move.card_ids)
                     if (Sanguosha->getEngineCard(id)->isKindOf("TrickCard"))
@@ -202,7 +201,9 @@ public:
 
     virtual int getExtra(const ServerPlayer *target, MaxCardsType::MaxCardsCount) const
     {
-        return -target->getMark("@tianzi_draw");
+        if (target->hasShownSkill("tianzi"))
+            return -target->getMark("@tianzi_draw");
+        return 0;
     }
 };
 
@@ -221,7 +222,8 @@ public:
         if (event == CardsMoveOneTime)
         {
             CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-            if (player->getPhase() == Player::NotActive || move.to_place != Player::DiscardPile || (move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) != CardMoveReason::S_REASON_DISCARD)
+            if (move.from == NULL || move.from != player || player->getPhase() == Player::NotActive || move.to_place != Player::PlaceTable 
+                || (move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) != CardMoveReason::S_REASON_DISCARD)
                 return QStringList();
             player->setMark("@yuzhai_cards", player->getMark("@yuzhai_cards") + move.card_ids.length());
         }
@@ -2091,7 +2093,7 @@ public:
     virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const
     {
         JudgeStruct *judge = data.value<JudgeStruct *>();
-        return (TriggerSkill::triggerable(player) && (judge->card->isRed() ? !player->isKongcheng() : true)) ? QStringList(objectName()) : QStringList();
+        return (TriggerSkill::triggerable(player) && judge->card != NULL && (judge->card->isRed() ? !player->isKongcheng() : true)) ? QStringList(objectName()) : QStringList();
     }
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
@@ -2124,7 +2126,6 @@ public:
             else
             {
                 const Card *oldJudge = judge->card;
-                judge->card = Sanguosha->getCard(card->getId());
                 CardsMoveStruct move1(QList<int>(), judge->who, Player::PlaceJudge,
                     CardMoveReason(CardMoveReason::S_REASON_RETRIAL, player->objectName(), objectName(), QString()));
                 move1.card_ids.append(card->getId());
@@ -2144,6 +2145,8 @@ public:
                 moves.append(move2);
                 moves.append(move1);
                 room->moveCardsAtomic(moves, true);
+
+                room->retrial(card, player, judge, objectName(), true);
             }
             return true;
         }
@@ -2546,7 +2549,7 @@ public:
         QMap<ServerPlayer *, QStringList> skill_list;
         if (event == EventPhaseStart)
         {
-            if (player != NULL && player->getPhase() == Player::Draw)
+            if (player->getPhase() == Player::Draw)
             {
                 QList<ServerPlayer *> sakuras = room->findPlayersBySkillName(objectName());
                 foreach (ServerPlayer *sakura, sakuras)
@@ -2569,7 +2572,7 @@ public:
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const
     {
-        const Card *card = room->askForCard(ask_who, "he", "@fengyin_put", QVariant(), objectName());
+        const Card *card = room->askForCard(ask_who, "..", "@fengyin_put", QVariant(), objectName());
         if (card != NULL)
         {
             CardsMoveStruct move(QList<int>(), NULL, ask_who, Player::DrawPile, Player::PlaceHand,
@@ -2639,6 +2642,7 @@ public:
             if (ask_who->askForSkillInvoke(objectName(), data))
             {
                 room->drawCards(ask_who, 1, objectName());
+                ask_who->setFlags("jiechu_used");
                 room->broadcastSkillInvoke(objectName());
             }
             return true;

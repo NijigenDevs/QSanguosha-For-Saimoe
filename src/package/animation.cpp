@@ -1877,10 +1877,13 @@ void GejiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targ
     foreach (ServerPlayer *p, targets)
     {
         int cardid = room->askForCardChosen(source, p, "he", "geji", false, Card::MethodDiscard);
-        room->throwCard(cardid, p, source);
-        if (Sanguosha->getCard(cardid)->getSuit() == Card::Spade)
+        if (cardid != -1)
         {
-            drawPlayers.append(p);
+            room->throwCard(cardid, p, source, "geji");
+            if (Sanguosha->getCard(cardid)->getSuit() == Card::Spade)
+            {
+                drawPlayers.append(p);
+            }
         }
     }
     //log
@@ -2563,21 +2566,14 @@ class WuxinAya : public TriggerSkill
 {
 public:
     WuxinAya() : TriggerSkill("wuxinAya")
-    {//complicated with the other official skill.
+    {
         frequency = Limited;
-        events << DamageInflicted << GameStart;
+        events << DamageInflicted;
     }
 
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const
     {
-        if (triggerEvent == GameStart)
-        {
-            if (player->ownSkill(objectName()))
-            {
-                room->setPlayerMark(player, "@wuxin", 1);
-            }
-        }
-        else if ((triggerEvent == DamageInflicted) && player->isAlive() && player->getMark("@wuxin") > 0)
+        if ((triggerEvent == DamageInflicted) && player->isAlive() && player->getMark("@wuxin") > 0)
         {
             DamageStruct damage = data.value<DamageStruct>();
             if (damage.damage > 1)
