@@ -2126,12 +2126,10 @@ public:
             else
             {
                 const Card *oldJudge = judge->card;
-                CardsMoveStruct move1(QList<int>(), judge->who, Player::PlaceJudge,
+                CardsMoveStruct move1(card->getId(), judge->who, Player::PlaceJudge,
                     CardMoveReason(CardMoveReason::S_REASON_RETRIAL, player->objectName(), objectName(), QString()));
-                move1.card_ids.append(card->getId());
-                CardsMoveStruct move2(QList<int>(), judge->who, NULL, Player::PlaceUnknown, Player::DrawPileBottom,
+                CardsMoveStruct move2(oldJudge->getId(), judge->who, NULL, Player::PlaceUnknown, Player::DrawPileBottom,
                     CardMoveReason(CardMoveReason::S_REASON_OVERRIDE, player->objectName(), objectName(), QString()));
-                move2.card_ids.append(oldJudge->getId());
 
                 LogMessage log;
                 log.type = "$ChangedJudge";
@@ -2453,19 +2451,27 @@ public:
         if (!TriggerSkill::triggerable(player))
             return QStringList();
         CardUseStruct use = data.value<CardUseStruct>();
-        if (use.card->isKindOf("Slash") && use.to.length() == 1)
+        if (use.card != NULL && use.card->isKindOf("Slash") && use.to.length() == 1)
         {
             ServerPlayer *target = use.to.first();
             if (target == NULL)
                 return QStringList();
+            bool invoke = false;
             QList<ServerPlayer *> others = room->getOtherPlayers(player);
             if (others.contains(target))
                 others.removeOne(target);
             int handcardNum = target->getHandcardNum();
             int equipcardNum = target->getEquips().length();
             foreach (ServerPlayer *p, others)
+            {
                 if (p->getHandcardNum() == handcardNum || p->getEquips().length() == equipcardNum)
-                    return QStringList(objectName());
+                {
+                    invoke = true;
+                    break;
+                }
+            }
+            if (invoke)
+                return QStringList(objectName());
         }
         return QStringList();
     }
@@ -2484,54 +2490,54 @@ public:
         foreach (ServerPlayer *p, others)
         {
             if (p->getHandcardNum() == handcardNum && !use.to.contains(p))
-                handVictims.append(p);
-            else if (p->getEquips().length() == equipcardNum && !use.to.contains(p))
-                equipVictims.append(p);
+                handVictims << p;
+            if (p->getEquips().length() == equipcardNum && !use.to.contains(p))
+                equipVictims << p;
         }
-        if (!player->askForSkillInvoke(this))
-            return false;
-        QString choice;
-        if (handVictims.length() > 0)
-            choice = equipVictims.length() > 0 ? room->askForChoice(player, objectName(), "hand+equip", data) : "hand";
-        else if (equipVictims.length() > 0)
-            choice = "equip";
-        player->tag["Jiandao-tars"] = QVariant::fromValue(choice == "hand" ? handVictims : equipVictims);
-        room->broadcastSkillInvoke(objectName(), choice == "hand" ? 1 : 2);
-        return true;
+        if (player->askForSkillInvoke(this))
+        {
+            QStringList choices;
+            if (handVictims.length() > 0)
+                choices << "hand";
+            if (equipVictims.length() > 0)
+                choices << "equip";
+            auto choice = room->askForChoice(player, objectName(), choices.join("+"));
+            if (choice == "hand")
+            {
+                player->tag["jiandao_targets"] = QVariant::fromValue(handVictims);
+                room->broadcastSkillInvoke("jiandao", 1);
+                return true;
+            }
+            else if (choice == "equip")
+            {
+                player->tag["jiandao_targets"] = QVariant::fromValue(equipVictims);
+                room->broadcastSkillInvoke("jiandao", 2);
+                return true;
+            }
+        }
+        return false;
     }
 
     virtual bool effect(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *) const
     {
         CardUseStruct use = data.value<CardUseStruct>();
-        QList<ServerPlayer *> targets = player->tag["Jiandao-tars"].value<QList<ServerPlayer *>>();
+        QList<ServerPlayer *> targets = player->tag["jiandao_targets"].value<QList<ServerPlayer *>>();
         if (targets.length() > 0)
         {
+            QList<const Player*> others;
+            foreach(ServerPlayer *other, use.to)
+                others << other;
             foreach (ServerPlayer *target, targets)
             {
-                QList<const Player*> others;
-                foreach (ServerPlayer *other, use.to)
-                    others.append(other);
                 if (!use.to.contains(target) && player->canSlash(target, false, 0, others))
                 {
                     use.to << target;
+                    others << target;
                 }
             }
             data.setValue(use);
         }
         return false;
-    }
-};
-
-class FengyinProhibit : public ProhibitSkill
-{
-public:
-    FengyinProhibit() : ProhibitSkill("#fengyin-prohibit")
-    {
-    }
-
-    virtual bool isProhibited(const Player *from, const Player *, const Card *card, const QList<const Player *> &) const
-    {
-        return from != NULL && from->hasFlag("fengyin_on") && card->getTypeId() != Card::TypeSkill && !card->hasFlag("clowcards");
     }
 };
 
@@ -2561,28 +2567,23 @@ public:
         {
             if (!TriggerSkill::triggerable(player)) return skill_list;
             CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-            if (move.from != NULL && move.from->hasFlag("fengyin_on") && move.from->getPhase() == Player::Draw
+            if (move.to != NULL && move.to->hasFlag("fengyin_on") && move.to->getPhase() == Player::Draw
                 && (move.reason.m_reason == CardMoveReason::S_REASON_GOTCARD || move.reason.m_reason == CardMoveReason::S_REASON_DRAW))
                 foreach (int id, move.card_ids)
-                if (id != -1)
-                    Sanguosha->getCard(id)->setFlags("clowcards");
+                    if (id != -1)
+                        Sanguosha->getCard(id)->setFlags("clowcards");
         }
         return skill_list;
     }
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const
     {
-        const Card *card = room->askForCard(ask_who, "..", "@fengyin_put", QVariant(), objectName());
+        const Card *card = room->askForCard(ask_who, "..", "@fengyin_put", QVariant(), Card::MethodNone, NULL, false, objectName(), false);
         if (card != NULL)
         {
-            CardsMoveStruct move(QList<int>(), NULL, ask_who, Player::DrawPile, Player::PlaceHand,
-                CardMoveReason(CardMoveReason::S_REASON_PUT, ask_who->objectName(), objectName(), QString()));
-            if (card->getEffectiveId() != -1)
-            {
-                move.card_ids.append(card->getEffectiveId());
-                room->moveCardsAtomic(move, false);
-                return true;
-            }
+            auto reason = CardMoveReason(CardMoveReason::S_REASON_PUT, ask_who->objectName(), NULL, "fengyin", NULL);
+            room->moveCardTo(card, ask_who, NULL, Player::DrawPile, reason, false);
+            return true;
         }
         return false;
     }
@@ -2627,10 +2628,12 @@ public:
                     room->setPlayerMark(player, "@jiechu_times", 0);
             }
         }
-        else
+        else if (event == EventPhaseChanging && data.value<PhaseChangeStruct>().to == Player::NotActive)
         {
-            if (player->hasFlag("jiechu_used"))
-                player->setFlags("-jiechu_used");
+            foreach (auto p, room->getAlivePlayers())
+            {
+                p->setFlags("-jiechu_used");
+            }
         }
         return skill_list;
     }
@@ -2675,9 +2678,7 @@ void MoesenPackage::addComicGenerals()
 
     General *sakura = new General(this, "sakura", "shu", 3, false); // C001
     sakura->addSkill(new Fengyin);
-    sakura->addSkill(new FengyinProhibit);
     sakura->addSkill(new Jiechu);
-    insertRelatedSkills("fengyin", "#fengyin-prohibit");
 
     General *hinagiku = new General(this, "hinagiku", "shu", 4, false); // C002
     hinagiku->addSkill(new Jiandao);

@@ -4424,11 +4424,14 @@ void Room::drawCards(QList<ServerPlayer *> players, QList<int> n_list, const QSt
         if (n <= 0) continue;
         QList<int> card_ids = getNCards(n, false);
 
+        CardMoveReason reason(CardMoveReason::S_REASON_DRAW, player->objectName());
+
         CardsMoveStruct move;
         move.card_ids = card_ids;
         move.from = NULL;
         move.to = player;
         move.to_place = Player::PlaceHand;
+        move.reason = reason;
         moves.append(move);
     }
     moveCardsAtomic(moves, false);

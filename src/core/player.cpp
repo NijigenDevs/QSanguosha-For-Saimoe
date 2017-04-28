@@ -1532,6 +1532,14 @@ bool Player::isCardLimited(const Card *card, Card::HandlingMethod method, bool i
         }
     }
 
+    if (method == Card::MethodUse || method == Card::MethodResponse)
+    {
+        if (hasFlag("fengyin_on") && !card->hasFlag("clowcards"))
+        {
+            return true;
+        }
+    }
+
     return removed;
 }
 
