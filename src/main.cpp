@@ -2,8 +2,6 @@
 #include <vld/vld.h>
 #endif
 
-#define _ALLOW_RTCc_IN_STL
-
 #include <QFile>
 #include <QCoreApplication>
 #include <QApplication>
