@@ -1481,6 +1481,12 @@ public:
         if (choice != ".")
             player->setFlags(choice);
 
+        LogMessage log;
+        log.type = "$YujianAnnounce";
+        log.from = player;
+        log.arg = choice;
+        room->sendLog(log);
+
         return false;
     }
 };
