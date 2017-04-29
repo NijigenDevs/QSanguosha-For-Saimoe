@@ -1851,7 +1851,7 @@ public:
                 QList<ServerPlayer *> yuis = room->findPlayersBySkillName(objectName());
                 foreach (ServerPlayer *yui, yuis)
                 {
-                    if (yui->hasFlag("yuanxin_turnrecover"))
+                    if (yui->hasFlag("yuanxin_turnrecover") && yui != player)
                         skill_list.insert(yui, QStringList(objectName()));
                 }
             }
