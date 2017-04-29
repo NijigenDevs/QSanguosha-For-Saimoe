@@ -671,7 +671,7 @@ ShowDistanceSkill::ShowDistanceSkill(const QString &name)
 
 const Card *ShowDistanceSkill::viewAs() const
 {
-    SkillCard *card = Sanguosha->cloneSkillCard("ShowMashu");
+    SkillCard *card = Sanguosha->cloneSkillCard("ShowKongwu");
     card->setUserString(objectName());
     return card;
 }

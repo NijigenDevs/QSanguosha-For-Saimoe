@@ -4,6 +4,22 @@
 #include "moesen-package.h"
 #include "card.h"
 
+class ShowBingshan : public ShowDistanceCard
+{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE ShowBingshan();
+};
+
+class ShowKongwu : public ShowDistanceCard
+{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE ShowKongwu();
+};
+
 class QiangqiCard : public SkillCard
 {
     Q_OBJECT
