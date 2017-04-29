@@ -2105,7 +2105,7 @@ public:
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
     {
         JudgeStruct *judge = data.value<JudgeStruct *>();
-        const Card *card;
+        const Card *card = NULL;
         if (judge->card->isRed())
         {
             QStringList prompt_list;
@@ -2150,7 +2150,7 @@ public:
                 moves.append(move1);
                 room->moveCardsAtomic(moves, true);
 
-                room->retrial(card, player, judge, objectName(), true);
+                judge->card = card;
             }
             return true;
         }
@@ -2201,6 +2201,8 @@ public:
         return laoyue_card;
     }
 };
+
+using namespace QSanProtocol;
 
 class Laoyue : public TriggerSkill
 {
@@ -2272,7 +2274,12 @@ public:
         gongxinArgs << false;
         gongxinArgs << JsonUtils::toJsonArray(ids);
         room->doNotify(player, QSanProtocol::S_COMMAND_SHOW_ALL_CARDS, gongxinArgs);
-        QString choice = player->getHandcardNum() >= 2 ? room->askForChoice(player, "laoyue", "use+put") : "use";
+        
+        room->getThread()->delay(2500);
+
+        room->doNotify(player, S_COMMAND_CLEAR_AMAZING_GRACE, QVariant());
+
+        QString choice = player->getHandcardNum() >= 2 ? room->askForChoice(player, "laoyue", "use+put+replace+cancel") : room->askForChoice(player, "laoyue", "use+replace+cancel");
         if (choice == "use")
         {
             if (enabled.isEmpty())
@@ -2298,9 +2305,9 @@ public:
             for (int i = ids.length() - 1; i >= 0; i--)
                 drawPile.append(ids.at(i));
         }
-        else
+        else if (choice == "put")
         {
-            auto ex = room->askForExchange(player, "laoyue", 2, 2, "@laoyue-put", NULL, ".!");
+            QList<int> ex = room->askForExchange(player, "laoyue", 2, 2, "@laoyue-put", "", ".");
             if (ex.length() == 2)
             {
                 CardsMoveStruct move1(QList<int>(), player, NULL, Player::PlaceHand, Player::DrawPileBottom,
@@ -2308,46 +2315,63 @@ public:
                 CardsMoveStruct move2(QList<int>(), NULL, player, Player::DrawPileBottom, Player::PlaceHand,
                     CardMoveReason(CardMoveReason::S_REASON_OVERRIDE, player->objectName(), "laoyue", QString()));
                 move2.card_ids.append(ids);
-                while (ex.length() > 0)
-                {
-                    room->fillAG(ex, player);
-                    int id = room->askForAG(player, ex, false, "laoyue");
-                    if (id != -1)
-                    {
-                        move1.card_ids.append(id);
-                        ex.removeOne(id);
-                    }
-                    room->clearAG(player);
-                }
+                move1.card_ids.append(ex);
                 QList<CardsMoveStruct> moves;
                 moves.append(move2);
                 moves.append(move1);
                 room->moveCardsAtomic(moves, false);
             }
         }
+        else if (choice == "replace")
+        {
+            auto topCards = room->getNCards(2, true);
+            CardsMoveStruct move1(QList<int>(), NULL, NULL, Player::DrawPile, Player::DrawPileBottom,
+                CardMoveReason(CardMoveReason::S_REASON_OVERRIDE, player->objectName(), "laoyue", QString()));
+            CardsMoveStruct move2(QList<int>(), NULL, NULL, Player::DrawPileBottom, Player::DrawPile,
+                CardMoveReason(CardMoveReason::S_REASON_OVERRIDE, player->objectName(), "laoyue", QString()));
+            move2.card_ids.append(ids);
+            move1.card_ids.append(topCards);
+            QList<CardsMoveStruct> moves;
+            moves.append(move2);
+            moves.append(move1);
+            room->moveCardsAtomic(moves, false);
+        }
+        else if (choice == "cancel")
+        {
+            return -1;
+        }
+
         room->doBroadcastNotify(QSanProtocol::S_COMMAND_UPDATE_PILE, drawPile.length());
+
         if (result == -1)
             room->setPlayerFlag(player, "Global_LaoyueFailed");
-        else
+        else if (choice == "use")
         {
-            if (choice == "use")
-            {
-                LogMessage log;
-                log.type = "#LaoyueUse";
-                log.from = player;
-                log.arg = "laoyue";
-                log.arg2 = QString("CAPITAL(%1)").arg(index + 1);
-                room->sendLog(log);
-            }
-            else
-            {
-                LogMessage log;
-                log.type = "#LaoyuePut";
-                log.from = player;
-                log.arg = "laoyue";
-                room->sendLog(log);
-            }
+            LogMessage log;
+            log.type = "#LaoyueUse";
+            log.from = player;
+            log.arg = "laoyue";
+            log.arg2 = QString("CAPITAL(%1)").arg(index + 1);
+            room->sendLog(log);
         }
+
+        if (choice == "put")
+        {
+            LogMessage log;
+            log.type = "#LaoyuePut";
+            log.from = player;
+            log.arg = "laoyue";
+            room->sendLog(log);
+        }
+        else if (choice == "replace")
+        {
+            LogMessage log;
+            log.type = "#LaoyueReplace";
+            log.from = player;
+            log.arg = "laoyue";
+            room->sendLog(log);
+        }
+
         return result;
     }
 };
@@ -2582,9 +2606,9 @@ public:
         return skill_list;
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const
     {
-        const Card *card = room->askForCard(ask_who, "..", "@fengyin_put", QVariant(), Card::MethodNone, NULL, false, objectName(), false);
+        const Card *card = room->askForCard(ask_who, "..", "@fengyin_put", QVariant::fromValue(player), Card::MethodNone, NULL, false, objectName(), false);
         if (card != NULL)
         {
             auto reason = CardMoveReason(CardMoveReason::S_REASON_PUT, ask_who->objectName(), NULL, "fengyin", NULL);
