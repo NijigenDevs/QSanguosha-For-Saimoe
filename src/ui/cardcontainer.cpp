@@ -26,7 +26,7 @@ CardContainer::CardContainer()
 
 void CardContainer::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
 {
-    GraphicsBox::paintGraphicsBoxStyle(painter, tr("QSanguosha-Hegemony"), boundingRect());
+    GraphicsBox::paintGraphicsBoxStyle(painter, tr("QSanguosha-For-Saimoe"), boundingRect());
 
     const int card_width = G_COMMON_LAYOUT.m_cardNormalWidth;
     const int card_height = G_COMMON_LAYOUT.m_cardNormalHeight;

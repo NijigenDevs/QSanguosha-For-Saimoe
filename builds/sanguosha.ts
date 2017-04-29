@@ -182,8 +182,8 @@
     </message>
     <message>
         <location filename="../src/ui/cardcontainer.cpp" line="29"/>
-        <source>QSanguosha-Hegemony</source>
-        <translation>太阳神三国杀·国战</translation>
+        <source>QSanguosha-For-Saimoe</source>
+        <translation>太阳神三国杀·萌战</translation>
     </message>
 </context>
 <context>
@@ -2102,7 +2102,7 @@
         <location filename="../src/dialog/mainwindow.ui" line="14"/>
         <location filename="../src/dialog/mainwindow.cpp" line="579"/>
         <source>Sanguosha</source>
-        <translation>太阳神三国杀·国战</translation>
+        <translation>太阳神三国杀·萌战</translation>
     </message>
     <message>
         <location filename="../src/dialog/mainwindow.ui" line="41"/>
@@ -2595,11 +2595,6 @@
         <translation>存活</translation>
     </message>
     <message>
-        <location filename="../src/dialog/mainwindow.cpp" line="133"/>
-        <source>QSanguosha-Hegemony</source>
-        <translation>太阳神三国杀·国战</translation>
-    </message>
-    <message>
         <location filename="../src/dialog/mainwindow.cpp" line="229"/>
         <source>&lt;font color=%1&gt;Minimize&lt;/font&gt;</source>
         <translation>&lt;font color=%1&gt;最小化&lt;/font&gt;</translation>
@@ -2623,6 +2618,11 @@
         <location filename="../src/dialog/mainwindow.cpp" line="205"/>
         <source>&lt;font color=%1&gt;Config&lt;/font&gt;</source>
         <translation>&lt;font color=%1&gt;菜单&lt;/font&gt;</translation>
+    </message>
+    <message>
+        <location filename="../src/dialog/mainwindow.cpp" line="133"/>
+        <source>QSanguosha-For-Saimoe</source>
+        <translation>太阳神三国杀·萌战</translation>
     </message>
     <message>
         <location filename="../src/dialog/mainwindow.cpp" line="1153"/>
@@ -2787,7 +2787,7 @@
 <context>
     <name>Player</name>
     <message>
-        <location filename="../src/core/player.cpp" line="1404"/>
+        <location filename="../src/core/player.cpp" line="1418"/>
         <source>&lt;font color=%1&gt;No skills&lt;/font&gt;</source>
         <translation>&lt;font color=%1&gt;无技能&lt;/font&gt;</translation>
     </message>
@@ -2826,12 +2826,12 @@
 <context>
     <name>QMessageBox</name>
     <message>
-        <location filename="../src/main.cpp" line="187"/>
+        <location filename="../src/main.cpp" line="185"/>
         <source>Warning</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location filename="../src/main.cpp" line="187"/>
+        <location filename="../src/main.cpp" line="185"/>
         <source>Audio support is disabled when compiled</source>
         <translation>声音支持已在编译时禁用</translation>
     </message>
@@ -2844,12 +2844,12 @@
         <translation>Lua 脚本错误</translation>
     </message>
     <message>
-        <location filename="../src/main.cpp" line="113"/>
+        <location filename="../src/main.cpp" line="111"/>
         <source>Game data not found, please download QSanguosha-For-Hegemony PC version, and put the files and folders into /sdcard/Android/data/org.qsgsrara.qsanguosha</source>
         <translation>未找到游戏数据，请下载太阳神三国杀·国战PC版，并将其中的文件及文件夹移入/sdcard/Android/data/org.qsgsrara.qsanguosha目录</translation>
     </message>
     <message>
-        <location filename="../src/main.cpp" line="115"/>
+        <location filename="../src/main.cpp" line="113"/>
         <source>Error</source>
         <translation>错误</translation>
     </message>
@@ -2870,48 +2870,48 @@
 <context>
     <name>QSplashScreen</name>
     <message>
-        <location filename="../src/main.cpp" line="73"/>
+        <location filename="../src/main.cpp" line="71"/>
         <source>Loading BreakPad...</source>
         <translation>正在加载BreakPad...</translation>
     </message>
     <message>
-        <location filename="../src/main.cpp" line="78"/>
-        <location filename="../src/main.cpp" line="88"/>
+        <location filename="../src/main.cpp" line="76"/>
+        <location filename="../src/main.cpp" line="86"/>
         <source>Setting game path...</source>
         <translation>正在配置游戏路径...</translation>
     </message>
     <message>
-        <location filename="../src/main.cpp" line="83"/>
+        <location filename="../src/main.cpp" line="81"/>
         <source>Checking game path...</source>
         <translation>正在检查游戏路径...</translation>
     </message>
     <message>
-        <location filename="../src/main.cpp" line="133"/>
+        <location filename="../src/main.cpp" line="131"/>
         <source>Loading translation...</source>
         <translation>正在加载翻译...</translation>
     </message>
     <message>
-        <location filename="../src/main.cpp" line="138"/>
+        <location filename="../src/main.cpp" line="136"/>
         <source>Initializing game engine...</source>
         <translation>正在初始化游戏引擎...</translation>
     </message>
     <message>
-        <location filename="../src/main.cpp" line="142"/>
+        <location filename="../src/main.cpp" line="140"/>
         <source>Loading user&apos;s configurations...</source>
         <translation>正在加载用户配置...</translation>
     </message>
     <message>
-        <location filename="../src/main.cpp" line="164"/>
+        <location filename="../src/main.cpp" line="162"/>
         <source>Loading style sheet...</source>
         <translation>正在加载样式表...</translation>
     </message>
     <message>
-        <location filename="../src/main.cpp" line="183"/>
+        <location filename="../src/main.cpp" line="181"/>
         <source>Initializing audio module...</source>
         <translation>正在初始化音频模块...</translation>
     </message>
     <message>
-        <location filename="../src/main.cpp" line="190"/>
+        <location filename="../src/main.cpp" line="188"/>
         <source>Loading main window...</source>
         <translation>正在加载主界面...</translation>
     </message>
@@ -3187,14 +3187,14 @@
         <translation>玩家序号应为 %1 而不是 %2</translation>
     </message>
     <message>
-        <location filename="../src/server/room.cpp" line="5521"/>
+        <location filename="../src/server/room.cpp" line="5524"/>
         <source>Card cannot be parsed:
  %1</source>
         <translation>卡牌字符串无法解析:
  %1</translation>
     </message>
     <message>
-        <location filename="../src/server/room.cpp" line="7239"/>
+        <location filename="../src/server/room.cpp" line="7242"/>
         <source>&lt;font color=#EEB422&gt;The network delay of player &lt;b&gt;%1&lt;/b&gt; is %2 milliseconds.&lt;/font&gt;</source>
         <translation>&lt;font color=#EEB422&gt;玩家 &lt;b&gt;%1&lt;/b&gt; 的网络延迟为 %2 毫秒&lt;/font&gt;</translation>
     </message>

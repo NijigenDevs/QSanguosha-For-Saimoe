@@ -130,7 +130,7 @@ MainWindow::MainWindow(QWidget *parent)
     versionInfomationReply(NULL), changeLogReply(NULL)
 {
     ui->setupUi(this);
-    setWindowTitle(tr("QSanguosha-Hegemony") + " " + Sanguosha->getVersion());
+    setWindowTitle(tr("QSanguosha-For-Saimoe") + " " + Sanguosha->getVersion());
 #if defined(Q_OS_WIN) || (defined(Q_OS_LINUX) && !defined(Q_OS_ANDROID))
     setWindowFlags(Qt::FramelessWindowHint | Qt::WindowSystemMenuHint | Qt::WindowMinMaxButtonsHint);
 #endif
