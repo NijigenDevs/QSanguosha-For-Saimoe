@@ -754,7 +754,15 @@ bool GameRule::effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *playe
             return false;
 
         ServerPlayer *killer = death.damage ? death.damage->from : NULL;
-        if (killer) {
+        if (killer != NULL) {
+            auto originalRole = player->getRole();
+
+            if (killer->hasFlag("Jieao_flag"))
+            {
+                killer->setFlags("-Jieao_flag");
+                player->setRole("careerist");
+            }
+
             room->setPlayerMark(killer, "multi_kill_count", killer->getMark("multi_kill_count") + 1);
             int kill_count = killer->getMark("multi_kill_count");
             if (kill_count > 1 && kill_count < 8)
@@ -762,6 +770,8 @@ bool GameRule::effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *playe
             else if (kill_count > 7)
                 room->setEmotion(killer, "zylove", false, 4000);
             rewardAndPunish(killer, player);
+
+            player->setRole(originalRole);
         }
 
         if (player->getGeneral()->isLord() && player == data.value<DeathStruct>().who) {
