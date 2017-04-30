@@ -20,21 +20,31 @@ public:
 
     virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const
     {
+        // Debug by hmqgg because TargetChosen trigger player changes to use.from
         QMap<ServerPlayer *, QStringList> skill_list;
-        if (player == NULL) return skill_list;
+        if (player == NULL || !player->isAlive())
+            return skill_list;
+
         CardUseStruct use = data.value<CardUseStruct>();
-        if (!use.card || !use.card->isKindOf("Slash") || !use.to.contains(player))
+
+        if (use.card == NULL || !use.card->isKindOf("Slash") || use.to.length() == 0)
             return skill_list;
 
         QList<ServerPlayer *> mamis = room->findPlayersBySkillName(objectName());
+
+        QStringList targets;
+        foreach(ServerPlayer *to, use.to)
+            targets << to->objectName();
+
         foreach (ServerPlayer *mami, mamis)
         {
             int n = 0;
             if (mami->isKongcheng()) n++;
             if (!mami->hasEquip()) n++;
             if (mami->getJudgingArea().isEmpty()) n++;
-            if (n >= 2 && (mami->isFriendWith(use.from) || mami->willBeFriendWith(use.from)))
-                skill_list.insert(mami, QStringList(objectName()));
+
+            if (n >= 2 && (mami->isFriendWith(player) || mami->willBeFriendWith(player)))
+                skill_list.insert(mami, QStringList(objectName() + "->" + targets.join("+")));
         }
         return skill_list;
     }
