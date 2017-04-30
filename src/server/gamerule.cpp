@@ -890,6 +890,11 @@ bool GameRule::effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *playe
                 if (player->askForSkillInvoke("userdefine:halfmaxhp"))
                     player->drawCards(1);
                 room->removePlayerMark(player, "HalfMaxHpLeft");
+                room->setPlayerMark(player, "HasDedicatedMaxHp", 1);
+            }
+            else
+            {
+                room->setPlayerMark(player, "HasDedicatedMaxHp", 0);
             }
         }
     }

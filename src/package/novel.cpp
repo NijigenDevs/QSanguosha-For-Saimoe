@@ -1917,7 +1917,7 @@ public:
         ServerPlayer *from = data.value<DamageStruct>().from;
         if (from != NULL && player->askForSkillInvoke(this, QVariant::fromValue(data)))
         {
-            if (player->hasShownSkill("zhongxie") && player->hasShownAllGenerals() && player->getMark("HalfMaxHpLeft") == 1)
+            if (player->hasShownSkill("zhongxie") && player->hasShownAllGenerals() && player->getMark("HasDedicatedMaxHp") == 1)
                 from->drawCards(1, objectName());
             room->broadcastSkillInvoke(objectName(), player);
             return true;
@@ -1983,7 +1983,13 @@ public:
 
     virtual bool isEnabledAtPlay(const Player *player) const
     {
-        return (!player->isKongcheng() && ((player->hasShownSkill("zhongxie") && player->hasShownAllGenerals() && player->getMark("HalfMaxHpLeft") == 0) || !player->hasUsed("BaoyanCard")));
+        if (player->isKongcheng())
+            return false;
+
+        if (player->hasShownSkill("zhongxie") && player->hasShownAllGenerals() && player->getMark("HasDedicatedMaxHp") == 0)
+            return true;
+
+        return !player->hasUsed("BaoyanCard");
     }
 
     virtual const Card *viewAs(const Card *originalCard) const
