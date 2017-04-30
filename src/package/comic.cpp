@@ -2620,7 +2620,7 @@ public:
 
     virtual bool effect(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
-        player->setFlags("fengyin_on");
+        player->setFlags("fengyin_on"); // this is coupling into isAvailable
         return false;
     }
 };
@@ -2674,11 +2674,10 @@ public:
         {
             if (ask_who->askForSkillInvoke(objectName(), data))
             {
-                room->drawCards(ask_who, 1, objectName());
                 ask_who->setFlags("jiechu_used");
                 room->broadcastSkillInvoke(objectName());
+                return true;
             }
-            return true;
         }
         else if (event == DrawNCards)
         {
@@ -2693,7 +2692,10 @@ public:
     virtual bool effect(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const
     {
         if (event == TargetChoosing)
+        {
+            room->drawCards(ask_who, 1, objectName());
             room->setPlayerMark(ask_who, "@jiechu_times", ask_who->getMark("@jiechu_times") + 1);
+        }
         else
         {
             data = qMax(data.toInt() - player->getMark("@jiechu_times"), 0);

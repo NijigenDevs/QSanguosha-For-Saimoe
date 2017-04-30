@@ -783,12 +783,9 @@ end
 sgs.ai_skill_cardask["@fengyin_put"]=function(self, data)
 	local player = data:toPlayer()
 	if self.player:getHandcardNum() >= 1 and self:isEnemy(player) then
-		local cardsValues = {}
-		local handCards = self.player:getCards("h")
-		local keepValueCards = sgs.QList2Table(handCards)
-		self:sortByKeepValue(keepValueCards)
-		for _, card in ipairs(cards) do
-			if self:getKeepValue(card) < 4 and self:getUseValue(card) < 3 then
+		local handCards = self.player:getHandcards()
+		for _, card in sgs.qlist(handCards) do
+			if self:getKeepValue(card) < 3 and self:getUseValue(card) < 3 then
 				return "$" .. card:getId()
 			end
 		end
