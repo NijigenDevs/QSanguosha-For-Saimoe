@@ -1088,24 +1088,31 @@ public:
         events << TargetChosen << DamageCaused;
     }
 
-    virtual QStringList triggerable(TriggerEvent event, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &ask_who) const
+    virtual QStringList triggerable(TriggerEvent event, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const
     {
+        if (!TriggerSkill::triggerable(player))
+            return QStringList();
+
         if (event == TargetChosen)
         {
             CardUseStruct use = data.value<CardUseStruct>();
-            if (TriggerSkill::triggerable(use.from) && use.card != NULL && use.card->isKindOf("Slash") && use.to.contains(player))
+            if (use.from != NULL && use.from == player && use.card != NULL && use.card->isKindOf("Slash"))
             {
-                if (!player->getJudgingArea().isEmpty())
+                QStringList targets;
+                foreach(ServerPlayer *to, use.to)
                 {
-                    ask_who = use.from;
-                    return QStringList(objectName());
+                    if (!to->getJudgingArea().isEmpty())
+                        targets << to->objectName();
                 }
+                if (!targets.isEmpty())
+                    return QStringList(objectName() + "->" + targets.join("+"));
             }
         }
         else if (event == DamageCaused)
         {
             DamageStruct damage = data.value<DamageStruct>();
-            if (damage.from->hasFlag("liepo_select_2") && damage.to->hasFlag("liepo_change_damage_type"))
+
+            if (damage.from != NULL && damage.from == player && damage.to != NULL && damage.from->hasFlag("liepo_select_2") && damage.to->hasFlag("liepo_change_damage_type"))
             {
                 return QStringList(objectName());
             }
@@ -1113,18 +1120,19 @@ public:
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent event, Room *, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const
+    virtual bool cost(TriggerEvent event, Room *, ServerPlayer *target, QVariant &, ServerPlayer *ask_who) const
     {
         if (event == TargetChosen)
         {
-            if (ask_who->askForSkillInvoke(objectName(), QVariant::fromValue(player)))
+            if (ask_who->askForSkillInvoke(objectName(), QVariant::fromValue(target)))
             {
+                // TODO Liepo Confirmed Sound
                 return true;
             }
         }
         else if (event == DamageCaused)
         {
-            // DamageBuff Sound
+            // TODO DamageBuff Sound
             return true;
         }
         return false;
