@@ -2623,33 +2623,53 @@ public:
     Qinyin() : TriggerSkill("qinyin")
     {
         frequency = NotFrequent;
-        events << CardUsed;
+        events << CardUsed << CardResponded;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const
+    virtual QStringList triggerable(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const
     {
         if (!TriggerSkill::triggerable(player))
             return QStringList();
-        CardUseStruct use = data.value<CardUseStruct>();
-        if (use.card == NULL)
+        const Card *card = NULL;
+        if (event == CardUsed)
+        {
+            card = data.value<CardUseStruct>().card;
+        }
+        else
+        {
+            card = data.value<CardResponseStruct>().m_card;
+        }
+        if (card == NULL)
             return QStringList();
-        int black = use.card->isBlack();
+
+        int black = card->isBlack();
         foreach (ServerPlayer *p, room->getOtherPlayers(player))
         {
-            if (black && p->getHp() > player->getHp())
+            if (black && p->getHp() > player->getHp() && player->canDiscard(p, "he"))
             {
                 black++;
                 break;
             }
         }
-        if ((use.card->isRed() && !player->hasFlag("Qinyin_Red")) || (black == 2 && !player->hasFlag("Qinyin_Black")))
+        if ((card->isRed() && !player->hasFlag("Qinyin_Red")) || (black == 2 && !player->hasFlag("Qinyin_Black")))
             return QStringList(objectName());
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    virtual bool cost(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
     {
-        const Card *card = data.value<CardUseStruct>().card;
+        const Card *card = NULL;
+        if (event == CardUsed)
+        {
+            card = data.value<CardUseStruct>().card;
+        }
+        else
+        {
+            card = data.value<CardResponseStruct>().m_card;
+        }
+        if (card == NULL)
+            return false;
+
         bool red = card->isRed();
         bool black = card->isBlack();
         QList<ServerPlayer *> reds;
@@ -2659,7 +2679,6 @@ public:
             if (black && p->getHp() > player->getHp() && player->canDiscard(p, "he"))
             {
                 blacks << p;
-                continue;
             }
             else if (red && p->getHp() >= player->getHp())
             {
@@ -2668,11 +2687,21 @@ public:
 
         }
         reds << player;
-        ServerPlayer *target = room->askForPlayerChosen(player, blacks.isEmpty() ? reds : blacks, objectName(), blacks.isEmpty() ? "@qinyin-red" : "@qinyin-black", true, false);
+
+        ServerPlayer *target = NULL;
+        if (red && reds.length() > 0)
+        {
+            target = room->askForPlayerChosen(player, reds, objectName(), "@qinyin-red", true, false);
+        }
+        else if (black && blacks.length() > 0)
+        {
+            target = room->askForPlayerChosen(player, blacks, objectName(), "@qinyin-black", true, false);
+        }
+
         if (target != NULL)
         {
             player->tag["Qinyin_target"] = QVariant::fromValue(target);
-            player->tag["Qinyin_effect"] = QVariant::fromValue(blacks.isEmpty() ? true : false);
+            player->tag["Qinyin_effect"] = QVariant::fromValue(red ? true : false);
             room->broadcastSkillInvoke(objectName());
             player->setFlags(blacks.isEmpty() ? "Qinyin_Red" : "Qinyin_Black");
             return true;
@@ -2690,10 +2719,10 @@ public:
         {
             int id = room->askForCardChosen(player, target, "he", objectName(), false, Card::MethodDiscard);
             if (id != -1)
-                room->throwCard(Sanguosha->getCard(id), target, player);
+                room->throwCard(Sanguosha->getCard(id), target, player, objectName());
         }
         else
-            target->drawCards(1);
+            target->drawCards(1, objectName());
         return false;
     }
 };
