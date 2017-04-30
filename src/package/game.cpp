@@ -2620,10 +2620,10 @@ const Card *TianjianCard::validateInResponse(ServerPlayer *player) const
     return use_card;
 }
 
-class Tianjian : public ZeroCardViewAsSkill
+class TianjianVS : public ZeroCardViewAsSkill
 {
 public:
-    Tianjian() : ZeroCardViewAsSkill("tianjian")
+    TianjianVS() : ZeroCardViewAsSkill("tianjian")
     {
         response_pattern = "nullification";
         response_or_use = true;
@@ -2666,25 +2666,39 @@ public:
     }
 };
 
-class TianjianClear : public TriggerSkill
+class Tianjian : public TriggerSkill
 {
 public:
-    TianjianClear() : TriggerSkill("#tianjian-clear")
+    Tianjian() : TriggerSkill("tianjian")
     {
-        events << EventPhaseChanging;
+        events << EventPhaseChanging << PreCardUsed;
+        view_as_skill = new TianjianVS;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer * &) const
+    virtual QStringList triggerable(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer * &) const
     {
-        PhaseChangeStruct change = data.value<PhaseChangeStruct>();
-        if (change.to == Player::NotActive)
+        if (event == EventPhaseChanging)
         {
-            foreach (ServerPlayer *p, room->getAlivePlayers())
+            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+            if (change.to == Player::NotActive)
             {
-                if (p->hasFlag("tianjian_used"))
-                    p->setFlags("-tianjian_used");
+                foreach (ServerPlayer *p, room->getAlivePlayers())
+                {
+                    if (p->hasFlag("tianjian_used"))
+                        p->setFlags("-tianjian_used");
+                }
             }
         }
+        else if (event == PreCardUsed)
+        {
+            CardUseStruct use = data.value<CardUseStruct>();
+            if (use.card != NULL && use.from != NULL && use.card->isKindOf("Nullification") && use.card->getSkillName() == "tianjian")
+            {
+                // shouldn't handle this in triggerable
+                use.from->turnOver();
+            }
+        }
+
         return QStringList();
     }
 };
@@ -3559,8 +3573,6 @@ void MoesenPackage::addGameGenerals()
     General *hayate = new General(this, "hayate", "wu", 3, false); // G003
     hayate->addSkill(new Yetian);
     hayate->addSkill(new Tianjian);
-    hayate->addSkill(new TianjianClear);
-    insertRelatedSkills("tianjian", "#tianjian-clear");
 
     General *altria = new General(this, "altria", "wu", 4, false); // G004
     altria->addSkill(new Fengwang);
