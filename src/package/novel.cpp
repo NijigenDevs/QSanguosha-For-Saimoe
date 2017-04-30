@@ -1917,8 +1917,13 @@ public:
         ServerPlayer *from = data.value<DamageStruct>().from;
         if (from != NULL && player->askForSkillInvoke(this, QVariant::fromValue(data)))
         {
+            QList<ServerPlayer *> luckyDogs;
             if (player->hasShownSkill("zhongxie") && player->hasShownAllGenerals() && player->getMark("HasDedicatedMaxHp") == 1)
-                from->drawCards(1, objectName());
+            {
+                luckyDogs << player;
+            }
+            luckyDogs << from;
+            room->drawCards(luckyDogs, 1, objectName());
             room->broadcastSkillInvoke(objectName(), player);
             return true;
         }

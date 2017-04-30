@@ -7,63 +7,6 @@
 #include "json.h"
 #include "roomthread.h"
 
-ZhihengCard::ZhihengCard()
-{
-    target_fixed = true;
-    mute = true;
-}
-
-
-void ZhihengCard::onUse(Room *room, const CardUseStruct &card_use) const
-{
-    ServerPlayer *source = card_use.from;
-    if (!show_skill.isEmpty() && !(source->inHeadSkills(show_skill) ? source->hasShownGeneral1() : source->hasShownGeneral2()))
-        source->showGeneral(source->inHeadSkills(this->show_skill));
-
-    if (!show_skill.isEmpty()) room->broadcastSkillInvoke("zhiheng", source);
-    SkillCard::onUse(room, card_use);
-}
-
-void ZhihengCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const
-{
-    if (source->isAlive())
-        room->drawCards(source, subcards.length());
-}
-
-class Zhiheng : public ViewAsSkill
-{
-public:
-    Zhiheng() : ViewAsSkill("zhiheng")
-    {
-    }
-
-    virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const
-    {
-        if (selected.length() >= Self->getMaxHp())
-            return !Self->isJilei(to_select) && Self->getTreasure() && Self->getTreasure()->isKindOf("Luminouspearl")
-                    && to_select != Self->getTreasure() && !selected.contains(Self->getTreasure());
-
-        return !Self->isJilei(to_select) && selected.length() < Self->getMaxHp();
-    }
-
-    virtual const Card *viewAs(const QList<const Card *> &cards) const
-    {
-        if (cards.isEmpty())
-            return NULL;
-
-        ZhihengCard *zhiheng_card = new ZhihengCard;
-        zhiheng_card->addSubcards(cards);
-        zhiheng_card->setSkillName(objectName());
-        zhiheng_card->setShowSkill(objectName());
-        return zhiheng_card;
-    }
-
-    virtual bool isEnabledAtPlay(const Player *player) const
-    {
-        return player->canDiscard(player, "he") && !player->hasUsed("ZhihengCard");
-    }
-};
-
 class Qixi : public OneCardViewAsSkill
 {
 public:
@@ -1757,7 +1700,6 @@ void StandardPackage::addWuGenerals()
 {
     General *sunquan = new General(this, "sunquan", "wu"); // WU 001
     sunquan->addCompanion("zhoutai");
-    sunquan->addSkill(new Zhiheng);
 
     General *ganning = new General(this, "ganning", "wu"); // WU 002
     ganning->addSkill(new Qixi);
@@ -1823,7 +1765,6 @@ void StandardPackage::addWuGenerals()
     dingfeng->addSkill(new Duanbing);
     dingfeng->addSkill(new Fenxun);
 
-    addMetaObject<ZhihengCard>();
     addMetaObject<KurouCard>();
     addMetaObject<FanjianCard>();
     addMetaObject<LiuliCard>();

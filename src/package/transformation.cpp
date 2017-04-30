@@ -2063,6 +2063,62 @@ TransformationPackage::TransformationPackage()
 
 ADD_PACKAGE(Transformation)
 
+ZhihengCard::ZhihengCard()
+{
+    target_fixed = true;
+    mute = true;
+}
+
+void ZhihengCard::onUse(Room *room, const CardUseStruct &card_use) const
+{
+    ServerPlayer *source = card_use.from;
+    if (!show_skill.isEmpty() && !(source->inHeadSkills(show_skill) ? source->hasShownGeneral1() : source->hasShownGeneral2()))
+        source->showGeneral(source->inHeadSkills(this->show_skill));
+
+    if (!show_skill.isEmpty()) room->broadcastSkillInvoke("zhiheng", source);
+    SkillCard::onUse(room, card_use);
+}
+
+void ZhihengCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const
+{
+    if (source->isAlive())
+        room->drawCards(source, subcards.length());
+}
+
+class Zhiheng : public ViewAsSkill
+{
+public:
+    Zhiheng() : ViewAsSkill("zhiheng")
+    {
+    }
+
+    virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const
+    {
+        if (selected.length() >= Self->getMaxHp())
+            return !Self->isJilei(to_select) && Self->getTreasure() && Self->getTreasure()->isKindOf("Luminouspearl")
+            && to_select != Self->getTreasure() && !selected.contains(Self->getTreasure());
+
+        return !Self->isJilei(to_select) && selected.length() < Self->getMaxHp();
+    }
+
+    virtual const Card *viewAs(const QList<const Card *> &cards) const
+    {
+        if (cards.isEmpty())
+            return NULL;
+
+        ZhihengCard *zhiheng_card = new ZhihengCard;
+        zhiheng_card->addSubcards(cards);
+        zhiheng_card->setSkillName(objectName());
+        zhiheng_card->setShowSkill(objectName());
+        return zhiheng_card;
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const
+    {
+        return player->canDiscard(player, "he") && !player->hasUsed("ZhihengCard");
+    }
+};
+
 Luminouspearl::Luminouspearl(Suit suit, int number) : Treasure(suit, number)
 {
     setObjectName("Luminouspearl");
@@ -2117,7 +2173,9 @@ TransformationEquipPackage::TransformationEquipPackage() : Package("transformati
     Luminouspearl *np = new Luminouspearl();
     np->setParent(this);
 
-    skills << new LuminouspearlSkill << new ZhihengVH;
+    addMetaObject<ZhihengCard>();
+
+    skills << new Zhiheng << new LuminouspearlSkill << new ZhihengVH;
 }
 
 ADD_PACKAGE(TransformationEquip)

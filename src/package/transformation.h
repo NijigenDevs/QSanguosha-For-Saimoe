@@ -27,6 +27,16 @@
 #include "standard.h"
 #include "generaloverview.h"
 
+class ZhihengCard : public SkillCard
+{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE ZhihengCard();
+    virtual void onUse(Room *room, const CardUseStruct &card_use) const;
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+};
+
 class XuanlueequipCard : public SkillCard
 {
     Q_OBJECT
