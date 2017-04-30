@@ -120,8 +120,7 @@ return {
 	[":#yinzhuang-armor"] = "视为你使用一张【杀】",
 	["#yinzhuang-horse"] = "音装（坐骑）",
 	[":#yinzhuang-horse"] = "你回复1点体力",
-	["@yinzhuang_give"] = "请选择一名角色获得此牌",
-	["@yinzhuang_slash"] = "请选择一名角色作为【杀】的目标",
+	["@yinzhuang-slash"] = "请选择一名角色作为【杀】的目标",
 	
 	["xiuse"] = "羞涩",
 	[":xiuse"] = "每名角色的回合限一次，每当你失去一张牌后，你可以摸一张牌。",

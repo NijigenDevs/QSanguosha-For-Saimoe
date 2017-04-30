@@ -2578,6 +2578,7 @@ public:
     WuxinAya() : TriggerSkill("wuxinAya")
     {
         frequency = Limited;
+        limit_mark = "@wuxin";
         events << DamageInflicted;
     }
 
