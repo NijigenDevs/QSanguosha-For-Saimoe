@@ -1646,7 +1646,7 @@ public:
 
         if (event == EventPhaseEnd)
         {
-            if (!player->hasFlag("DianjiUsedSlash") && player->getPhase() == Player::Play && player->hasUsed("Slash"))
+            if (!player->hasFlag("DianjiUsedSlash") && player->getPhase() == Player::Play)
             {
                 return QStringList(objectName());
             }
@@ -1701,7 +1701,7 @@ public:
         if (target == NULL || !target->isAlive())
             return skill_list;
 
-        if (!target->faceUp())
+        if (target->faceUp())
             return skill_list;
 
         QList<ServerPlayer *> mikotos = room->findPlayersBySkillName(objectName());
@@ -1717,12 +1717,13 @@ public:
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *target, QVariant &, ServerPlayer *ask_who) const
     {
-        const Card *card = room->askForCard(ask_who, "BasicCard", QString("@cichang_discard"), QVariant(), Card::MethodDiscard);
-        ask_who->tag["cichang-card"] = QVariant::fromValue(card);
+        const Card *card = room->askForCard(ask_who, "BasicCard", "@cichang_discard", QVariant::fromValue(target), Card::MethodDiscard);
         if (card != NULL)
         {
-            room->broadcastSkillInvoke(objectName());
             target->setFaceUp(true);
+            room->broadcastProperty(target, "faceup");
+            ask_who->tag["cichang-card"] = QVariant::fromValue(card);
+            room->broadcastSkillInvoke(objectName());
             return true;
         }
         return false;
@@ -1731,9 +1732,6 @@ public:
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const
     {
         const Card *card = ask_who->tag["cichang-card"].value<const Card *>();
-
-        if (card == NULL)
-            return false;
 
         if (card->isKindOf("ThunderSlash") || card->isKindOf("FireSlash"))
         {
@@ -2286,7 +2284,7 @@ public:
 
     virtual bool isEnabledAtPlay(const Player *player) const
     {
-        return !player->hasFlag("gexin_lastroundplayer");
+        return player->getMark("gexin_lastplayer") == 0;
     }
 
     virtual const Card *viewAs(const Card *originalCard) const
@@ -2311,22 +2309,26 @@ public:
     virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer * &) const
     {
         auto change = data.value<PhaseChangeStruct>();
+        auto current = room->getCurrent();
 
-        if (change.to == Player::NotActive)
+        if (current != NULL && player != NULL && player == current && change.to == Player::NotActive)
         {
-            player->setFlags("gexin_lastroundplayer");
-        }
-        foreach (auto *p, room->getOtherPlayers(player))
-        {
-            p->setFlags("-gexin_lastroundplayer");
+            auto haruhis = room->findPlayersBySkillName(objectName());
+
+            foreach(auto haruhi, haruhis)
+            {
+                if (haruhi == current)
+                {
+                    room->setPlayerMark(haruhi, "gexin_lastplayer", 1);
+                }
+                else
+                {
+                    room->setPlayerMark(haruhi, "gexin_lastplayer", 0);
+                }
+            }
         }
 
         return QStringList();
-    }
-
-    int Gexin::getPriority() const
-    {
-        return -1;
     }
 };
 
@@ -2395,27 +2397,32 @@ bool TongheCard::targetFilter(const QList<const Player *> &targets, const Player
     {
         return to_select->distanceTo(self) == 1 && to_select->canDiscard(to_select, "he");
     }
-    else if (targets.length() == 1)
-    {
-        return to_select->isFriendWith(targets[0]) && to_select->canDiscard(to_select, "he");
-    }
 
     return false;
 }
 
-bool TongheCard::targetsFeasible(const QList<const Player *> &targets, const Player *) const
+void TongheCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const
 {
-    return targets.length() == 2;
-}
+    if (targets[0] == NULL)
+        return;
 
-void TongheCard::use(Room *room, ServerPlayer *, QList<ServerPlayer *> &targets) const
-{
+    foreach (auto p, room->getAlivePlayers())
+    {
+        if (p->isFriendWith(targets[0]) && p->canDiscard(p, "he"))
+        {
+            targets << p;
+        }
+    }
+
     foreach(auto *p, targets)
     {
         room->askForDiscard(p, "tonghe", 1, 1, false, true, "@tonghe_discard", true);
     }
 
-    if (targets[0]->getBigKingdoms("tonghe", MaxCardsType::Normal).contains(targets[0]->getKingdom()))
+    auto big_kingdoms = source->getBigKingdoms("tonghe", MaxCardsType::Normal);
+
+    if ((targets[0]->getRole() == "careerist" && big_kingdoms.contains(targets[0]->objectName()))
+        || big_kingdoms.contains(targets[0]->getRole()))
     {
         room->drawCards(targets, 1, "tonghe");
     }
@@ -2481,6 +2488,7 @@ void MoesenPackage::addNovelGenerals()
     a_azusa->addSkill(new AzusaMaxCards);
     a_azusa->addSkill(new AzusaTrigger);
     insertRelatedSkills("weihao", "#azusa-maxcard");
+    insertRelatedSkills("weihao", "#azusa-cardHandle");
     insertRelatedSkills("zhuyi", "#azusa-maxcard");
 
     General *rikka = new General(this, "rikka", "qun", 3, false); // N009
