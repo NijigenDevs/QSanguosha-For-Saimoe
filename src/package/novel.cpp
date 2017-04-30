@@ -15,10 +15,7 @@ void WeihaoCard::use(Room *, ServerPlayer *source, QList<ServerPlayer *> &) cons
 {
     //broadcast
     source->drawCards(1);
-    if (source->getMark("@zhenhao") == 0)
-        source->gainMark("@weihao", 1);
-    else
-        source->loseMark("@zhenhao");
+    source->gainMark("@weihao", 1);
 }
 
 class Weihao : public ZeroCardViewAsSkill
@@ -30,7 +27,7 @@ public:
 
     virtual bool isEnabledAtPlay(const Player *player) const
     {
-        return player->getMark("azusa_maxcards") > 0; //need Changed! should be getMaxCards but it does not exist.
+        return player->getMark("azusa_maxcards") > 0;
     }
 
     virtual const Card *viewAs() const
@@ -69,10 +66,7 @@ void ZhuyiCard::onEffect(const CardEffectStruct &effect) const
     log.card_str = QString::number(getEffectiveId());
     effect.from->getRoom()->sendLog(log);
 
-    if (effect.from->getMark("@weihao") == 0)
-        effect.from->gainMark("@zhenhao", 1);
-    else
-        effect.from->loseMark("@weihao");
+    effect.from->gainMark("@zhenhao", 1);
 }
 
 class Zhuyi : public OneCardViewAsSkill
@@ -115,19 +109,29 @@ class AzusaTrigger : public TriggerSkill
 public:
     AzusaTrigger() : TriggerSkill("#azusa-cardHandle")
     {
-        events << EventPhaseEnd << EventPhaseChanging << CardsMoveOneTime << ChoiceMade << GeneralShown << GeneralHidden
-            << GeneralRemoved << EventLoseSkill << EventAcquireSkill;
+        events << NonTrigger << GameStart << TurnStart << EventPhaseStart << EventPhaseProceeding << EventPhaseEnd << EventPhaseChanging << EventPhaseSkipping 
+            << ConfirmPlayerNum << DrawNCards << AfterDrawNCards << PreHpRecover << HpRecover << PreHpLost << HpChanged << MaxHpChanged << PostHpReduced << HpLost 
+            << EventLoseSkill << EventAcquireSkill << StartJudge << AskForRetrial << FinishRetrial << FinishJudge << PindianVerifying << Pindian << TurnedOver 
+            << ChainStateChanged << RemoveStateChanged << ConfirmDamage << Predamage << DamageForseen << DamageCaused << DamageInflicted << PreDamageDone 
+            << DamageDone << Damage << Damaged << DamageComplete << Dying << QuitDying << AskForPeaches << AskForPeachesDone << Death << BuryVictim 
+            << BeforeGameOverJudge << GameOverJudge << GameFinished << SlashEffected << SlashProceed << SlashHit << SlashMissed << JinkEffect << CardAsked 
+            << CardResponded << BeforeCardsMove << CardsMoveOneTime << PreCardUsed << CardUsed << TargetChoosing << TargetConfirming << TargetChosen 
+            << TargetConfirmed << CardEffect << CardEffected << CardEffectConfirmed << PostCardEffected << CardFinished << TrickCardCanceling << ChoiceMade 
+            << StageChange << FetchDrawPileCard << TurnBroken << GeneralShown << GeneralHidden << GeneralRemoved;
+        // Add all Events to make sure mark set
     }
 
     virtual QStringList triggerable(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer * &) const
     {
-        if (event == EventPhaseChanging && data.value<PhaseChangeStruct>().to == Player::NotActive)
+        if (player != NULL && player->isAlive() && player->ownSkill("weihao"))
         {
-            player->loseAllMarks("@weihao");
-            player->loseAllMarks("@zhenhao");
-        }
-        if (player != NULL && player->isAlive() && player->ownSkill(this))
+            if (event == EventPhaseChanging && data.value<PhaseChangeStruct>().to == Player::NotActive)
+            {
+                room->setPlayerMark(player, "@zhenhao", 0);
+                room->setPlayerMark(player, "@weihao", 0);
+            }
             room->setPlayerMark(player, "azusa_maxcards", player->getMaxCards(MaxCardsType::Normal));
+        }
         return QStringList();
     }
 };
