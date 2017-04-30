@@ -1,8 +1,8 @@
 return {
 	----N001
 	["taiga"] = "逢坂大河", 
-	["&taiga"] = "掌中萌虎", 
-	["#taiga"] = "丝袜好萌", 
+	["&taiga"] = "逢坂大河", 
+	["#taiga"] = "掌中萌虎", 
 	["#&taiga"] = "龙与虎", 
 	["~taiga"] = "", 
 	["designer:taiga"] = "Sword Elucidator",
