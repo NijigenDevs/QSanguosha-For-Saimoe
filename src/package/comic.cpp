@@ -2298,6 +2298,10 @@ public:
                 gongxinArgs << false;
                 gongxinArgs << JsonUtils::toJsonArray(ids);
                 room->doNotify(player, QSanProtocol::S_COMMAND_SHOW_ALL_CARDS, gongxinArgs);
+
+                room->getThread()->delay(2000);
+
+                room->doNotify(player, S_COMMAND_CLEAR_AMAZING_GRACE, QVariant());
             }
             else
             {
