@@ -1211,19 +1211,26 @@ public:
     {
         if (event == CardsMoveOneTime)
         {
-            if (!player || !player->isAlive() || !player->hasSkill("zhaihun")) return QStringList();
-            ServerPlayer *current = room->getCurrent();
-            if (player != current)
+            if (!TriggerSkill::triggerable(player))
                 return QStringList();
+
             CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-            if (move.reason.m_skillName == objectName() && move.reason.m_playerId == player->objectName() && Sanguosha->getEngineCard(move.card_ids.first()) && Sanguosha->getEngineCard(move.card_ids.first())->isRed() && player->isWounded())
+
+            if (move.card_ids.length() == 0)
+                return QStringList();
+
+            // Zhaihun's last effect: if someone gets red card, konata recover 1 hp
+            if (move.reason.m_skillName == objectName() && move.reason.m_playerId == player->objectName() && Sanguosha->getEngineCard(move.card_ids.first()) 
+                && Sanguosha->getCard(move.card_ids.first())->isRed() && player->isWounded())
                 return QStringList(objectName());
 
-            if (current->getPhase() == Player::Discard)
+            // Record Zhaihun's cards
+            if (player->getPhase() == Player::Discard)
             {
                 QVariantList zhaihuncards = player->tag["ZhaihunCards"].toList();
 
-                if ((move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_DISCARD)
+                if (move.from_places.contains(Player::PlaceTable) && move.to_place == Player::DiscardPile
+                    && (move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_DISCARD)
                 {
                     foreach (int card_id, move.card_ids)
                         if (!zhaihuncards.contains(card_id))
@@ -1235,10 +1242,10 @@ public:
 
             return QStringList();
         }
-        else
+        else if (event == EventPhaseEnd)
         {
-            if (!TriggerSkill::triggerable(player)) return QStringList();
-            if ((player->getPhase() != Player::Discard)) return QStringList();
+            if (!TriggerSkill::triggerable(player) || player->getPhase() != Player::Discard)
+                return QStringList();
 
             QVariantList zhaihuncards = player->tag["ZhaihunCards"].toList();
 
@@ -1268,8 +1275,10 @@ public:
                 }
             }
 
-            if (!targets_list.isEmpty()) return QStringList(objectName());
-            else player->tag.remove("ZhaihunCards");
+            if (!targets_list.isEmpty())
+                return QStringList(objectName());
+            else
+                player->tag.remove("ZhaihunCards");
 
         }
         return QStringList();
