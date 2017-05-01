@@ -1696,7 +1696,7 @@ public:
     }
 };
 
-void TestPackage::addWuSkills()
+void StandardCardPackage::addWuSkills()
 {
     skills << new Qixi << new Keji << new Kurou << new Yingzi << new Fanjian << new Guose << new Liuli << new Qianxun << new Duoshi << new Jieyin << new Xiaoji << new Yinghun << new Tianxiang << new TianxiangDraw << new Hongyan << new Tianyi << new TianyiTargetMod << new Buqu << new BuquRemove << new BuquClear << new Haoshi << new HaoshiGive << new Dimeng << new Zhijian << new Guzheng << new Duanbing << new Fenxun;
 

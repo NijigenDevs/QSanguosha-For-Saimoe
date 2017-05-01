@@ -1686,7 +1686,7 @@ public:
     }
 };
 
-void TestPackage::addQunSkills()
+void StandardCardPackage::addQunSkills()
 {
     skills << new Jijiu << new Qingnang << new Wushuang << new Lijian << new Biyue << new Luanji << new Shuangxiong << new ShuangxiongGet << new Wansha << new Luanwu << new Weimu << new Mashu("pangde") << new Mengjin << new Leiji << new Guidao << new Beige << new Duanchang << new Mashu("mateng") << new Xiongyi << new Mingshi << new Lirang << new Shuangren << new SlashNoDistanceLimitSkill("shuangren") << new Sijian << new Suishi << new Kuangfu << new Huoshui << new Qingcheng;
 

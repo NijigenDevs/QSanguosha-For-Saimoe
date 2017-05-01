@@ -101,7 +101,7 @@ void Settings::init()
 
     HostAddress = value("HostAddress", "127.0.0.1").toString();
     //Set Cao Cao as default avatar to pay tribute to Moligaloo, the founder of QSanguosha.
-    UserAvatar = value("UserAvatar", "caocao").toString();
+    UserAvatar = value("UserAvatar", "madoka").toString();
     HistoryIPs = value("HistoryIPs").toStringList();
     DetectorPort = value("DetectorPort", 9526u).toUInt();
     MaxCards = value("MaxCards", 15).toInt();

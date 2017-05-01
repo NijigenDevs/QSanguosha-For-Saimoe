@@ -1548,7 +1548,7 @@ public:
     }
 };
 
-void TestPackage::addShuSkills()
+void StandardCardPackage::addShuSkills()
 {
     skills << new Rende << new Wusheng << new Paoxiao << new PaoxiaoArmorNullificaion << new Guanxing << new Kongcheng << new Longdan << new Tieqi << new Mashu("machao") << new Jizhi << new Qicai << new Liegong << new LiegongRange << new Kuanggu << new Lianhuan << new Niepan << new Huoji << new Kanpo << new Bazhen << new Xiangle << new Fangquan << new SavageAssaultAvoid("huoshou") << new Huoshou << new Zaiqi << new SavageAssaultAvoid("juxiang") << new Juxiang << new Lieren << new Shushen << new Shenzhi;
 

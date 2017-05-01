@@ -1996,7 +1996,6 @@ TransformationPackage::TransformationPackage()
     Bianhuanghou->addSkill(new Yuejian);
     Bianhuanghou->addSkill(new YuejianMaxCards);
     insertRelatedSkills("yuejian", "#yuejian-maxcard");
-    Bianhuanghou->addCompanion("caocao");
 
     General *Liguo = new General(this, "liguo", "qun"); // Qun
     Liguo->addSkill(new Xichou);

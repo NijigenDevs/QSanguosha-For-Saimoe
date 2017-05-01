@@ -70,11 +70,6 @@ ADD_PACKAGE(Standard)
 TestPackage::TestPackage()
 : Package("test")
 {
-    addWeiSkills();
-    addShuSkills();
-    addWuSkills();
-    addQunSkills();
-
     new General(this, "sujiang", "god", 5, true, true);
     new General(this, "sujiangf", "god", 5, false, true);
 
@@ -92,6 +87,11 @@ ADD_PACKAGE(Test)
 StandardCardPackage::StandardCardPackage()
 : Package("standard_cards", Package::CardPack)
 {
+    addWeiSkills();
+    addShuSkills();
+    addWuSkills();
+    addQunSkills();
+
     QList<Card *> cards;
 
     cards << basicCards() << equipCards() << trickCards();

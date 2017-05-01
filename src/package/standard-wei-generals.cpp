@@ -1393,7 +1393,7 @@ public:
     }
 };
 
-void TestPackage::addWeiSkills()
+void StandardCardPackage::addWeiSkills()
 {
     skills << new Jianxiong << new Fankui << new Guicai << new Ganglie << new Tuxi << new Luoyi << new LuoyiDamage << new Tiandu << new Yiji << new Qingguo << new Luoshen << new LuoshenMove << new Shensu << new SlashNoDistanceLimitSkill("shensu") << new Qiaobian << new Duanliang << new DuanliangTargetMod << new Jushou << new Qiangxi << new Quhu << new Jieming << new Xingshang << new Fangzhu << new Xiaoguo;
 

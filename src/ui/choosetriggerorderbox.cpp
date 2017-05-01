@@ -295,7 +295,7 @@ ChooseTriggerOrderBox::ChooseTriggerOrderBox()
     cancel->setObjectName("cancel");
     connect(cancel, &Button::clicked, this, &ChooseTriggerOrderBox::reply);
 
-    generalButtonSize = G_ROOM_SKIN.getGeneralPixmap("caocao", QSanRoomSkin::S_GENERAL_ICON_SIZE_LARGE).size() * 0.6;
+    generalButtonSize = G_ROOM_SKIN.getGeneralPixmap("madoka", QSanRoomSkin::S_GENERAL_ICON_SIZE_LARGE).size() * 0.6;
 }
 
 int ChooseTriggerOrderBox::getGeneralNum() const

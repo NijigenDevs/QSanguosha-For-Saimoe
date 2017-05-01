@@ -15,10 +15,6 @@ class TestPackage : public Package {
 
 public:
     TestPackage();
-    void addWeiSkills();
-    void addShuSkills();
-    void addWuSkills();
-    void addQunSkills();
 };
 
 class StandardCardPackage : public Package {
@@ -26,6 +22,11 @@ class StandardCardPackage : public Package {
 
 public:
     StandardCardPackage();
+
+    void addWeiSkills();
+    void addShuSkills();
+    void addWuSkills();
+    void addQunSkills();
 
     QList<Card *> basicCards();
     QList<Card *> equipCards();
