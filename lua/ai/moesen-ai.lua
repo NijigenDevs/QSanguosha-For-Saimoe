@@ -705,20 +705,6 @@ sgs.ai_skill_choice.tengyue = function(self, choices)
 	return "tengyue1"
 end
 
---huixin
-sgs.ai_skill_playerchosen.huixin = function(self, targets)
-	for _,p in sgs.qlist(targets) do
-		if self:isEnemy(p) and not p:hasSkills(sgs.masochism_skill) and p:getHp() == 1 then return p end
-	end
-	for _,p in sgs.qlist(targets) do
-		if self:isEnemy(p) and not p:hasSkills(sgs.masochism_skill) and self.player:distanceTo(p) <= self.player:getAttackRange() and self:slashIsEffective(sgs.Sanguosha:cloneCard("slash"), p) and self:isWeak(p) then return p end
-	end
-	for _,p in sgs.qlist(targets) do
-		if self:isFriend(p) and p:getHp() > 1 then return p end
-	end
-	return targets:first()
-end
-
 --mogai
 sgs.ai_skill_invoke.mogai = function(self, data)
 	local hasA,hasW,hasS,hasL
@@ -779,10 +765,54 @@ sgs.ai_skill_invoke.ruhun = function(self, data)
 	return false
 end
 
+--qinyin
+sgs.ai_skill_playerchosen.qinyin = function(self, targets)
+	if self.player:hasFlag("AI_qinyin_red") then
+		return self:findPlayerToDraw(true, 1)
+	elseif self.player:hasFlag("AI_qinyin_black") then
+		return self:findPlayerToDiscard("he", true, sgs.Card_MethodDiscard, targets)
+	end
+	return nil
+end
+
+sgs.ai_skill_cardchosen.qinyin = function(self, who, flags)
+	return self:askForCardChosen(who, flags, "dismantlement")
+end
+
+--qiyuan
+sgs.ai_skill_discard.qiyuan = function(self, discard_num, min_num, optional, include_equip)
+	local current = self.room:getCurrent()
+	if not current then return {} end
+	if self:isFriend(current) and self.player:getHandcardNum() > 1 and not self:isWeak() then
+		local handCards = self.player:getHandcards()
+		self:sortByKeepValue(handCards)
+		if self:getKeepValue(handCards[1]) < 3 then
+			return { handCards[1]:getEffectiveId() }
+		end
+	end
+	return {}
+end
+
+sgs.ai_skill_invoke.qiyuan = function(self, data)
+	if not self:needKongcheng(self.player, true) then
+		return true
+	end
+end
+
+--huaming
+sgs.ai_skill_playerchosen.huaming = function(self, targets)
+	return self:findPlayerToDraw(false, 1)
+end
+
+sgs.ai_skill_cardchosen.huaming = function(self, who, flags)
+	return self:askForCardChosen(who, flags, "snatch")
+end
+
 --fengyin
-sgs.ai_skill_cardask["@fengyin_put"]=function(self, data)
+sgs.ai_skill_cardask["@fengyin_put"] = function(self, data)
+	if not self:willShowForDefence() then return "." end
 	local player = data:toPlayer()
-	if self.player:getHandcardNum() >= 1 and self:isEnemy(player) then
+	if self.player:getHandcardNum() >= 1 and self:isEnemy(player) and not self:isWeak() then
 		local handCards = self.player:getHandcards()
 		for _, card in sgs.qlist(handCards) do
 			if self:getKeepValue(card) < 3 and self:getUseValue(card) < 3 then

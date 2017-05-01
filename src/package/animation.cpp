@@ -2690,14 +2690,19 @@ public:
         reds << player;
 
         ServerPlayer *target = NULL;
+        
         if (red && reds.length() > 0)
         {
+            player->setFlags("AI_qinyin_red"); // for AI
             target = room->askForPlayerChosen(player, reds, objectName(), "@qinyin-red", true, false);
         }
         else if (black && blacks.length() > 0)
         {
+            player->setFlags("AI_qinyin_black");
             target = room->askForPlayerChosen(player, blacks, objectName(), "@qinyin-black", true, false);
         }
+        player->setFlags("-AI_qinyin_red");
+        player->setFlags("-AI_qinyin_black");
 
         if (target != NULL)
         {
