@@ -1393,71 +1393,10 @@ public:
     }
 };
 
-void StandardPackage::addWeiGenerals()
+void TestPackage::addWeiSkills()
 {
-    General *caocao = new General(this, "caocao", "wei"); // WEI 001
-    caocao->addCompanion("dianwei");
-    caocao->addCompanion("xuchu");
-    caocao->addSkill(new Jianxiong);
+    skills << new Jianxiong << new Fankui << new Guicai << new Ganglie << new Tuxi << new Luoyi << new LuoyiDamage << new Tiandu << new Yiji << new Qingguo << new Luoshen << new LuoshenMove << new Shensu << new SlashNoDistanceLimitSkill("shensu") << new Qiaobian << new Duanliang << new DuanliangTargetMod << new Jushou << new Qiangxi << new Quhu << new Jieming << new Xingshang << new Fangzhu << new Xiaoguo;
 
-    General *simayi = new General(this, "simayi", "wei", 3); // WEI 002
-    simayi->addSkill(new Fankui);
-    simayi->addSkill(new Guicai);
-
-    General *xiahoudun = new General(this, "xiahoudun", "wei"); // WEI 003
-    xiahoudun->addCompanion("xiahouyuan");
-    xiahoudun->addSkill(new Ganglie);
-
-    General *zhangliao = new General(this, "zhangliao", "wei"); // WEI 004
-    zhangliao->addSkill(new Tuxi);
-
-    General *xuchu = new General(this, "xuchu", "wei"); // WEI 005
-    xuchu->addSkill(new Luoyi);
-    xuchu->addSkill(new LuoyiDamage);
-    insertRelatedSkills("luoyi", "#luoyi-damage");
-
-    General *guojia = new General(this, "guojia", "wei", 3); // WEI 006
-    guojia->addSkill(new Tiandu);
-    guojia->addSkill(new Yiji);
-
-    General *zhenji = new General(this, "zhenji", "wei", 3, false); // WEI 007
-    zhenji->addSkill(new Qingguo);
-    zhenji->addSkill(new Luoshen);
-    zhenji->addSkill(new LuoshenMove);
-    insertRelatedSkills("luoshen", "#luoshen-move");
-
-    General *xiahouyuan = new General(this, "xiahouyuan", "wei"); // WEI 008
-    xiahouyuan->addSkill(new Shensu);
-    xiahouyuan->addSkill(new SlashNoDistanceLimitSkill("shensu"));
-    insertRelatedSkills("shensu", "#shensu-slash-ndl");
-
-    General *zhanghe = new General(this, "zhanghe", "wei"); // WEI 009
-    zhanghe->addSkill(new Qiaobian);
-
-    General *xuhuang = new General(this, "xuhuang", "wei"); // WEI 010
-    xuhuang->addSkill(new Duanliang);
-    xuhuang->addSkill(new DuanliangTargetMod);
-    insertRelatedSkills("duanliang", "#duanliang-target");
-
-    General *caoren = new General(this, "caoren", "wei"); // WEI 011
-    caoren->addSkill(new Jushou);
-
-    General *dianwei = new General(this, "dianwei", "wei"); // WEI 012
-    dianwei->addSkill(new Qiangxi);
-
-    General *xunyu = new General(this, "xunyu", "wei", 3); // WEI 013
-    xunyu->addSkill(new Quhu);
-    xunyu->addSkill(new Jieming);
-
-    General *caopi = new General(this, "caopi", "wei", 3); // WEI 014
-    caopi->addCompanion("zhenji");
-    caopi->addSkill(new Xingshang);
-    caopi->addSkill(new Fangzhu);
-
-    General *yuejin = new General(this, "yuejin", "wei", 4); // WEI 016
-    yuejin->addSkill(new Xiaoguo);
-
-    //    addMetaObject<TuxiCard>();
     addMetaObject<ShensuCard>();
     addMetaObject<QiaobianCard>();
     addMetaObject<QiangxiCard>();

@@ -2733,6 +2733,153 @@ public:
     }
 };
 
+class Yongjue : public TriggerSkill
+{
+public:
+    Yongjue() : TriggerSkill("yongjue")
+    {
+        events << CardUsed << CardResponded << CardsMoveOneTime;
+        frequency = Frequent;
+    }
+
+    virtual bool canPreshow() const
+    {
+        return false;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &ask_who) const
+    {
+        if (player == NULL || !player->isAlive())
+            return QStringList();
+        QList<ServerPlayer *> owners = room->findPlayersBySkillName(objectName());
+        if (triggerEvent == CardUsed || triggerEvent == CardResponded)
+        {
+            ServerPlayer *from = NULL;
+            bool is_use = false;
+            const Card *card = NULL;
+            if (triggerEvent == CardUsed)
+            {
+                is_use = true;
+                CardUseStruct use = data.value<CardUseStruct>();
+                from = use.from;
+                card = use.card;
+            }
+            else
+            {
+                CardResponseStruct resp = data.value<CardResponseStruct>();
+                is_use = resp.m_isUse;
+                from = player;
+                card = resp.m_card;
+            }
+            if (from->getPhase() == Player::Play && from->getMark(objectName()) == 0 && is_use)
+            {
+                if (!card->isKindOf("SkillCard"))
+                    from->addMark(objectName());
+                if (card->isKindOf("Slash"))
+                {
+                    from->tag.remove("yongjue_id");
+                    int yongjue_id = -1;
+                    if (!card->isVirtualCard())
+                        yongjue_id = card->getId();
+                    else if (card->subcardsLength() == 1)
+                    {
+                        const Card *c = Sanguosha->getCard(card->getSubcards().first());
+                        if (c->isKindOf("Slash"))
+                            yongjue_id = c->getId();
+                    }
+
+                    if (yongjue_id != -1)
+                        from->tag["yongjue_id"] = yongjue_id;
+                }
+            }
+        }
+        else if (triggerEvent == CardsMoveOneTime)
+        {
+            CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+            if (move.from != NULL && move.from->tag.contains("yongjue_id") && player == move.from
+                && ((move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_USE)
+                && move.from_places.contains(Player::PlaceTable) && move.to_place == Player::DiscardPile)
+            {
+                if (move.card_ids.length() == 1)
+                {
+                    bool ok = false;
+                    int yongjue_id = player->tag["yongjue_id"].toInt(&ok);
+                    if (ok && yongjue_id == move.card_ids.first())
+                    {
+                        ask_who = player;
+                        foreach(ServerPlayer *p, owners)
+                        {
+                            if (p->isFriendWith(player))
+                                return QStringList(objectName());
+                        }
+                    }
+                }
+            }
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        QList<ServerPlayer *> owners = room->findPlayersBySkillName(objectName());
+        ServerPlayer *owner = NULL;
+        foreach(ServerPlayer *p, owners)
+        {
+            if (player->isFriendWith(p))
+            {
+                owner = p;
+                break;
+            }
+        }
+
+        if (owner != NULL)
+        {
+            player->tag.remove("yongjue_id");
+            if (player->askForSkillInvoke(this))
+            {
+                LogMessage log;
+                log.type = "#InvokeOthersSkill";
+                log.from = player;
+                log.to << owner;
+                log.arg = objectName();
+                room->sendLog(log);
+                room->doAnimate(QSanProtocol::S_ANIMATE_INDICATE, owner->objectName(), player->objectName());
+                room->broadcastSkillInvoke(objectName(), owner);
+                if (owner != player)
+                    room->notifySkillInvoked(owner, objectName());
+
+                return true;
+            }
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
+        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+        DummyCard dummy(move.card_ids);
+        player->obtainCard(&dummy);
+        return false;
+    }
+};
+
+class YongjueClear : public TriggerSkill
+{
+public:
+    YongjueClear() : TriggerSkill("#yongjue-clear")
+    {
+        events << EventPhaseStart;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *target, QVariant &, ServerPlayer* &) const
+    {
+        if (target == NULL || target->isDead()) return QStringList();
+        if (target->getPhase() == Player::Play)
+            target->setMark("yongjue", 0);
+        return QStringList();
+    }
+};
+
 void MoesenPackage::addAnimationGenerals()
 {
     General *madoka = new General(this, "madoka", "wei", 4, false); // A001
@@ -2784,6 +2931,7 @@ void MoesenPackage::addAnimationGenerals()
     General *rei = new General(this, "rei", "wei", 3, false); // A010
     rei->addSkill(new WuxinAya);
     rei->addSkill(new Chidun);
+    rei->addRelateSkill("yongjue");
 
     General *asuka = new General(this, "asuka", "wei", 4, false); // A011
     asuka->addSkill(new Xiehang);
@@ -2822,6 +2970,9 @@ void MoesenPackage::addAnimationGenerals()
     General *miho = new General(this, "miho", "wei", 3, false); // A018
     miho->addSkill(new Mogai);
     miho->addSkill(new Ruhun);
+
+    skills << new Yongjue << new YongjueClear;
+    insertRelatedSkills("yongjue", "#yongjue-clear");
 
     addMetaObject<WuweiCard>();
     addMetaObject<MiaolvCard>();

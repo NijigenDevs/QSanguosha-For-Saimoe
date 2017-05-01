@@ -8,10 +8,6 @@ class StandardPackage : public Package {
 
 public:
     StandardPackage();
-    void addWeiGenerals();
-    void addShuGenerals();
-    void addWuGenerals();
-    void addQunGenerals();
 };
 
 class TestPackage : public Package {
@@ -19,6 +15,10 @@ class TestPackage : public Package {
 
 public:
     TestPackage();
+    void addWeiSkills();
+    void addShuSkills();
+    void addWuSkills();
+    void addQunSkills();
 };
 
 class StandardCardPackage : public Package {

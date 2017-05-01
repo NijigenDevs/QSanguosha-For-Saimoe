@@ -1686,69 +1686,9 @@ public:
     }
 };
 
-void StandardPackage::addQunGenerals()
+void TestPackage::addQunSkills()
 {
-    General *huatuo = new General(this, "huatuo", "qun", 3); // QUN 001
-    huatuo->addSkill(new Jijiu);
-    huatuo->addSkill(new Qingnang);
-
-    General *lvbu = new General(this, "lvbu", "qun", 5); // QUN 002
-    lvbu->addCompanion("diaochan");
-    lvbu->addSkill(new Wushuang);
-
-    General *diaochan = new General(this, "diaochan", "qun", 3, false); // QUN 003
-    diaochan->addSkill(new Lijian);
-    diaochan->addSkill(new Biyue);
-
-    General *yuanshao = new General(this, "yuanshao", "qun"); // QUN 004
-    yuanshao->addCompanion("yanliangwenchou");
-    yuanshao->addSkill(new Luanji);
-
-    General *yanliangwenchou = new General(this, "yanliangwenchou", "qun"); // QUN 005
-    yanliangwenchou->addSkill(new Shuangxiong);
-    yanliangwenchou->addSkill(new ShuangxiongGet);
-    insertRelatedSkills("shuangxiong", "#shuangxiong");
-
-    General *jiaxu = new General(this, "jiaxu", "qun", 3); // QUN 007
-    jiaxu->addSkill(new Wansha);
-    jiaxu->addSkill(new Luanwu);
-    jiaxu->addSkill(new Weimu);
-
-    General *pangde = new General(this, "pangde", "qun"); // QUN 008
-    pangde->addSkill(new Mashu("pangde"));
-    pangde->addSkill(new Mengjin);
-
-    General *zhangjiao = new General(this, "zhangjiao", "qun", 3); // QUN 010
-    zhangjiao->addSkill(new Leiji);
-    zhangjiao->addSkill(new Guidao);
-
-    General *caiwenji = new General(this, "caiwenji", "qun", 3, false); // QUN 012
-    caiwenji->addSkill(new Beige);
-    caiwenji->addSkill(new Duanchang);
-
-    General *mateng = new General(this, "mateng", "qun"); // QUN 013
-    mateng->addSkill(new Mashu("mateng"));
-    mateng->addSkill(new Xiongyi);
-
-    General *kongrong = new General(this, "kongrong", "qun", 3); // QUN 014
-    kongrong->addSkill(new Mingshi);
-    kongrong->addSkill(new Lirang);
-
-    General *jiling = new General(this, "jiling", "qun"); // QUN 015
-    jiling->addSkill(new Shuangren);
-    jiling->addSkill(new SlashNoDistanceLimitSkill("shuangren"));
-    insertRelatedSkills("shuangren", "#shuangren-slash-ndl");
-
-    General *tianfeng = new General(this, "tianfeng", "qun", 3); // QUN 016
-    tianfeng->addSkill(new Sijian);
-    tianfeng->addSkill(new Suishi);
-
-    General *panfeng = new General(this, "panfeng", "qun"); // QUN 017
-    panfeng->addSkill(new Kuangfu);
-
-    General *zoushi = new General(this, "zoushi", "qun", 3, false); // QUN 018
-    zoushi->addSkill(new Huoshui);
-    zoushi->addSkill(new Qingcheng);
+    skills << new Jijiu << new Qingnang << new Wushuang << new Lijian << new Biyue << new Luanji << new Shuangxiong << new ShuangxiongGet << new Wansha << new Luanwu << new Weimu << new Mashu("pangde") << new Mengjin << new Leiji << new Guidao << new Beige << new Duanchang << new Mashu("mateng") << new Xiongyi << new Mingshi << new Lirang << new Shuangren << new SlashNoDistanceLimitSkill("shuangren") << new Sijian << new Suishi << new Kuangfu << new Huoshui << new Qingcheng;
 
     addMetaObject<QingnangCard>();
     addMetaObject<LijianCard>();

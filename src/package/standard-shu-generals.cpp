@@ -1548,79 +1548,9 @@ public:
     }
 };
 
-void StandardPackage::addShuGenerals()
+void TestPackage::addShuSkills()
 {
-    General *liubei = new General(this, "liubei", "shu"); // SHU 001
-    liubei->addCompanion("guanyu");
-    liubei->addCompanion("zhangfei");
-    liubei->addCompanion("ganfuren");
-    liubei->addSkill(new Rende);
-
-    General *guanyu = new General(this, "guanyu", "shu", 5); // SHU 002
-    guanyu->addSkill(new Wusheng);
-
-    General *zhangfei = new General(this, "zhangfei", "shu"); // SHU 003
-    zhangfei->addSkill(new Paoxiao);
-    zhangfei->addSkill(new PaoxiaoArmorNullificaion);
-    insertRelatedSkills("paoxiao", "#paoxiao-null");
-
-    General *zhugeliang = new General(this, "zhugeliang", "shu", 3); // SHU 004
-    zhugeliang->addCompanion("huangyueying");
-    zhugeliang->addSkill(new Guanxing);
-    zhugeliang->addSkill(new Kongcheng);
-
-    General *zhaoyun = new General(this, "zhaoyun", "shu"); // SHU 005
-    zhaoyun->addCompanion("liushan");
-    zhaoyun->addSkill(new Longdan);
-
-    General *machao = new General(this, "machao", "shu"); // SHU 006
-    machao->addSkill(new Tieqi);
-    machao->addSkill(new Mashu("machao"));
-
-    General *huangyueying = new General(this, "huangyueying", "shu", 3, false); // SHU 007
-    huangyueying->addSkill(new Jizhi);
-    huangyueying->addSkill(new Qicai);
-
-    General *huangzhong = new General(this, "huangzhong", "shu"); // SHU 008
-    huangzhong->addCompanion("weiyan");
-    huangzhong->addSkill(new Liegong);
-    huangzhong->addSkill(new LiegongRange);
-    insertRelatedSkills("liegong", "#liegong-for-lord");
-
-    General *weiyan = new General(this, "weiyan", "shu"); // SHU 009
-    weiyan->addSkill(new Kuanggu);
-
-    General *pangtong = new General(this, "pangtong", "shu", 3); // SHU 010
-    pangtong->addSkill(new Lianhuan);
-    pangtong->addSkill(new Niepan);
-
-    General *wolong = new General(this, "wolong", "shu", 3); // SHU 011
-    wolong->addCompanion("huangyueying");
-    wolong->addCompanion("pangtong");
-    wolong->addSkill(new Huoji);
-    wolong->addSkill(new Kanpo);
-    wolong->addSkill(new Bazhen);
-
-    General *liushan = new General(this, "liushan", "shu", 3); // SHU 013
-    liushan->addSkill(new Xiangle);
-    liushan->addSkill(new Fangquan);
-
-    General *menghuo = new General(this, "menghuo", "shu"); // SHU 014
-    menghuo->addCompanion("zhurong");
-    menghuo->addSkill(new SavageAssaultAvoid("huoshou"));
-    menghuo->addSkill(new Huoshou);
-    menghuo->addSkill(new Zaiqi);
-    insertRelatedSkills("huoshou", "#sa_avoid_huoshou");
-
-    General *zhurong = new General(this, "zhurong", "shu", 4, false); // SHU 015
-    zhurong->addSkill(new SavageAssaultAvoid("juxiang"));
-    zhurong->addSkill(new Juxiang);
-    zhurong->addSkill(new Lieren);
-    insertRelatedSkills("juxiang", "#sa_avoid_juxiang");
-
-    General *ganfuren = new General(this, "ganfuren", "shu", 3, false); // SHU 016
-    ganfuren->addSkill(new Shushen);
-    ganfuren->addSkill(new Shenzhi);
+    skills << new Rende << new Wusheng << new Paoxiao << new PaoxiaoArmorNullificaion << new Guanxing << new Kongcheng << new Longdan << new Tieqi << new Mashu("machao") << new Jizhi << new Qicai << new Liegong << new LiegongRange << new Kuanggu << new Lianhuan << new Niepan << new Huoji << new Kanpo << new Bazhen << new Xiangle << new Fangquan << new SavageAssaultAvoid("huoshou") << new Huoshou << new Zaiqi << new SavageAssaultAvoid("juxiang") << new Juxiang << new Lieren << new Shushen << new Shenzhi;
 
     addMetaObject<RendeCard>();
     addMetaObject<FangquanCard>();

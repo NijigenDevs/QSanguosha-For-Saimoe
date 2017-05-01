@@ -1696,74 +1696,9 @@ public:
     }
 };
 
-void StandardPackage::addWuGenerals()
+void TestPackage::addWuSkills()
 {
-    General *sunquan = new General(this, "sunquan", "wu"); // WU 001
-    sunquan->addCompanion("zhoutai");
-
-    General *ganning = new General(this, "ganning", "wu"); // WU 002
-    ganning->addSkill(new Qixi);
-
-    General *lvmeng = new General(this, "lvmeng", "wu"); // WU 003
-    lvmeng->addSkill(new Keji);
-
-    General *huanggai = new General(this, "huanggai", "wu"); // WU 004
-    huanggai->addSkill(new Kurou);
-
-    General *zhouyu = new General(this, "zhouyu", "wu", 3); // WU 005
-    zhouyu->addCompanion("huanggai");
-    zhouyu->addCompanion("xiaoqiao");
-    zhouyu->addSkill(new Yingzi);
-    zhouyu->addSkill(new Fanjian);
-
-    General *daqiao = new General(this, "daqiao", "wu", 3, false); // WU 006
-    daqiao->addCompanion("xiaoqiao");
-    daqiao->addSkill(new Guose);
-    daqiao->addSkill(new Liuli);
-
-    General *luxun = new General(this, "luxun", "wu", 3); // WU 007
-    luxun->addSkill(new Qianxun);
-    luxun->addSkill(new Duoshi);
-
-    General *sunshangxiang = new General(this, "sunshangxiang", "wu", 3, false); // WU 008
-    sunshangxiang->addSkill(new Jieyin);
-    sunshangxiang->addSkill(new Xiaoji);
-
-    General *sunjian = new General(this, "sunjian", "wu"); // WU 009
-    sunjian->addSkill(new Yinghun);
-
-    General *xiaoqiao = new General(this, "xiaoqiao", "wu", 3, false); // WU 011
-    xiaoqiao->addSkill(new Tianxiang);
-    xiaoqiao->addSkill(new TianxiangDraw);
-    xiaoqiao->addSkill(new Hongyan);
-    insertRelatedSkills("tianxiang", "#tianxiang");
-
-    General *taishici = new General(this, "taishici", "wu"); // WU 012
-    taishici->addSkill(new Tianyi);
-    taishici->addSkill(new TianyiTargetMod);
-    insertRelatedSkills("tianyi", "#tianyi-target");
-
-    General *zhoutai = new General(this, "zhoutai", "wu");
-    zhoutai->addSkill(new Buqu);
-    zhoutai->addSkill(new BuquRemove);
-    zhoutai->addSkill(new BuquClear);
-    insertRelatedSkills("buqu", 2, "#buqu-remove", "#buqu-clear");
-
-    General *lusu = new General(this, "lusu", "wu", 3); // WU 014
-    lusu->addSkill(new Haoshi);
-    lusu->addSkill(new HaoshiGive);
-    lusu->addSkill(new Dimeng);
-    insertRelatedSkills("haoshi", "#haoshi-give");
-
-    General *erzhang = new General(this, "erzhang", "wu", 3); // WU 015
-    erzhang->addSkill(new Zhijian);
-    erzhang->addSkill(new Guzheng);
-    //erzhang->addSkill(new GuzhengRecord);
-    //insertRelatedSkills("guzheng", "#guzheng-record");
-
-    General *dingfeng = new General(this, "dingfeng", "wu"); // WU 016
-    dingfeng->addSkill(new Duanbing);
-    dingfeng->addSkill(new Fenxun);
+    skills << new Qixi << new Keji << new Kurou << new Yingzi << new Fanjian << new Guose << new Liuli << new Qianxun << new Duoshi << new Jieyin << new Xiaoji << new Yinghun << new Tianxiang << new TianxiangDraw << new Hongyan << new Tianyi << new TianyiTargetMod << new Buqu << new BuquRemove << new BuquClear << new Haoshi << new HaoshiGive << new Dimeng << new Zhijian << new Guzheng << new Duanbing << new Fenxun;
 
     addMetaObject<KurouCard>();
     addMetaObject<FanjianCard>();
@@ -1775,5 +1710,4 @@ void StandardPackage::addWuGenerals()
     addMetaObject<DimengCard>();
     addMetaObject<ZhijianCard>();
     addMetaObject<FenxunCard>();
-    //    addMetaObject<GuzhengCard>();
 }

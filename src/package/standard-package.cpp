@@ -35,11 +35,6 @@ public:
 StandardPackage::StandardPackage()
     : Package("standard")
 {
-    addWeiGenerals();
-    addShuGenerals();
-    addWuGenerals();
-    addQunGenerals();
-
     skills << new GlobalFakeMoveSkill;
 
     patterns["."] = new ExpPattern(".|.|.|hand");
@@ -75,6 +70,11 @@ ADD_PACKAGE(Standard)
 TestPackage::TestPackage()
 : Package("test")
 {
+    addWeiSkills();
+    addShuSkills();
+    addWuSkills();
+    addQunSkills();
+
     new General(this, "sujiang", "god", 5, true, true);
     new General(this, "sujiangf", "god", 5, false, true);
 
