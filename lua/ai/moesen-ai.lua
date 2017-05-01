@@ -428,9 +428,14 @@ function sgs.ai_skill_pindian.xiehang(minusecard, self, requestor)
 	return self:isFriend(requestor) and self:getMinCard() or (maxcard:getNumber() < 6 and minusecard or maxcard)
 end
 
-
 --powei
-sgs.ai_skill_invoke.powei = true
+sgs.ai_skill_invoke.powei = function(self, data)
+	if not self:willShowForDefence() then
+		return false
+	end
+	return true
+end
+
 --lingchang
 sgs.ai_skill_invoke.lingchang = function(self, data)--IMBA AI...
 	local p = data:toPlayer()
@@ -757,6 +762,7 @@ end
 
 --ruhun
 sgs.ai_skill_invoke.ruhun = function(self, data)
+	if not self:willShowForAttack() then return false end
 	local use = data:toCardUse()
 	if self.player:getHandcardNum() == 1 and self.player:hasSkill("lieqiang") and not self:isWeak() then return true end
 	if self.player:getHandcardNum() > player:getHp() then
@@ -821,4 +827,256 @@ sgs.ai_skill_cardask["@fengyin_put"] = function(self, data)
 		end
 	end
 	return "."
+end
+
+--jiechu
+sgs.ai_skill_invoke.jiechu = function(self, data)
+	if not self:needKongcheng(self.player, true) then
+		return true
+	end
+end
+
+--jiandao
+sgs.ai_skill_invoke.jiandao = function(self, data)
+	if not self:willShowForAttack() then return false end
+	local slash = data:toCardUse()
+	if slash then
+		local to = slash:first()
+		if to then
+			local handVictims, equipVictims = {}, {}
+			local handcardNum = to:getHandcardNum()
+			local equipNum = to:getEquips():length()
+			for _, p in sgs.qlist(room:getOtherPlayers(self.player)) do
+				if p:objectName() ~= to:objectName() then
+					if p:getHandcardNum() == handcardNum then
+						table.insert(handVictims, p)
+					end
+					if p:getEquips():length() == equipNum then
+						table.insert(equipVictims, p)
+					end
+				end
+			end
+
+			local nature = sgs.DamageStruct_Normal
+			if (slash.card:isKindOf("FireSlash")) then
+				nature = sgs.DamageStruct_Fire
+			elseif (slash.card:isKindOf("ThunderSlash")) then
+				nature = sgs.DamageStruct_Thunder
+			end
+
+			local dmg = self:hasHeavySlashDamage(self.player, slash.card, to, true)
+
+			local value = 50
+
+			for _, p in ipairs(handVictims) do
+				if (self:isEnemy(p) and self:damageIsEffective(p, nature, self.player)) then
+					value = value + dmg * 10
+					if (self:isWeak(p)) then
+						value = value + dmg * 15
+					end
+				end
+				if (self:isFriend(p) and self:damageIsEffective(p, nature, self.player)) then
+					value = value - dmg * 15 + self:getAllPeachNum() * 5
+					if (self:isWeak(p)) then
+						value = value - dmg * 20
+					end
+				end
+			end
+
+			local hand = value
+
+			value = 50
+
+			for _, p in ipairs(equipVictims) do
+				if (self:isEnemy(p) and self:damageIsEffective(p, nature, self.player)) then
+					value = value + dmg * 10
+					if (self:isWeak(p)) then
+						value = value + dmg * 15
+					end
+				end
+				if (self:isFriend(p) and self:damageIsEffective(p, nature, self.player)) then
+					value = value - dmg * 15 + self:getAllPeachNum() * 5
+					if (self:isWeak(p)) then
+						value = value - dmg * 20
+					end
+				end
+			end
+
+			local equip = value
+
+			if hand >= 60 or equip >= 60 then
+				return true
+			end
+		end
+	end
+	return false
+end
+
+sgs.ai_skill_choice.jiandao = function(self, choices, data)
+	local slash = data:toCardUse()
+	if slash then
+		local to = slash:first()
+		if to then
+			local handVictims, equipVictims = {}, {}
+			local handcardNum = to:getHandcardNum()
+			local equipNum = to:getEquips():length()
+			for _, p in sgs.qlist(room:getOtherPlayers(self.player)) do
+				if p:objectName() ~= to:objectName() then
+					if p:getHandcardNum() == handcardNum then
+						table.insert(handVictims, p)
+					end
+					if p:getEquips():length() == equipNum then
+						table.insert(equipVictims, p)
+					end
+				end
+			end
+
+			local nature = sgs.DamageStruct_Normal
+			if (slash.card:isKindOf("FireSlash")) then
+				nature = sgs.DamageStruct_Fire
+			elseif (slash.card:isKindOf("ThunderSlash")) then
+				nature = sgs.DamageStruct_Thunder
+			end
+
+			local dmg = self:hasHeavySlashDamage(self.player, slash.card, to, true)
+
+			local value = 50
+
+			for _, p in ipairs(handVictims) do
+				if (self:isEnemy(p) and self:damageIsEffective(p, nature, self.player)) then
+					value = value + dmg * 10
+					if (self:isWeak(p)) then
+						value = value + dmg * 15
+					end
+				end
+				if (self:isFriend(p) and self:damageIsEffective(p, nature, self.player)) then
+					value = value - dmg * 15 + self:getAllPeachNum() * 5
+					if (self:isWeak(p)) then
+						value = value - dmg * 20
+					end
+				end
+			end
+
+			local hand = value
+
+			value = 50
+
+			for _, p in ipairs(equipVictims) do
+				if (self:isEnemy(p) and self:damageIsEffective(p, nature, self.player)) then
+					value = value + dmg * 10
+					if (self:isWeak(p)) then
+						value = value + dmg * 15
+					end
+				end
+				if (self:isFriend(p) and self:damageIsEffective(p, nature, self.player)) then
+					value = value - dmg * 15 + self:getAllPeachNum() * 5
+					if (self:isWeak(p)) then
+						value = value - dmg * 20
+					end
+				end
+			end
+
+			local equip = value
+			
+			if (hand >= equip) then
+				return "hand"
+			else
+				return "equip"
+			end
+		end
+	end
+	return "hand"
+end
+
+--tianzi
+
+sgs.ai_skill_invoke.tianzi = function(self)
+	if not self:willShowForAttack() and not self:willShowForDefence() then
+		return false
+	end
+	return true
+end
+
+sgs.tianzi_keep_value = {
+	ExNihilo = 0,
+	BefriendAttacking = 0,
+	Indulgence = 0,
+	SupplyShortage = 0,
+	Snatch = 0,
+	Dismantlement = 0,
+	Duel = 0,
+	Drownning = 0,
+	BurningCamps = 0,
+	Collateral = 0,
+	ArcheryAttack = 0,
+	SavageAssault = 0,
+	KnownBoth = 0,
+	IronChain = 0,
+	GodSalvation = 0,
+	Fireattack = 0,
+	AllianceFeast = 0,
+	FightTogether = 0,
+	LureTiger = 0,
+	ThreatenEmperor = 0,
+	AwaitExhausted = 0,
+	ImperialOrder = 0
+}
+
+-- AI don't use the TianziCard
+
+--yuzhai
+sgs.ai_skill_playerchosen.yuzhai = function(self, targets)
+	return self:findPlayerToDiscard("h", false, sgs.Card_MethodDiscard, targets)
+end
+
+sgs.ai_skill_cardchosen.yuzhai = function(self, who, flags)
+	return self:askForCardChosen(who, flags, "dismantlement")
+end
+
+--mizou
+sgs.ai_skill_cardask["@mizou_discard"] = function(self, data)
+	if not self:willShowForDefence() then return "." end
+	local damage = data:toDamage()
+	local from = damage.from
+	local to = damage.to
+	local dmg = damage.damage
+	if (self.player:objectName() == from:objectName()) then
+		if (self:isFriend(to)) then
+			local todiscard = self:askForDiscard("mizou", 1, 0, true, false)
+			if todiscard.length() == 1 and self:getKeepValue(sgs.Sanguosha:getEngineCard(todiscard[1])) <= 4.2 then
+				return "$" .. todiscard[1]
+			end
+		end
+	elseif (self.player:objectName() == to:objectName()) then
+		if (self:isFriend(from)) then
+			local todiscard = self:askForDiscard("mizou", 1, 0, true, false)
+			if todiscard.length() == 1 and self:getKeepValue(sgs.Sanguosha:getEngineCard(todiscard[1])) <= 5.5 then
+				return "$" .. todiscard[1]
+			end
+		elseif (self:isEnemy(from)) then
+			local todiscard = self:askForDiscard("mizou", 1, 0, true, false)
+			if todiscard.length() == 1 and self:getKeepValue(sgs.Sanguosha:getEngineCard(todiscard[1])) <= 4.5 then
+				return "$" .. todiscard[1]
+			end
+		else
+			local todiscard = self:askForDiscard("mizou", 1, 0, true, false)
+			if todiscard.length() == 1 and self:getKeepValue(sgs.Sanguosha:getEngineCard(todiscard[1])) <= 4.8 then
+				return "$" .. todiscard[1]
+			end
+		end
+	end
+	return "."
+end
+
+
+--wushu
+sgs.ai_skill_invoke.wushu = function(self)
+	if not self:willShowForAttack() and not self:willShowForDefence() then
+		return false
+	end
+	return true
+end
+
+sgs.ai_skill_playerchosen.wushu = function(self, targets)
+	return self:findPlayerToDraw(true, 1)
 end

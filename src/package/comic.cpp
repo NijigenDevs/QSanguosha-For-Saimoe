@@ -161,7 +161,12 @@ public:
     {
         if (event == DrawNCards && ((player->hasShownSkill(this) && event == EventPhaseEnd) || player->askForSkillInvoke(this)))
         {
-            room->broadcastSkillInvoke(objectName());
+            room->broadcastSkillInvoke(objectName(), 1);
+            return true;
+        }
+        else if (event == EventPhaseEnd)
+        {
+            room->broadcastSkillInvoke(objectName(), 2);
             return true;
         }
         room->setPlayerMark(player, "tianzidiscards", 0);
@@ -174,7 +179,20 @@ public:
             data = data.toInt() + 1;
         else
         {
-            player->drawCards(player->getMark("tianzidiscards"), objectName());
+            QList<CardsMoveStruct> moves;
+            QList<int> card_ids = room->getNCards(player->getMark("tianzidiscards"), false);
+
+            CardMoveReason reason(CardMoveReason::S_REASON_DRAW, player->objectName());
+
+            CardsMoveStruct move;
+            move.card_ids = card_ids;
+            move.from = NULL;
+            move.to = player;
+            move.to_place = Player::PlaceHand;
+            move.reason = reason;
+            moves.append(move);
+         
+            room->moveCardsAtomic(moves, true);
             room->setPlayerMark(player, "tianzidiscards", 0);
         }
         return false;
@@ -233,11 +251,14 @@ public:
             {
                 player->setMark("@yuzhai_cards", 0);
                 QList<ServerPlayer *> others = room->getOtherPlayers(player);
-                bool invoke = true;
+                bool invoke = false;
                 foreach (ServerPlayer * other, others)
                 {
-                    if (!player->canDiscard(other, "he"))
-                        invoke = false;
+                    if (player->canDiscard(other, "h"))
+                    {
+                        invoke = true;
+                        break;
+                    }
                 }
                 if (invoke)
                     return QStringList(objectName());
@@ -258,7 +279,7 @@ public:
         QList<ServerPlayer *> targets;
         foreach (ServerPlayer *p, others)
         {
-            if (player->canDiscard(p, "he"))
+            if (player->canDiscard(p, "h"))
                 targets << p;
         }
         ServerPlayer *to = room->askForPlayerChosen(player, targets, objectName(), "yuzhai-invoke", true, true);
@@ -278,7 +299,7 @@ public:
         player->tag.remove("yuzhai_target");
         if (to && player->canDiscard(to, "he"))
         {
-            int card_id = room->askForCardChosen(player, to, "he", objectName(), false, Card::MethodDiscard);
+            int card_id = room->askForCardChosen(player, to, "h", objectName(), false, Card::MethodDiscard);
             room->throwCard(card_id, to, player);
         }
         return false;
@@ -302,9 +323,9 @@ public:
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
     {
-        if (room->askForCard(player, ".", "@mizou_discard", QVariant(), objectName()))
+        if (room->askForCard(player, ".", "@mizou_discard", data, objectName()))
         {
             room->broadcastSkillInvoke(objectName());
             return true;
@@ -2537,14 +2558,14 @@ public:
             if (p->getEquips().length() == equipcardNum && !use.to.contains(p))
                 equipVictims << p;
         }
-        if (player->askForSkillInvoke(this))
+        if (player->askForSkillInvoke(this, data))
         {
             QStringList choices;
             if (handVictims.length() > 0)
                 choices << "hand";
             if (equipVictims.length() > 0)
                 choices << "equip";
-            auto choice = room->askForChoice(player, objectName(), choices.join("+"));
+            auto choice = room->askForChoice(player, objectName(), choices.join("+"), data);
             if (choice == "hand")
             {
                 player->tag["jiandao_targets"] = QVariant::fromValue(handVictims);
