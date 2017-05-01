@@ -1782,7 +1782,7 @@ public:
 
     virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer * &) const
     {
-        if (!player || !player->isAlive() || !player->hasSkill("suanlv")) return QStringList();
+        if (player != NULL || !player->isAlive() || !player->hasSkill("suanlv")) return QStringList();
         ServerPlayer *current = room->getCurrent();
         CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
 

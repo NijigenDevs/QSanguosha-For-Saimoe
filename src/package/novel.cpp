@@ -263,10 +263,10 @@ public:
         int lastno = 0;
         do
         {
-            if (judge.card)
+            if (judge.card != NULL)
                 lastno = judge.card->getNumber();
             room->judge(judge);
-        } while (judge.card->getNumber() > lastno  && source->askForSkillInvoke(objectName()));
+        } while (judge.card != NULL && judge.card->getNumber() > lastno && source->askForSkillInvoke(objectName()));
 
         QList<int> card_list = VariantList2IntList(source->tag[objectName()].toList());
         source->tag.remove(objectName());

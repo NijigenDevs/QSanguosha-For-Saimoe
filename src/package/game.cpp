@@ -2293,8 +2293,8 @@ void YonglanPindianCard::use(Room *room, ServerPlayer *, QList<ServerPlayer *> &
 {
     ServerPlayer *user = targets.at(0);
     ServerPlayer *victim = targets.at(1);
-    ServerPlayer *winner;
-    ServerPlayer *loser;
+    ServerPlayer *winner = NULL;
+    ServerPlayer *loser = NULL;
 
     PindianStruct *pd = user->pindianSelect(victim, "yonglan");
     if (pd != NULL)
@@ -2675,7 +2675,7 @@ public:
         view_as_skill = new TianjianVS;
     }
 
-    virtual QStringList triggerable(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer * &) const
+    virtual QStringList triggerable(TriggerEvent event, Room *room, ServerPlayer *, QVariant &data, ServerPlayer * &) const
     {
         if (event == EventPhaseChanging)
         {
