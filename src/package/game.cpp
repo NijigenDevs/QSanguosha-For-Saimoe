@@ -2662,7 +2662,7 @@ public:
 
     virtual bool isEnabledAtNullification(const ServerPlayer *player) const
     {
-        return (!player->hasFlag("tianjian_used") && player->faceUp());
+        return (!player->hasFlag("tianjian_used") && !player->isRemoved() && player->faceUp());
     }
 };
 

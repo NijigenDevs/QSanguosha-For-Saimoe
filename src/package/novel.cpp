@@ -1268,7 +1268,8 @@ class Xieyu : public BattleArraySkill
 public:
     Xieyu() : BattleArraySkill("xieyu", HegemonyMode::Formation)
     {
-        events << GeneralShown << GeneralHidden << GeneralRemoved << Death << RemoveStateChanged;
+        events << EventPhaseStart << Death << EventLoseSkill << EventAcquireSkill
+            << GeneralShown << GeneralHidden << GeneralRemoved << RemoveStateChanged;
     }
 
     virtual bool canPreshow() const
@@ -1279,70 +1280,57 @@ public:
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const
     {
         if (player == NULL) return QStringList();
-        if (triggerEvent == Death)
+
+        if (triggerEvent == EventPhaseStart)
+        {
+            if (player->getPhase() != Player::RoundStart)
+                return QStringList();
+        }
+        else if (triggerEvent == Death)
         {
             DeathStruct death = data.value<DeathStruct>();
-            if (death.who->hasSkill(objectName()))
-            {
-                foreach (ServerPlayer *p, room->getAllPlayers())
-                {
-                    if (p->getMark("xieyu_dis") > 0)
-                    {
-                        room->setPlayerMark(p, "xieyu_dis", 0);
-                        //detach
-                        room->detachSkillFromPlayer(p, "xieyu-target");
-                        foreach (ServerPlayer *target, room->getAllPlayers())
-                        {
-                            room->setFixedDistance(p, target, -1);
-                        }
-                    }
-                }
+            if (player != death.who)
                 return QStringList();
-            }
-            if (death.who->getMark("xieyu_dis") > 0)
-            {
-                room->setPlayerMark(death.who, "xieyu_dis", 0);
-                //detach
-                room->detachSkillFromPlayer(death.who, "xieyu-target");
-                foreach (ServerPlayer *target, room->getAllPlayers())
-                {
-                    room->setFixedDistance(death.who, target, -1);
-                }
-            }
         }
-        foreach (ServerPlayer *p, room->getAllPlayers())
+
+        foreach(ServerPlayer *p, room->getPlayers())
         {
             if (p->getMark("xieyu_dis") > 0)
             {
                 room->setPlayerMark(p, "xieyu_dis", 0);
-                //detach
-                room->detachSkillFromPlayer(p, "xieyu-target");
-                foreach (ServerPlayer *target, room->getAllPlayers())
+                foreach(ServerPlayer *target, room->getAllPlayers())
                 {
                     room->setFixedDistance(p, target, -1);
                 }
             }
         }
-        if (room->alivePlayerCount() < 4) return QStringList();
+
+        if (triggerEvent == EventLoseSkill && data.toString().split(":").first() == "xieyu")
+            return QStringList();
+        if (triggerEvent == GeneralHidden && player->ownSkill(this) && player->inHeadSkills(objectName()) == data.toBool())
+            return QStringList();
+        if (triggerEvent == GeneralRemoved && data.toString() == "rikka")
+            return QStringList();
+        if (player->aliveCount() < 4)
+            return QStringList();
+
         QList<ServerPlayer *> rikkas = room->findPlayersBySkillName(objectName());
-        foreach (ServerPlayer *rikka, rikkas)
+        foreach(ServerPlayer *rikka, rikkas)
         {
-            if (rikka->hasShownSkill(this))
+            foreach(ServerPlayer *p, room->getAlivePlayers())
             {
-                foreach (ServerPlayer *p, room->getAlivePlayers())
+                if (rikka->hasShownSkill(this) && rikka->inFormationRalation(p))
                 {
-                    if (rikka->inFormationRalation(p))
+                    room->doBattleArrayAnimate(rikka);
+                    room->setPlayerMark(p ,"xieyu_dis", 1);
+                    foreach(ServerPlayer *target, room->getOtherPlayers(p))
                     {
-                        room->setPlayerMark(p, "xieyu_dis", 1);
-                        room->acquireSkill(p, "xieyu-target", false);
-                        foreach (ServerPlayer *target, room->getAllPlayers())
-                        {
-                            room->setFixedDistance(p, target, 1);
-                        }
+                        room->setFixedDistance(p, target, 1);
                     }
                 }
             }
         }
+
         return QStringList();
     }
 };
@@ -1350,7 +1338,7 @@ public:
 class XieyuTargetMod : public TargetModSkill
 {
 public:
-    XieyuTargetMod() : TargetModSkill("xieyu-target")
+    XieyuTargetMod() : TargetModSkill("#xieyu-target")
     {
         pattern = "SingleTargetTrick";
     }
@@ -1594,15 +1582,10 @@ public:
             if (use.card != NULL && use.card->getSkillName() == "duanzui" && player->getPhase() == Player::Play)
             {
                 room->addPlayerHistory(player, use.card->getClassName(), -1);
+                room->setPlayerFlag(player, "duanzui_used");
                 use.m_addHistory = false;
                 data = QVariant::fromValue(use);
             }
-        }
-        else if (event == CardUsed)
-        {
-            auto use = data.value<CardUseStruct>();
-            if (use.card != NULL && use.card->getSkillName() == "duanzui" && player->getPhase() == Player::Play && !player->hasFlag("duanzui_used"))
-                player->setFlags("duanzui_used");
         }
         else
         {
@@ -2455,7 +2438,7 @@ void TongheCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &ta
 
     foreach (auto p, room->getAlivePlayers())
     {
-        if (p->isFriendWith(targets[0]) && p->canDiscard(p, "he"))
+        if (targets[0] != p && p->isFriendWith(targets[0]) && p->canDiscard(p, "he"))
         {
             targets << p;
         }
@@ -2541,7 +2524,8 @@ void MoesenPackage::addNovelGenerals()
     General *rikka = new General(this, "rikka", "qun", 3, false); // N009
     rikka->addSkill(new Fangzhu6);
     rikka->addSkill(new Xieyu);
-    skills << new XieyuTargetMod;
+    rikka->addSkill(new XieyuTargetMod);
+    insertRelatedSkills("xieyu", "#xieyu-target");
 
     General *yukino = new General(this, "yukino", "qun", 3, false); // N010
     yukino->addSkill(new Duran);

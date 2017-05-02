@@ -1102,7 +1102,7 @@ public:
 
     virtual bool isEnabledAtNullification(const ServerPlayer *player) const
     {
-        return !player->hasFlag("tsukkomi_used") && !player->hasShownSkill("tsukkomi");
+        return !player->hasFlag("tsukkomi_used") && !player->isRemoved() && !player->hasShownSkill("tsukkomi");
     }
 
     virtual bool viewFilter(const QList<const Card *> &, const Card *) const
