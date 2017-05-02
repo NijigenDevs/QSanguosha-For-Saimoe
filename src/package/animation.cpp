@@ -1964,12 +1964,18 @@ public:
     {
         CardUseStruct use = data.value<CardUseStruct>();
         room->notifySkillInvoked(ask_who, objectName());
-        //log
+        
+        LogMessage log;
+        log.type = "#CardNullified";
+        log.from = use.to.first();
+        log.arg = use.card->objectName();
+        room->sendLog(log);
+
         const Card *card = room->askForCard(use.from, "slash", "@pinghe", QVariant(), Card::MethodNone);
         if (card != NULL)
         {
             room->showCard(use.from, card->getEffectiveId());
-            room->detachSkillFromPlayer(use.from, objectName());
+            room->detachSkillFromPlayer(ask_who, objectName());
         }
         return true;
     }
