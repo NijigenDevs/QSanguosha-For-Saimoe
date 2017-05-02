@@ -1975,7 +1975,7 @@ public:
         if (card != NULL)
         {
             room->showCard(use.from, card->getEffectiveId());
-            room->detachSkillFromPlayer(ask_who, objectName());
+            room->detachSkillFromPlayer(ask_who, objectName(), false, false, ask_who->inHeadSkills(this));
         }
         return true;
     }
