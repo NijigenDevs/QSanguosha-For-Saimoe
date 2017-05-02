@@ -1379,12 +1379,42 @@ public:
         if (!TriggerSkill::triggerable(player) || player->getPhase() != Player::Play)
             return QStringList();
 
-        QList<ServerPlayer *> players = room->getOtherPlayers(player);
-        foreach (ServerPlayer *p, players)
+        auto players = room->getOtherPlayers(player);
+        QStringList kingdoms;
+        foreach(ServerPlayer *p, players)
         {
-            if (!p->inMyAttackRange(player) && !player->willBeFriendWith(p))
-                return QStringList(objectName());
+            if (!p->hasShownRole()) continue;
+
+            if (p->getRole() == "careerist")
+                kingdoms << p->objectName();
+            else if (!kingdoms.contains(p->getRole()))
+            {
+                kingdoms << p->getRole();
+            }
         }
+
+        if (kingdoms.contains(player->getRole()))
+            kingdoms.removeAll(player->getRole());
+
+        foreach(ServerPlayer *p, players)
+        {
+            if (!p->hasShownRole()) continue;
+
+            if (p->inMyAttackRange(player))
+            {
+                if (p->getRole() == "careerist" && kingdoms.contains(p->objectName()))
+                {
+                    kingdoms.removeAll(p->objectName());
+                }
+                if (kingdoms.contains(p->getRole()))
+                {
+                    kingdoms.removeAll(p->getRole());
+                }
+            }
+        }
+
+        if (kingdoms.length() > 0)
+            return QStringList(objectName());
 
         return QStringList();
     }
@@ -1413,24 +1443,41 @@ public:
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
         auto players = room->getOtherPlayers(player);
-        auto drawNum = 0;
         QStringList kingdoms;
         foreach (ServerPlayer *p, players)
         {
-            if (!p->inMyAttackRange(player) && !player->willBeFriendWith(p) && p->hasShownOneGeneral())
+            if (!p->hasShownRole()) continue;
+
+            if (p->getRole() == "careerist")
+                kingdoms << p->objectName();
+            else if (!kingdoms.contains(p->getRole()))
             {
-                if (p->getRole() == "careerist")
-                    drawNum++;
-                else if (!kingdoms.contains(p->getKingdom()))
+                kingdoms << p->getRole();
+            }
+        }
+
+        if (kingdoms.contains(player->getRole()))
+            kingdoms.removeAll(player->getRole());
+
+        foreach (ServerPlayer *p, players)
+        {
+            if (!p->hasShownRole()) continue;
+
+            if (p->inMyAttackRange(player))
+            {
+                if (p->getRole() == "careerist" && kingdoms.contains(p->objectName()))
                 {
-                    kingdoms << p->getKingdom();
-                    drawNum++;
+                    kingdoms.removeAll(p->objectName());
+                }
+                if (kingdoms.contains(p->getRole()))
+                {
+                    kingdoms.removeAll(p->getRole());
                 }
             }
         }
 
-        if (drawNum > 0)
-            player->drawCards(drawNum, objectName());
+        if (kingdoms.length() > 0)
+            player->drawCards(kingdoms.length(), objectName());
 
         return false;
     }
