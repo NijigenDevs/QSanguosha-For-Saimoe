@@ -643,8 +643,21 @@ public:
             foreach (QVariant v_use, shiting_list)
             {
                 CardUseStruct use = v_use.value<CardUseStruct>();
-                if (use.card && use.from && use.from->isAlive())
-                    room->useCard(use);
+                if (use.card && use.from && use.from->isAlive() && !use.to.isEmpty())
+                {
+                    QList<ServerPlayer *> newTargets;
+                    foreach (auto to, use.to)
+                    {
+                        if (to != NULL && to->isAlive())
+                            newTargets << to;
+                    }
+
+                    if (!newTargets.isEmpty())
+                    {
+                        use.to = newTargets;
+                        room->useCard(use);
+                    }
+                }
             }
             ask_who->tag["shiting_list"] = QVariant();
         }
