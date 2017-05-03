@@ -2299,30 +2299,19 @@ public:
         room->sendLog(log);
         room->broadcastSkillInvoke("laoyue");
         room->notifySkillInvoked(player, "laoyue");
-        JsonArray gongxinArgs;
-        gongxinArgs << player->objectName();
-        gongxinArgs << false;
-        gongxinArgs << JsonUtils::toJsonArray(ids);
-        room->doNotify(player, QSanProtocol::S_COMMAND_SHOW_ALL_CARDS, gongxinArgs);
-        
-        room->getThread()->delay(2500);
 
-        room->doNotify(player, S_COMMAND_CLEAR_AMAZING_GRACE, QVariant());
+        room->fillAG(ids, player);
+        room->getThread()->delay(2500);
+        room->clearAG(player);
 
         QString choice = player->getHandcardNum() >= 2 ? room->askForChoice(player, "laoyue", "use+put+replace+cancel") : room->askForChoice(player, "laoyue", "use+replace+cancel");
         if (choice == "use")
         {
             if (enabled.isEmpty())
             {
-                JsonArray gongxinArgs;
-                gongxinArgs << player->objectName();
-                gongxinArgs << false;
-                gongxinArgs << JsonUtils::toJsonArray(ids);
-                room->doNotify(player, QSanProtocol::S_COMMAND_SHOW_ALL_CARDS, gongxinArgs);
-
+                room->fillAG(ids, player, disabled);
                 room->getThread()->delay(2000);
-
-                room->doNotify(player, S_COMMAND_CLEAR_AMAZING_GRACE, QVariant());
+                room->clearAG(player);
             }
             else
             {
@@ -2372,6 +2361,8 @@ public:
         }
         else if (choice == "cancel")
         {
+            for (int i = ids.length() - 1; i >= 0; i--)
+                drawPile.append(ids.at(i));
             return -1;
         }
 
