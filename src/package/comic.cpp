@@ -2143,7 +2143,7 @@ public:
                 << objectName() << judge->reason << QString::number(judge->card->getEffectiveId());
             QString prompt = prompt_list.join(":");
 
-            card = room->askForCard(player, ".", prompt, data, Card::MethodResponse, judge->who, true);
+            card = room->askForCard(player, ".|.|.|hand", prompt, data, Card::MethodResponse, judge->who, true);
         }
         else if (room->askForSkillInvoke(player, objectName()))
         {
