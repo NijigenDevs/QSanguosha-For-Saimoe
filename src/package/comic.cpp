@@ -492,7 +492,7 @@ void ShuimengCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &
         }
         else
         {
-            auto d_num = room->askForExchange(source, "shuimeng", 999, 2, "shuimeng_discard", "", ".!");
+            auto d_num = room->askForExchange(source, "shuimeng", 999, 2, "shuimeng_discard_any", "", ".|.|.|hand");
             DummyCard dummy(d_num);
             room->throwCard(&dummy, source, source, "shuimeng");
             if (d_num.length() >= 2)

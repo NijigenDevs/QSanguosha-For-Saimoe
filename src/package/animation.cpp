@@ -1462,6 +1462,8 @@ public:
     {
         if (triggerEvent == TargetConfirming)
         {
+            if (player == NULL || !player->isAlive())
+                return QStringList();
             CardUseStruct use = data.value<CardUseStruct>();
             Player *right = player->getNextAlive(1, false);
             Player *left = player->getLastAlive(1, false);
@@ -1482,9 +1484,12 @@ public:
         else if (triggerEvent == CardFinished)
         {
             CardUseStruct use = data.value<CardUseStruct>();
+            if (use.to.isEmpty())
+                return QStringList();
             foreach (ServerPlayer *p, use.to)
             {
-                p->setMark("powei", 0);
+                if (p != NULL && p->isAlive())
+                    p->setMark("powei", 0);
             }
         }
         return QStringList();
