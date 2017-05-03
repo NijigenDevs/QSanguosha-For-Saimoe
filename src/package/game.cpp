@@ -2116,7 +2116,7 @@ class Duangang : public TriggerSkill
 public:
     Duangang() : TriggerSkill("duangang")
     {
-        events << EventPhaseStart << Death << DamageCaused;
+        events << EventPhaseStart << Death << DamageCaused << Damage;
         frequency = Limited;
         limit_mark = "@excalibur";
     }
@@ -2126,7 +2126,10 @@ public:
         if (event == EventPhaseStart)
         {
             if (TriggerSkill::triggerable(player) && player->getPhase() == Player::Play && player->getMark("@excalibur") > 0)
+            {
+                player->tag["excalibur_count"] = 0;
                 return QStringList(objectName());
+            }
         }
         else if (event == DamageCaused)
         {
@@ -2137,7 +2140,16 @@ public:
         {
             DeathStruct death = data.value<DeathStruct>();
             if (player != NULL && player->hasFlag("excalibur") && death.who != player)
+            {
+                player->tag["excalibur_count"] = 0;
                 player->setFlags("-excalibur");
+            }
+        }
+        else if (event == Damage && player != NULL)
+        {
+            DamageStruct damage = data.value<DamageStruct>();
+            if (damage.from != NULL && damage.from->hasFlag("excalibur") && damage.from->getPhase() == Player::Play)
+                damage.from->tag["excalibur_count"] = damage.from->tag["excalibur_count"].toInt() + damage.damage;
         }
         return QStringList();
     }
@@ -2185,28 +2197,6 @@ public:
             data = QVariant::fromValue(damage);
         }
         return false;
-    }
-};
-
-class DuangangRecord : public TriggerSkill
-{
-public:
-    DuangangRecord() : TriggerSkill("#duangang-record")
-    {
-        events << Damaged;
-    }
-
-    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const
-    {
-        if (player != NULL)
-        {
-            DamageStruct damage = data.value<DamageStruct>();
-            ServerPlayer *saber = room->getCurrent();
-            if (damage.from != NULL && saber != NULL && saber->hasFlag("excalibur")
-                && saber == damage.from && saber->getPhase() == Player::Play)
-                saber->tag["excalibur_count"] = saber->tag["excalibur_count"].toInt() + damage.damage;
-        }
-        return QStringList();
     }
 };
 
@@ -3579,10 +3569,8 @@ void MoesenPackage::addGameGenerals()
     altria->addSkill(new FengwangFilter);
     altria->addSkill(new FengwangTMS);
     altria->addSkill(new Duangang);
-    altria->addSkill(new DuangangRecord);
     insertRelatedSkills("fengwang", "#fengwang-target");
     insertRelatedSkills("fengwang", "#fengwang-filter");
-    insertRelatedSkills("duangang", "#duangang-record");
 
     General *t_rin = new General(this, "t_rin", "wu", 3, false); // G005
     t_rin->addSkill(new Canshi);
