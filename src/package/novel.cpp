@@ -2460,7 +2460,7 @@ void TongheCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &ta
     auto big_kingdoms = source->getBigKingdoms("tonghe", MaxCardsType::Normal);
 
     if ((targets[0]->getRole() == "careerist" && big_kingdoms.contains(targets[0]->objectName()))
-        || big_kingdoms.contains(targets[0]->getRole()))
+        || big_kingdoms.contains(targets[0]->getKingdom()))
     {
         room->drawCards(targets, 1, "tonghe");
     }
