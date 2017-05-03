@@ -2727,14 +2727,32 @@ public:
         bool red = player->tag["Qinyin_effect"].value<bool>();
         if (target == NULL)
             return false;
+
+        LogMessage log;
+
         if (!red)
         {
             int id = room->askForCardChosen(player, target, "he", objectName(), false, Card::MethodDiscard);
             if (id != -1)
+            {
                 room->throwCard(Sanguosha->getCard(id), target, player, objectName());
+                log.type = "#QinyinBlack";
+                log.from = player;
+                log.to << target;
+                log.arg = Sanguosha->getCard(id)->objectName();
+                log.arg2 = objectName();
+                room->sendLog(log);
+            }
         }
         else
+        {
             target->drawCards(1, objectName());
+            log.type = "#QinyinRed";
+            log.from = player;
+            log.to << target;
+            log.arg = objectName();
+            room->sendLog(log);
+        }
         return false;
     }
 };
