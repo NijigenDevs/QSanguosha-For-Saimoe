@@ -213,7 +213,9 @@ public:
         {
             if (p->hasFlag("haixing_used"))
             {
-                room->obtainCard(fuuko, room->askForCard(p, ".", "@haixing-back", data, Card::MethodNone, fuuko, false, "haixing"), CardMoveReason::S_REASON_GIVE);
+                auto card = room->askForCard(p, ".", "@haixing-back", data, Card::MethodNone, fuuko, false, "haixing");
+                if (card != NULL)
+                    room->obtainCard(fuuko, card, CardMoveReason::S_REASON_GIVE);
                 p->setFlags("-haixing_used");
             }
         }
@@ -2956,7 +2958,7 @@ public:
             {
                 foreach (ServerPlayer *rika, room->findPlayersBySkillName(objectName()))
                 {
-                    if (rika->isChained() && rika->canBeChainedBy(rika) && rika->getCardCount(true) > 0 && rika->canDiscard(rika, "he"))
+                    if (rika->isChained() && rika->canBeChainedBy(rika) && rika->canDiscard(rika, "he"))
                         skill_list.insert(rika, QStringList(objectName()));
                 }
             }
@@ -2971,7 +2973,7 @@ public:
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const
     {
-        if (room->askForCard(ask_who, "..", "@zuimie-discard", QVariant(), Card::MethodDiscard))
+        if (room->askForCard(ask_who, ".", "@zuimie-discard", QVariant(), Card::MethodDiscard))
         {
             ask_who->setChained(false);
             room->broadcastSkillInvoke(objectName());
