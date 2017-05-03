@@ -165,11 +165,10 @@ void HaoqiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &tar
     QString choice = room->askForChoice(targets.first(), objectName(), choices.join("+"));
     if (choice == "halfcards")
     {
-        auto cards = room->askForExchange(targets.first(), objectName(), ((targets.first()->getHandcardNum() + 1) / 2));
+        int returnNum = (targets.first()->getHandcardNum() + 1) / 2;
+        auto cards = room->askForExchange(targets.first(), objectName(), returnNum, returnNum, "@haoqi-halfcards", "", ".|.|.|hand");
         DummyCard dummy(cards);
-        CardMoveReason reason(CardMoveReason::S_REASON_GIVE, targets.first()->objectName(),
-            source->objectName(), "haoqi", QString());
-        room->moveCardTo(&dummy, source, Player::PlaceHand, reason);
+        source->obtainCard(&dummy, false);
     }
     else if (choice == "showallgenerals")
     {
