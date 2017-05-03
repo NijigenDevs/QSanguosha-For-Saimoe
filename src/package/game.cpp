@@ -3055,9 +3055,9 @@ public:
         return skill_list;
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer* &ask_who) const
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const
     {
-        if (room->askForCard(ask_who, ".|red|.|hand", "@chouchu-discard", QVariant(), Card::MethodDiscard))
+        if (room->askForCard(ask_who, ".|red|.|hand", "@chouchu-discard", QVariant(), Card::MethodDiscard) != NULL)
         {
             room->broadcastSkillInvoke(objectName());
             return true;
@@ -3065,7 +3065,7 @@ public:
         return false;
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer* &ask_who) const
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const
     {
         QString choices = "supplementcards";
         if (player->getLostHp() > 0)
