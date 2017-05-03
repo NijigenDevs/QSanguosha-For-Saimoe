@@ -1369,24 +1369,24 @@ public:
 
         auto players = room->getOtherPlayers(player);
         QStringList kingdoms;
-        foreach(ServerPlayer *p, players)
+        foreach (ServerPlayer *p, players)
         {
-            if (!p->hasShownRole()) continue;
+            if (!p->hasShownOneGeneral()) continue;
 
             if (p->getRole() == "careerist")
                 kingdoms << p->objectName();
-            else if (!kingdoms.contains(p->getRole()))
+            else if (!kingdoms.contains(p->getKingdom()))
             {
-                kingdoms << p->getRole();
+                kingdoms << p->getKingdom();
             }
         }
 
-        if (kingdoms.contains(player->getRole()))
-            kingdoms.removeAll(player->getRole());
+        if (kingdoms.contains(player->getKingdom()))
+            kingdoms.removeAll(player->getKingdom());
 
-        foreach(ServerPlayer *p, players)
+        foreach (ServerPlayer *p, players)
         {
-            if (!p->hasShownRole()) continue;
+            if (!p->hasShownOneGeneral()) continue;
 
             if (p->inMyAttackRange(player))
             {
@@ -1394,9 +1394,9 @@ public:
                 {
                     kingdoms.removeAll(p->objectName());
                 }
-                if (kingdoms.contains(p->getRole()))
+                if (kingdoms.contains(p->getKingdom()))
                 {
-                    kingdoms.removeAll(p->getRole());
+                    kingdoms.removeAll(p->getKingdom());
                 }
             }
         }
@@ -1416,11 +1416,6 @@ public:
             if (player->hasShownSkill(this))
             {
                 room->notifySkillInvoked(player, "duran");
-                LogMessage log;
-                log.type = "#TriggerSkill";
-                log.from = player;
-                log.arg = "duran";
-                room->sendLog(log);
             }
             return true;
         }
@@ -1434,22 +1429,28 @@ public:
         QStringList kingdoms;
         foreach (ServerPlayer *p, players)
         {
-            if (!p->hasShownRole()) continue;
+            if (!p->hasShownOneGeneral()) continue;
 
             if (p->getRole() == "careerist")
                 kingdoms << p->objectName();
-            else if (!kingdoms.contains(p->getRole()))
+            else if (!kingdoms.contains(p->getKingdom()))
             {
-                kingdoms << p->getRole();
+                kingdoms << p->getKingdom();
             }
         }
 
-        if (kingdoms.contains(player->getRole()))
-            kingdoms.removeAll(player->getRole());
+        if (player->getRole() == "careerist")
+        {
+            kingdoms.removeAll(player->objectName());
+        }
+        else if (kingdoms.contains(player->getKingdom()))
+        {
+            kingdoms.removeAll(player->getKingdom());
+        }
 
         foreach (ServerPlayer *p, players)
         {
-            if (!p->hasShownRole()) continue;
+            if (!p->hasShownOneGeneral()) continue;
 
             if (p->inMyAttackRange(player))
             {
@@ -1457,15 +1458,23 @@ public:
                 {
                     kingdoms.removeAll(p->objectName());
                 }
-                if (kingdoms.contains(p->getRole()))
+                if (kingdoms.contains(p->getKingdom()))
                 {
-                    kingdoms.removeAll(p->getRole());
+                    kingdoms.removeAll(p->getKingdom());
                 }
             }
         }
 
         if (kingdoms.length() > 0)
+        {
+            LogMessage log;
+            log.type = "#DuranCounter";
+            log.from = player;
+            log.arg = kingdoms.length();
+            log.arg2 = objectName();
+            room->sendLog(log);
             player->drawCards(kingdoms.length(), objectName());
+        }
 
         return false;
     }
