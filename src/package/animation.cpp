@@ -394,8 +394,8 @@ public:
                 can_invoke = true;
                 break;
             }
-        if (!can_invoke || !move.from || move.from->isDead() || move.to_place != Player::DiscardPile ||
-            ((move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) != CardMoveReason::S_REASON_DISCARD))
+        if (!can_invoke || !move.from || move.from->isDead() || move.to_place != Player::DiscardPile 
+            || ((move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) != CardMoveReason::S_REASON_DISCARD))
             return QStringList();
         if ((player->isFriendWith(move.from) || player->willBeFriendWith(move.from)) && move.from->getMark("renmin" + player->objectName()) == 0)
             return QStringList(objectName());
