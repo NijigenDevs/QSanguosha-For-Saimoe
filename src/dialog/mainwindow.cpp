@@ -634,7 +634,7 @@ void MainWindow::checkVersion(const QString &server_version_str, const QString &
 
     client->disconnectFromHost();
 
-    static QString link = "http://pan.baidu.com/share/home?uk=3173324412";
+    static QString link = "284131971";
     QString text = tr("Server version is %1, client version is %2 <br/>").arg(server_version).arg(client_version);
     if (server_version > client_version)
         text.append(tr("Your client version is older than the server's, please update it <br/>"));
