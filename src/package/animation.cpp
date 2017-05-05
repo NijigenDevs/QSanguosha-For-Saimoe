@@ -2281,12 +2281,13 @@ public:
 
     virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *miho, QVariant &data, ServerPlayer * &) const
     {
-        if (!TriggerSkill::triggerable(miho)) return QStringList();
+        if (!TriggerSkill::triggerable(miho))
+            return QStringList();
         CardUseStruct use = data.value<CardUseStruct>();
 
-        if (use.card->isKindOf("Slash") && !miho->isKongcheng())
+        if (use.card != NULL && use.card->isKindOf("Slash") && miho->canDiscard(miho, "h"))
         {
-            if (use.from == miho && !use.to.isEmpty())
+            if (use.from != NULL && use.from == miho && !use.to.isEmpty())
                 return QStringList(objectName());
         }
         return QStringList();
@@ -2294,8 +2295,7 @@ public:
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *miho, QVariant &data, ServerPlayer *) const
     {
-        bool invoke = miho->askForSkillInvoke(objectName(), data);
-        if (invoke)
+        if (miho->askForSkillInvoke(objectName(), data))
         {
             room->broadcastSkillInvoke(objectName());
             return true;
@@ -2307,18 +2307,24 @@ public:
     {
         CardUseStruct use = data.value<CardUseStruct>();
         QList<ServerPlayer *> left = use.to;
-        do
+        const Card *card = room->askForCard(miho, ".", "@ruhun", QVariant(), objectName());
+        if (card != NULL && !use.to.isEmpty())
         {
-            ServerPlayer *to = room->askForPlayerChosen(miho, use.to, "ruhun_target");
-            const Card *card = room->askForCard(miho, ".", "@ruhun", QVariant(), objectName());
-            if (card && to)
+            room->throwCard(card, CardMoveReason(CardMoveReason::S_REASON_DISCARD, miho->objectName()), miho, miho);
+            QString pattern = ".|" + card->getSuitString() + "|.|.";
+            foreach (auto to, use.to)
             {
-                room->throwCard(card, CardMoveReason(CardMoveReason::S_REASON_DISCARD, miho->objectName()), miho, miho);
-                QString pattern = ".|" + card->getSuitString() + "|.|.";
                 room->setPlayerCardLimitation(to, "use,response", pattern, true);
-                left.removeOne(to);
             }
-        } while (left.length() > 0 && !miho->isKongcheng() && miho->askForSkillInvoke(objectName()));
+
+            LogMessage log;
+            log.type = "#RuhunLimit";
+            log.from = miho;
+            log.to << use.to;
+            log.arg = card->getSuitString();
+            log.arg2 = objectName();
+            room->sendLog(log);
+        }
         return false;
     }
 };
