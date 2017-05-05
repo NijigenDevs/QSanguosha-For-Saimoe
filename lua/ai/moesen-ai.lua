@@ -586,6 +586,15 @@ table.insert(sgs.ai_skills, geji_skill)
 geji_skill.getTurnUseCard = function(self)
 	if (not self:willShowForAttack()) and not self:willShowForDefence() then return end
 	if not self.player:hasUsed("GejiCard") and self.player:getCards("he"):length() > 0 then
+		local hasShowns = sgs.SPlayerList()
+		for _,other in sgs.qlist(self.room:getOtherPlayers(self.player)) do
+			if other:hasShownOneGeneral() then
+				hasShowns:append(other)
+			end
+		end
+		if hasShowns:isEmpty() then
+			return
+		end
 		if self:isWeak() then
 			local spade = false
 			for _,card in self.player:getCards("he") do
