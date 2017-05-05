@@ -584,6 +584,7 @@ local geji_skill = {}
 geji_skill.name = "geji"
 table.insert(sgs.ai_skills, geji_skill)
 geji_skill.getTurnUseCard = function(self)
+	if (not self:willShowForAttack()) and not self:willShowForDefence() then return end
 	if not self.player:hasUsed("GejiCard") and self.player:getCards("he"):length() > 0 then
 		if self:isWeak() then
 			local spade = false
@@ -623,7 +624,7 @@ sgs.ai_skill_use_func.GejiCard = function(card, use, self)
 			end
 		end
 	end
-	for _,other in sgs.qlist(self.room:getOtherPlayers(self.player)) do
+	for _,other in sgs.qlist(hasShowns) do
 		if other:getArmor() and not self:isFriend(other) and other:getArmor():getSuit() ~= sgs.Card_Spade and not other:hasSkills(sgs.lose_equip_skill) then
 			local ok = true
 			for _,p in sgs.qlist(targets) do
@@ -636,7 +637,7 @@ sgs.ai_skill_use_func.GejiCard = function(card, use, self)
 			end
 		end
 	end
-	for _,other in sgs.qlist(self.room:getOtherPlayers(self.player)) do
+	for _,other in sgs.qlist(hasShowns) do
 		if not self:isFriend(other) then
 			local ok = true
 			for _,p in sgs.qlist(targets) do

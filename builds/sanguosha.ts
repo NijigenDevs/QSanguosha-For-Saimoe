@@ -2463,7 +2463,7 @@
     <message>
         <location filename="../src/dialog/mainwindow.cpp" line="644"/>
         <source>Download link : &lt;a href=&apos;%1&apos;&gt;%1&lt;/a&gt; &lt;br/&gt;</source>
-        <translation>下载链接: &lt;a href=&apos;%1&apos;&gt;%1&lt;/a&gt; &lt;br/&gt;</translation>
+        <translation>QQ群: &lt;a href=&apos;%1&apos;&gt;%1&lt;/a&gt; &lt;br/&gt;</translation>
     </message>
     <message>
         <location filename="../src/dialog/mainwindow.cpp" line="683"/>

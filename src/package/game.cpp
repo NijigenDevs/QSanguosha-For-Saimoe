@@ -3022,6 +3022,20 @@ public:
         events << CardUsed << EventPhaseChanging;
     }
 
+    virtual void record(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data) const
+    {            
+        if (player == NULL)
+            return;
+        if (event == EventPhaseChanging)
+        {
+            auto change = data.value<PhaseChangeStruct>();
+            if (change.to == Player::NotActive && player->hasFlag("zuimie_turn"))
+            {
+                room->setPlayerMark(player, "Equips_Nullified_to_Yourself", qMax(0, player->getMark("Equips_Nullified_to_Yourself") - 1));
+            }
+        }
+    }
+
     virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data) const
     {
         QMap<ServerPlayer *, QStringList> skill_list;
@@ -3038,11 +3052,6 @@ public:
                         skill_list.insert(rika, QStringList(objectName()));
                 }
             }
-        }
-        else if (event == EventPhaseChanging)
-        {
-            if (data.value<PhaseChangeStruct>().to == Player::NotActive && player->hasFlag("zuimie_turn"))
-                room->setPlayerMark(player, "Equips_Nullified_to_Yourself", qMax(0, player->getMark("Equips_Nullified_to_Yourself") - 1));
         }
         return skill_list;
     }

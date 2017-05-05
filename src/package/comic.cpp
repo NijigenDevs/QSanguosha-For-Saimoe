@@ -1229,25 +1229,28 @@ public:
         events << CardsMoveOneTime << EventPhaseEnd;
     }
 
-    virtual void record(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data) const
+    virtual void record(TriggerEvent event, Room *, ServerPlayer *player, QVariant &data) const
     {
-        if (player == NULL || !player->isAlive() || !player->ownSkill(this) || player->getPhase() != Player::Discard)
-            return;
-
-        auto move = data.value<CardsMoveOneTimeStruct>();
-
-        if (move.from_places.contains(Player::PlaceTable) && move.to_place == Player::DiscardPile
-            && (move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_DISCARD)
+        if (event == CardsMoveOneTime)
         {
-            QVariantList zhaihunCards = player->tag["ZhaihunCards"].toList();
-            foreach(int card_id, move.card_ids)
+            if (player == NULL || !player->isAlive() || !player->ownSkill(this) || player->getPhase() != Player::Discard)
+                return;
+
+            auto move = data.value<CardsMoveOneTimeStruct>();
+
+            if (move.from_places.contains(Player::PlaceTable) && move.to_place == Player::DiscardPile
+                && (move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_DISCARD)
             {
-                if (!zhaihunCards.contains(card_id))
+                QVariantList zhaihunCards = player->tag["ZhaihunCards"].toList();
+                foreach(int card_id, move.card_ids)
                 {
-                    zhaihunCards << card_id;
+                    if (!zhaihunCards.contains(card_id))
+                    {
+                        zhaihunCards << card_id;
+                    }
                 }
+                player->tag["ZhaihunCards"] = zhaihunCards;
             }
-            player->tag["ZhaihunCards"] = zhaihunCards;
         }
     }
 
