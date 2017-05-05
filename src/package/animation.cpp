@@ -1535,7 +1535,7 @@ public:
         QString choice = room->askForChoice(use.from, "powei", "powei_discard+powei_cancel", dataforai);
         if (choice == "powei_discard")
         {
-            if (!room->askForCard(use.from, ".", "@powei-discard", dataforai))
+            if (!room->askForCard(use.from, ".|.|.|.", "@powei-discard", dataforai))
                 asuka->addMark("powei");
         }
         else
