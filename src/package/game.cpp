@@ -2535,7 +2535,6 @@ bool TianjianCard::targetFixed() const
     Card *mutable_card = Sanguosha->cloneCard(getUserString());
     if (mutable_card)
     {
-        mutable_card->addSubcards(subcards);
         mutable_card->setCanRecast(false);
         mutable_card->deleteLater();
     }
@@ -2547,27 +2546,8 @@ bool TianjianCard::targetFilter(const QList<const Player *> &targets, const Play
     Card *mutable_card = Sanguosha->cloneCard(Self->tag["tianjian"].toString());
     if (mutable_card)
     {
-        mutable_card->addSubcards(subcards);
         mutable_card->setCanRecast(false);
         mutable_card->deleteLater();
-    }
-    if (targets.length() >= subcards.length() && !mutable_card->isKindOf("Collateral")) return false;
-
-    if (mutable_card->isKindOf("AllianceFeast"))
-    {
-        if (to_select->getRole() == "careerist")
-        {
-            if (subcards.length() < 2)
-                return false;
-        }
-        else
-        {
-            QList<const Player *> targets;
-            foreach(const Player *p, Self->getAliveSiblings())
-                if (p->isFriendWith(to_select) && !Self->isProhibited(p, mutable_card))
-                    targets << p;
-            if (targets.length() > subcards.length() - 1) return false;
-        }
     }
 
     return mutable_card && mutable_card->targetFilter(targets, to_select, Self) && !Self->isProhibited(to_select, mutable_card, targets);
@@ -2578,24 +2558,16 @@ bool TianjianCard::targetsFeasible(const QList<const Player *> &targets, const P
     Card *mutable_card = Sanguosha->cloneCard(Self->tag["tianjian"].toString());
     if (mutable_card)
     {
-        mutable_card->addSubcards(subcards);
         mutable_card->setCanRecast(false);
         mutable_card->deleteLater();
     }
-    if (mutable_card->isKindOf("Collateral"))
-    {
-        if (targets.length() / 2 > subcards.length()) return false;
-    }
-    else
-    {
-        if (targets.length() > subcards.length()) return false;
-    }
+
     return mutable_card && mutable_card->targetsFeasible(targets, Self);
 }
 
 const Card *TianjianCard::validate(CardUseStruct &card_use) const
 {
-    Card *use_card = Sanguosha->cloneCard(Self->tag.value("tianjian").toString(), Card::NoSuit, 0);
+    Card *use_card = Sanguosha->cloneCard(Self->tag["tianjian"].toString(), Card::NoSuit, 0);
     auto source = card_use.from;
     auto room = source->getRoom();
 
@@ -2605,7 +2577,6 @@ const Card *TianjianCard::validate(CardUseStruct &card_use) const
     use_card->setSkillName("tianjian");
     use_card->setShowSkill("tianjian");
     use_card->setCanRecast(false);
-    use_card->deleteLater();
     bool available = true;
 
     QList<ServerPlayer *> targets;
@@ -2673,7 +2644,6 @@ const Card *TianjianCard::validate(CardUseStruct &card_use) const
             if (!source->isProhibited(p, use_card))
                 targets << room->findPlayerbyobjectName(p->objectName());
     }
-    if (targets.length() > subcards.length()) return NULL;
 
     foreach(ServerPlayer *to, card_use.to)
     {
@@ -2743,7 +2713,7 @@ public:
         guhuo_type = "t";
     }
 
-    virtual void record(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data) const
+    virtual void record(TriggerEvent event, Room *room, ServerPlayer *, QVariant &data) const
     {
         if (event == EventPhaseChanging)
         {
@@ -2768,6 +2738,11 @@ public:
                 use.from->turnOver();
             }
         }
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *, QVariant &, ServerPlayer* &) const
+    {
+        return QStringList();
     }
 };
 
