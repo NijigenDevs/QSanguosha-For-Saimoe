@@ -110,14 +110,14 @@ public:
     AzusaTrigger() : TriggerSkill("#azusa-cardHandle")
     {
         events << NonTrigger << GameStart << TurnStart << EventPhaseStart << EventPhaseProceeding << EventPhaseEnd << EventPhaseChanging << EventPhaseSkipping 
-            << ConfirmPlayerNum << DrawNCards << AfterDrawNCards << PreHpRecover << HpRecover << PreHpLost << HpChanged << MaxHpChanged << PostHpReduced << HpLost 
-            << EventLoseSkill << EventAcquireSkill << StartJudge << AskForRetrial << FinishRetrial << FinishJudge << PindianVerifying << Pindian << TurnedOver 
+            << DrawNCards << AfterDrawNCards << PreHpRecover << HpRecover << PreHpLost << HpChanged << MaxHpChanged << PostHpReduced << HpLost << TurnedOver
+            << EventLoseSkill << EventAcquireSkill << StartJudge << AskForRetrial << FinishRetrial << FinishJudge << PindianVerifying << Pindian << ChoiceMade
             << ChainStateChanged << RemoveStateChanged << ConfirmDamage << Predamage << DamageForseen << DamageCaused << DamageInflicted << PreDamageDone 
             << DamageDone << Damage << Damaged << DamageComplete << Dying << QuitDying << AskForPeaches << AskForPeachesDone << Death << BuryVictim 
             << BeforeGameOverJudge << GameOverJudge << GameFinished << SlashEffected << SlashProceed << SlashHit << SlashMissed << JinkEffect << CardAsked 
             << CardResponded << BeforeCardsMove << CardsMoveOneTime << PreCardUsed << CardUsed << TargetChoosing << TargetConfirming << TargetChosen 
-            << TargetConfirmed << CardEffect << CardEffected << CardEffectConfirmed << PostCardEffected << CardFinished << TrickCardCanceling << ChoiceMade 
-            << StageChange << FetchDrawPileCard << TurnBroken << GeneralShown << GeneralHidden << GeneralRemoved;
+            << TargetConfirmed << CardEffect << CardEffected << CardEffectConfirmed << PostCardEffected << CardFinished << TrickCardCanceling 
+            << StageChange << FetchDrawPileCard << GeneralShown << GeneralHidden << GeneralRemoved;
         // Add all Events to make sure mark set
     }
 
