@@ -1056,7 +1056,8 @@ public:
     {
         if (!TriggerSkill::triggerable(player)) return QStringList();
         DamageStruct damage = data.value<DamageStruct>();
-        if (player->hasShownSkill(this) && damage.card && damage.card->isKindOf("Slash") && !(damage.transfer || damage.prevented || damage.chain || damage.damage < 1))
+        if (player->hasShownSkill(this) && damage.from != NULL && damage.from->hasShownAllGenerals() && damage.card != NULL 
+            && damage.card->isKindOf("Slash") && !(damage.transfer || damage.prevented || damage.chain || damage.damage < 1))
             return QStringList(objectName());
         return QStringList();
     }
