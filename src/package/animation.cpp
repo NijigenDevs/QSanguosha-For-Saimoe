@@ -1295,7 +1295,7 @@ public:
     {
         room->setPlayerProperty(ask_who, "hp", player->getHp() + 2); //don't use the normal recover method
         room->revivePlayer(ask_who);
-        room->handleAcquireDetachSkills(ask_who, "-yinren");
+        room->detachSkillFromPlayer(ask_who, "yinren", false, false, ask_who->inHeadSkills(this));
         ask_who->drawCards(2);
 
         room->setPlayerProperty(ask_who, "tongxin", 0);
