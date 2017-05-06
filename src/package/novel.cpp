@@ -191,7 +191,7 @@ public:
 
     virtual bool isEnabledAtPlay(const Player *player) const
     {
-        return player->getHandcardNum() > 1;
+        return player->getHandcardNum() > 1 && !player->hasUsed("HaoqiCard");
     }
 
     virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const
