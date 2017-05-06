@@ -121,17 +121,21 @@ public:
         // Add all Events to make sure mark set
     }
 
-    virtual QStringList triggerable(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer * &) const
+    virtual void record(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data) const
     {
-        if (player != NULL && player->isAlive() && player->ownSkill("weihao"))
+        if (player != NULL && player->isAlive())
         {
-            if (event == EventPhaseChanging && data.value<PhaseChangeStruct>().to == Player::NotActive)
+            if (event == EventPhaseChanging && data.value<PhaseChangeStruct>().to == Player::NotActive && (player->getMark("@zhenhao") > 0 || player->getMark("@weihao") > 0))
             {
                 room->setPlayerMark(player, "@zhenhao", 0);
                 room->setPlayerMark(player, "@weihao", 0);
             }
             room->setPlayerMark(player, "azusa_maxcards", player->getMaxCards(MaxCardsType::Normal));
         }
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *, QVariant &, ServerPlayer * &) const
+    {
         return QStringList();
     }
 };
