@@ -129,9 +129,21 @@ class Tianzi : public TriggerSkill
 public:
     Tianzi() : TriggerSkill("tianzi")
     {
-        events << DrawNCards << EventPhaseEnd << CardsMoveOneTime;
+        events << DrawNCards << EventPhaseEnd << CardsMoveOneTime << EventPhaseChanging;
         view_as_skill = new TianziVS;
         frequency = NotFrequent;
+    }
+
+    virtual void cost(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data) const
+    {
+        if (event == EventPhaseChanging)
+        {
+            auto change = data.value<PhaseChangeStruct>();
+            if (player != NULL && change.to == Player::NotActive && player->getMark("@tianzi_draw") > 0)
+            {
+                room->setPlayerMark(player, "@tianzi_draw", 0);
+            }
+        }
     }
 
     virtual QStringList triggerable(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const
