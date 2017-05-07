@@ -2358,7 +2358,7 @@ public:
         }
     }
 
-    virtual TriggerList triggerable(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &) const
+    virtual TriggerList triggerable(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data) const
     {
         TriggerList skill_list;
         if (player == NULL)
@@ -2389,19 +2389,14 @@ public:
         {
             if (player->getMark("@qiyuan-draw") > 0)
             {
-                auto menmas = player->tag["QiyuanSource"].value<QList<ServerPlayer *>>();
-                foreach (auto menma, menmas)
-                {
-                    if (TriggerSkill::triggerable(menma))
-                        skill_list.insert(menma, QStringList(objectName()));
-                }
-                player->tag["QiyuanSource"].setValue(QList<ServerPlayer *>());
+                data = data.toInt() + player->getMark("@qiyuan-draw");
+                room->setPlayerMark(player, "@qiyuan-draw", 0);
             }
         }
         return skill_list;
     }
 
-    virtual bool cost(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const
+    virtual bool cost(TriggerEvent event, Room *room, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const
     {
         if (event == EventPhaseStart)
         {
@@ -2421,13 +2416,6 @@ public:
                 return true;
             }
         }
-        else if (event == DrawNCards)
-        {
-            data = data.toInt() + player->getMark("@qiyuan-draw");
-            room->setPlayerMark(player, "@qiyuan-draw", 0);
-            player->tag["QiyuanSource"].setValue(QList<ServerPlayer *>());
-            return true;
-        }
         return false;
     }
 
@@ -2435,10 +2423,7 @@ public:
     {
         if (event == EventPhaseStart)
         {
-            auto menmas = player->tag["QiyuanSource"].value<QList<ServerPlayer *>>();
             room->setPlayerMark(player, "@qiyuan-draw", player->getMark("@qiyuan-draw") + 1);
-            menmas << ask_who;
-            player->tag["QiyuanSource"].setValue(menmas);
         }
         else if (event == EventPhaseEnd)
         {
