@@ -570,120 +570,28 @@ public:
 };
 
 //xiaying by SE
-XiayingCard::XiayingCard()
-{
-    will_throw = false;
-    handling_method = Card::MethodNone;
-}
-
-void XiayingCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const
-{
-    ServerPlayer *target = room->getCurrent();
-
-    if (target != NULL)
-    {
-        CardMoveReason reason(CardMoveReason::S_REASON_GIVE, source->objectName(), target->objectName(), "xiaying", QString());
-        room->obtainCard(target, this, reason, false);
-        int new_value = target->getMark("xiaying") + subcards.length();
-        room->setPlayerMark(target, "xiaying", new_value);
-    }
-}
-
-class XiayingViewAsSkill : public ViewAsSkill
-{
-public:
-    XiayingViewAsSkill() : ViewAsSkill("xiayingVS")
-    {
-        response_pattern = "@@xiaying";
-    }
-
-    virtual bool viewFilter(const QList<const Card *> &, const Card *) const
-    {
-        return true;
-    }
-
-    virtual const Card *viewAs(const QList<const Card *> &cards) const
-    {
-        if (cards.isEmpty())
-            return NULL;
-
-        XiayingCard *card = new XiayingCard;
-        card->addSubcards(cards);
-        card->setShowSkill(objectName());
-        return card;
-    }
-};
 
 class Xiaying : public TriggerSkill
 {
 public:
     Xiaying() : TriggerSkill("xiaying")
     {
-        view_as_skill = new XiayingViewAsSkill;
-        events << GeneralShown << GeneralHidden << GeneralRemoved << Death << EventPhaseStart;
-        frequency = Compulsory;
+        events << EventPhaseStart;
     }
 
-    virtual bool canPreshow() const
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer* &) const
     {
-        return false;
-    }
+        if (!TriggerSkill::triggerable(player) || player->getPhase() != Player::Start)
+            return QStringList();
 
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const
-    {
-        if (player == NULL) return QStringList();
-        if (triggerEvent == Death)
+        foreach (ServerPlayer *p, room->getOtherPlayers(player))
         {
-            DeathStruct death = data.value<DeathStruct>();
-            if (death.who->hasSkill(objectName()))
-            {
-                foreach (ServerPlayer *p, room->getAllPlayers())
-                    if (p->getMark("xiaying") > 0)
-                    {
-                        room->detachSkillFromPlayer(p, "xiayingVS", true, true);
-                    }
-                return QStringList();
-            }
-            else
-            {
-                if (death.who->getMark("xiaying") > 0)
-                {
-                    room->setPlayerMark(death.who, "xiaying", 0);
-                    room->detachSkillFromPlayer(death.who, "xiayingVS", true, true);
-                }
-            }
-        }
-        else if (triggerEvent == EventPhaseStart)
-        {
-            if (player->getPhase() == Player::Start && player->hasSkill(objectName()))
+            if (player->isFriendWith(p) || player->willBeFriendWith(p))
             {
                 return QStringList(objectName());
             }
-            return QStringList();
         }
-        foreach (ServerPlayer *p, room->getAllPlayers())
-        {
-            if (p->getMark("xiaying") > 0)
-            {
-                room->setPlayerMark(p, "xiaying", 0);
-                room->detachSkillFromPlayer(p, "xiayingVS", true, true);
-            }
-        }
-        QList<ServerPlayer *> misuzus = room->findPlayersBySkillName(objectName());
-        foreach (ServerPlayer *misuzu, misuzus)
-        {
-            if (misuzu->hasShownSkill(this))
-            {
-                foreach (ServerPlayer *p, room->getOtherPlayers(misuzu))
-                {
-                    if (misuzu->isFriendWith(p))
-                    {
-                        room->setPlayerMark(p, "xiaying", 1);
-                        room->attachSkillToPlayer(p, "xiayingVS");
-                    }
-                }
-            }
-        }
+
         return QStringList();
     }
 
@@ -701,18 +609,31 @@ public:
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *misuzu, QVariant &, ServerPlayer *) const
     {
+        int shouldGiveNum = 0;
+        int giveNum = 0;
         foreach (ServerPlayer * p, room->getOtherPlayers(misuzu))
         {
             if (p->isFriendWith(misuzu))
             {
-                room->askForUseCard(p, "@@xiaying", "@xiaying-card");
+                shouldGiveNum++;
+                auto exchange = room->askForExchange(p, objectName(), 999, 0, "@xiaying_give", "", ".|.|.|hand");
+                if (!exchange.isEmpty())
+                {
+                    DummyCard dummy(exchange);
+                    room->obtainCard(misuzu, &dummy, false);
+                    giveNum += exchange.length();
+                }
             }
         }
-        if (misuzu->getMark("xiaying") <= 2)
+        if (giveNum <= shouldGiveNum) // must be more than
         {
+            LogMessage log;
+            log.type = "#XiayingLoseHp";
+            log.from = misuzu;
+            log.arg = giveNum;
+            log.arg2 = shouldGiveNum;
             room->loseHp(misuzu, 1);
         }
-        misuzu->setMark("xiaying", 0);
         return false;
     }
 };
