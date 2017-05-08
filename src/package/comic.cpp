@@ -1868,7 +1868,7 @@ public:
         CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
         auto nodokas = room->findPlayersBySkillName(objectName());
 
-        foreach(auto nodoka, nodokas)
+        foreach (auto nodoka, nodokas)
         {
             if (nodoka != NULL && nodoka->isAlive() && nodoka != current)
             {
@@ -1932,7 +1932,7 @@ public:
         else
         {
             QList<int> suanlv = nodoka->getPile("suan");
-            if (suanlv.length() > 0)
+            if (suanlv.length() > 0 && (nodoka->hasShownSkill(this) || nodoka->askForSkillInvoke(this)))
             {
                 nodoka->tag["suanlvSuanList"] = IntList2VariantList(suanlv);
 
