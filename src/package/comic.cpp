@@ -2774,7 +2774,7 @@ public:
 
     virtual QStringList triggerable(TriggerEvent event, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const
     {
-        if (!TriggerSkill::triggerable(player) || event != TargetConfirmed)
+        if (!TriggerSkill::triggerable(player) || event != DamageCaused)
             return QStringList();
         DamageStruct damage = data.value<DamageStruct>();
         if (!damage.to || !damage.to->hasShownOneGeneral()) return QStringList();

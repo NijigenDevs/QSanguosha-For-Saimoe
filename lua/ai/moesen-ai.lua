@@ -825,25 +825,44 @@ sgs.ai_skill_cardchosen.huaming = function(self, who, flags)
 end
 
 --fengyin
-sgs.ai_skill_cardask["@fengyin_put"] = function(self, data)
-	if not self:willShowForDefence() then return "." end
-	local player = data:toPlayer()
-	if self.player:getHandcardNum() >= 1 and self:isEnemy(player) and not self:isWeak() then
-		local handCards = self.player:getHandcards()
-		for _, card in sgs.qlist(handCards) do
-			if self:getKeepValue(card) < 3 and self:getUseValue(card) < 3 then
-				return "$" .. card:getId()
-			end
-		end
+--sgs.ai_skill_cardask["@fengyin_put"] = function(self, data)
+--	if not self:willShowForDefence() then return "." end
+--	local player = data:toPlayer()
+--	if self.player:getHandcardNum() >= 1 and self:isEnemy(player) and not self:isWeak() then
+--		local handCards = self.player:getHandcards()
+--		for _, card in sgs.qlist(handCards) do
+--			if self:getKeepValue(card) < 3 and self:getUseValue(card) < 3 then
+--				return "$" .. card:getId()
+--			end
+--		end
+--	end
+--	return "."
+--end
+
+--jiechu
+--sgs.ai_skill_invoke.jiechu = function(self, data)
+--	if not self:needKongcheng(self.player, true) then
+--		return true
+--	end
+--end
+
+--fengyin
+sgs.ai_skill_invoke.fengyin = function(self, data)
+	if not self:willShowForAttack() then return false end
+	local damage = data:toDamage()
+	local target = damage.to
+	if self:isEnemy(target) and target:getHp() ~= 1 then
+		return true
 	end
-	return "."
+	return false
 end
 
 --jiechu
 sgs.ai_skill_invoke.jiechu = function(self, data)
-	if not self:needKongcheng(self.player, true) then
-		return true
+	if not self:willShowForAttack() and not self:willShowForDefence() then
+		return false
 	end
+	return true
 end
 
 --jiandao
