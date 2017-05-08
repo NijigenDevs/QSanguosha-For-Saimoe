@@ -2832,7 +2832,7 @@ void Room::transformDeputyGeneral(ServerPlayer *player)
     handleUsedGeneral("-" + player->getActualGeneral2Name());
     handleUsedGeneral(general_name);
 
-    player->removeGeneral(false);
+    player->removeGeneral(false, false);
     QVariant void_data;
     QList<const TriggerSkill *> game_start;
 
@@ -2875,7 +2875,7 @@ void Room::transformDeputyGeneral(ServerPlayer *player)
 
     if (Sanguosha->getGeneral(names[0])->isCompanionWith(general_name))
         setPlayerMark(player, "CompanionEffect", 1);
-    player->showGeneral(false, true, true);
+    player->showGeneral(false, false, true);
 }
 
 void Room::handleUsedGeneral(const QString &general)

@@ -134,7 +134,7 @@ public:
         frequency = NotFrequent;
     }
 
-    virtual void cost(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data) const
+    virtual void record(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data) const
     {
         if (event == EventPhaseChanging)
         {
@@ -2853,7 +2853,9 @@ public:
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
-        player->showGeneral(false, true, true, false);
+        if (!player->hasShownGeneral2())
+            player->showGeneral(false, true, true, false);
+
         room->transformDeputyGeneral(player);
         room->drawCards(player, player->getMark("jiechu_num"), objectName());
         return false;

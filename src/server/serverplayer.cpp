@@ -1741,7 +1741,7 @@ void ServerPlayer::hideGeneral(bool head_general)
     notifyPreshow();
 }
 
-void ServerPlayer::removeGeneral(bool head_general)
+void ServerPlayer::removeGeneral(bool head_general, bool triggerEvent)
 {
     QString general_name, from_general;
 
@@ -1816,7 +1816,8 @@ void ServerPlayer::removeGeneral(bool head_general)
 
     Q_ASSERT(room->getThread() != NULL);
     QVariant _from = from_general;
-    room->getThread()->trigger(GeneralRemoved, room, this, _from);
+    if (triggerEvent)
+        room->getThread()->trigger(GeneralRemoved, room, this, _from);
 
     room->filterCards(this, getCards("he"), true);
 }
