@@ -2755,7 +2755,7 @@ public:
         events << TargetConfirmed << DamageCaused;
     }
 
-    virtual void record(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data) const
+    virtual void record(TriggerEvent event, Room *, ServerPlayer *player, QVariant &data) const
     {
         if (!TriggerSkill::triggerable(player) || event != TargetConfirmed)
             return;
@@ -2798,7 +2798,7 @@ public:
         return false;
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    virtual bool effect(TriggerEvent, Room *, ServerPlayer *, QVariant &data, ServerPlayer *) const
     {
         DamageStruct damage = data.value<DamageStruct>();
         damage.to->removeGeneral(false);
@@ -2814,7 +2814,7 @@ public:
         events << EventPhaseStart << GeneralShown << GeneralHidden << GeneralRemoved << EventPhaseChanging;
     }
 
-    virtual void record(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data) const
+    virtual void record(TriggerEvent event, Room *room, ServerPlayer *, QVariant &data) const
     {
         if (event == GeneralShown || event == GeneralHidden || event == GeneralRemoved)
         {
@@ -2832,7 +2832,7 @@ public:
         }
     }
 
-    virtual QStringList triggerable(TriggerEvent event, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const
+    virtual QStringList triggerable(TriggerEvent event, Room *, ServerPlayer *player, QVariant &, ServerPlayer* &) const
     {
         if (event == EventPhaseStart && TriggerSkill::triggerable(player) && player->getMark("jiechu_num") > 0 && player->getPhase() == Player::Finish)
         {
@@ -2851,7 +2851,7 @@ public:
         return false;
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
         player->showGeneral(false, true, true, false);
         room->transformDeputyGeneral(player);
