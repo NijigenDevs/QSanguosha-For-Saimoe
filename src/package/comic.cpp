@@ -2309,11 +2309,9 @@ public:
     {
         int result = -1, index = -1;
         QList<int> &drawPile = room->getDrawPile();
-        LogMessage log;
-        log.type = "$ViewDrawPile";
-        log.from = player;
-        log.card_str = IntList2StringList(ids).join("+");
-        room->sendLog(log);
+
+        // Remove log because of it's hide for others
+
         room->broadcastSkillInvoke("laoyue");
         room->notifySkillInvoked(player, "laoyue");
 

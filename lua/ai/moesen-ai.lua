@@ -135,11 +135,23 @@ sgs.ai_skill_invoke.shiting = function(self, data)
 	return false
 end
 
+--shizhi
 sgs.ai_skill_invoke.shizhi = function(self, data)
-	if not self:needKongcheng(self.player, true) then
-		return true
+	if not self:willShowForAttack() and not self:willShowForDefence() then
+		return false
 	end
+	local use = data:toCardUse()
+	local invoke = false
+	for _,to in sgs.qlist(use.to) do
+		if to:getHandcardNum() > 0 and self:isEnemy(to) then
+			invoke = true
+			break
+		end
+	end
+	return invoke
 end
+
+sgs.ai_skill_playerchosen.shizhi = sgs.ai_skill_playerchosen.zero_card_as_slash
 
 --quanmian
 local quanmian_skill = {}
