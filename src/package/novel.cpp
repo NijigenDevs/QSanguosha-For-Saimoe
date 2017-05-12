@@ -2678,7 +2678,7 @@ public:
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *louise, QVariant &data, ServerPlayer *) const
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *louise, QVariant &, ServerPlayer *) const
     {
         if (room->askForUseCard(louise, "@@xuwu", "@xuwu-recast") != NULL)
         {

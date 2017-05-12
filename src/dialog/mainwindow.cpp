@@ -48,7 +48,8 @@
 
 #if !defined(QT_NO_OPENGL) && defined(USING_OPENGL)
 #if QT_VERSION >= QT_VERSION_CHECK(5, 4, 0)
-#include <QtOpenGL/QOpenGLWidget>
+#include <QOpenGLWidget>
+#include <QGLFormat>
 #else
 #include <QtOpenGL/QGLWidget>
 #endif
@@ -60,14 +61,15 @@ public:
     FitView(QGraphicsScene *scene) : QGraphicsView(scene)
     {
         setSceneRect(Config.Rect);
+        setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
         setRenderHints(QPainter::TextAntialiasing | QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
 
 #if !defined(QT_NO_OPENGL) && defined(USING_OPENGL)
         if (QGLFormat::hasOpenGL()) {
-            QGLWidget *widget = new QGLWidget(QGLFormat(QGL::SampleBuffers));
+            QOpenGLWidget *widget = new QOpenGLWidget;
             widget->makeCurrent();
             setViewport(widget);
-            setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
+            setViewportUpdateMode(QGraphicsView::MinimalViewportUpdate);
         }
 #endif
     }
@@ -134,7 +136,7 @@ MainWindow::MainWindow(QWidget *parent)
 #if defined(Q_OS_WIN) || (defined(Q_OS_LINUX) && !defined(Q_OS_ANDROID))
     setWindowFlags(Qt::FramelessWindowHint | Qt::WindowSystemMenuHint | Qt::WindowMinMaxButtonsHint);
 #endif
-    setAttribute(Qt::WA_TranslucentBackground);
+//    setAttribute(Qt::WA_TranslucentBackground);
 
     setMouseTracking(true);
     setMinimumWidth(800);
@@ -1216,31 +1218,31 @@ void MainWindow::on_actionRecord_analysis_triggered()
     rec_dialog->exec();
 }
 
-void MainWindow::on_actionAbout_fmod_triggered()
-{
-    if (scene == NULL)
-        return;
-
-    QString content = tr("FMOD is a proprietary audio library made by Firelight Technologies");
-    content.append("<p align='center'> <img src='image/logo/fmod.png' /> </p> <br/>");
-
-    QString address = "http://www.fmod.org";
-    content.append(tr("Official site: <a href='%1' style = \"color:#0072c1; \">%1</a> <br/>").arg(address));
-
-#ifdef AUDIO_SUPPORT
-    content.append(tr("Current versionn %1 <br/>").arg(Audio::getVersion()));
-#endif
-
-    Window *window = new Window(tr("About fmod"), QSize(500, 260));
-    scene->addItem(window);
-
-    window->addContent(content);
-    window->addCloseButton(tr("OK"));
-    window->setZValue(32766);
-    window->shift(scene->sceneRect().center());
-
-    window->appear();
-}
+//void MainWindow::on_actionAbout_fmod_triggered()
+//{
+//    if (scene == NULL)
+//        return;
+//
+//    QString content = tr("FMOD is a proprietary audio library made by Firelight Technologies");
+//    content.append("<p align='center'> <img src='image/logo/fmod.png' /> </p> <br/>");
+//
+//    QString address = "http://www.fmod.org";
+//    content.append(tr("Official site: <a href='%1' style = \"color:#0072c1; \">%1</a> <br/>").arg(address));
+//
+//#ifdef AUDIO_SUPPORT
+//    content.append(tr("Current versionn %1 <br/>").arg(Audio::getVersion()));
+//#endif
+//
+//    Window *window = new Window(tr("About fmod"), QSize(500, 260));
+//    scene->addItem(window);
+//
+//    window->addContent(content);
+//    window->addCloseButton(tr("OK"));
+//    window->setZValue(32766);
+//    window->shift(scene->sceneRect().center());
+//
+//    window->appear();
+//}
 
 void MainWindow::on_actionAbout_Lua_triggered()
 {
