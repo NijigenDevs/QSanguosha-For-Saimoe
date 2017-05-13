@@ -447,125 +447,125 @@ public:
     }
 };
 
-//Jingdi by SE
-JingdiCard::JingdiCard()
-{
-    will_throw = false;
-    handling_method = Card::MethodNone;
-}
-
-bool JingdiCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *) const
-{
-    return targets.isEmpty() && to_select->getMark("aria_damaged") == 1;
-}
-
-void JingdiCard::onEffect(const CardEffectStruct &effect) const
-{
-    CardMoveReason reason(CardMoveReason::S_REASON_GIVE, effect.from->objectName(), effect.to->objectName(), "jingdi", QString());
-    effect.from->getRoom()->obtainCard(effect.to, this, reason, false);
-    effect.from->drawCards(1);
-}
-
-class Jingdi : public OneCardViewAsSkill
-{
-public:
-    Jingdi() : OneCardViewAsSkill("jingdi")
-    {
-        filter_pattern = ".|.|.|hand!";
-    }
-
-    virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const
-    {
-        return selected.isEmpty() && !to_select->isTransferable();
-    }
-
-    virtual bool isEnabledAtPlay(const Player *player) const
-    {
-        return (!player->isKongcheng() && !player->hasUsed("JingdiCard"));
-    }
-
-    virtual const Card *viewAs(const Card *originalCard) const
-    {
-        JingdiCard *jc = new JingdiCard;
-        jc->addSubcard(originalCard->getId());
-        jc->setShowSkill(objectName());
-        return jc;
-    }
-};
-
-class JingdiDamage : public TriggerSkill
-{
-public:
-    JingdiDamage() : TriggerSkill("jingdi-damage")
-    {
-        events << Damaged;
-        global = true;
-    }
-
-    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer * &) const
-    {
-        DamageStruct damage = data.value<DamageStruct>();
-        if (damage.from != NULL && damage.from->isAlive())
-        {
-            if (damage.to->hasSkill("jingdi"))
-            {
-                room->setPlayerMark(damage.from, "aria_damaged", 1);
-                return QStringList();
-            }
-        }
-        return QStringList();
-    }
-};
-
-//wujie by SE
-class Wujie : public TriggerSkill
-{
-public:
-    Wujie() : TriggerSkill("wujie")
-    {
-        events << DamageCaused << DamageInflicted << TurnStart;
-    }
-
-    virtual QStringList triggerable(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer * &) const
-    {
-        if (event == TurnStart)
-        {
-            foreach (ServerPlayer *p, room->getAlivePlayers())
-            {
-                p->loseAllMarks("@wujie_used");
-            }
-            return QStringList();
-        }
-        if (!TriggerSkill::triggerable(player))
-            return QStringList();
-        DamageStruct damage = data.value<DamageStruct>();
-        if (damage.to->getHp() - damage.damage < 1 && damage.from->getMark("@wujie_used") == 0)
-            return QStringList(objectName());
-        return QStringList();
-    }
-
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
-    {
-        DamageStruct damage = data.value<DamageStruct>();
-        if (player->hasShownSkill(this) && damage.from->askForSkillInvoke(objectName(), QVariant::fromValue(damage.to)))
-        {
-            room->broadcastSkillInvoke(objectName());
-            return true;
-        }
-        return false;
-    }
-
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *) const
-    {
-        DamageStruct damage = data.value<DamageStruct>();
-        RecoverStruct recover;
-        recover.who = damage.to;
-        room->recover(damage.to, recover, true);
-        damage.from->gainMark("@wujie_used");
-        damage.from->insertPhase(Player::Play);
-        return false;
-    }
-};
+////Jingdi by SE
+//JingdiCard::JingdiCard()
+//{
+//    will_throw = false;
+//    handling_method = Card::MethodNone;
+//}
+//
+//bool JingdiCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *) const
+//{
+//    return targets.isEmpty() && to_select->getMark("aria_damaged") == 1;
+//}
+//
+//void JingdiCard::onEffect(const CardEffectStruct &effect) const
+//{
+//    CardMoveReason reason(CardMoveReason::S_REASON_GIVE, effect.from->objectName(), effect.to->objectName(), "jingdi", QString());
+//    effect.from->getRoom()->obtainCard(effect.to, this, reason, false);
+//    effect.from->drawCards(1);
+//}
+//
+//class Jingdi : public OneCardViewAsSkill
+//{
+//public:
+//    Jingdi() : OneCardViewAsSkill("jingdi")
+//    {
+//        filter_pattern = ".|.|.|hand!";
+//    }
+//
+//    virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const
+//    {
+//        return selected.isEmpty() && !to_select->isTransferable();
+//    }
+//
+//    virtual bool isEnabledAtPlay(const Player *player) const
+//    {
+//        return (!player->isKongcheng() && !player->hasUsed("JingdiCard"));
+//    }
+//
+//    virtual const Card *viewAs(const Card *originalCard) const
+//    {
+//        JingdiCard *jc = new JingdiCard;
+//        jc->addSubcard(originalCard->getId());
+//        jc->setShowSkill(objectName());
+//        return jc;
+//    }
+//};
+//
+//class JingdiDamage : public TriggerSkill
+//{
+//public:
+//    JingdiDamage() : TriggerSkill("jingdi-damage")
+//    {
+//        events << Damaged;
+//        global = true;
+//    }
+//
+//    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer * &) const
+//    {
+//        DamageStruct damage = data.value<DamageStruct>();
+//        if (damage.from != NULL && damage.from->isAlive())
+//        {
+//            if (damage.to->hasSkill("jingdi"))
+//            {
+//                room->setPlayerMark(damage.from, "aria_damaged", 1);
+//                return QStringList();
+//            }
+//        }
+//        return QStringList();
+//    }
+//};
+//
+////wujie by SE
+//class Wujie : public TriggerSkill
+//{
+//public:
+//    Wujie() : TriggerSkill("wujie")
+//    {
+//        events << DamageCaused << DamageInflicted << TurnStart;
+//    }
+//
+//    virtual QStringList triggerable(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer * &) const
+//    {
+//        if (event == TurnStart)
+//        {
+//            foreach (ServerPlayer *p, room->getAlivePlayers())
+//            {
+//                p->loseAllMarks("@wujie_used");
+//            }
+//            return QStringList();
+//        }
+//        if (!TriggerSkill::triggerable(player))
+//            return QStringList();
+//        DamageStruct damage = data.value<DamageStruct>();
+//        if (damage.to->getHp() - damage.damage < 1 && damage.from->getMark("@wujie_used") == 0)
+//            return QStringList(objectName());
+//        return QStringList();
+//    }
+//
+//    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+//    {
+//        DamageStruct damage = data.value<DamageStruct>();
+//        if (player->hasShownSkill(this) && damage.from->askForSkillInvoke(objectName(), QVariant::fromValue(damage.to)))
+//        {
+//            room->broadcastSkillInvoke(objectName());
+//            return true;
+//        }
+//        return false;
+//    }
+//
+//    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *) const
+//    {
+//        DamageStruct damage = data.value<DamageStruct>();
+//        RecoverStruct recover;
+//        recover.who = damage.to;
+//        room->recover(damage.to, recover, true);
+//        damage.from->gainMark("@wujie_used");
+//        damage.from->insertPhase(Player::Play);
+//        return false;
+//    }
+//};
 
 ////huxiao
 //class Huxiao : public TriggerSkill
@@ -2777,6 +2777,110 @@ public:
     }
 };
 
+JingdiCard::JingdiCard()
+{
+}
+
+bool JingdiCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
+{
+    return targets.isEmpty() && Self->canDiscard(to_select, "he") && to_select != Self && !(Self->isFriendWith(to_select) || Self->willBeFriendWith(to_select));
+}
+
+void JingdiCard::extraCost(Room *room, const CardUseStruct &card_use) const
+{
+    if (!card_use.from->isChained() && card_use.from->canBeChainedBy(card_use.from))
+    {
+        room->setPlayerProperty(card_use.from, "chained", true);
+    }
+}
+
+void JingdiCard::onEffect(const CardEffectStruct &effect) const
+{
+    if (effect.from->isDead() || !effect.from->canDiscard(effect.to, "he"))
+        return;
+
+    Room *room = effect.to->getRoom();
+
+    int card_id = room->askForCardChosen(effect.from, effect.to, "he", "jingdi", false, Card::MethodDiscard);
+    room->throwCard(card_id, effect.to, effect.from);
+}
+
+class Jingdi : public ZeroCardViewAsSkill
+{
+public:
+    Jingdi() : ZeroCardViewAsSkill("jingdi")
+    {
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const
+    {
+        return !player->isChained() && player->canBeChainedBy(player);
+    }
+
+    virtual const Card *viewAs() const
+    {
+        auto jd = new JingdiCard;
+        jd->setSkillName(objectName());
+        jd->setShowSkill(objectName());
+        return jd;
+    }
+};
+
+class Wujie : public TriggerSkill
+{
+public:
+    Wujie() : TriggerSkill("wujie")
+    {
+        events << CardUsed;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const
+    {
+        if (!TriggerSkill::triggerable(player))
+            return QStringList();
+
+        auto use = data.value<CardUseStruct>();
+        if (use.card != NULL && use.card->getNumber() > 0 && (use.card->getNumber() % 2 == 0))
+        {
+            foreach (auto p, room->getAlivePlayers())
+            {
+                if (p->isChained() || p->canBeChainedBy(player))
+                {
+                    return QStringList(objectName());
+                }
+            }
+        }
+        return QStringList();
+    }
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        if (player->askForSkillInvoke(objectName()))
+        {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        QList<ServerPlayer *> candidates;
+        foreach (auto p, room->getAlivePlayers())
+        {
+            if (p->isChained() || p->canBeChainedBy(player))
+                candidates << p;
+        }
+
+        auto target = room->askForPlayerChosen(player, candidates, objectName(), "@wujie-targetchoose");
+
+        if (target != NULL)
+        {
+            room->setPlayerProperty(target, "chained", target->isChained() ? false : true);
+        }
+
+        return false;
+    }
+};
+
 void MoesenPackage::addNovelGenerals()
 {
 
@@ -2798,7 +2902,6 @@ void MoesenPackage::addNovelGenerals()
     General *aria = new General(this, "aria", "qun", 3, false); // N004
     aria->addSkill(new Jingdi);
     aria->addSkill(new Wujie);
-    skills << new JingdiDamage;
 
     General *holo = new General(this, "holo", "qun", 4, false); // N005
     holo->addSkill(new Jisui);
