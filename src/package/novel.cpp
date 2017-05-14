@@ -1588,7 +1588,7 @@ public:
             LogMessage log;
             log.type = "#DuranCounter";
             log.from = player;
-            log.arg = kingdoms.length();
+            log.arg = QString::number(kingdoms.length());
             log.arg2 = objectName();
             room->sendLog(log);
             player->drawCards(kingdoms.length(), objectName());
