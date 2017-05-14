@@ -2673,7 +2673,7 @@ public:
 
     virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *louise, QVariant &, ServerPlayer* &) const
     {
-        if (MasochismSkill::triggerable(louise) && !louise->isAllNude())
+        if (MasochismSkill::triggerable(louise) && !louise->isNude())
             return QStringList(objectName());
         return QStringList();
     }

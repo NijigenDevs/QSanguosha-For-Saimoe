@@ -58,15 +58,15 @@ public:
     virtual const Card *validate(CardUseStruct &cardUse) const;
 };
 
-class BajianCard : public SkillCard
-{
-    Q_OBJECT
-
-public:
-    Q_INVOKABLE BajianCard();
-    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
-    virtual void use(Room *room, ServerPlayer *xunyu, QList<ServerPlayer *> &targets) const;
-};
+//class BajianCard : public SkillCard
+//{
+//    Q_OBJECT
+//
+//public:
+//    Q_INVOKABLE BajianCard();
+//    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+//    virtual void use(Room *room, ServerPlayer *xunyu, QList<ServerPlayer *> &targets) const;
+//};
 
 class GejiCard : public SkillCard
 {

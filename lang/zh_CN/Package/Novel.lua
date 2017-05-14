@@ -38,7 +38,7 @@ return {
 	["#louise"] = "零之露易丝", 
 	["#&louise"] = "零之使魔", 
 	["~louise"] = "", 
-	["designer:louise"] = "SE",
+	["designer:louise"] = "hm",
 	["cv:louise"] = "釘宮理恵",
 	["illustrator:louise"] = "55470621",
 
@@ -60,7 +60,7 @@ return {
 	["#aria"] = "双枪双剑", 
 	["#&aria"] = "绯弹的亚里亚", 
 	["~aria"] = "", 
-	["designer:aria"] = "Sword Elucidator",
+	["designer:aria"] = "hm",
 	["cv:aria"] = "釘宮理恵",
 	["illustrator:aria"] = "19981312",
 
