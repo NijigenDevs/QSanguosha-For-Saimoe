@@ -3169,7 +3169,7 @@ public:
                 bool thereis = false;
                 foreach (const Card *card, judges)
                 {
-                    if (card->isKindOf("key"))
+                    if (card->isKindOf("Key"))
                     {
                         thereis = true;
                         break;
