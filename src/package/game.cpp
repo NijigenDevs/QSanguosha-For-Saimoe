@@ -3098,8 +3098,7 @@ ShenaiCard::ShenaiCard()
 
 bool ShenaiCard::targetFilter(const QList<const Player *> &, const Player *to_select, const Player *Self) const
 {
-    int distance = to_select->distanceTo(Self);
-    if (subcardsLength() == ((distance + 1) / 2))
+    if (subcardsLength() == to_select->distanceTo(Self) / 2)
         return to_select != Self;
     return false;
 }
