@@ -861,7 +861,7 @@ public:
 
     virtual void onDamaged(ServerPlayer *taiga, const DamageStruct &) const
     {
-        taiga->setMaxHp(taiga->getMaxHp() + 1);
+        taiga->getRoom()->setPlayerProperty(taiga, "maxhp", taiga->getMaxHp() + 1);
     }
 };
 
@@ -921,15 +921,14 @@ public:
 
             if (choice == "maxhptohp")
             {
-                taiga->setMaxHp(now);
+                room->setPlayerProperty(taiga, "maxhp", now);
                 room->drawCards(taiga, x, objectName());
             }
             else if (choice == "hptomaxhp")
             {
                 if (room->askForDiscard(taiga, objectName(), x, x, false, false, "@yexi-discard"))
                 {
-                    // use setHp because it's 'set hp' in description
-                    taiga->setHp(max);
+                    room->setPlayerProperty(taiga, "hp", max);
                 }
             }
         }
