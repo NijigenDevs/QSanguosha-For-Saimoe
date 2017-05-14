@@ -1609,13 +1609,16 @@ public:
 
     virtual int getCorrect(const Player *from, const Player *to) const
     {
-        if (from->getMaxHp() > to->getMaxHp())
+        if (to->hasShownSkill("duran"))
         {
-            if (from->hasShownSkill("duran"))
-                return 1;
-            if (to->hasShownSkill("duran"))
-                return 1;
+            int num = 0;
+            if (from->getHp() >= to->getHp())
+                num++;
+            if (from->getMaxHp() > to->getMaxHp())
+                num++;
+            return num;
         }
+        
         return 0;
     }
 };
