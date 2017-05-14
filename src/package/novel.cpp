@@ -2832,6 +2832,7 @@ public:
     Wujie() : TriggerSkill("wujie")
     {
         events << CardUsed;
+        frequency = Frequent;
     }
 
     virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const
@@ -2875,6 +2876,13 @@ public:
         if (target != NULL)
         {
             room->setPlayerProperty(target, "chained", target->isChained() ? false : true);
+
+            LogMessage log;
+            log.type = target->isChained() ? "#WujieChain" : "#WujieUnchain";
+            log.from = player;
+            log.to << target;
+            log.arg = objectName();
+            room->sendLog(log);
         }
 
         return false;

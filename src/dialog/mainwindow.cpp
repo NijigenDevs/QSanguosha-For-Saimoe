@@ -61,7 +61,11 @@ public:
     FitView(QGraphicsScene *scene) : QGraphicsView(scene)
     {
         setSceneRect(Config.Rect);
+#if QT_VERSION >= QT_VERSION_CHECK(5, 7, 0)
         setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
+#else
+        setViewportUpdateMode(QGraphicsView::MinimalViewportUpdate);
+#endif
         setRenderHints(QPainter::TextAntialiasing | QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
 
 #if !defined(QT_NO_OPENGL) && defined(USING_OPENGL)
