@@ -255,7 +255,7 @@ void ConfigDialog::setBGMEnabled(const QVariant &enabled)
 
 void ConfigDialog::setBGMVolume(const QVariant &volume)
 {
-    float vol = volume.toInt() / 100.0;
+    float vol = volume.toInt();
 #ifdef AUDIO_SUPPORT
     Audio::setBGMVolume(vol);
 #endif // AUDIO_SUPPORT

@@ -82,7 +82,7 @@ void Audio::playBGM(const QString &filename)
     BGMList->setPlaybackMode(QMediaPlaylist::Loop);
 
     BGMPlayer->setPlaylist(BGMList);
-    BGMPlayer->setVolume(Config.BGMVolume);
+    BGMPlayer->setVolume(Config.BGMVolume * 100);
     BGMPlayer->play();
 }
 
