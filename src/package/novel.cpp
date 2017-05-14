@@ -1934,13 +1934,17 @@ void XianliCard::onEffect(const CardEffectStruct &effect) const
     Room *room = effect.to->getRoom();
     QStringList choices;
     choices << "drawonecard";
-    choices << "showonegeneral";
-    KnownBoth *kb = new KnownBoth(Card::NoSuit, 0);
-    kb->setSkillName("xianli");
+    
+    QString flag = "";
+    if (!effect.to->hasShownGeneral1())
+        flag.append("h");
+    if (!effect.to->hasShownGeneral2())
+        flag.append("d");
+
+    if (effect.to->canDiscard(effect.to, "he") && effect.to->canShowGeneral(flag))
+        choices << "showonegeneral";
+
     QList<const Player *> empty;
-    if (kb->isAvailable(effect.from) && kb->targetFilter(empty, effect.to, effect.from) && !effect.from->isProhibited(effect.to, kb, empty))
-        choices << "knownboth";
-    delete kb;
     auto choice = room->askForChoice(effect.to, objectName(), choices.join("+"));
 
     if (choice == "drawonecard")
@@ -1950,12 +1954,7 @@ void XianliCard::onEffect(const CardEffectStruct &effect) const
     else if (choice == "showonegeneral")
     {
         effect.to->askForGeneralShow(true, false);
-    }
-    else if (choice == "knownboth")
-    {
-        KnownBoth *knownBoth = new KnownBoth(Card::NoSuit, 0);
-        knownBoth->setSkillName("xianli");
-        room->useCard(CardUseStruct(knownBoth, effect.from, effect.to), false);
+        room->askForDiscard(effect.to, "xianli", 1, 1, false, true, "@xianli-askdiscard");
     }
 };
 
@@ -1986,7 +1985,6 @@ class Yuanxin : public TriggerSkill
 public:
     Yuanxin() : TriggerSkill("yuanxin")
     {
-        relate_to_place = "deputy";
         events << EventPhaseStart << HpRecover;
     }
 
@@ -2011,7 +2009,7 @@ public:
                 QList<ServerPlayer *> yuis = room->findPlayersBySkillName(objectName());
                 foreach (ServerPlayer *yui, yuis)
                 {
-                    if (yui->hasFlag("yuanxin_turnrecover") && yui != player)
+                    if (yui->hasFlag("yuanxin_turnrecover"))
                         skill_list.insert(yui, QStringList(objectName()));
                 }
             }
@@ -2946,7 +2944,7 @@ void MoesenPackage::addNovelGenerals()
 
     General *y_yui = new General(this, "y_yui", "qun", 4, false); // N011
     y_yui->addSkill(new Xianli);
-    y_yui->setHeadMaxHpAdjustedValue(1);
+    y_yui->setHeadMaxHpAdjustedValue(-1);
     y_yui->addSkill(new Yuanxin);
 
     General *mikoto = new General(this, "mikoto", "qun", 3, false); // N012
