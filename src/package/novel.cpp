@@ -1177,153 +1177,153 @@ public:
     }
 };
 
-//xianqun
-XianqunCard::XianqunCard()
-{
-}
-
-bool XianqunCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
-{
-    return targets.isEmpty() && Self->objectName() != to_select->objectName() && to_select->getEquips().length() > 0;
-}
-
-void XianqunCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const
-{
-    ServerPlayer *target = targets.at(0);
-    int id = room->askForCardChosen(source, target, "e", objectName());
-    if (id == -1)
-    {
-        return;
-    }
-    QList<int> ids;
-    ids.append(id);
-    target->addToPile("ruiko_qun", ids);
-}
-
-class XianqunVS : public ZeroCardViewAsSkill
-{
-public:
-    XianqunVS() : ZeroCardViewAsSkill("xianqun")
-    {
-    }
-
-    virtual bool isEnabledAtPlay(const Player *player) const
-    {
-        return !player->hasUsed("XianqunCard");
-    }
-
-    virtual const Card *viewAs() const
-    {
-        XianqunCard *xq = new XianqunCard;
-        xq->setShowSkill("xianqun");
-        return xq;
-    }
-};
-
-class Xianqun : public TriggerSkill
-{
-public:
-    Xianqun() : TriggerSkill("xianqun")
-    {
-        events << EventPhaseStart << Death << EventLoseSkill;
-        view_as_skill = new XianqunVS;
-    }
-
-    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &) const
-    {
-        QMap<ServerPlayer *, QStringList> skill_list;
-        if (event == EventPhaseStart)
-        {
-            if (player != NULL && player->getPhase() == Player::Finish && player->getPile("ruiko_qun").length() > 0)
-            {
-                QList<ServerPlayer *> ruikos = room->findPlayersBySkillName(objectName());
-                foreach (ServerPlayer *ruiko, ruikos)
-                {
-                    if (ruiko != NULL && player != ruiko)
-                    {
-                        if (player->getPile("ruiko_qun").length() == 0)
-                        {
-                            continue;
-                        }
-                        foreach (int id, player->getPile("ruiko_qun"))
-                        {
-                            if (Sanguosha->getCard(id)->isKindOf("Weapon"))
-                            {
-                                if (player->getWeapon())
-                                {
-                                    room->throwCard(player->getWeapon(), player, ruiko, objectName());
-                                }
-                            }
-                            if (Sanguosha->getCard(id)->isKindOf("Armor"))
-                            {
-                                if (player->getArmor())
-                                {
-                                    room->throwCard(player->getArmor(), player, ruiko, objectName());
-                                }
-                            }
-                            if (Sanguosha->getCard(id)->isKindOf("DefensiveHorse"))
-                            {
-                                if (player->getDefensiveHorse())
-                                {
-                                    room->throwCard(player->getDefensiveHorse(), player, ruiko, objectName());
-                                }
-                            }
-                            if (Sanguosha->getCard(id)->isKindOf("OffensiveHorse"))
-                            {
-                                if (player->getOffensiveHorse())
-                                {
-                                    room->throwCard(player->getOffensiveHorse(), player, ruiko, objectName());
-                                }
-                            }
-                            if (Sanguosha->getCard(id)->isKindOf("Treasure"))
-                            {
-                                if (player->getTreasure())
-                                {
-                                    room->throwCard(player->getTreasure(), player, ruiko, objectName());
-                                }
-                            }
-                        }
-                        CardsMoveStruct move;
-                        move.from = player;
-                        move.to = player;
-                        move.to_place = Player::PlaceEquip;
-                        move.from_pile_name = "ruiko_qun";
-                        move.card_ids = player->getPile("ruiko_qun");
-                        move.reason = CardMoveReason(CardMoveReason::S_REASON_PUT, ruiko->objectName(), objectName() + "Back", QString());
-                        room->moveCards(move, true);
-                        foreach (int id, move.card_ids)
-                        {
-                            LogMessage log;
-                            log.type = "$Xianqun_back";
-                            log.from = ruiko;
-                            log.arg = objectName();
-                            log.arg2 = player->objectName();
-                            log.card_str = Sanguosha->getCard(id)->toString();
-                            room->sendLog(log);
-                        }
-                    }
-
-                }
-            }
-        }
-        else
-        {
-            QList<ServerPlayer *> ruikos = room->findPlayersBySkillName(objectName());
-            if (ruikos.length() == 0)
-            {
-                foreach (ServerPlayer *p, room->getAlivePlayers())
-                {
-                    if (p->getPile("ruiko_qun").length() > 0)
-                    {
-                        p->clearOnePrivatePile("ruiko_qun");
-                    }
-                }
-            }
-        }
-
-        return skill_list;
-    }
-};
+////xianqun
+//XianqunCard::XianqunCard()
+//{
+//}
+//
+//bool XianqunCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
+//{
+//    return targets.isEmpty() && Self->objectName() != to_select->objectName() && to_select->getEquips().length() > 0;
+//}
+//
+//void XianqunCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const
+//{
+//    ServerPlayer *target = targets.at(0);
+//    int id = room->askForCardChosen(source, target, "e", objectName());
+//    if (id == -1)
+//    {
+//        return;
+//    }
+//    QList<int> ids;
+//    ids.append(id);
+//    target->addToPile("ruiko_qun", ids);
+//}
+//
+//class XianqunVS : public ZeroCardViewAsSkill
+//{
+//public:
+//    XianqunVS() : ZeroCardViewAsSkill("xianqun")
+//    {
+//    }
+//
+//    virtual bool isEnabledAtPlay(const Player *player) const
+//    {
+//        return !player->hasUsed("XianqunCard");
+//    }
+//
+//    virtual const Card *viewAs() const
+//    {
+//        XianqunCard *xq = new XianqunCard;
+//        xq->setShowSkill("xianqun");
+//        return xq;
+//    }
+//};
+//
+//class Xianqun : public TriggerSkill
+//{
+//public:
+//    Xianqun() : TriggerSkill("xianqun")
+//    {
+//        events << EventPhaseStart << Death << EventLoseSkill;
+//        view_as_skill = new XianqunVS;
+//    }
+//
+//    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &) const
+//    {
+//        QMap<ServerPlayer *, QStringList> skill_list;
+//        if (event == EventPhaseStart)
+//        {
+//            if (player != NULL && player->getPhase() == Player::Finish && player->getPile("ruiko_qun").length() > 0)
+//            {
+//                QList<ServerPlayer *> ruikos = room->findPlayersBySkillName(objectName());
+//                foreach (ServerPlayer *ruiko, ruikos)
+//                {
+//                    if (ruiko != NULL && player != ruiko)
+//                    {
+//                        if (player->getPile("ruiko_qun").length() == 0)
+//                        {
+//                            continue;
+//                        }
+//                        foreach (int id, player->getPile("ruiko_qun"))
+//                        {
+//                            if (Sanguosha->getCard(id)->isKindOf("Weapon"))
+//                            {
+//                                if (player->getWeapon())
+//                                {
+//                                    room->throwCard(player->getWeapon(), player, ruiko, objectName());
+//                                }
+//                            }
+//                            if (Sanguosha->getCard(id)->isKindOf("Armor"))
+//                            {
+//                                if (player->getArmor())
+//                                {
+//                                    room->throwCard(player->getArmor(), player, ruiko, objectName());
+//                                }
+//                            }
+//                            if (Sanguosha->getCard(id)->isKindOf("DefensiveHorse"))
+//                            {
+//                                if (player->getDefensiveHorse())
+//                                {
+//                                    room->throwCard(player->getDefensiveHorse(), player, ruiko, objectName());
+//                                }
+//                            }
+//                            if (Sanguosha->getCard(id)->isKindOf("OffensiveHorse"))
+//                            {
+//                                if (player->getOffensiveHorse())
+//                                {
+//                                    room->throwCard(player->getOffensiveHorse(), player, ruiko, objectName());
+//                                }
+//                            }
+//                            if (Sanguosha->getCard(id)->isKindOf("Treasure"))
+//                            {
+//                                if (player->getTreasure())
+//                                {
+//                                    room->throwCard(player->getTreasure(), player, ruiko, objectName());
+//                                }
+//                            }
+//                        }
+//                        CardsMoveStruct move;
+//                        move.from = player;
+//                        move.to = player;
+//                        move.to_place = Player::PlaceEquip;
+//                        move.from_pile_name = "ruiko_qun";
+//                        move.card_ids = player->getPile("ruiko_qun");
+//                        move.reason = CardMoveReason(CardMoveReason::S_REASON_PUT, ruiko->objectName(), objectName() + "Back", QString());
+//                        room->moveCards(move, true);
+//                        foreach (int id, move.card_ids)
+//                        {
+//                            LogMessage log;
+//                            log.type = "$Xianqun_back";
+//                            log.from = ruiko;
+//                            log.arg = objectName();
+//                            log.arg2 = player->objectName();
+//                            log.card_str = Sanguosha->getCard(id)->toString();
+//                            room->sendLog(log);
+//                        }
+//                    }
+//
+//                }
+//            }
+//        }
+//        else
+//        {
+//            QList<ServerPlayer *> ruikos = room->findPlayersBySkillName(objectName());
+//            if (ruikos.length() == 0)
+//            {
+//                foreach (ServerPlayer *p, room->getAlivePlayers())
+//                {
+//                    if (p->getPile("ruiko_qun").length() > 0)
+//                    {
+//                        p->clearOnePrivatePile("ruiko_qun");
+//                    }
+//                }
+//            }
+//        }
+//
+//        return skill_list;
+//    }
+//};
 
 //fangzhu
 class Fangzhu6 : public MasochismSkill
@@ -1439,7 +1439,8 @@ public:
             {
                 if (rikka->hasShownSkill(this) && rikka->inFormationRalation(p))
                 {
-                    room->doBattleArrayAnimate(rikka);
+                    if (room->getCurrent() != NULL && rikka->inFormationRalation(room->getCurrent()))
+                        room->doBattleArrayAnimate(rikka);
                     room->setPlayerMark(p ,"xieyu_dis", 1);
                     foreach(ServerPlayer *target, room->getOtherPlayers(p))
                     {
@@ -2889,6 +2890,94 @@ public:
     }
 };
 
+class Hefeng : public ViewAsSkill
+{
+public:
+    Hefeng() : ViewAsSkill("hefeng")
+    {
+        response_or_use = true;
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const
+    {
+        return !player->isKongcheng();
+    }
+
+    virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const
+    {
+        return pattern.contains("peach") && !player->hasFlag("Global_PreventPeach");
+    }
+
+    virtual bool viewFilter(const QList<const Card *> &, const Card *to_select) const
+    {
+        return !to_select->isEquipped();
+    }
+
+    virtual const Card *viewAs(const QList<const Card *> &cards) const
+    {
+        auto alives = Self->getAliveSiblings();
+        int nums = Self->getHandcardNum();
+        int min = nums;
+        foreach (auto alive, alives)
+        {
+            min = qMin(alive->getHandcardNum(), min);
+        }
+
+        if (cards.length() >= 1 && cards.length() >= (nums - min)) // if my handcardsNum is the lowest, i can use one card for this.(so using (nums - min) is enough, no need Abs)
+        {
+            Peach *peach = new Peach(Card::SuitToBeDecided, 0, false);
+            peach->addSubcards(cards);
+            peach->setSkillName(objectName());
+            peach->setShowSkill(objectName());
+            return peach;
+        }
+        return NULL;
+    }
+};
+
+class Kongli : public TriggerSkill
+{
+public:
+    Kongli() : TriggerSkill("kongli")
+    {
+        events << TurnedOver << ChainStateChanged;
+    }
+
+    virtual TriggerList triggerable(TriggerEvent event, Room *room, ServerPlayer *target, QVariant &) const
+    {
+        TriggerList skill_list;
+
+        if (target == NULL || !target->isAlive())
+            return skill_list;
+
+        if ((event == TurnedOver && target->faceUp()) || (event == ChainStateChanged && !target->isChained()))
+            return skill_list;
+
+        auto ruikos = room->findPlayersBySkillName(objectName());
+        foreach (auto ruiko, ruikos)
+        {
+            skill_list.insert(ruiko, QStringList(objectName()));
+        }
+        return skill_list;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const
+    {
+        if (ask_who->askForSkillInvoke(this))
+        {
+            room->broadcastSkillInvoke(objectName(), ask_who);
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *target, QVariant &, ServerPlayer *) const
+    {
+        room->drawCards(target, 1, objectName());
+        return false;
+    }
+};
+
 void MoesenPackage::addNovelGenerals()
 {
 
@@ -2953,8 +3042,9 @@ void MoesenPackage::addNovelGenerals()
     mikoto->addSkill(new Dianji);
     mikoto->addSkill(new Cichang);
 
-    General *ruiko = new General(this, "ruiko", "qun", 4, false); // N013
-    ruiko->addSkill(new Xianqun);
+    General *ruiko = new General(this, "ruiko", "qun", 3, false); // N013
+    ruiko->addSkill(new Kongli);
+    ruiko->addSkill(new Hefeng);
 
     General *asuna = new General(this, "asuna", "qun", 3, false); // N014
     asuna->addSkill(new Shanguang);
@@ -2987,7 +3077,7 @@ void MoesenPackage::addNovelGenerals()
     addMetaObject<JingdiCard>();
     //addMetaObject<BianchiCard>();
     addMetaObject<ZhuanyuCard>();
-    addMetaObject<XianqunCard>();
+    //addMetaObject<XianqunCard>();
     addMetaObject<XieyuSummon>();
     addMetaObject<XianliCard>();
     addMetaObject<BaoyanCard>();
