@@ -3035,7 +3035,7 @@ public:
         {
             auto move = data.value<CardsMoveOneTimeStruct>();
             int id = move.card_ids.first();
-            if (room->getCardPlace(id) == Player::PlaceTable)
+            if (room->getCardPlace(id) == Player::PlaceTable && ask_who->askForSkillInvoke(this))
             {
                 room->broadcastSkillInvoke(objectName(), 2, ask_who);
                 return true;

@@ -448,75 +448,97 @@ sgs.ai_skill_invoke.powei = function(self, data)
 	return true
 end
 
---lingchang
-sgs.ai_skill_invoke.lingchang = function(self, data)--IMBA AI...
-	local p = data:toPlayer()
-	local cards = p:getHandcards()
-	local reds = 0
-	local blacks = 0
-	for _,card in sgs.qlist(cards) do
-		if card:isRed() then
-			reds = reds + 1
-		else
-			blacks = blacks + 1
-		end
-	end
-	if p:objectName() == self.player:objectName() then
-		if reds > 0 then return true end
-	end
-	if reds <= 1 then return false end
-	if reds > blacks then return true end
-	if p:getHandcardNum() < p:getHp() then return false end
-	if blacks < reds then return true end
-	return false
-end
+-- --lingchang
+-- sgs.ai_skill_invoke.lingchang = function(self, data)--IMBA AI...
+-- 	local p = data:toPlayer()
+-- 	local cards = p:getHandcards()
+-- 	local reds = 0
+-- 	local blacks = 0
+-- 	for _,card in sgs.qlist(cards) do
+-- 		if card:isRed() then
+-- 			reds = reds + 1
+-- 		else
+-- 			blacks = blacks + 1
+-- 		end
+-- 	end
+-- 	if p:objectName() == self.player:objectName() then
+-- 		if reds > 0 then return true end
+-- 	end
+-- 	if reds <= 1 then return false end
+-- 	if reds > blacks then return true end
+-- 	if p:getHandcardNum() < p:getHp() then return false end
+-- 	if blacks < reds then return true end
+-- 	return false
+-- end
 
-sgs.ai_skill_cardchosen.lingchang = function(self, who, flags)
-	if who:objectName() == self.player:objectName() then
-		local cards = who:getHandcards()
-		cards = sgs.QList2Table(cards)
-		self:sortByKeepValue(cards)
-		for _,card in ipairs(cards) do
-			if card:isRed() then return card end
-		end
-	end
-	return cards[1]
-end
---bajian
-local bajianVS_skill = {}
-bajianVS_skill.name = "bajianVS"
-table.insert(sgs.ai_skills, bajianVS_skill)
-bajianVS_skill.getTurnUseCard = function(self)
-	if self.player:hasUsed("BajianCard") then return end
-	if self:getCardsNum("Slash") > 0 then return end
-	local inori = sgs.findPlayerByShownSkillName("bajian")
-	if not inori then return end
-	if inori:getHandcardNum() < 2 or (self:isWeak(inori) and inori:getHandcardNum() < 3) then return end
-	local slash = sgs.cloneCard("slash", sgs.Card_Spade, 1)
-	if not slash:isAvailable(self.player) then return end
-	local hasGoodTarget = false
-	for _,enemy in ipairs(self.enemies) do
-		if self:slashIsEffective(slash, enemy) and self.player:distanceTo(enemy) <= self.player:getAttackRange() and self:isWeak(enemy) then
-			hasGoodTarget = true
-		end
-	end
+-- sgs.ai_skill_cardchosen.lingchang = function(self, who, flags)
+-- 	if who:objectName() == self.player:objectName() then
+-- 		local cards = who:getHandcards()
+-- 		cards = sgs.QList2Table(cards)
+-- 		self:sortByKeepValue(cards)
+-- 		for _,card in ipairs(cards) do
+-- 			if card:isRed() then return card end
+-- 		end
+-- 	end
+-- 	return cards[1]
+-- end
+-- --bajian
+-- local bajianVS_skill = {}
+-- bajianVS_skill.name = "bajianVS"
+-- table.insert(sgs.ai_skills, bajianVS_skill)
+-- bajianVS_skill.getTurnUseCard = function(self)
+-- 	if self.player:hasUsed("BajianCard") then return end
+-- 	if self:getCardsNum("Slash") > 0 then return end
+-- 	local inori = sgs.findPlayerByShownSkillName("bajian")
+-- 	if not inori then return end
+-- 	if inori:getHandcardNum() < 2 or (self:isWeak(inori) and inori:getHandcardNum() < 3) then return end
+-- 	local slash = sgs.cloneCard("slash", sgs.Card_Spade, 1)
+-- 	if not slash:isAvailable(self.player) then return end
+-- 	local hasGoodTarget = false
+-- 	for _,enemy in ipairs(self.enemies) do
+-- 		if self:slashIsEffective(slash, enemy) and self.player:distanceTo(enemy) <= self.player:getAttackRange() and self:isWeak(enemy) then
+-- 			hasGoodTarget = true
+-- 		end
+-- 	end
 	
-	if hasGoodTarget then
-		return sgs.Card_Parse("@BajianCard=.&bajianVS")
+-- 	if hasGoodTarget then
+-- 		return sgs.Card_Parse("@BajianCard=.&bajianVS")
+-- 	end
+-- end
+
+-- sgs.ai_skill_use_func.BajianCard = function(card, use, self)
+-- 	local dummy_use = { isDummy = true, to = sgs.SPlayerList() }
+-- 	local slash = sgs.cloneCard("slash", sgs.Card_Spade, 1)
+-- 	self:useBasicCard(slash, dummy_use)
+-- 	use.to = dummy_use.to
+-- 	use.card = sgs.Card_Parse("@BajianCard=.&bajianVS")
+-- 	return
+-- end
+-- sgs.ai_use_value.BajianCard = sgs.ai_use_value.Slash - 2
+-- sgs.ai_use_priority.BajianCard = sgs.ai_use_priority.Slash
+
+--jianqiao
+sgs.ai_skill_cardask["@jianqiao-invoke"] = function(self, data)
+	if not (self:willShowForAttack() or self:willShowForDefence() ) then return "." end
+	local room = self.player:getRoom()
+	local current = room:getCurrent()
+	if current then
+		if self:isFriend(current) and not self:isWeak() then
+			local hands = self.player:getHandcards()
+			for _, card in sgs.qlist(hands) do
+				if card:isKindOf("EquipCard") and not self:isValuableCard(card) then
+					return card:getId()
+				end
+			end
+		end
 	end
+	return "."
 end
 
-sgs.ai_skill_use_func.BajianCard = function(card, use, self)
-	local dummy_use = { isDummy = true, to = sgs.SPlayerList() }
-	local slash = sgs.cloneCard("slash", sgs.Card_Spade, 1)
-	self:useBasicCard(slash, dummy_use)
-	use.to = dummy_use.to
-	use.card = sgs.Card_Parse("@BajianCard=.&bajianVS")
-	return
-end
-sgs.ai_use_value.BajianCard = sgs.ai_use_value.Slash - 2
-sgs.ai_use_priority.BajianCard = sgs.ai_use_priority.Slash
+sgs.ai_skill_invoke.jianqiao = true
 
+--wange
+sgs.ai_skill_invoke.wange = true
 
 --mengyin
 local mengyin_skill = {}
