@@ -2911,6 +2911,7 @@ void MoesenPackage::addComicGenerals()
     General *tsukasa = new General(this, "tsukasa", "shu", 3, false); // C010
     tsukasa->addSkill(new Zhiyu);
     tsukasa->addSkill(new Maoshi);
+    tsukasa->addCompanion("kagami");
 
     General *kagami = new General(this, "kagami", "shu", 3, false); // C011
     kagami->addSkill(new Tsukkomi);

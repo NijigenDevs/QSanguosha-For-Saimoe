@@ -3142,6 +3142,7 @@ void MoesenPackage::addAnimationGenerals()
     s_kyouko->addSkill(new Yingqiang);
     s_kyouko->addSkill(new YingqiangTargetMod);
     related_skills.insertMulti("yingqiang", "#yingqiang-target");
+    s_kyouko->addCompanion("sayaka");
     skills << new YingqiangSpade
         << new YingqiangHeart
         << new YingqiangClub
