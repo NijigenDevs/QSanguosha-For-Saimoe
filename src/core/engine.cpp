@@ -639,7 +639,7 @@ SkillCard *Engine::cloneSkillCard(const QString &name) const
 
 QSanVersionNumber Engine::getVersionNumber() const
 {
-    return QSanVersionNumber(0, 1, 8);
+    return QSanVersionNumber(0, 1, 9);
 }
 
 QString Engine::getVersion() const
@@ -948,7 +948,7 @@ QString Engine::getRandomGeneralName() const
 
 void Engine::playSystemAudioEffect(const QString &name) const
 {
-    playAudioEffect(QString("audio/system/%1.ogg").arg(name));
+    playAudioEffect(QString("audio/system/%1.mp3").arg(name));
 }
 
 void Engine::playAudioEffect(const QString &filename) const

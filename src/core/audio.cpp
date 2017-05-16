@@ -62,7 +62,7 @@ void Audio::play(const QString &filename, const bool doubleVolume)
 
 void Audio::playAudioOfMoxuan()
 {
-    play("audio/system/moxuan.ogg", true);
+    play("audio/system/moxuan.mp3", true);
 }
 
 void Audio::stop()

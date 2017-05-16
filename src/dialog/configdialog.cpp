@@ -59,7 +59,7 @@ ConfigDialog::ConfigDialog(QWidget *parent)
 #endif
 
     // tab 2
-    ui->bgMusicPathLineEdit->setText(Config.value("BackgroundMusic", "audio/system/background.ogg").toString());
+    ui->bgMusicPathLineEdit->setText(Config.value("BackgroundMusic", "audio/system/background.mp3").toString());
 
     ui->enableEffectCheckBox->setChecked(Config.EnableEffects);
     connect(ui->enableEffectCheckBox, &QCheckBox::toggled, this, &ConfigDialog::onEffectsEnabledChanged);
@@ -242,7 +242,7 @@ void ConfigDialog::setBGMEnabled(const QVariant &enabled)
         bool play = enabled.toBool();
         if (play) {
             Audio::playBGM(Config.value("BackgroundMusic",
-                "audio/system/background.ogg").toString());
+                "audio/system/background.mp3").toString());
         } else {
             Audio::stopBGM();
         }
@@ -418,7 +418,7 @@ void ConfigDialog::on_browseBgMusicButton_clicked()
     QString fileName = QFileDialog::getOpenFileName(this,
         tr("Select a background music"),
         "audio/system",
-        tr("Audio files (*.wav *.mp3 *.ogg)"));
+        tr("Audio files (*.wav *.mp3 *.aac)"));
     if (!fileName.isEmpty() && fileName != ui->bgMusicPathLineEdit->text()) {
         doCallback(&ConfigDialog::setBgMusic, Config.value("BackgroundMusic"), fileName);
     }
@@ -426,7 +426,7 @@ void ConfigDialog::on_browseBgMusicButton_clicked()
 
 void ConfigDialog::on_resetBgMusicButton_clicked()
 {
-    QString defaultMusic = "audio/system/background.ogg";
+    QString defaultMusic = "audio/system/background.mp3";
     if (defaultMusic != ui->bgMusicPathLineEdit->text()) {
         doCallback(&ConfigDialog::setBgMusic, Config.value("BackgroundMusic"), defaultMusic);
     }

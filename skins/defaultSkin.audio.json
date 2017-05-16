@@ -22,13 +22,13 @@
 
 
     // card effect
-    "playerAudioEffect-common-weapon": "audio/card/common/weapon.ogg",
-    "playerAudioEffect-common-armor": "audio/card/common/armor.ogg",
-    "playerAudioEffect-common-horse": "audio/card/common/horse.ogg",
-    "playerAudioEffect-common-treasure": "audio/card/common/armor.ogg",
+    "playerAudioEffect-common-weapon": "audio/card/common/weapon.mp3",
+    "playerAudioEffect-common-armor": "audio/card/common/armor.mp3",
+    "playerAudioEffect-common-horse": "audio/card/common/horse.mp3",
+    "playerAudioEffect-common-treasure": "audio/card/common/armor.mp3",
 
-    "playerAudioEffect-equip-default": "audio/equip/%1.ogg",
+    "playerAudioEffect-equip-default": "audio/equip/%1.mp3",
 
-    "playerAudioEffect-male-default": "audio/card/male/%1.ogg",
-    "playerAudioEffect-female-default": "audio/card/female/%1.ogg"
+    "playerAudioEffect-male-default": "audio/card/male/%1.mp3",
+    "playerAudioEffect-female-default": "audio/card/female/%1.mp3"
 }

@@ -466,13 +466,13 @@ QString QSanRoomSkin::getPlayerAudioEffectPath(const QString &eventName, const Q
         if (skill) fileNames = skill->getSources(general, skinId);
         if (!fileNames.isEmpty()) {
             QStringList sources_copy;
-            QRegExp rx(".+/" + eventName + "_" + general + "(\\d?).ogg");
+            QRegExp rx(".+/" + eventName + "_" + general + "(\\d?).mp3");
             foreach (QString source, fileNames) {
                 if (rx.exactMatch(source))
                     sources_copy << source;
             }
             if (sources_copy.isEmpty()) {
-                QRegExp rx(".+/" + eventName + "(\\d?).ogg");
+                QRegExp rx(".+/" + eventName + "(\\d?).mp3");
                 foreach (QString source, fileNames) {
                     if (rx.exactMatch(source))
                         sources_copy << source;

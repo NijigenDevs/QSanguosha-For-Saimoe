@@ -471,7 +471,7 @@ void GeneralOverview::addLines(const General *general, const Skill *skill)
         button->setEnabled(false);
         button_layout->addWidget(button);
     } else {
-        QString pattern = ".+/(" + skill->objectName() + "_" + general->objectName() + ")(\\d?).ogg";
+        QString pattern = ".+/(" + skill->objectName() + "_" + general->objectName() + ")(\\d?).mp3";
         QStringList sources_copy;
         foreach (QString source, sources) {
             QRegExp rx(pattern);
@@ -479,7 +479,7 @@ void GeneralOverview::addLines(const General *general, const Skill *skill)
                 sources_copy << source;
         }
         if (sources_copy.isEmpty()) {
-            pattern = ".+/(" + skill->objectName() + ")(\\d?).ogg";
+            pattern = ".+/(" + skill->objectName() + ")(\\d?).mp3";
             QRegExp rx(pattern);
             foreach (QString source, sources) {
                 if (rx.exactMatch(source))
@@ -564,7 +564,7 @@ void GeneralOverview::addWinLineOfCaoCao()
     button_layout->addWidget(win_button);
     addCopyAction(win_button);
 
-    win_button->setObjectName("audio/system/win-cc.ogg");
+    win_button->setObjectName("audio/system/win-cc.mp3");
     connect(win_button, &QCommandLinkButton::clicked, this, &GeneralOverview::playAudioEffect);
 }
 

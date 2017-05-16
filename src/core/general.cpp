@@ -259,27 +259,27 @@ void General::lastWord(const int skinId) const
 {
     QString fileName;
     if (skinId == 0) {
-        fileName = QString("audio/death/%1.ogg").arg(objectName());
+        fileName = QString("audio/death/%1.mp3").arg(objectName());
         if (!QFile::exists(fileName)) {
             QStringList origin_generals = objectName().split("_");
             if (origin_generals.length() > 1) {
-                fileName = QString("audio/death/%1.ogg").arg(origin_generals.last());
+                fileName = QString("audio/death/%1.mp3").arg(origin_generals.last());
             }
         }
     } else {
-        fileName = QString("hero-skin/%1/%2/death.ogg").arg(objectName()).arg(skinId);
+        fileName = QString("hero-skin/%1/%2/death.mp3").arg(objectName()).arg(skinId);
         if (!QFile::exists(fileName)) {
             QStringList origin_generals = objectName().split("_");
             if (origin_generals.length() > 1) {
-                fileName = QString("hero-skin/%1/%2/death.ogg").arg(origin_generals.last()).arg(skinId);
+                fileName = QString("hero-skin/%1/%2/death.mp3").arg(origin_generals.last()).arg(skinId);
             }
         }
         if (!QFile::exists(fileName)) {
-            fileName = QString("audio/death/%1.ogg").arg(objectName());
+            fileName = QString("audio/death/%1.mp3").arg(objectName());
             if (!QFile::exists(fileName)) {
                 QStringList origin_generals = objectName().split("_");
                 if (origin_generals.length() > 1) {
-                    fileName = QString("audio/death/%1.ogg").arg(origin_generals.last());
+                    fileName = QString("audio/death/%1.mp3").arg(origin_generals.last());
                 }
             }
         }

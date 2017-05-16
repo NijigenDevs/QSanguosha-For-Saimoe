@@ -3948,7 +3948,7 @@ void RoomScene::speak()
         Config.setValue("EnableBgMusic", true);
 #ifdef AUDIO_SUPPORT
         Audio::stopBGM();
-        QString bgmusic_path = Config.value("BackgroundMusic", "audio/system/background.ogg").toString();
+        QString bgmusic_path = Config.value("BackgroundMusic", "audio/system/background.mp3").toString();
         Audio::playBGM(bgmusic_path);
 #endif
     } else if (text.startsWith(".StartBgMusic=")) {
@@ -4104,7 +4104,7 @@ void RoomScene::onGameStart()
 #ifdef AUDIO_SUPPORT
     if (Config.EnableBgMusic) {
         // start playing background music
-        QString bgmusic_path = Config.value("BackgroundMusic", "audio/system/background.ogg").toString();
+        QString bgmusic_path = Config.value("BackgroundMusic", "audio/system/background.mp3").toString();
 
         Audio::playBGM(bgmusic_path);
     }

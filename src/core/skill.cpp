@@ -118,7 +118,7 @@ void Skill::initMediaSource()
     }
 
     for (int i = 1;; ++i) {
-        QString effect_file = QString("audio/skill/%1%2.ogg").arg(objectName()).arg(QString::number(i));
+        QString effect_file = QString("audio/skill/%1%2.mp3").arg(objectName()).arg(QString::number(i));
         if (QFile::exists(effect_file) && !sources.contains(effect_file))
             sources << effect_file;
         else
@@ -126,7 +126,7 @@ void Skill::initMediaSource()
     }
 
     if (sources.isEmpty()) {
-        QString effect_file = QString("audio/skill/%1.ogg").arg(objectName());
+        QString effect_file = QString("audio/skill/%1.mp3").arg(objectName());
         if (QFile::exists(effect_file) && !sources.contains(effect_file))
             sources << effect_file;
     }
@@ -178,7 +178,7 @@ QStringList Skill::getSources(const QString &general, const int skinId) const
         return skinSourceHash[key];
 
     for (int i = 1;; ++i) {
-        QString effectFile = QString("hero-skin/%1/%2/%3%4.ogg")
+        QString effectFile = QString("hero-skin/%1/%2/%3%4.mp3")
             .arg(general).arg(QString::number(skinId))
             .arg(objectName()).arg(QString::number(i));
         if (QFile::exists(effectFile))
@@ -188,7 +188,7 @@ QStringList Skill::getSources(const QString &general, const int skinId) const
     }
 
     if (skinSourceHash[key].isEmpty()) {
-        QString effectFile = QString("hero-skin/%1/%2/%3.ogg")
+        QString effectFile = QString("hero-skin/%1/%2/%3.mp3")
             .arg(general).arg(QString::number(skinId)).arg(objectName());
         if (QFile::exists(effectFile))
             skinSourceHash[key] << effectFile;

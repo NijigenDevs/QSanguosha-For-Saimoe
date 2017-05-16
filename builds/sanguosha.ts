@@ -1094,8 +1094,8 @@
     </message>
     <message>
         <location filename="../src/dialog/configdialog.cpp" line="421"/>
-        <source>Audio files (*.wav *.mp3 *.ogg)</source>
-        <translation>音频文件 (*.wav *.mp3 *.ogg)</translation>
+        <source>Audio files (*.wav *.mp3 *.aac)</source>
+        <translation>音频文件(*.wav *.mp3 *.aac)</translation>
     </message>
 </context>
 <context>
@@ -4043,7 +4043,7 @@ P = 你自己, R = 你所在的房间</translation>
     <message>
         <location filename="../src/dialog/cardeditor.cpp" line="318"/>
         <source>Copyright text</source>
-        <translation>™&amp;©  2015 游卡桌游</translation>
+        <translation>™&amp;©2017游卡桌游</translation>
     </message>
     <message>
         <location filename="../src/dialog/cardeditor.cpp" line="532"/>
