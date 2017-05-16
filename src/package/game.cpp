@@ -1524,10 +1524,16 @@ public:
     }
 };
 
-class Modan : public ViewAsSkill
+ModanVoidCard::ModanVoidCard()
+{
+    will_throw = false;
+    target_fixed = true;
+}
+
+class ModanVS : public ViewAsSkill
 {
 public:
-    Modan() : ViewAsSkill("modan")
+    ModanVS() : ViewAsSkill("modan")
     {
         expand_pile = "gem";
     }
@@ -1537,11 +1543,19 @@ public:
         return !player->getPile("gem").isEmpty();
     }
 
+    virtual bool isEnabledAtResponse(const Player *, const QString &pattern) const
+    {
+        return pattern == "@@modan";
+    }
+
     virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const
     {
         ExpPattern pattern(".|.|.|gem");
         if (!pattern.match(Self, to_select))
             return false;
+
+        if (Sanguosha->currentRoomState()->getCurrentCardUsePattern() == "@@modan")
+            return selected.isEmpty();
 
         foreach (const Card *gem, selected)
             if (to_select->getSuit() == gem->getSuit())
@@ -1554,6 +1568,15 @@ public:
 
     virtual const Card *viewAs(const QList<const Card *> &cards) const
     {
+        if (Sanguosha->currentRoomState()->getCurrentCardUsePattern() == "@@modan" && cards.length() == 1)
+        {
+            ModanVoidCard *retrialCard = new ModanVoidCard;
+            retrialCard->addSubcards(cards);
+            retrialCard->setSkillName("modan");
+            retrialCard->setShowSkill("modan");
+            return retrialCard;
+        }
+
         if (cards.length() == 4)
         {
             ArcheryAttack *aa = new ArcheryAttack(Card::SuitToBeDecided, 0);
@@ -1564,6 +1587,85 @@ public:
         }
         else
             return NULL;
+    }
+};
+
+class Modan : public TriggerSkill
+{
+public:
+    Modan() : TriggerSkill("modan")
+    {
+        events << AskForRetrial;
+        view_as_skill = new ModanVS;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *target, QVariant &, ServerPlayer * &) const
+    {
+        if (!TriggerSkill::triggerable(target))
+            return QStringList();
+
+        if (!target->getPile("gem").isEmpty())
+        {
+            return QStringList(objectName());
+        }
+
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
+        JudgeStruct *judge = data.value<JudgeStruct *>();
+
+        QStringList prompt_list;
+        prompt_list << "@modan-retrial" << judge->who->objectName()
+            << objectName() << judge->reason << QString::number(judge->card->getEffectiveId());
+        QString prompt = prompt_list.join(":");
+
+        auto card = room->askForUseCard(player, "@@modan", prompt, -1, Card::MethodResponse, false);
+
+        if (card != NULL)
+        {
+            room->broadcastSkillInvoke(objectName(), player);
+
+            const Card *oldJudge = judge->card;
+            judge->card = Sanguosha->getCard(card->getEffectiveId());
+
+            CardsMoveStruct move1(QList<int>(), judge->who, Player::PlaceJudge,
+                CardMoveReason(CardMoveReason::S_REASON_RETRIAL, player->objectName(), objectName(), QString()));
+
+            move1.card_ids.append(card->getEffectiveId());
+            int reasonType = CardMoveReason::S_REASON_OVERRIDE;
+
+            CardMoveReason reason(reasonType, player->objectName(), objectName(), QString());
+            CardsMoveStruct move2(QList<int>(), judge->who, player, Player::PlaceUnknown, Player::PlaceSpecial, reason);
+
+            QList<int> toAdd;
+            toAdd << oldJudge->getEffectiveId();
+            player->pileAdd("gem", toAdd);
+            move2.card_ids.append(oldJudge->getEffectiveId());
+
+            LogMessage log;
+            log.type = "$ChangedJudge";
+            log.arg = objectName();
+            log.from = player;
+            log.to << judge->who;
+            log.card_str = QString::number(card->getEffectiveId());
+            room->sendLog(log);
+
+            QList<CardsMoveStruct> moves;
+            moves.append(move1);
+            moves.append(move2);
+            room->moveCardsAtomic(moves, true);
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *, ServerPlayer *, QVariant &data, ServerPlayer *) const
+    {
+        JudgeStruct *judge = data.value<JudgeStruct *>();
+        judge->updateResult();
+        return false;
     }
 };
 
@@ -3019,6 +3121,11 @@ public:
         response_or_use = true;
     }
 
+    virtual bool isEnabledAtPlay(const Player *) const
+    {
+        return false;
+    }
+
     virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const
     {
         return player->getHandcardNum() && (player->getHandcardNum() % 2) == 1 && pattern == "jink";
@@ -3649,4 +3756,5 @@ void MoesenPackage::addGameGenerals()
     addMetaObject<ShenaiCard>();
     addMetaObject<QiangqiCard>();
     addMetaObject<ShowKongwu>();
+    addMetaObject<ModanVoidCard>();
 }

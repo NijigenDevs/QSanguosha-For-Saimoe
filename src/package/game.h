@@ -4,6 +4,14 @@
 #include "moesen-package.h"
 #include "card.h"
 
+class ModanVoidCard : public SkillCard
+{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE ModanVoidCard();
+};
+
 class ShowBingshan : public ShowDistanceCard
 {
     Q_OBJECT
