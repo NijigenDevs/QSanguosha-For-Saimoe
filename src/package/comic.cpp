@@ -786,7 +786,7 @@ public:
             return r;
         if ((triggerEvent == GeneralShown || triggerEvent == GeneralHidden) && (!player->ownSkill(this) || player->inHeadSkills(this) != data.toBool()))
             return r;
-        if (triggerEvent == GeneralRemoved && data.toString() != "zoushi")
+        if (triggerEvent == GeneralRemoved && data.toString() != "kyouko")
             return r;
         if (triggerEvent == EventPhaseStart && !(player->getPhase() == Player::RoundStart || player->getPhase() == Player::NotActive))
             return r;
@@ -890,9 +890,14 @@ public:
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer*) const
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer*) const
     {
-        return player->askForSkillInvoke(this); //TODO: different sounds in effect
+        if (player->askForSkillInvoke(this))
+        {
+            room->broadcastSkillInvoke(objectName(), player);
+            return true;
+        }
+        return false;
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer*) const

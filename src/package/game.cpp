@@ -1068,19 +1068,19 @@ public:
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent event, Room *, ServerPlayer *target, QVariant &, ServerPlayer *ask_who) const
+    virtual bool cost(TriggerEvent event, Room *room, ServerPlayer *target, QVariant &, ServerPlayer *ask_who) const
     {
         if (event == TargetChosen)
         {
             if (ask_who->askForSkillInvoke(objectName(), QVariant::fromValue(target)))
             {
-                // TODO Liepo Confirmed Sound
+                room->broadcastSkillInvoke(objectName(), 1);
                 return true;
             }
         }
         else if (event == DamageCaused)
         {
-            // TODO DamageBuff Sound
+            room->broadcastSkillInvoke(objectName(), 2);
             return true;
         }
         return false;
@@ -1266,12 +1266,12 @@ public:
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
     {
         CardUseStruct use = data.value<CardUseStruct>();
         if (player->askForSkillInvoke(objectName(), QVariant::fromValue(use.to.first())))
         {
-            //Sound
+            room->broadcastSkillInvoke(objectName(), player);
             return true;
         }
         return false;
@@ -1348,12 +1348,12 @@ public:
     {
         if (event == DamageCaused && room->askForCard(player, "Weapon|.|.|equipped", "@chaidao_add_damage", data, Card::MethodDiscard, NULL, false))
         {
-            //sound 1
+            room->broadcastSkillInvoke(objectName(), 1);
             return true;
         }
         if (event == DamageInflicted && room->askForSkillInvoke(player, objectName(), data))
         {
-            //sound 2
+            room->broadcastSkillInvoke(objectName(), 2);
             return true;
         }
         return false;
