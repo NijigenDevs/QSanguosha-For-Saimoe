@@ -2601,7 +2601,7 @@ public:
         return false;
     }
 
-    virtual bool effect(TriggerEvent event, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const
+    virtual bool effect(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const
     {
         if (event == DamageInflicted)
         {
@@ -2612,6 +2612,15 @@ public:
             damage.transfer_reason = objectName();
 
             player->tag["TransferDamage"] = QVariant::fromValue(damage);
+
+            LogMessage log;
+            log.type = "#ChidunTransfer";
+            log.from = ask_who;
+            log.to << damage.to;
+            log.arg = objectName();
+            log.arg2 = QString::number(damage.damage);
+
+            room->sendLog(log);
 
             return true;
         }
