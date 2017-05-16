@@ -992,13 +992,38 @@ public:
             return false;
         }
 
-        ServerPlayer * dest = room->askForPlayerChosen(player, room->getOtherPlayers(player), objectName());
+        ServerPlayer *dest = room->askForPlayerChosen(player, room->getOtherPlayers(player), objectName());
         if (!dest)
         {
             return false;
         }
 
         putKeyFromId(room, id, player, dest, objectName());
+
+        auto card = Sanguosha->getEngineCard(id);
+        if (card->isKindOf("BasicCard"))
+        {
+            dest->drawCards(2, objectName());
+        }
+        else if (card->isKindOf("TrickCard"))
+        {
+            if (dest->isWounded())
+            {
+                RecoverStruct recover;
+                recover.recover = 1;
+                recover.who = player;
+                room->recover(dest, recover);
+            }
+        }
+        else if (card->isKindOf("EquipCard"))
+        {
+            if (!dest->faceUp())
+                dest->turnOver();
+
+            if (dest->isChained())
+                room->setPlayerProperty(dest, "chained", false);
+        }
+
         return false;
     }
 };
