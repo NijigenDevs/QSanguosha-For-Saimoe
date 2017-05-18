@@ -95,7 +95,7 @@ return {
 	----N006
 	["eru"] = "千反田爱瑠", 
 	["&eru"] = "千反田爱瑠", 
-	["#eru"] = "千金一笑", 
+	["#eru"] = "千金大小姐", 
 	["#&eru"] = "冰菓", 
 	["~eru"] = "", 
 	["designer:eru"] = "hmqgg",
@@ -131,7 +131,7 @@ return {
 	["&a_azusa"] = "小豆梓", 
 	["#a_azusa"] = "小豆子", 
 	["#&a_azusa"] = "变态王子与不笑猫。", 
-	["~a_azusa"] = "妹妹我是土豪！", 
+	["~a_azusa"] = "", 
 	["designer:a_azusa"] = "hmqgg",
 	["cv:a_azusa"] = "石原夏織",
 	["illustrator:a_azusa"] = "38191081",
@@ -223,7 +223,7 @@ return {
 	----N013
 	["ruiko"] = "佐天泪子", 
 	["&ruiko"] = "佐天泪子", 
-	["#ruiko"] = "掀裙狂魔", 
+	["#ruiko"] = "第四波动", 
 	["#&ruiko"] = "某科学的超电磁炮", 
 	["~ruiko"] = "", 
 	["designer:ruiko"] = "御坂2623",
