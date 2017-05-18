@@ -1382,3 +1382,117 @@ sgs.ai_skill_invoke.chaidao = function(self, data)
 end
 
 sgs.ai_skill_playerchosen.chaidao = sgs.ai_skill_playerchosen.slash_extra_targets
+
+
+--yuanqi
+sgs.ai_skill_invoke.yuanqi = function(self, data)
+	local invoke = false
+	local friends = self:getFriendsNoself(self.player)
+	local ind = self.player:containsTrick("indulgence")
+	local sup = self.player:containsTrick("supply_shortage")
+	local lid = self.player:containsTrick("lingdanCard")
+	local key = self.player:containsTrick("keyCard")
+	for _, friend in ipairs(friends) do
+		if (friend:containsTrick("indulgence") and not ind)
+		or (friend:containsTrick("supply_shortage") and not sup) 
+		or (friend:containsTrick("lingdanCard") and not lid) 
+		or (friend:isWounded() and friend:containsTrick("keyCard") and not key) then
+			invoke = true
+			break
+		end
+	end
+	return invoke
+end
+
+sgs.ai_skill_playerchosen.yuanqi = function(self, targets)
+	targets = sgs.QList2Table(targets)
+	local indVictims = {}
+	local ssVictims = {}
+	local lidVictims = {}
+	local keyBenefi = {}
+	for _, p in ipairs(targets) do
+		if self:isFriend(p) then
+			if p:containsTrick("indulgence") then
+				table.insert(indVictims, p)
+			end
+			if p:containsTrick("supply_shortage") then
+				table.insert(ssVictims, p)
+			end
+			if p:containsTrick("lingdanCard") then
+				table.insert(lidVictims, p)
+			end
+			if p:containsTrick("keyCard") then
+				table.insert(keyBenefi, p)
+			end
+		end
+	end
+
+	local canDiscardBySelf = false
+
+	local hands = sgs.QList2Table(self.player:getHandcards())
+	for _, card in ipairs(hands) do
+		if card:isKindOf("Dismantlement") then
+			canDiscardBySelf = true
+			break
+		end
+	end
+
+	--indulgence
+	local willDiscardNum = 0
+	local target
+	for _, p in ipairs(indVictims) do
+		if p:getHandcardNum() - p:getHp() >= willDiscardNum then
+			willDiscardNum = p:getHandcardNum() - p:getHp()
+			target = p
+		end
+	end
+	if willDiscardNum >= 2 and (not canDiscardBySelf) and target ~= nil then
+		return target
+	end
+
+	--keycard
+	for _, p in ipairs(keyBenefi) do
+		if p:isWounded() and self:isWeak(p) then
+			return p
+		end
+	end
+
+	--supply_shortage
+	if #ssVictims > 0 then
+		return ssVictims[1]
+	end
+
+	if #lidVictims > 0 then
+		return lidVictims[1]
+	end
+
+	return targets[1]
+end
+
+sgs.ai_skill_askforag.yuanqi = function(self, card_ids)
+	for _,cardid in ipairs(card_ids) do
+		local card = sgs.Sanguosha:getCard(cardid)
+		if card:isKindOf("indulgence") then
+			return cardid
+		elseif card:isKindOf("keyCard") then
+			return cardid
+		elseif card:isKindOf("supply_shortage") then
+			return cardid
+		elseif card:isKindOf("lingdanCard") then
+			return cardid
+		end
+	end
+	return card_ids[1]
+end
+
+--daihei
+sgs.ai_skill_invoke.daihei = function(self, data)
+	if (self:willShowForDefence() and self:isWeak()) then
+		return true
+	end
+	return false
+end
+
+sgs.ai_skill_choice.zhiyanmiki = function(self, choices)
+	return "draw"
+end
