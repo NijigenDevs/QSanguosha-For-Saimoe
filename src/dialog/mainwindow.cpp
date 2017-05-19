@@ -890,10 +890,10 @@ void MainWindow::on_actionAbout_triggered()
         const char *time = __TIME__;
         content.append(tr("Compilation time: %1 %2 <br/>").arg(date).arg(time));
 
-        QString project_url = "https://github.com/Mogara/QSanguosha-For-Hegemony";
+        QString project_url = "https://github.com/NijigenDevs/QSanguosha-For-Saimoe";
         content.append(tr("Source code: <a href='%1' style = \"color:#0072c1; \">%1</a> <br/>").arg(project_url));
 
-        QString forum_url = "http://qsanguosha.org";
+        QString forum_url = "https://omnisreen.github.io/";
         content.append(tr("Forum: <a href='%1' style = \"color:#0072c1; \">%1</a> <br/>").arg(forum_url));
 
         about_window = new Window(tr("About QSanguosha"), QSize(420, 465));
