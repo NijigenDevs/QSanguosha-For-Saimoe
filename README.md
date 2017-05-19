@@ -79,7 +79,6 @@ Contact me at [Email](mailto:acgkiller@live.com). By hmqgg
 
 1. Framework
     * Open source with Qt graphics view framework
-    * Use FMOD as sound engine
     * Use Freetype in Font Rendering
     * Use Lua as AI and extension script
 
@@ -106,7 +105,7 @@ VS2017 (Windows)
 
 * Swigwin binaries ( 3.0.10 + Version )
 
-2. Open Qsanguosha.sln right under ~/builds/vs2015, change the Configuration to Release Qt5|Win32.
+2. Open QSanguosha.sln right under ~/builds/vs2017, change the Configuration to Release Qt5|Win32.
 
 3. Right click project "QSanguosha", select "lrelease all .ts files in project".
 
@@ -116,10 +115,11 @@ VS2017 (Windows)
 
 *   Qt5Core.dll
 *   Qt5Gui.dll
+*   Qt5Multimedia.dll
 *   Qt5Network.dll
 *   Qt5Qml.dll
 *   Qt5Widgets.dll
 
-You can install VC redist or copy the 2 dlls from VC Redist Directory to ~.
+You can install VC redist or copy the 3 dlls from VC Redist Directory to ~.
 
 6. Double-click the QSanguosha.exe and have fun!
