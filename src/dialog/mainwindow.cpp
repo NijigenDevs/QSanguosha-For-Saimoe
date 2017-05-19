@@ -149,7 +149,6 @@ MainWindow::MainWindow(QWidget *parent)
 #ifdef Q_OS_ANDROID
     setFixedSize(qApp->desktop()->width(), qApp->desktop()->height());
 #endif
-    fetchUpdateInformation();
 
     connection_dialog = new ConnectionDialog(this);
     connect(ui->actionStart_Game, &QAction::triggered, connection_dialog, &ConnectionDialog::exec);
@@ -470,24 +469,6 @@ void MainWindow::region(const QPoint &cursorGlobalPoint)
         isZoomReady = true;
     else
         isZoomReady = false;
-}
-
-void MainWindow::fetchUpdateInformation()
-{
-    static QNetworkAccessManager *mgr = new QNetworkAccessManager(this);
-#ifdef QT_DEBUG
-    QString URL1 = "http://ver.qsanguosha.org/test/UpdateInfo";
-    QString URL2 = "http://ver.qsanguosha.org/test/whatsnew.html";
-#else
-    QString URL1 = "http://ver.qsanguosha.org/UpdateInfo";
-    QString URL2 = "http://ver.qsanguosha.org/whatsnew.html";
-#endif
-
-    versionInfomationReply = mgr->get(QNetworkRequest(QUrl(URL1)));
-    changeLogReply = mgr->get(QNetworkRequest(QUrl(URL2)));
-
-    connect(versionInfomationReply, &QNetworkReply::finished, this, &MainWindow::onVersionInfomationGotten);
-    connect(changeLogReply, &QNetworkReply::finished, this, &MainWindow::onChangeLogGotten);
 }
 
 void MainWindow::roundCorners()

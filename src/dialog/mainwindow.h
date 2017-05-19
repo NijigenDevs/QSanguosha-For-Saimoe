@@ -99,7 +99,6 @@ private:
 
     void restoreFromConfig();
     void region(const QPoint &cursorGlobalPoint);
-    void fetchUpdateInformation();
     void roundCorners();
 
 public slots:
