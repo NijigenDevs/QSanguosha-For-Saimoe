@@ -25,11 +25,11 @@ const int Settings::S_JUDGE_ANIMATION_DURATION = 1200;
 const int Settings::S_JUDGE_LONG_DELAY = 800;
 
 Settings::Settings()
-#ifdef Q_OS_WIN32
+//#ifdef Q_OS_WIN32
     : QSettings("config.ini", QSettings::IniFormat),
-#else
-    : QSettings("QSanguosha.org", "QSanguosha"),
-#endif
+//#else
+//    : QSettings("QSanguosha.org", "QSanguosha"),
+//#endif
     Rect(-ViewWidth / 2, -ViewHeight / 2, ViewWidth, ViewHeight)
 {
     Q_ASSERT(SettingsInstance == NULL);

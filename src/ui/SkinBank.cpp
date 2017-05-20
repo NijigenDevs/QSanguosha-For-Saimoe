@@ -1128,15 +1128,16 @@ bool QSanRoomSkin::_loadLayoutConfig(const QVariant &layout)
     }
 #endif
 */
+
     int base_widght = (_m_photoLayout.m_normalWidth + _m_roomLayout.m_photoHDistance) * 5;
     int base_height = (_m_photoLayout.m_normalHeight + _m_roomLayout.m_photoVDistance) * 3 + _m_dashboardLayout.m_normalHeight;
     double scale = qMin(1.0 * screenWidth / base_widght, 1.0 * screenHeight / base_height);
     if (scale < 1) scale = 1;
     _m_roomLayout.scale = scale;
-
+#ifndef QT_NO_DEBUG
     QMessageBox::warning(NULL, QString::number(scale), "screen = " + QString::number(screenWidth) + "*" + QString::number(screenHeight) + ":"
                          + QString::number(base_widght) + "*" + QString::number(base_height));
-
+#endif
     _m_commonLayout.m_cardNormalHeight *= scale;                                //card
     _m_commonLayout.m_cardNormalWidth *= scale;
 

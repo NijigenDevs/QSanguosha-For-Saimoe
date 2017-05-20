@@ -2836,8 +2836,8 @@
     </message>
     <message>
         <location filename="../src/main.cpp" line="107"/>
-        <source>Game data not found, please download QSanguosha-For-Hegemony PC version, and put the files and folders into /sdcard/Android/data/org.qsgsrara.qsanguosha</source>
-        <translation>未找到游戏数据，请下载太阳神三国杀·国战PC版，并将其中的文件及文件夹移入/sdcard/Android/data/org.qsgsrara.qsanguosha目录</translation>
+        <source>Game data not found, please download QSanguosha-For-Hegemony PC version, and put the files and folders into /sdcard/Android/data/org.nijigendevs.saimoe</source>
+        <translation>未找到游戏数据，请下载太阳神三国杀·萌战PC版，并将其中的文件及文件夹复制入/sdcard/Android/data/org.nijigendevs.saimoe</translation>
     </message>
     <message>
         <location filename="../src/main.cpp" line="109"/>
@@ -3228,7 +3228,7 @@
     <message>
         <location filename="../src/ui/roomscene.cpp" line="329"/>
         <source>QSanguosha</source>
-        <translation>太阳神三国杀·国战</translation>
+        <translation>太阳神三国杀·萌战</translation>
     </message>
     <message>
         <location filename="../src/ui/roomscene.cpp" line="417"/>

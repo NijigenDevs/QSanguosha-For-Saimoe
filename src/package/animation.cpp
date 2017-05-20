@@ -637,7 +637,7 @@ public:
                         const GameRule *game_rule = NULL;
                         game_rule = qobject_cast<const GameRule *>(Sanguosha->getTriggerSkill("game_rule"));
                         if (game_rule)
-                            room->getThread()->trigger(EventPhaseEnd, room, ask_who, QVariant());
+                            room->getThread()->trigger(EventPhaseEnd, room, ask_who);
                         ask_who->changePhase(ask_who->getPhase(), Player::NotActive);
                     }
                     room->setCurrent(current);
