@@ -2394,6 +2394,10 @@ public:
             {
                 room->setPlayerMark(player, "qiyuan-discard", 0);
             }
+            if (change.to == Player::NotActive || change.from == Player::NotActive)
+            {
+                room->setPlayerMark(player, "@qiyuan-draw", 0);
+            }
         }
     }
 
