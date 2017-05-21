@@ -2615,7 +2615,7 @@ bool TianjianCard::targetsFeasible(const QList<const Player *> &targets, const P
 
 const Card *TianjianCard::validate(CardUseStruct &card_use) const
 {
-    Card *use_card = Sanguosha->cloneCard(Self->tag["tianjian"].toString(), Card::NoSuit, 0);
+    Card *use_card = Sanguosha->cloneCard(toString().split(":").last(), Card::NoSuit, 0);
     auto source = card_use.from;
     auto room = source->getRoom();
 

@@ -25,37 +25,22 @@ Mogara
 #include <QMediaPlayer>
 #include <QMediaPlaylist>
 QMediaPlayer *Audio::BGMPlayer = nullptr;
-QCache<QString, QMediaPlayer> *Audio::SoundCache = nullptr;
 
 void Audio::init()
 {
-    SoundCache = new QCache<QString, QMediaPlayer>(20);
 }
 
 void Audio::quit()
 {
     if (BGMPlayer)
         delete BGMPlayer;
-    if (SoundCache)
-    {
-        SoundCache->clear();
-        delete SoundCache;
-    }
 }
 
 void Audio::play(const QString &filename, const bool doubleVolume)
 {
-    QMediaPlayer *sound = SoundCache->object(filename);
-    if (sound == nullptr)
-    {
-        sound = new QMediaPlayer;
-        sound->setMedia(QUrl(filename));
-        SoundCache->insert(filename, sound);
-    }
-    else if (sound->state() == QMediaPlayer::PlayingState)
-    {
-        return;
-    }
+    QMediaPlayer *sound = new QMediaPlayer;
+    sound->setMedia(QUrl(filename));
+
     sound->setVolume((doubleVolume ? 2 : 1) * Config.EffectVolume * 100);
     sound->play();
 }
@@ -67,9 +52,6 @@ void Audio::playAudioOfMoxuan()
 
 void Audio::stop()
 {
-    if (!SoundCache)
-        return;
-    SoundCache->clear();
     stopBGM();
 }
 

@@ -30,7 +30,6 @@ class QCache;
 class Audio
 {
     static QMediaPlayer *BGMPlayer;
-    static QCache<QString, QMediaPlayer> *SoundCache;
 public:
     static void init();
     static void quit();
