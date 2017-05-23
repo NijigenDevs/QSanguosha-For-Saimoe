@@ -24,6 +24,7 @@ Mogara
 #include <QCache>
 #include <QMediaPlayer>
 #include <QMediaPlaylist>
+#include <QDir>
 QMediaPlayer *Audio::BGMPlayer = nullptr;
 
 void Audio::init()
@@ -61,7 +62,14 @@ void Audio::playBGM(const QString &filename)
         BGMPlayer = new QMediaPlayer;
     QMediaPlaylist *BGMList = new QMediaPlaylist(BGMPlayer);
     BGMList->addMedia(QUrl(filename));
-    BGMList->setPlaybackMode(QMediaPlaylist::Loop);
+    QDir BGMDir("audio/system/bgm");
+    QStringList mp3Filters("*.mp3");
+    QFileInfoList mp3List = BGMDir.entryInfoList(mp3Filters, QDir::Files);
+    foreach (QFileInfo file, mp3List)
+    {
+        BGMList->addMedia(QUrl(file.filePath()));
+    }
+    BGMList->setPlaybackMode(QMediaPlaylist::Random);
 
     BGMPlayer->setPlaylist(BGMList);
     BGMPlayer->setVolume(Config.BGMVolume * 100);
