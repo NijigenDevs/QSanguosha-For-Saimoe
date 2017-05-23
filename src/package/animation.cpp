@@ -3088,7 +3088,7 @@ public:
         if (!TriggerSkill::triggerable(player))
             return QStringList();
         auto dying = data.value<DyingStruct>();
-        if (dying.who != player || dying.who->getHp() > 0 || player->getPlayerNumWithSameKingdom(objectName(), "", MaxCardsType::Normal) == 0)
+        if (dying.who != player || dying.who->getHp() > 0)
             return QStringList();
 
         return QStringList(objectName());
@@ -3098,7 +3098,12 @@ public:
     {
         if (room->askForSkillInvoke(player, objectName()))
         {
-            int toDrawNum = player->getPlayerNumWithSameKingdom(objectName(), "", MaxCardsType::Normal);
+            int toDrawNum = 0;
+            foreach (auto p, room->getAlivePlayers())
+            {
+                if (player->isFriendWith(p) || player->willBeFriendWith(p))
+                    toDrawNum++;
+            }
             if (toDrawNum > 0)
             {
                 room->drawCards(player, toDrawNum, objectName());
