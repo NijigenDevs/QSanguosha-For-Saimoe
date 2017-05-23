@@ -2488,13 +2488,18 @@ public:
 
     virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer * &) const
     {
-        if (!TriggerSkill::triggerable(player)) return QStringList();
+        if (player == NULL || !player->ownSkill(this))
+            return QStringList();
+
         DeathStruct death = data.value<DeathStruct>();
         if (death.who != NULL && player == death.who)
         {
             QList<ServerPlayer *> alives = room->getAlivePlayers();
-            if (death.damage->from != NULL && death.damage->from->isAlive() && alives.contains(death.damage->from) && alives.removeOne(death.damage->from) && alives.length() > 0)
+            if ((death.damage->from != NULL && death.damage->from->isAlive() && alives.contains(death.damage->from) && alives.length() > 1) 
+                || (death.damage->from == NULL && alives.length() > 0))
+            {
                 return QStringList(objectName());
+            }
         }
         return QStringList();
     }
@@ -2503,9 +2508,18 @@ public:
     {
         QList<ServerPlayer *> alives = room->getAlivePlayers();
         DeathStruct death = data.value<DeathStruct>();
-        if (death.damage->from != NULL && death.damage->from->isAlive() && alives.contains(death.damage->from))
+        if ((death.damage->from != NULL && death.damage->from->isAlive() && alives.contains(death.damage->from)))
         {
             alives.removeOne(death.damage->from);
+            ServerPlayer *target = room->askForPlayerChosen(player, alives, objectName(), "@huaming-choose", true, true);
+            if (target != NULL && target->isAlive())
+            {
+                player->tag["huaming-tar"] = QVariant::fromValue(target);
+                return true;
+            }
+        }
+        else if (death.damage->from == NULL && alives.length() > 0)
+        {
             ServerPlayer *target = room->askForPlayerChosen(player, alives, objectName(), "@huaming-choose", true, true);
             if (target != NULL && target->isAlive())
             {
