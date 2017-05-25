@@ -2864,7 +2864,7 @@ public:
                 candidates << p;
         }
 
-        auto target = room->askForPlayerChosen(player, candidates, objectName(), "@wujie-targetchoose");
+        auto target = room->askForPlayerChosen(player, candidates, objectName(), "@wujie-targetchoose", true);
 
         if (target != NULL)
         {
