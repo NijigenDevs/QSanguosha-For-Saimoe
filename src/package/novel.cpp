@@ -2848,6 +2848,7 @@ public:
             {
                 if (p->isChained() || p->canBeChainedBy(player))
                 {
+                    player->tag["WujieTarget"] = NULL;
                     return QStringList(objectName());
                 }
             }
@@ -2856,23 +2857,27 @@ public:
     }
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
-        if (player->askForSkillInvoke(objectName()))
-        {
-            room->broadcastSkillInvoke(objectName());
-            return true;
-        }
-        return false;
-    }
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
-    {
         QList<ServerPlayer *> candidates;
-        foreach (auto p, room->getAlivePlayers())
+        foreach(auto p, room->getAlivePlayers())
         {
             if (p->isChained() || p->canBeChainedBy(player))
                 candidates << p;
         }
 
         auto target = room->askForPlayerChosen(player, candidates, objectName(), "@wujie-targetchoose");
+
+        if (target != NULL)
+        {
+            player->tag["WujieTarget"] = QVariant::fromValue(target);
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        player->tag["WujieTarget"] = NULL;
+        return false;
+    }
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        auto target = player->tag["WujieTarget"].value<ServerPlayer *>();
 
         if (target != NULL)
         {
@@ -2885,6 +2890,8 @@ public:
             log.arg = objectName();
             room->sendLog(log);
         }
+
+        player->tag["WujieTarget"] = NULL;
 
         return false;
     }
