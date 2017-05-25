@@ -120,6 +120,7 @@ return {
 	["guiyuan:Jink"] = "闪",
 	["guiyuan:Peach"] = "桃",
 	["guiyuan:Analeptic"] = "酒",
+	["#GuiyuanSwapEffect"] = "%from 发动了“<font color=\"yellow\"><b>鬼渊</b></font>”，令 %to 的【%arg】与【%arg2】效果交换，直到回合结束。",
 
 	["zuimie"] = "罪灭",
 	[":zuimie"] = "每当一名角色使用【杀】时，你可以重置副将的武将牌并弃置一张牌，然后令该角色的装备区里的牌失效，直到回合结束。",

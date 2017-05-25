@@ -2947,6 +2947,7 @@ public:
                 }
             }
         }
+
         if (basicName.length() > 1)
         {
             card1 = room->askForChoice(ask_who, objectName(), basicName.join("+"));
@@ -2959,35 +2960,50 @@ public:
             room->setTag("guiyuan_type1", card1);
             room->setTag("guiyuan_type2", card2);
             room->setPlayerMark(player, "guiyuan_bool", 1);
-        }
-        else
-            return false;
 
-        // minagoroshi and matsubayashi
-        QString choices;
-        choices = "cancel";
-        if (ask_who->getMark("minagoroshi") == 0)
-            choices += "+minagoroshi";
-        if (ask_who->getMark("matsubayashi") == 0)
-            choices += "+matsubayashi";
+            LogMessage log;
+            log.type = "#GuiyuanSwapEffect";
+            log.from = ask_who;
+            log.to << player;
+            log.arg = "guiyuan:" + card1;
+            log.arg2 = "guiyuan:" + card2;
 
-        QString choice = room->askForChoice(ask_who, objectName(), choices);
-        if (choice == "minagoroshi")
-        {
-            room->setPlayerMark(ask_who, choice, 1);
-            foreach (ServerPlayer *p, room->getAlivePlayers())
+            // minagoroshi and matsubayashi
+            QString choices;
+            choices = "cancel";
+            if (ask_who->getMark("minagoroshi") == 0)
+                choices += "+minagoroshi";
+            if (ask_who->getMark("matsubayashi") == 0)
+                choices += "+matsubayashi";
+
+            QString choice = room->askForChoice(ask_who, objectName(), choices);
+            if (choice == "minagoroshi")
             {
-                room->setPlayerMark(p, "guiyuan_bool", 1);
+                room->setPlayerMark(ask_who, choice, 1);
+                foreach(ServerPlayer *p, room->getAlivePlayers())
+                {
+                    room->setPlayerMark(p, "guiyuan_bool", 1);
+                    if (!log.to.contains(p))
+                        log.to << p;
+                }
             }
-        }
-        else if (choice == "matsubayashi")
-        {
-            room->setPlayerMark(ask_who, choice, 1);
-            foreach (ServerPlayer *p, room->getAlivePlayers())
+            else if (choice == "matsubayashi")
             {
-                room->setPlayerMark(p, "guiyuan_bool", 1);
+                room->setPlayerMark(ask_who, choice, 1);
+                foreach(ServerPlayer *p, room->getAlivePlayers())
+                {
+                    if (p->isChained())
+                    {
+                        room->setPlayerMark(p, "guiyuan_bool", 1);
+                        if (!log.to.contains(p))
+                            log.to << p;
+                    }
+                }
             }
+
+            room->sendLog(log);
         }
+
         return false;
     }
 };
