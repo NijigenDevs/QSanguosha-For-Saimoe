@@ -5347,7 +5347,13 @@ void Room::filterCards(ServerPlayer *player, QList<const Card *> cards, bool ref
     for (int i = 0; i < cards.size(); i++)
         cardChanged << false;
 
-    QSet<const Skill *> skills = player->getSkills(false, false);
+    QSet<const Skill *> skills;
+
+    foreach (ServerPlayer *p, player->getRoom()->getAllPlayers(true))
+    {
+        skills += p->getSkills(false, false);
+    }
+
     QList<const FilterSkill *> filterSkills;
 
     foreach (QString name, Sanguosha->getSkillNames()) {
@@ -5361,12 +5367,12 @@ void Room::filterCards(ServerPlayer *player, QList<const Card *> cards, bool ref
     }
 
     foreach (const Skill *skill, skills) {
-        if (player->hasSkill(skill->objectName()) && skill->inherits("FilterSkill")) {
+        if (skill->inherits("FilterSkill")) {
             const FilterSkill *filter = qobject_cast<const FilterSkill *>(skill);
             Q_ASSERT(filter);
             filterSkills.append(filter);
         }
-        if (player->hasSkill(skill->objectName()) && skill->inherits("TriggerSkill")) {
+        if (skill->inherits("TriggerSkill")) {
             const TriggerSkill *trigger = qobject_cast<const TriggerSkill *>(skill);
             const ViewAsSkill *vsskill = trigger->getViewAsSkill();
             if (vsskill && vsskill->inherits("FilterSkill")) {
@@ -5384,7 +5390,8 @@ void Room::filterCards(ServerPlayer *player, QList<const Card *> cards, bool ref
             bool converged = true;
             foreach (const FilterSkill *skill, filterSkills) {
                 Q_ASSERT(skill);
-                if (skill->viewFilter(cards[i], player)) {
+                if (skill->viewFilter(cards[i], player))
+                {
                     cards[i] = skill->viewAs(card);
                     Q_ASSERT(cards[i] != NULL);
                     converged = false;

@@ -2797,78 +2797,55 @@ public:
 class GuiyuanFilter : public FilterSkill
 {
 public:
-    GuiyuanFilter() : FilterSkill("guiyuan-filter")
+    GuiyuanFilter() : FilterSkill("#guiyuan-filter")
     {
     }
 
     virtual bool viewFilter(const Card *to_select, ServerPlayer *player) const
     {
-        if (player == NULL || to_select == NULL)
+        if (player == NULL || player->isDead() || to_select == NULL)
             return false;
+
         if (player->getMark("guiyuan_bool") == 1)
         {
-            QString guiyuan_type1;
-            QString guiyuan_type2;
-            int index1 = player->getMark("guiyuan_type1");
-            int index2 = player->getMark("guiyuan_type2");
-            switch (index1)
-            {
-                case 1: guiyuan_type1 = "slash"; break;
-                case 2: guiyuan_type1 = "jink"; break;
-                case 3: guiyuan_type1 = "peach"; break;
-                case 4: guiyuan_type1 = "analeptic"; break;
-            }
-            switch (index2)
-            {
-                case 1: guiyuan_type2 = "slash"; break;
-                case 2: guiyuan_type2 = "jink"; break;
-                case 3: guiyuan_type2 = "peach"; break;
-                case 4: guiyuan_type2 = "analeptic"; break;
-            }
-            if (guiyuan_type1 != "" && guiyuan_type2 != "" && guiyuan_type1 != guiyuan_type2)
-            {
-                if (guiyuan_type1 == "slash")
-                    return Sanguosha->getEngineCard(to_select->getEffectiveId())->isKindOf("Slash")
-                    || Sanguosha->getEngineCard(to_select->getEffectiveId())->match(guiyuan_type2);
-                if (guiyuan_type2 == "slash")
-                    return Sanguosha->getEngineCard(to_select->getEffectiveId())->isKindOf("Slash")
-                    || Sanguosha->getEngineCard(to_select->getEffectiveId())->match(guiyuan_type1);
-                return Sanguosha->getEngineCard(to_select->getEffectiveId())->match(guiyuan_type1 + "+" + guiyuan_type2);
-            }
+            QString guiyuan_type1 = player->getRoom()->getTag("guiyuan_type1").value<QString>();
+            QString guiyuan_type2 = player->getRoom()->getTag("guiyuan_type2").value<QString>();
+
+            if (guiyuan_type1.isNull() || guiyuan_type1.isEmpty() || guiyuan_type2.isNull() || guiyuan_type2.isEmpty() || guiyuan_type1 == guiyuan_type2)
+                return false;
+
+            auto card = Sanguosha->getEngineCard(to_select->getEffectiveId());
+
+            if (guiyuan_type1 == "slash")
+                return card->isKindOf("Slash") || card->isKindOf(guiyuan_type2.toLatin1().constData());
+            if (guiyuan_type2 == "slash")
+                return card->isKindOf("Slash") || card->isKindOf(guiyuan_type1.toLatin1().constData());
+
+            return card->isKindOf(guiyuan_type1.toLatin1()) || card->isKindOf(guiyuan_type2.toLatin1());
         }
         return false;
     }
 
     virtual const Card *viewAs(const Card *originalCard) const
     {
-        if (originalCard->getEffectiveId() < 1)
+        auto engineCard = Sanguosha->getEngineCard(originalCard->getEffectiveId());
+        if (engineCard == NULL || engineCard->isVirtualCard() || originalCard->getSkillName() == "guiyuan")
             return originalCard;
-        QString guiyuan_type1;
-        QString guiyuan_type2;
-        int index1 = Self->getMark("guiyuan_type1");
-        int index2 = Self->getMark("guiyuan_type2");
-        switch (index1)
-        {
-            case 1: guiyuan_type1 = "slash"; break;
-            case 2: guiyuan_type1 = "jink"; break;
-            case 3: guiyuan_type1 = "peach"; break;
-            case 4: guiyuan_type1 = "analeptic"; break;
-        }
-        switch (index2)
-        {
-            case 1: guiyuan_type2 = "slash"; break;
-            case 2: guiyuan_type2 = "jink"; break;
-            case 3: guiyuan_type2 = "peach"; break;
-            case 4: guiyuan_type2 = "analeptic"; break;
-        }
+
+        auto room = Sanguosha->currentRoom();
+        QString guiyuan_type1 = room->getTag("guiyuan_type1").value<QString>();
+        QString guiyuan_type2 = room->getTag("guiyuan_type2").value<QString>();
+
         QString guiyuan_type;
-        if (Sanguosha->getEngineCard(originalCard->getEffectiveId())->match(guiyuan_type1))
+        if ((guiyuan_type1 == "slash" && engineCard->isKindOf("Slash")) || engineCard->isKindOf(guiyuan_type1.toLatin1().constData()))
             guiyuan_type = guiyuan_type2;
-        if (Sanguosha->getEngineCard(originalCard->getEffectiveId())->match(guiyuan_type2))
+        if ((guiyuan_type2 == "slash" && engineCard->isKindOf("Slash")) || engineCard->isKindOf(guiyuan_type2.toLatin1().constData()))
             guiyuan_type = guiyuan_type1;
-        if (guiyuan_type == "")
+
+        if (guiyuan_type.isNull() || guiyuan_type.isEmpty())
             return originalCard;
-        WrappedCard *new_card = Sanguosha->getWrappedCard(Sanguosha->getEngineCard(originalCard->getEffectiveId())->getEffectiveId());
+
+        WrappedCard *new_card = Sanguosha->getWrappedCard(originalCard->getEffectiveId());
         Card *card = Sanguosha->cloneCard(guiyuan_type, originalCard->getSuit(), originalCard->getNumber());
         new_card->setSkillName("guiyuan");
         new_card->setModified(true);
@@ -2887,10 +2864,35 @@ class Guiyuan : public TriggerSkill
 public:
     Guiyuan() : TriggerSkill("guiyuan")
     {
-        events << EventPhaseStart << EventPhaseChanging << Death << EventLoseSkill << GameStart << GeneralShown << EventAcquireSkill;
+        events << EventPhaseStart << EventPhaseChanging << CardsMoveOneTime;
     }
 
-    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data) const
+    virtual void record(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data) const
+    {
+        if (event == EventPhaseChanging)
+        {
+            if (data.value<PhaseChangeStruct>().to == Player::NotActive)
+            {
+                foreach(ServerPlayer *p, room->getAlivePlayers())
+                {
+                    if (p->getMark("guiyuan_bool") > 0)
+                    {
+                        room->filterCards(p, p->getHandcards(), true);
+                        room->setPlayerMark(p, "guiyuan_bool", 0);
+                    }
+                }
+            }
+        }
+        else if (event == CardsMoveOneTime)
+        {
+            if (player != NULL && !player->isKongcheng())
+            {
+                room->filterCards(player, player->getHandcards(), true);
+            }
+        }
+    }
+
+    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &) const
     {
         QMap<ServerPlayer *, QStringList> skill_list;
         if (player == NULL)
@@ -2903,50 +2905,6 @@ public:
                 foreach (ServerPlayer *rika, rikas)
                     if (player != rika && !player->isChained() && !rika->isChained() && player->canBeChainedBy(rika))
                         skill_list.insert(rika, QStringList(objectName()));
-            }
-        }
-        else if (event == Death)
-        {
-            DeathStruct death = data.value<DeathStruct>();
-            if (death.who->hasShownSkill(this))
-            {
-                foreach (ServerPlayer *p, room->getAlivePlayers())
-                {
-                    if (p->hasSkill("guiyuan-filter"))
-                        p->loseSkill("guiyuan-filter");
-                }
-            }
-        }
-        else if (event == GeneralShown || event == EventAcquireSkill)
-        {
-            if (player->hasShownSkill(this))
-            {
-                foreach (ServerPlayer *p, room->getAlivePlayers())
-                {
-                    if (!p->hasSkill("guiyuan-filter"))
-                        room->attachSkillToPlayer(p, "guiyuan-filter");
-                }
-            }
-        }
-        else if (event == EventLoseSkill)
-        {
-            if (data.value<QString>() == objectName())
-            {
-                foreach (ServerPlayer *p, room->getAlivePlayers())
-                {
-                    if (p->hasSkill("guiyuan-filter"))
-                        p->loseSkill("guiyuan-filter");
-                }
-            }
-        }
-        else if (event == EventPhaseChanging)
-        {
-            if (data.value<PhaseChangeStruct>().to == Player::NotActive)
-            {
-                foreach (ServerPlayer *p, room->getAlivePlayers())
-                {
-                    room->setPlayerMark(p, "guiyuan_bool", 0);
-                }
             }
         }
         return skill_list;
@@ -2966,18 +2924,27 @@ public:
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const
     {
-        int index1 = 0;
-        int index2 = 0;
         QString card1;
         QString card2;
         QList<const BasicCard*> basics = Sanguosha->findChildren<const BasicCard*>();
         QStringList basicName;
         foreach (const BasicCard *basic, basics)
         {
-            if (!basicName.contains(basic->objectName()) && !ServerInfo.Extensions.contains("!" + basic->getPackage())
-                && basic->objectName() != "fire_slash" && basic->objectName() != "thunder_slash")
+            if (!ServerInfo.Extensions.contains("!" + basic->getPackage()))
             {
-                basicName << basic->objectName();
+                bool willAddThis = true;
+                foreach(QString name, basicName)
+                {
+                    if (basic->isKindOf(name.toLatin1().constData()))
+                    {
+                        willAddThis = false;
+                    }
+                }
+
+                if (willAddThis)
+                {
+                    basicName << basic->getClassName();
+                }
             }
         }
         if (basicName.length() > 1)
@@ -2985,38 +2952,26 @@ public:
             card1 = room->askForChoice(ask_who, objectName(), basicName.join("+"));
             basicName.removeOne(card1);
             card2 = room->askForChoice(ask_who, objectName(), basicName.join("+"));
-            if (card1 == "slash")
-                index1 = 1;
-            else if (card1 == "jink")
-                index1 = 2;
-            else if (card1 == "peach")
-                index1 = 3;
-            else if (card1 == "analeptic")
-                index1 = 4;
-            if (card2 == "slash")
-                index2 = 1;
-            else if (card2 == "jink")
-                index2 = 2;
-            else if (card2 == "peach")
-                index2 = 3;
-            else if (card2 == "analeptic")
-                index2 = 4;
-            foreach (ServerPlayer *p, room->getAlivePlayers())
-            {
-                room->setPlayerMark(p, "guiyuan_type1", index1);
-                room->setPlayerMark(p, "guiyuan_type2", index2);
-            }
+
+            if (card1.isNull() || card1.isEmpty() || card2.isNull() || card2.isEmpty())
+                return false;
+
+            room->setTag("guiyuan_type1", card1);
+            room->setTag("guiyuan_type2", card2);
+            room->setPlayerMark(player, "guiyuan_bool", 1);
         }
-        room->setPlayerMark(player, "guiyuan_bool", 1);
+        else
+            return false;
+
+        // minagoroshi and matsubayashi
         QString choices;
         choices = "cancel";
         if (ask_who->getMark("minagoroshi") == 0)
             choices += "+minagoroshi";
         if (ask_who->getMark("matsubayashi") == 0)
             choices += "+matsubayashi";
-        QString choice;
-        if (choices != "")
-            choice = room->askForChoice(ask_who, objectName(), choices);
+
+        QString choice = room->askForChoice(ask_who, objectName(), choices);
         if (choice == "minagoroshi")
         {
             room->setPlayerMark(ask_who, choice, 1);
@@ -3055,6 +3010,7 @@ public:
             if (change.to == Player::NotActive && player->hasFlag("zuimie_turn"))
             {
                 room->setPlayerMark(player, "Equips_Nullified_to_Yourself", qMax(0, player->getMark("Equips_Nullified_to_Yourself") - 1));
+                player->setFlags("-zuimie_turn");
             }
         }
     }
@@ -3067,11 +3023,11 @@ public:
         if (event == CardUsed)
         {
             CardUseStruct use = data.value<CardUseStruct>();
-            if (use.card && use.card->isKindOf("Slash") && player->getWeapon())
+            if (use.card != NULL && use.card->isKindOf("Slash"))
             {
                 foreach (ServerPlayer *rika, room->findPlayersBySkillName(objectName()))
                 {
-                    if (rika->isChained() && rika->canBeChainedBy(rika) && rika->canDiscard(rika, "he"))
+                    if (rika->canBeChainedBy(rika) && rika->canDiscard(rika, "he"))
                         skill_list.insert(rika, QStringList(objectName()));
                 }
             }
@@ -3081,18 +3037,18 @@ public:
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const
     {
-        if (room->askForCard(ask_who, ".", "@zuimie-discard", QVariant(), Card::MethodDiscard))
+        if (room->askForCard(ask_who, ".|.|.|.", "@zuimie-discard", QVariant(), Card::MethodDiscard))
         {
-            ask_who->setChained(false);
+            room->setPlayerProperty(ask_who, "chained", false);
             room->broadcastSkillInvoke(objectName());
             return true;
         }
         return false;
     }
 
-    virtual bool effect(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
-        player->addMark("Equips_Nullified_to_Yourself", 1);
+        room->setPlayerMark(player, "Equips_Nullified_to_Yourself", player->getMark("Equips_Nullified_to_Yourself") + 1);
         player->setFlags("zuimie_turn");
         return false;
     }
@@ -3692,6 +3648,9 @@ void MoesenPackage::addGameGenerals()
 
     General *rika = new General(this, "rika", "wu", 3, false); // G006
     rika->addSkill(new Guiyuan);
+    rika->addSkill(new GuiyuanFilter);
+    insertRelatedSkills("guiyuan", "#guiyuan-filter");
+    rika->addSkill(new Zuimie);
 
     General *rena = new General(this, "rena", "wu", 4, false); // G007
     rena->addSkill(new Chaidao);
@@ -3740,8 +3699,6 @@ void MoesenPackage::addGameGenerals()
     General *komari = new General(this, "komari", "wu", 3, false); // G018
     komari->addSkill(new Luoxuan);
     komari->addSkill(new Sidai);
-
-    skills << new GuiyuanFilter;
 
     addMetaObject<HaixingCard>();
     addMetaObject<TaozuiCard>();
