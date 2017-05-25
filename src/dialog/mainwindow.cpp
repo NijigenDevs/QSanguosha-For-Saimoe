@@ -904,8 +904,15 @@ void MainWindow::fitBackgroundBrush()
 
         QRectF rect(scene->sceneRect());
         QTransform transform;
-        transform.translate(-rect.left(), -rect.top());
-        transform.scale(rect.width() / pixmap.width(), rect.height() / pixmap.height());
+        transform = transform.translate(-rect.left(), -rect.top());
+        if (rect.width() / rect.height() >= (qreal)pixmap.width() / (qreal)pixmap.height())
+        {
+            transform = transform.scale(rect.width() / pixmap.width(), rect.width() / pixmap.width());
+        }
+        else
+        {
+            transform = transform.scale(rect.height() / pixmap.height(), rect.height() / pixmap.height());
+        }
         brush.setTransform(transform);
         scene->setBackgroundBrush(brush);
     }
