@@ -2989,7 +2989,7 @@ public:
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *target, QVariant &, ServerPlayer *ask_who) const
     {
-        if (ask_who->askForSkillInvoke(this))
+        if (room->askForSkillInvoke(ask_who, objectName(), qVariantFromValue(target)))
         {
             target->setFlags("kongli_" + ask_who->objectName());
             room->broadcastSkillInvoke(objectName(), ask_who);
