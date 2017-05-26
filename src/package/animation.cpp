@@ -3041,7 +3041,7 @@ public:
     {
         if (event == EventPhaseStart)
         {
-            auto card = room->askForCard(ask_who, "EquipCard|.|.|hand", "@jianqiao-invoke", NULL, Card::MethodNone, player, false, objectName());
+            auto card = room->askForCard(ask_who, "Slash,EquipCard|.|.|hand", "@jianqiao-invoke", NULL, Card::MethodNone, player, false, objectName());
             if (card != NULL)
             {
                 player->obtainCard(card, true);
