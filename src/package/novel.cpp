@@ -2306,13 +2306,13 @@ public:
         {
             if (room->askForUseCard(player, "@@tiaoting", "@tiaoting-targetchoose") != NULL)
             {
-                room->broadcastSkillInvoke(objectName(), 1, player);
+                room->broadcastSkillInvoke(objectName());
                 return true;
             }
         }
         else
         {
-            room->broadcastSkillInvoke(objectName(), 2, ask_who);
+            room->broadcastSkillInvoke(objectName());
             return true;
         }
 
