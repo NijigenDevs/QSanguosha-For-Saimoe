@@ -1829,8 +1829,8 @@ public:
     virtual bool viewFilter(const Card *to_select, ServerPlayer *player) const
     {
         Room *room = Sanguosha->currentRoom();
-        return player->ownSkill("fengwang") && player->hasShownSkill("fengwang") && player->getMark("@excalibur") > 0 && 
-            to_select->isKindOf("Weapon") && room->getCardPlace(to_select->getEffectiveId()) == Player::PlaceHand;
+        return player->hasShownSkill("fengwang") && player->getMark("@excalibur") > 0 && to_select->isKindOf("Weapon") 
+            && room->getCardPlace(to_select->getEffectiveId()) == Player::PlaceHand;
     }
 
     virtual const Card *viewAs(const Card *originalCard) const

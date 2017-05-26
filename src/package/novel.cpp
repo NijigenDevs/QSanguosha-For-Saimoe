@@ -109,7 +109,7 @@ class AzusaTrigger : public TriggerSkill
 public:
     AzusaTrigger() : TriggerSkill("#azusa-cardHandle")
     {
-        events << NonTrigger << GameStart << TurnStart << EventPhaseStart << EventPhaseProceeding << EventPhaseEnd << EventPhaseChanging << EventPhaseSkipping 
+        events << GameStart << TurnStart << EventPhaseStart << EventPhaseProceeding << EventPhaseEnd << EventPhaseChanging << EventPhaseSkipping 
             << DrawNCards << AfterDrawNCards << PreHpRecover << HpRecover << PreHpLost << HpChanged << MaxHpChanged << PostHpReduced << HpLost << TurnedOver
             << EventLoseSkill << EventAcquireSkill << StartJudge << AskForRetrial << FinishRetrial << FinishJudge << PindianVerifying << Pindian << ChoiceMade
             << ChainStateChanged << RemoveStateChanged << ConfirmDamage << Predamage << DamageForseen << DamageCaused << DamageInflicted << PreDamageDone 
