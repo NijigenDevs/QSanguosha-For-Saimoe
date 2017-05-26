@@ -2707,6 +2707,8 @@ const Card *TianjianCard::validate(CardUseStruct &card_use) const
     if (!available)
         return NULL;
 
+    room->setPlayerFlag(source, "tianjian_used");
+
     return use_card;
 }
 
@@ -2782,7 +2784,7 @@ public:
             auto use = data.value<CardUseStruct>();
             if (use.card != NULL && use.from != NULL && use.card->getSkillName() == "tianjian")
             {
-                use.from->setFlags("tianjian_used");
+                room->setPlayerFlag(use.from, "tianjian_used");
                 use.from->turnOver();
             }
         }
