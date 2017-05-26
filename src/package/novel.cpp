@@ -1896,6 +1896,7 @@ public:
             return false;
 
         target->setFaceUp(true);
+        room->broadcastProperty(target, "faceup");
 
         LogMessage log;
         log.type =  target->faceUp() ? "#CichangTurnFaceUp" : "#CichangTurnFaceDown";
