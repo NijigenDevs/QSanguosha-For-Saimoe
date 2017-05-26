@@ -1881,8 +1881,6 @@ public:
         const Card *card = room->askForCard(ask_who, "BasicCard", "@cichang_discard", QVariant::fromValue(target), Card::MethodDiscard);
         if (card != NULL)
         {
-            target->setFaceUp(true);
-            room->broadcastProperty(target, "faceup");
             ask_who->tag["cichang-card"] = QVariant::fromValue(card);
             room->broadcastSkillInvoke(objectName());
             return true;
@@ -1890,9 +1888,21 @@ public:
         return false;
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *target, QVariant &, ServerPlayer *ask_who) const
     {
         const Card *card = ask_who->tag["cichang-card"].value<const Card *>();
+
+        if (card == NULL)
+            return false;
+
+        target->setFaceUp(true);
+
+        LogMessage log;
+        log.type =  target->faceUp() ? "#CichangTurnFaceUp" : "#CichangTurnFaceDown";
+        log.from = ask_who;
+        log.to << target;
+        log.arg = objectName();
+        room->sendLog(log);
 
         if (card->isKindOf("ThunderSlash") || card->isKindOf("FireSlash"))
         {
@@ -1907,10 +1917,17 @@ public:
                 return false;
 
             QList<ServerPlayer *> victims = room->askForPlayersChosen(ask_who, candidates, objectName(), 2, 2, "@cichang_choosetarget", false);
+
+            log.type = "#CichangChain";
+            log.to.clear();
+
             foreach (ServerPlayer *victim, victims)
             {
+                log.to << victim;
                 room->setPlayerProperty(victim, "chained", true);
             }
+
+            room->sendLog(log);
         }
         else if (card->isKindOf("Peach") || card->isKindOf("Analeptic"))
         {
@@ -2963,15 +2980,17 @@ public:
         auto ruikos = room->findPlayersBySkillName(objectName());
         foreach (auto ruiko, ruikos)
         {
-            skill_list.insert(ruiko, QStringList(objectName()));
+            if (!target->hasFlag("kongli_" + ruiko->objectName()))
+                skill_list.insert(ruiko, QStringList(objectName()));
         }
         return skill_list;
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *target, QVariant &, ServerPlayer *ask_who) const
     {
         if (ask_who->askForSkillInvoke(this))
         {
+            target->setFlags("kongli_" + ask_who->objectName());
             room->broadcastSkillInvoke(objectName(), ask_who);
             return true;
         }
