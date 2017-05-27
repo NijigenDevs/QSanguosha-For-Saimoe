@@ -1423,7 +1423,10 @@ public:
             foreach (ServerPlayer *p, room->getOtherPlayers(player))
             {
                 if (p->getHandcardNum() > 0)
+                {
                     invoke = true;
+                    break;
+                }
             }
             if (invoke)
                 return QStringList(objectName());
@@ -1433,6 +1436,9 @@ public:
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer*) const
     {
+        if (player->getHandcardNum() == 0)
+            return false;
+
         QList<ServerPlayer *> targets;
         foreach (ServerPlayer *p, room->getOtherPlayers(player))
             if (p->getHandcardNum() > 0)
