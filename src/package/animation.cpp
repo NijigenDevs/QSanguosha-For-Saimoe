@@ -3265,7 +3265,7 @@ void MoesenPackage::addAnimationGenerals()
     rei->addSkill(new Chidun);
     rei->addRelateSkill("yongjue");
 
-    General *asuka = new General(this, "asuka", "wei", 4, false); // A011
+    General *asuka = new General(this, "asuka", "wei", 3, false); // A011
     asuka->addSkill(new Xiehang);
     skills << new XiehangAnother;
     asuka->addSkill(new XiehangResidue);

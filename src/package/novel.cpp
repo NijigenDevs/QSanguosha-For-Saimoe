@@ -3036,7 +3036,7 @@ void MoesenPackage::addNovelGenerals()
     taiga->addSkill(new Yexi);
     taiga->setHeadMaxHpAdjustedValue(-1);
 
-    General *shana = new General(this, "shana", "qun", 1.5, false); // N002
+    General *shana = new General(this, "shana", "qun", 3, false); // N002
     shana->addSkill(new Duanzui);
     shana->addSkill(new DuanzuiTM);
     shana->addSkill(new Honglian);
