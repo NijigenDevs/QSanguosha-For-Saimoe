@@ -2824,7 +2824,7 @@ JingdiCard::JingdiCard()
 
 bool JingdiCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
 {
-    return targets.isEmpty() && Self->canDiscard(to_select, "he") && to_select != Self && !(Self->isFriendWith(to_select) || Self->willBeFriendWith(to_select));
+    return targets.isEmpty() && Self->canDiscard(to_select, "he") && !Self->hasFlag("jingdi_used_" + to_select->objectName()) && to_select != Self && !(Self->isFriendWith(to_select) || Self->willBeFriendWith(to_select));
 }
 
 void JingdiCard::extraCost(Room *room, const CardUseStruct &card_use) const
@@ -2842,6 +2842,7 @@ void JingdiCard::onEffect(const CardEffectStruct &effect) const
 
     Room *room = effect.to->getRoom();
 
+    room->setPlayerFlag(effect.from, "jingdi_used_" + effect.to->objectName());
     int card_id = room->askForCardChosen(effect.from, effect.to, "he", "jingdi", false, Card::MethodDiscard);
     room->throwCard(card_id, effect.to, effect.from);
 }
