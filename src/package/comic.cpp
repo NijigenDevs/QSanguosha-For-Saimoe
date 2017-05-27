@@ -2541,7 +2541,7 @@ public:
 
     virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const
     {
-        if (!TriggerSkill::triggerable(player))
+        if (!TriggerSkill::triggerable(player) || player->hasFlag("jiandao_used"))
             return QStringList();
         CardUseStruct use = data.value<CardUseStruct>();
         if (use.card != NULL && use.card->isKindOf("Slash") && use.to.length() == 1)
@@ -2597,12 +2597,14 @@ public:
             auto choice = room->askForChoice(player, objectName(), choices.join("+"), data);
             if (choice == "hand")
             {
+                room->setPlayerFlag(player, "jiandao_used");
                 player->tag["jiandao_targets"] = QVariant::fromValue(handVictims);
                 room->broadcastSkillInvoke("jiandao", 1);
                 return true;
             }
             else if (choice == "equip")
             {
+                room->setPlayerFlag(player, "jiandao_used");
                 player->tag["jiandao_targets"] = QVariant::fromValue(equipVictims);
                 room->broadcastSkillInvoke("jiandao", 2);
                 return true;
