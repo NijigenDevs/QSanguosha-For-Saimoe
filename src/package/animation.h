@@ -4,6 +4,32 @@
 #include "moesen-package.h"
 #include "card.h"
 
+class Mashu : public DistanceSkill
+{
+public:
+    explicit Mashu(const QString &);
+
+    virtual int getCorrect(const Player *from, const Player *) const;
+};
+
+class ShowMashu : public ShowDistanceCard
+{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE ShowMashu();
+};
+
+class RendeCard : public SkillCard
+{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE RendeCard();
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+    virtual void extraCost(Room *room, const CardUseStruct &card_use) const;
+};
+
 class WuweiCard : public SkillCard
 {
     Q_OBJECT

@@ -1,6 +1,6 @@
 #include "aux-skills.h"
 #include "client.h"
-#include "standard-shu-generals.h"
+#include "animation.h"
 #include "clientplayer.h"
 #include "engine.h"
 

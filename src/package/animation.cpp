@@ -2096,6 +2096,23 @@ public:
     }
 };
 
+ShowMashu::ShowMashu()
+    : ShowDistanceCard()
+{
+}
+
+Mashu::Mashu(const QString &owner) : DistanceSkill("mashu_" + owner)
+{
+}
+
+int Mashu::getCorrect(const Player *from, const Player *) const
+{
+    if (from->hasSkill(objectName()) && from->hasShownSkill(this))
+        return -1;
+    else
+        return 0;
+}
+
 //tengyue by SE
 class TengyueTrigger : public TriggerSkill
 {
@@ -3168,6 +3185,33 @@ public:
     }
 };
 
+RendeCard::RendeCard()
+{
+    will_throw = false;
+    handling_method = Card::MethodNone;
+}
+
+void RendeCard::extraCost(Room *room, const CardUseStruct &card_use) const
+{
+    ServerPlayer *target = card_use.to.first();
+    CardMoveReason reason(CardMoveReason::S_REASON_GIVE, card_use.from->objectName(), target->objectName(), "rende", QString());
+    room->obtainCard(target, this, reason, false);
+}
+
+void RendeCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const
+{
+    int old_value = source->getMark("rende");
+    int new_value = old_value + subcards.length();
+    room->setPlayerMark(source, "rende", new_value);
+
+    if (old_value < 3 && new_value >= 3 && source->isWounded()) {
+        RecoverStruct recover;
+        recover.card = this;
+        recover.who = source;
+        room->recover(source, recover);
+    }
+}
+
 void MoesenPackage::addAnimationGenerals()
 {
     General *madoka = new General(this, "madoka", "wei", 4, false); // A001
@@ -3262,6 +3306,7 @@ void MoesenPackage::addAnimationGenerals()
 
     skills << new Yongjue;
 
+    addMetaObject<RendeCard>();
     addMetaObject<WuweiCard>();
     addMetaObject<MiaolvCard>();
     addMetaObject<QuanmianCard>();

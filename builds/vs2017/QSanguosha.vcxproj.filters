@@ -367,34 +367,10 @@
     <ClCompile Include="Release\moc_standard-basics.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
-    <ClCompile Include="Debug\moc_standard-qun-generals.cpp">
-      <Filter>Generated Files\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="Release\moc_standard-qun-generals.cpp">
-      <Filter>Generated Files\Release</Filter>
-    </ClCompile>
-    <ClCompile Include="Debug\moc_standard-shu-generals.cpp">
-      <Filter>Generated Files\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="Release\moc_standard-shu-generals.cpp">
-      <Filter>Generated Files\Release</Filter>
-    </ClCompile>
     <ClCompile Include="Debug\moc_standard-tricks.cpp">
       <Filter>Generated Files\Debug</Filter>
     </ClCompile>
     <ClCompile Include="Release\moc_standard-tricks.cpp">
-      <Filter>Generated Files\Release</Filter>
-    </ClCompile>
-    <ClCompile Include="Debug\moc_standard-wei-generals.cpp">
-      <Filter>Generated Files\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="Release\moc_standard-wei-generals.cpp">
-      <Filter>Generated Files\Release</Filter>
-    </ClCompile>
-    <ClCompile Include="Debug\moc_standard-wu-generals.cpp">
-      <Filter>Generated Files\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="Release\moc_standard-wu-generals.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
     <ClCompile Include="Release\moc_ai.cpp">
@@ -771,15 +747,6 @@
       <Filter>Generated Files\Debug</Filter>
     </ClCompile>
     <ClCompile Include="Release\moc_GraphicsBox.cpp">
-      <Filter>Generated Files\Release</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\package\jiange-defense.cpp">
-      <Filter>package</Filter>
-    </ClCompile>
-    <ClCompile Include="Debug\moc_jiange-defense.cpp">
-      <Filter>Generated Files\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="Release\moc_jiange-defense.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\scenario\jiange-defense-scenario.cpp">
@@ -1272,9 +1239,6 @@
     </CustomBuild>
     <CustomBuild Include="..\..\src\ui\GuanxingBox.h">
       <Filter>ui</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\..\src\package\jiange-defense.h">
-      <Filter>package</Filter>
     </CustomBuild>
     <CustomBuild Include="..\..\src\scenario\jiange-defense-scenario.h">
       <Filter>scenario</Filter>
