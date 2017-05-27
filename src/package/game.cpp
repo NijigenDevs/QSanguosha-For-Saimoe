@@ -1855,7 +1855,7 @@ FengwangCard::FengwangCard()
     handling_method = Card::MethodNone;
 }
 
-void FengwangCard::onUse(Room *room, const CardUseStruct &card_use) const
+void FengwangCard::onUse(Room *, const CardUseStruct &card_use) const
 {
     // it's a weird problem that setShowSkill() can't make general shown, so I put it into onUse().
     QString skill_name = card_use.card->showSkill();
@@ -1864,17 +1864,25 @@ void FengwangCard::onUse(Room *room, const CardUseStruct &card_use) const
     ServerPlayer *source = card_use.from;
     if (source != NULL && subcards.length() > 0)
     {
-        bool toPile = false;
+        bool toPile = true;
         foreach (int id, subcards)
         {
-            if (room->getCardPlace(id) == Player::PlaceHand)
+            if (source->getPile("jian").contains(Sanguosha->getEngineCard(id)->getEffectiveId()))
             {
-                toPile = true;
+                toPile = false;
                 break;
             }
         }
-        DummyCard dummy(subcards);
-        toPile ? source->addToPile("jian", subcards, false) : source->obtainCard(&dummy, false);
+
+        if (toPile)
+        {
+            source->addToPile("jian", subcards, false);
+        }
+        else
+        {
+            DummyCard dummy(subcards);
+            source->obtainCard(&dummy, false);
+        }
     }
 }
 
@@ -1894,8 +1902,8 @@ public:
 
     virtual const Card *viewAs(const Card *originalCard) const
     {
-        if (Self->getPile("jian").length() > 0 ?
-            Self->getPile("jian").first() == originalCard->getId() : Self->getPile("jian").first() != originalCard->getId())
+        if ((Self->getPile("jian").length() > 0 && Self->getPile("jian").contains(originalCard->getEffectiveId()))
+            || Self->getPile("jian").length() == 0)
         {
             FengwangCard *fw = new FengwangCard;
             fw->addSubcard(originalCard);
@@ -1974,7 +1982,7 @@ public:
         }
         else if (event == EventPhaseStart)
         {
-            if (TriggerSkill::triggerable(player) && player->getPhase() == Player::Start && player->getWeapon())
+            if (TriggerSkill::triggerable(player) && player->getPhase() == Player::Start && player->getWeapon() != NULL && player->getMark("@excalibur") > 0)
                 return QStringList(objectName());
         }
         else if (event == SlashMissed)
