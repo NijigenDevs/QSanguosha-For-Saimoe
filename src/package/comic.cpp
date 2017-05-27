@@ -2885,6 +2885,7 @@ void MoesenPackage::addComicGenerals()
     izumi->addSkill(new Wushu);
 
     General *suiseiseki = new General(this, "suiseiseki", "shu", 3, false); // C005
+    suiseiseki->addCompanion("shinku");
     suiseiseki->addSkill(new Shuimeng);
     suiseiseki->addSkill(new rosesuiseiseki);
     suiseiseki->addSkill(new meijiesuiseiseki);
