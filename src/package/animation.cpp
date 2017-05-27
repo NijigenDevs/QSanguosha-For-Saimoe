@@ -1401,21 +1401,11 @@ void XiehangCard::use(Room *room, ServerPlayer *asuka, QList<ServerPlayer *> &ta
     room->clearAG(user);
     if (id == -1)
         return;
-    room->setPlayerMark(user, "xiehangCardId", id);
-
     Card *card = Sanguosha->getCard(id);
-
     if (card == NULL)
         return;
 
-    bool trigger = false;
-    if (card->isAvailable(user))
-    {
-        trigger = true;
-    }
-
-    if (!trigger)
-        return;
+    room->setPlayerMark(user, "xiehangCardId", id);
     room->askForUseCard(user, "@@xiehang", objectName());
 }
 
