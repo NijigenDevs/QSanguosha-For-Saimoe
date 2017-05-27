@@ -209,7 +209,7 @@ return {
 	["#inori"] = "葬仪之剑", 
 	["#&inori"] = "罪恶王冠", 
 	["#$inori"] = "樱满集", 
-	["~inori"] = "", 
+	["~inori"] = "集，一直留在我身边吧，因为我是集的伙伴，呐", 
 	["designer:inori"] = "钉子",
 	["cv:inori"] = "茅野愛衣",
 	["illustrator:inori"] = "53126094",
