@@ -1440,84 +1440,99 @@ public:
                     skill_list.insert(rin, QStringList(objectName()));
             return skill_list;
         }
-        else
+        else if (triggerEvent == FinishJudge)
         {
             JudgeStruct *judge = data.value<JudgeStruct *>();
-            if (judge->reason != objectName()) return skill_list;
-            judge->pattern = QString::number(int(judge->card->getSuit()));
             if (judge->reason == objectName() && room->getCardPlace(judge->card->getEffectiveId()) == Player::PlaceJudge
-                && judge->who->getPile("gem").length() < 10)
-                judge->who->addToPile("gem", judge->card);
+                && judge->who->getPile("gem").length() < 10 && TriggerSkill::triggerable(player))
+                skill_list.insert(player, QStringList(objectName()));
         }
         return skill_list;
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *ask_who) const
+    virtual bool cost(TriggerEvent event, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *ask_who) const
     {
         ServerPlayer *rin = ask_who;
 
         if (rin != NULL)
         {
-            rin->tag["canshi_data"] = data;
-            bool invoke = room->askForDiscard(rin, objectName(), 1, 1, true, true, "@canshi", true);
-            rin->tag.remove("canshi_data");
-
-            if (invoke)
+            if (event == Damaged)
             {
-                room->doAnimate(QSanProtocol::S_ANIMATE_INDICATE, rin->objectName(), data.value<DamageStruct>().to->objectName());
-                room->broadcastSkillInvoke(objectName(), rin);
-                return true;
+                rin->tag["canshi_data"] = data;
+                bool invoke = room->askForDiscard(rin, objectName(), 1, 1, true, true, "@canshi", true);
+                rin->tag.remove("canshi_data");
+
+                if (invoke)
+                {
+                    room->doAnimate(QSanProtocol::S_ANIMATE_INDICATE, rin->objectName(), data.value<DamageStruct>().to->objectName());
+                    room->broadcastSkillInvoke(objectName(), rin);
+                    return true;
+                }
+            }
+            else if (event == FinishJudge)
+            {
+                return rin->hasShownSkill(this) || rin->askForSkillInvoke(this);
             }
         }
         return false;
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const
+    virtual bool effect(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const
     {
         ServerPlayer *rin = ask_who;
-        if (rin == NULL) return false;
-        DamageStruct damage = data.value<DamageStruct>();
+        if (rin == NULL)
+            return false;
 
-        JudgeStruct judge;
-        judge.good = true;
-        judge.play_animation = false;
-        judge.who = rin;
-        judge.reason = objectName();
-
-        room->judge(judge);
-
-        Card::Suit suit = (Card::Suit)(judge.pattern.toInt());
-        switch (suit)
+        if (event == Damaged)
         {
-            case Card::Heart:
-            {
-                RecoverStruct recover;
-                recover.who = rin;
-                room->recover(player, recover);
+            DamageStruct damage = data.value<DamageStruct>();
 
-                break;
-            }
-            case Card::Diamond:
-            {
-                player->drawCards(2);
-                break;
-            }
-            case Card::Club:
-            {
-                if (damage.from && damage.from->isAlive())
-                    room->askForDiscard(damage.from, "canshi_discard", 2, 2, false, true);
+            JudgeStruct judge;
+            judge.good = true;
+            judge.play_animation = false;
+            judge.who = rin;
+            judge.reason = objectName();
 
-                break;
-            }
-            case Card::Spade:
-            {
-                if (damage.from && damage.from->isAlive())
-                    damage.from->turnOver();
+            room->judge(judge);
 
-                break;
+            Card::Suit suit = (Card::Suit)(judge.pattern.toInt());
+            switch (suit)
+            {
+                case Card::Heart:
+                {
+                    RecoverStruct recover;
+                    recover.who = rin;
+                    room->recover(player, recover);
+
+                    break;
+                }
+                case Card::Diamond:
+                {
+                    player->drawCards(2);
+                    break;
+                }
+                case Card::Club:
+                {
+                    if (damage.from && damage.from->isAlive())
+                        room->askForDiscard(damage.from, "canshi_discard", 2, 2, false, true);
+
+                    break;
+                }
+                case Card::Spade:
+                {
+                    if (damage.from && damage.from->isAlive())
+                        damage.from->turnOver();
+
+                    break;
+                }
+                default:
+                    break;
             }
-            default:
-                break;
+        }
+        else if (event == FinishJudge)
+        {
+            JudgeStruct *judge = data.value<JudgeStruct *>();
+            player->addToPile("gem", judge->card);
         }
 
         return false;
