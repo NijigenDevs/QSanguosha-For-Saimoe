@@ -2234,6 +2234,13 @@ void TiaotingCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &
     belligerent.insert(allies, false);
     armistice[source] = belligerent;
     room->setTag("tiaoting", QVariant::fromValue(armistice));
+
+    LogMessage log;
+    log.type = "#TiaotingArmistice";
+    log.from = source;
+    log.to << targets;
+    log.arg = "tiaoting";
+    room->sendLog(log);
 }
 
 class TiaotingVS : public ZeroCardViewAsSkill
@@ -2345,7 +2352,7 @@ public:
         }
         else if (event == DamageCaused)
         {
-            ask_who->setFlags("tiaoting_used");
+            room->setPlayerFlag(ask_who, "tiaoting_used");
             auto damage = data.value<DamageStruct>();
             auto armistice = room->getTag("tiaoting").value<QMap<ServerPlayer *, QMap<ServerPlayer *, bool>>>();
             (armistice[ask_who])[damage.from] = true;
@@ -2363,6 +2370,14 @@ public:
             {
                 room->drawCards(belligerent, 1, objectName());
             }
+
+            LogMessage log;
+            log.type = "#TiaotingNoDamage";
+            log.from = ask_who;
+            log.to << belligerent;
+            log.arg = objectName();
+            room->sendLog(log);
+
             return true;
         }
 
