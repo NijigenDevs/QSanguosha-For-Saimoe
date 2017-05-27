@@ -1379,32 +1379,43 @@ void XiehangCard::use(Room *room, ServerPlayer *asuka, QList<ServerPlayer *> &ta
             room->attachSkillToPlayer(target, "xiehangAnother");
         user = target;
     }
-    room->fillAG(cardids, user);
-    int id = room->askForAG(user, cardids, false, objectName());
+
+    QList<int> disabled_ids;
+
+    foreach (int id, cardids)
+    {
+        auto tryCard = Sanguosha->getCard(id);
+        if (tryCard != NULL)
+        {
+            tryCard->setSkillName("xiehang");
+            if (!tryCard->isAvailable(user) || tryCard->isKindOf("FightTogether"))
+            {
+                disabled_ids << id;
+            }
+            tryCard->setSkillName("");
+        }
+    }
+
+    room->fillAG(cardids, user, disabled_ids);
+    int id = room->askForAG(user, cardids, true, objectName());
     room->clearAG(user);
     if (id == -1)
         return;
     room->setPlayerMark(user, "xiehangCardId", id);
 
-    Card * card = Sanguosha->getCard(id);
+    Card *card = Sanguosha->getCard(id);
 
     if (card == NULL)
         return;
 
     bool trigger = false;
-    if (card->isKindOf("Slash"))
+    if (card->isAvailable(user))
     {
         trigger = true;
     }
-    else if (card->isKindOf("Peach"))
-    {
-        trigger = user->isWounded();
-    }
-    else if (card->isKindOf("Analeptic") || card->isKindOf("TrickCard") || card->isKindOf("EquipCard"))
-    {
-        trigger = true;
-    }
-    if (!trigger) return;
+
+    if (!trigger)
+        return;
     room->askForUseCard(user, "@@xiehang", objectName());
 }
 
@@ -1442,22 +1453,98 @@ const Card * XiehangUseCard::validate(CardUseStruct &cardUse) const
         return NULL;
 
     Card* card = Sanguosha->getCard(cardUse.from->getMark("xiehangCardId"));
-    //Card *new_card = Sanguosha->cloneCard(card);
-    //new_card->setSkillName("xiehang");
-    //new_card->addSubcard(card);
+
+    if (card == NULL)
+        return NULL;
+
+    card->setSkillName("xiehang");
+
     bool ok = true;
-    foreach (ServerPlayer *p, cardUse.to)
+    auto source = cardUse.from;
+    auto room = source->getRoom();
+    QList<ServerPlayer *> targets;
+
+    if (card->isKindOf("AwaitExhausted"))
     {
-        if (cardUse.from->isProhibited(p, card))
+        foreach(ServerPlayer *p, room->getAlivePlayers())
+            if (!source->isProhibited(p, card) && source->isFriendWith(p))
+                targets << p;
+    }
+    else if (card->getSubtype() == "global_effect" && !card->isKindOf("FightTogether"))
+    {
+        foreach(ServerPlayer *p, room->getAlivePlayers())
+            if (!source->isProhibited(p, card))
+                targets << p;
+    }
+    else if (card->isKindOf("FightTogether"))
+    {
+        QStringList big_kingdoms = source->getBigKingdoms("tianjian", MaxCardsType::Normal);
+        QList<ServerPlayer *> bigs, smalls;
+        foreach(ServerPlayer *p, room->getAllPlayers())
+        {
+            if (source->isProhibited(p, card)) continue;
+            QString kingdom = p->objectName();
+            if (big_kingdoms.length() == 1 && big_kingdoms.first().startsWith("sgs"))
+            { // for JadeSeal
+                if (big_kingdoms.contains(kingdom))
+                    bigs << p;
+                else
+                    smalls << p;
+            }
+            else
+            {
+                if (!p->hasShownOneGeneral())
+                {
+                    smalls << p;
+                    continue;
+                }
+                if (p->getRole() == "careerist")
+                    kingdom = "careerist";
+                else
+                    kingdom = p->getKingdom();
+                if (big_kingdoms.contains(kingdom))
+                    bigs << p;
+                else
+                    smalls << p;
+            }
+        }
+        if ((smalls.length() > 0 && smalls.length() < bigs.length() && bigs.length() > 0) || (smalls.length() > 0 && bigs.length() == 0))
+            targets = smalls;
+        else if ((smalls.length() > 0 && smalls.length() > bigs.length() && bigs.length() > 0) || (smalls.length() == 0 && bigs.length() > 0))
+            targets = bigs;
+        else if (smalls.length() == bigs.length())
+            targets = smalls;
+    }
+    else if (card->getSubtype() == "aoe" && !card->isKindOf("BurningCamps"))
+    {
+        foreach(ServerPlayer *p, room->getOtherPlayers(source))
+            if (!source->isProhibited(p, card))
+                targets << p;
+    }
+    else if (card->isKindOf("BurningCamps"))
+    {
+        QList<const Player *> players = source->getNextAlive()->getFormation();
+        foreach(const Player *p, players)
+            if (!source->isProhibited(p, card))
+                targets << room->findPlayerbyobjectName(p->objectName());
+    }
+
+    if (!targets.isEmpty())
+        cardUse.to << targets;
+
+    foreach(ServerPlayer *to, cardUse.to)
+    {
+        if (source->isProhibited(to, card))
         {
             ok = false;
             break;
         }
     }
-    card->setSkillName("xiehang");
-    ok = ok && card->isAvailable(cardUse.from);
-    //card->deleteLater();
-    if (!ok) return NULL;
+
+    ok = ok && card->isAvailable(source);
+
+    if (!ok)
+        return NULL;
     return card;
 }
 
@@ -1471,7 +1558,7 @@ public:
 
     virtual int getResidueNum(const Player *from, const Card *card) const
     {
-        if (from->getMark("xiehangCardId") == card->getEffectiveId() && card->getSkillName() == "xiehang")
+        if (card->getSkillName() == "xiehang")
             return 1000;
         else
             return 0;
