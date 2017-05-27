@@ -2249,6 +2249,7 @@ public:
         if (pattern == "peach+analeptic" && Self->getMark("Global_PreventPeach") > 0)
             pattern = "analeptic";
         laoyue_card->setUserString(pattern);
+        laoyue_card->setShowSkill("laoyue");
         return laoyue_card;
     }
 };
