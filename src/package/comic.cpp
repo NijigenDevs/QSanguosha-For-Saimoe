@@ -1429,7 +1429,7 @@ public:
             bool invoke = false;
             foreach (ServerPlayer *p, room->getOtherPlayers(player))
             {
-                if (p->getHandcardNum() > 0)
+                if (p->getHandcardNum() > 0 && !player->hasFlag("qinlve_used_" + p->objectName()))
                 {
                     invoke = true;
                     break;
@@ -1461,6 +1461,7 @@ public:
                 if (pindian != NULL)
                 {
                     player->tag["qinlve_pindian"] = QVariant::fromValue(pindian);
+                    room->setPlayerFlag(player, "qinlve_used_" + target->objectName());
                     return true;
                 }
             }
