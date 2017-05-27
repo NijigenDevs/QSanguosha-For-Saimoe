@@ -1244,7 +1244,7 @@ class Zhaihun : public TriggerSkill
 public:
     Zhaihun() : TriggerSkill("zhaihun")
     {
-        events << CardsMoveOneTime << EventPhaseEnd;
+        events << CardsMoveOneTime << EventPhaseEnd << EventPhaseChanging;
     }
 
     virtual void record(TriggerEvent event, Room *, ServerPlayer *player, QVariant &data) const
@@ -1268,6 +1268,13 @@ public:
                     }
                 }
                 player->tag["ZhaihunCards"] = zhaihunCards;
+            }
+        }
+        else if (event == EventPhaseChanging)
+        {
+            if (data.value<PhaseChangeStruct>().from == Player::Discard || data.value<PhaseChangeStruct>().to)
+            {
+                player->tag["ZhaihunCards"].clear();
             }
         }
     }
