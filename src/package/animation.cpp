@@ -1350,13 +1350,13 @@ XiehangCard::XiehangCard()
 
 bool XiehangCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
 {
-    return targets.isEmpty() && !to_select->isKongcheng() && to_select->objectName() != Self->objectName();
+    return targets.isEmpty() && !to_select->isKongcheng() && !to_select->hasFlag("xiehang_used") && to_select != Self;
 }
 
 void XiehangCard::use(Room *room, ServerPlayer *asuka, QList<ServerPlayer *> &targets) const
 {
     ServerPlayer *target = targets.first();
-    room->broadcastSkillInvoke("xiehang");
+    room->setPlayerFlag(target, "xiehang_used");
     PindianStruct *pindian = asuka->pindianSelect(target, "xiehang");
     //get the ids before pindian
     QList<int> cardids;
