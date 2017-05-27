@@ -350,10 +350,10 @@ void JisuiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &tar
     targets << source;
     QList<int> card_ids = room->getNCards(targets.length());
     room->fillAG(card_ids);
+    room->clearAG();
     room->setTag("Jisui_Card", IntList2VariantList(card_ids));
     room->sortByActionOrder(targets);
     Card::use(room, source, targets);
-    room->clearAG();
     QVariantList ag_list = room->getTag("Jisui_Card").toList();
     if (ag_list.isEmpty()) return;
 
@@ -363,20 +363,23 @@ void JisuiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &tar
 
     QList<int> guanxing_ids;
 
+    room->fillAG(card2_ids);
+    room->clearAG();
+
     do
     {
-        room->fillAG(card2_ids);
+        room->fillAG(card2_ids, source);
         int card_id = room->askForAG(source, card2_ids, true, "jisui");
+        room->clearAG(source);
         if (card_id == -1)
         {
-            room->clearAG(source);
             break;
         }
 
         card2_ids.removeOne(card_id);
         ag_list.removeOne(card_id);
         guanxing_ids << card_id;
-        room->clearAG(source);
+        
     } while (!card2_ids.isEmpty());
 
     if (guanxing_ids.length() > 0)
@@ -399,14 +402,15 @@ void JisuiCard::onEffect(const CardEffectStruct &effect) const
         card_ids << card_id.toInt();
     if (effect.to->getHandcardNum() > 0)
     {
-
         QList<CardsMoveStruct> exchangeMove;
 
         auto excard = room->askForExchange(effect.to, "jisui", 1, 0, "@jisui-exchange", "", ".");
 
         if (excard.length() > 0)
         {
+            room->fillAG(card_ids, effect.to);
             int card_id = room->askForAG(effect.to, card_ids, false, objectName());
+            room->clearAG(effect.to);
             card_ids.removeOne(card_id);
 
             CardsMoveStruct move1(excard.first(), NULL, Player::PlaceTable,
@@ -423,6 +427,9 @@ void JisuiCard::onEffect(const CardEffectStruct &effect) const
             ag_list << excard.first();
 
             room->setTag("Jisui_Card", ag_list);
+
+            room->fillAG(VariantList2IntList(ag_list));
+            room->clearAG();
         }
     }
 }
