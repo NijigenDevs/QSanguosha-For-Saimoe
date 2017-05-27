@@ -1750,7 +1750,12 @@ void KaihuaCard::onUse(Room *room, const CardUseStruct &card_use) const
     room->setPlayerMark(card_use.from, "@kaihuaTimes", card_use.from->getMark("@kaihuaTimes") + 1);
 
     CardUseStruct new_use = card_use;
-    new_use.to << room->getOtherPlayers(card_use.from);
+
+    auto candidates = room->getOtherPlayers(card_use.from);
+    if (candidates.length() < 1)
+        return;
+
+    new_use.to << room->askForPlayersChosen(card_use.from, candidates, "kaihua", 1, candidates.length(), "@kaihua-targetchoose");
 
     Card::onUse(room, new_use);
 }
