@@ -2328,9 +2328,9 @@ public:
                 return true;
             }
         }
-        else
+        else if (event == DamageCaused)
         {
-            room->broadcastSkillInvoke(objectName());
+            room->broadcastSkillInvoke(objectName(), ask_who);
             return true;
         }
 
@@ -2343,7 +2343,7 @@ public:
         {
             return false;
         }
-        else
+        else if (event == DamageCaused)
         {
             ask_who->setFlags("tiaoting_used");
             auto damage = data.value<DamageStruct>();
