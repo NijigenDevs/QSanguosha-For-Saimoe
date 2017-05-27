@@ -2940,7 +2940,7 @@ void MoesenPackage::addComicGenerals()
     shizuno->addSkill(new Moyun);
     shizuno->addSkill(new Shanzhu);
 
-    General *koromo = new General(this, "koromo", "shu", 4, false); // C018
+    General *koromo = new General(this, "koromo", "shu", 3, false); // C018
     koromo->addSkill(new Kongyun);
     koromo->addSkill(new Laoyue);
 
