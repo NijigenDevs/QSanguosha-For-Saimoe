@@ -1440,6 +1440,7 @@ const Card * XiehangUseCard::validate(CardUseStruct &cardUse) const
 {
     if (cardUse.from == NULL)
         return NULL;
+
     Card* card = Sanguosha->getCard(cardUse.from->getMark("xiehangCardId"));
     //Card *new_card = Sanguosha->cloneCard(card);
     //new_card->setSkillName("xiehang");
@@ -1453,12 +1454,29 @@ const Card * XiehangUseCard::validate(CardUseStruct &cardUse) const
             break;
         }
     }
+    card->setSkillName("xiehang");
     ok = ok && card->isAvailable(cardUse.from);
     //card->deleteLater();
     if (!ok) return NULL;
     return card;
-
 }
+
+class XiehangResidue : public TargetModSkill
+{
+public:
+    XiehangResidue() : TargetModSkill("#xiehang-residue")
+    {
+        pattern = "BasicCard,TrickCard";
+    }
+
+    virtual int getResidueNum(const Player *from, const Card *card) const
+    {
+        if (from->getMark("xiehangCardId") == card->getEffectiveId() && card->getSkillName() == "xiehang")
+            return 1000;
+        else
+            return 0;
+    }
+};
 
 class Xiehang : public ZeroCardViewAsSkill
 {
@@ -3206,7 +3224,9 @@ void MoesenPackage::addAnimationGenerals()
     General *asuka = new General(this, "asuka", "wei", 4, false); // A011
     asuka->addSkill(new Xiehang);
     skills << new XiehangAnother;
+    asuka->addSkill(new XiehangResidue);
     related_skills.insertMulti("Xiehang", "XiehangAnother");
+    related_skills.insertMulti("Xiehang", "#xiehang-residue");
     asuka->addSkill(new Powei);
 
     General *inori = new General(this, "inori", "wei", 3, false); // A012
