@@ -1218,12 +1218,12 @@ public:
     LeiguangVS() : OneCardViewAsSkill("leiguang")
     {
         response_or_use = true;
-        filter_pattern = "%slash";
+        filter_pattern = ".|black|.|hand";
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const
     {
-        return Slash::IsAvailable(player);
+        return Slash::IsAvailable(player) && player->getPhase() == Player::Play;
     }
 
     virtual bool isEnabledAtResponse(const Player *, const QString &) const
