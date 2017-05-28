@@ -2992,7 +2992,7 @@ public:
         view_as_skill = new HefengVS;
     }
 
-    virtual void record(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data) const
+    virtual void record(TriggerEvent event, Room *room, ServerPlayer *, QVariant &data) const
     {
         if (event == PreCardUsed)
         {

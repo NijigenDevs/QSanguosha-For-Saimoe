@@ -1546,7 +1546,7 @@ public:
         pattern = "BasicCard,TrickCard";
     }
 
-    virtual int getResidueNum(const Player *from, const Card *card) const
+    virtual int getResidueNum(const Player *, const Card *card) const
     {
         if (card->getSkillName() == "xiehang")
             return 1000;
