@@ -917,7 +917,7 @@ public:
         {
             QStringList choices;
             choices << "maxhptohp";
-            if (taiga->canDiscard(taiga, "h") && taiga->getHandcardNum() >= x)
+            if (taiga->canDiscard(taiga, "h") && taiga->getHandcardNum() >= x && taiga->inDeputySkills(this))
             {
                 choices << "hptomaxhp";
             }
