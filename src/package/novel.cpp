@@ -1376,7 +1376,7 @@ public:
         if (to)
         {
             if (player->isWounded())
-                to->drawCards(player->getLostHp(), objectName());
+                to->drawCards(qMin(player->getLostHp(), 3), objectName());
             to->turnOver();
         }
     }
