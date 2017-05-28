@@ -236,15 +236,9 @@ TaozuiCard::TaozuiCard()
     mute = true;
 }
 
-bool TaozuiCard::targetFilter(const QList<const Player *> &, const Player *to_select, const Player *Self) const
+bool TaozuiCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
 {
-    bool invoke = false;
-    foreach (const Card *card, to_select->getJudgingArea())
-    {
-        if (Self->canDiscard(to_select, "j") && (card->isKindOf("Indulgence") || card->isKindOf("SupplyShortage")))
-            invoke = true;
-    }
-    return invoke;
+    return targets.isEmpty() && Self->canDiscard(to_select, "j");
 }
 
 void TaozuiCard::use(Room *, ServerPlayer *source, QList<ServerPlayer *> &targets) const
@@ -322,12 +316,10 @@ public:
             bool invoke = false;
             foreach (ServerPlayer *p, room->getAlivePlayers())
             {
-                foreach (const Card *card, p->getJudgingArea())
+                if (player->canDiscard(p, "j"))
                 {
-                    if (card->isKindOf("Indulgence") || card->isKindOf("SupplyShortage"))
-                    {
-                        invoke = true;
-                    }
+                    invoke = true;
+                    break;
                 }
             }
             if (invoke)
@@ -382,7 +374,8 @@ public:
                     if (disc->objectName() == choice)
                     {
                         CardMoveReason reason(CardMoveReason::S_REASON_PUT, fuuko->objectName());
-                        room->throwCard(disc, reason, NULL);
+                        room->throwCard(disc, reason, fuuko);
+                        continue;
                     }
                 }
             }
