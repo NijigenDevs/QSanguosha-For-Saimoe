@@ -345,11 +345,14 @@ bool JisuiCard::targetFilter(const QList<const Player *> &targets, const Player 
     return invoke;
 }
 
+#include <roomthread.h>
+
 void JisuiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const
 {
     targets << source;
     QList<int> card_ids = room->getNCards(targets.length());
     room->fillAG(card_ids);
+    room->getThread()->delay(2000);
     room->clearAG();
     room->setTag("Jisui_Card", IntList2VariantList(card_ids));
     room->sortByActionOrder(targets);
@@ -364,6 +367,7 @@ void JisuiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &tar
     QList<int> guanxing_ids;
 
     room->fillAG(card2_ids);
+    room->getThread()->delay(2000);
     room->clearAG();
 
     do
@@ -426,9 +430,18 @@ void JisuiCard::onEffect(const CardEffectStruct &effect) const
             ag_list.removeOne(card_id);
             ag_list << excard.first();
 
+            LogMessage log;
+            log.from = effect.from;
+            log.to << effect.to;
+            log.type = "#JisuiSwapCard";
+            log.arg = Sanguosha->getEngineCard(excard.first())->objectName();
+            log.arg2 = Sanguosha->getEngineCard(card_id)->objectName();
+            room->sendLog(log);
+
             room->setTag("Jisui_Card", ag_list);
 
             room->fillAG(VariantList2IntList(ag_list));
+            room->getThread()->delay(2000);
             room->clearAG();
         }
     }
@@ -1336,7 +1349,7 @@ public:
 class Fangzhu6 : public MasochismSkill
 {
 public:
-    Fangzhu6() : MasochismSkill("fangzhu_rikka")
+    Fangzhu6() : MasochismSkill("fangzhurikka")
     {
     }
 
@@ -1423,10 +1436,6 @@ public:
             if (p->getMark("xieyu_dis") > 0)
             {
                 room->setPlayerMark(p, "xieyu_dis", 0);
-                foreach(ServerPlayer *target, room->getAllPlayers())
-                {
-                    room->setFixedDistance(p, target, -1);
-                }
             }
         }
 
@@ -1449,10 +1458,6 @@ public:
                     if (room->getCurrent() != NULL && rikka->inFormationRalation(room->getCurrent()))
                         room->doBattleArrayAnimate(rikka);
                     room->setPlayerMark(p ,"xieyu_dis", 1);
-                    foreach(ServerPlayer *target, room->getOtherPlayers(p))
-                    {
-                        room->setFixedDistance(p, target, 1);
-                    }
                 }
             }
         }
@@ -1740,6 +1745,14 @@ class DuanzuiTM : public TargetModSkill
 public:
     DuanzuiTM() : TargetModSkill("#duanzui-target")
     {
+    }
+
+    virtual int getResidueNum(const Player *, const Card *card) const
+    {
+        if (card->isKindOf("Slash") && card->getSkillName() == "duanzui")
+            return 1;
+        else
+            return 0;
     }
 
     virtual int getExtraTargetNum(const Player *from, const Card *card) const
@@ -2678,6 +2691,10 @@ void XuwuCard::onUse(Room *room, const CardUseStruct &card_use) const
     }
 
     card_use.from->drawCards(1);
+
+    // then
+
+    card_use.from->drawCards(1);
 }
 
 class XuwuVS : public OneCardViewAsSkill
@@ -3017,7 +3034,7 @@ public:
         }
     }
 
-    virtual TriggerList triggerable(TriggerEvent, Room, ServerPlayer, QVariant &) const
+    virtual TriggerList triggerable(TriggerEvent, Room *, ServerPlayer *, QVariant &) const
     {
         return TriggerList();
     }

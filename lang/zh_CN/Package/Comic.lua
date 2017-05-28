@@ -239,11 +239,12 @@ return {
 	[":yujian"] = "每当你于出牌阶段使用的【杀】指定目标后，你可以声明：\n1、此【杀】造成伤害；\n2、此【杀】未造成伤害。\n此【杀】结算完毕时，若声明为真，你摸一张牌。",
 	["forecastWillDamage"] = "此【杀】造成伤害",
 	["forecastWontDamage"] = "此【杀】未造成伤害",
-	["$YujianAnnounce"] = "%from 发动了“预见”,声明了 %arg",
+	["$YujianAnnounce"] = "%from 发动了“<font color=\"yellow\"><b>预见</b></font>”,声明了 %arg",
 
 	["tiruo"] = "体弱",
-	[":tiruo"] = "每当你成为一名角色的【杀】的目标时，你可以弃置一张牌取消之，然后该角色摸一张牌。",
-	["@tiruo_discard"] = "%src 对你使用【杀】，你可以弃置一张牌发动“体弱”取消之",
+	["#Tiruo"] = "%from 的“<font color=\"yellow\"><b>体弱</b></font>”被触发，伤害从 %arg 点减少至 %arg2 点",
+	[":tiruo"] = "锁定技，每当你受到伤害时，若伤害来源有暗置的武将牌，你令此伤害值-1。",
+	-- ["@tiruo_discard"] = "%src 对你使用【杀】，你可以弃置一张牌发动“体弱”取消之",
 
 	----C015
 	["saki"] = "宫永咲", 

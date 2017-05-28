@@ -177,20 +177,8 @@ class YingqiangSpade : public TriggerSkill
 public:
     YingqiangSpade() : TriggerSkill("yingqiang_spade")
     {
-        events << PreDamageDone << Damage;
+        events << Damage;
         global = true;
-    }
-
-    virtual void record(TriggerEvent event, Room *, ServerPlayer *player, QVariant &data) const
-    {
-        if (event == PreDamageDone)
-        {
-            auto damage = data.value<DamageStruct>();
-            if (damage.card != NULL && damage.from != NULL && damage.card->getSkillName() == "yingqiang")
-            {
-                damage.from->tag["InvokeYingqiangSpade"] = (damage.from->distanceTo(player) <= 1);
-            }
-        }
     }
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer * &) const
@@ -198,7 +186,8 @@ public:
         if (triggerEvent == Damage)
         {
             DamageStruct damage = data.value<DamageStruct>();
-            if (damage.from != NULL && damage.from->isAlive() && damage.card && damage.card->getSkillName() == "yingqiang")
+            if (damage.from != NULL && damage.from->isAlive() && damage.card != NULL && damage.card->getSkillName() == "yingqiang"
+                && damage.to != NULL && damage.from->distanceTo(damage.to) <= 1)
                 foreach (int cardid, damage.card->getSubcards())
                 if (Sanguosha->getCard(cardid)->getSuit() == Card::Spade && player->isWounded())
                 {
@@ -2703,15 +2692,6 @@ public:
     {
         if (triggerEvent == DamageInflicted && ask_who->askForSkillInvoke(objectName(), data))
         {
-            if (ask_who->hasShownSkill(this))
-            {
-                room->notifySkillInvoked(ask_who, objectName());
-                LogMessage log;
-                log.type = "#TriggerSkill";
-                log.from = ask_who;
-                log.arg = objectName();
-                room->sendLog(log);
-            }
             room->broadcastSkillInvoke(objectName());
             return true;
         }
@@ -2735,6 +2715,8 @@ public:
     {
         if (event == DamageInflicted)
         {
+            ask_who->drawCards(1, objectName());
+
             DamageStruct damage = data.value<DamageStruct>();
             damage.to->setFlags("chidun_tar");
             damage.transfer = true;

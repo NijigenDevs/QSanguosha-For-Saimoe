@@ -26,21 +26,47 @@ Mogara
 #include <QMediaPlaylist>
 #include <QDir>
 QMediaPlayer *Audio::BGMPlayer = nullptr;
+QCache<QString, QMediaPlayer> *Audio::SoundCache = nullptr;
 
 void Audio::init()
 {
+    SoundCache = new QCache<QString, QMediaPlayer>(30);
 }
 
 void Audio::quit()
 {
-    if (BGMPlayer)
+    if (BGMPlayer != nullptr)
         delete BGMPlayer;
+
+    if (SoundCache != nullptr)
+    {
+        SoundCache->clear();
+        SoundCache = nullptr; // Do not use delete here. Because server-side will exec play system audio function too, then it will crash in Audio::play if soundcache is deleted
+    }
 }
 
 void Audio::play(const QString &filename, const bool doubleVolume)
 {
-    QMediaPlayer *sound = new QMediaPlayer;
-    sound->setMedia(QUrl(filename));
+    if (SoundCache == nullptr)
+        return;
+    QMediaPlayer *sound = nullptr;
+    if (!SoundCache->contains(filename))
+    {
+        sound = new QMediaPlayer;
+        sound->setMedia(QUrl(filename));
+        SoundCache->insert(filename, sound);
+    }
+    else
+    {
+        sound = SoundCache->object(filename);
+        if (sound->state() == QMediaPlayer::PlayingState)
+        {
+            return;
+        }
+    }
+
+    if (sound == nullptr)
+        return;
 
     sound->setVolume((doubleVolume ? 2 : 1) * Config.EffectVolume * 100);
     sound->play();
@@ -54,6 +80,11 @@ void Audio::playAudioOfMoxuan()
 void Audio::stop()
 {
     stopBGM();
+
+    if (SoundCache == nullptr || SoundCache->isEmpty())
+        return;
+
+    SoundCache->clear();
 }
 
 void Audio::playBGM(const QString &filename)

@@ -225,6 +225,10 @@ CommonTranslationTable = {
 	["$CancelTargetNoUser"] = "【%arg】的目标 %to 被取消",
 	["$ViewRole"] = "%from 观看了 %to 的身份 %arg",
 	["#UseLuckCard"] = "%from 使用了 <font color=\"yellow\"><b>手气卡</b></font>",
+	["#Fangquan"] = "%to 将获得一个额外的回合",
+	["#GuanxingResult"] = "%from 的“<font color=\"yellow\"><b>观星</b></font>”结果：%arg 上 %arg2 下",
+	["$GuanxingTop"] = "置于牌堆顶的牌：%card",
+	["$GuanxingBottom"] = "置于牌堆底的牌：%card",
 
 	["cw"] = "顺时针",
 	["ccw"] = "逆时针",

@@ -1447,9 +1447,11 @@ public:
             return false;
 
         QList<ServerPlayer *> targets;
-        foreach (ServerPlayer *p, room->getOtherPlayers(player))
-            if (p->getHandcardNum() > 0)
+        foreach(ServerPlayer *p, room->getOtherPlayers(player))
+        {
+            if (p->getHandcardNum() > 0 && !player->hasFlag("qinlve_used_" + p->objectName()))
                 targets << p;
+        }
 
         if (!targets.isEmpty())
         {
@@ -1566,29 +1568,71 @@ public:
     }
 };
 
+//class Tiruo : public TriggerSkill
+//{
+//public:
+//    Tiruo() : TriggerSkill("tiruo")
+//    {
+//        events << TargetConfirmed;
+//        frequency = NotFrequent;
+//    }
+//
+//    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const
+//    {
+//        if (!TriggerSkill::triggerable(player)) return QStringList();
+//        CardUseStruct use = data.value<CardUseStruct>();
+//        if (use.from && use.from->isAlive() && use.to.contains(player) && use.card->isKindOf("Slash") && player->canDiscard(player, "he"))
+//            return QStringList(objectName());
+//        return QStringList();
+//    }
+//
+//    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+//    {
+//        if (room->askForCard(player, "..", QString("@tiruo_discard:" + data.value<CardUseStruct>().from->objectName()), QVariant(), objectName()))
+//        {
+//            room->broadcastSkillInvoke(objectName());
+//            return true;
+//        }
+//        return false;
+//    }
+//
+//    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+//    {
+//        CardUseStruct use = data.value<CardUseStruct>();
+//        room->notifySkillInvoked(player, objectName());
+//
+//        room->cancelTarget(use, player);
+//
+//        use.from->drawCards(1);
+//
+//        data = QVariant::fromValue(use);
+//        return false;
+//    }
+//};
+
 class Tiruo : public TriggerSkill
 {
 public:
     Tiruo() : TriggerSkill("tiruo")
     {
-        events << TargetConfirmed;
-        frequency = NotFrequent;
+        events << DamageInflicted;
+        frequency = Compulsory;
     }
 
     virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const
     {
         if (!TriggerSkill::triggerable(player)) return QStringList();
-        CardUseStruct use = data.value<CardUseStruct>();
-        if (use.from && use.from->isAlive() && use.to.contains(player) && use.card->isKindOf("Slash") && player->canDiscard(player, "he"))
+        DamageStruct damage = data.value<DamageStruct>();
+        if (damage.from && !damage.from->hasShownAllGenerals())
             return QStringList(objectName());
         return QStringList();
     }
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
     {
-        if (room->askForCard(player, "..", QString("@tiruo_discard:" + data.value<CardUseStruct>().from->objectName()), QVariant(), objectName()))
-        {
-            room->broadcastSkillInvoke(objectName());
+        bool invoke = player->hasShownSkill(this) ? true : player->askForSkillInvoke(this, data);
+        if (invoke) {
+            room->broadcastSkillInvoke(objectName(), player);
             return true;
         }
         return false;
@@ -1596,14 +1640,20 @@ public:
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
     {
-        CardUseStruct use = data.value<CardUseStruct>();
+        DamageStruct damage = data.value<DamageStruct>();
         room->notifySkillInvoked(player, objectName());
 
-        room->cancelTarget(use, player);
+        LogMessage log;
+        log.type = "#Tiruo";
+        log.from = player;
+        log.arg = QString::number(damage.damage);
+        log.arg2 = QString::number(--damage.damage);
+        room->sendLog(log);
 
-        use.from->drawCards(1);
+        if (damage.damage < 1)
+            return true;
+        data = QVariant::fromValue(damage);
 
-        data = QVariant::fromValue(use);
         return false;
     }
 };
