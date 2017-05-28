@@ -2938,22 +2938,22 @@ public:
     }
 };
 
-class Hefeng : public ViewAsSkill
+class HefengVS : public ViewAsSkill
 {
 public:
-    Hefeng() : ViewAsSkill("hefeng")
+    HefengVS() : ViewAsSkill("hefeng")
     {
         response_or_use = true;
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const
     {
-        return !player->isKongcheng();
+        return !player->isKongcheng() && !player->hasFlag("hefeng_used");
     }
 
     virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const
     {
-        return pattern.contains("peach") && !player->hasFlag("Global_PreventPeach");
+        return pattern.contains("peach") && !player->hasFlag("Global_PreventPeach") && !player->hasFlag("hefeng_used");
     }
 
     virtual bool viewFilter(const QList<const Card *> &, const Card *to_select) const
@@ -2975,11 +2975,51 @@ public:
         {
             Peach *peach = new Peach(Card::SuitToBeDecided, 0, false);
             peach->addSubcards(cards);
-            peach->setSkillName(objectName());
-            peach->setShowSkill(objectName());
+            peach->setSkillName("hefeng");
+            peach->setShowSkill("hefeng");
             return peach;
         }
         return NULL;
+    }
+};
+
+class Hefeng : public TriggerSkill
+{
+public:
+    Hefeng() : TriggerSkill("hefeng")
+    {
+        events << EventPhaseChanging << PreCardUsed;
+        view_as_skill = new HefengVS;
+    }
+
+    virtual void record(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data) const
+    {
+        if (event == PreCardUsed)
+        {
+            auto use = data.value<CardUseStruct>();
+            if (use.card != NULL && use.from != NULL && use.card->getSkillName() == "hefeng")
+            {
+                room->setPlayerFlag(use.from, "hefeng_used");
+            }
+        }
+        else if (event == EventPhaseChanging)
+        {
+            if (data.value<PhaseChangeStruct>().to == Player::NotActive)
+            {
+                foreach(auto p, room->getAlivePlayers())
+                {
+                    if (p->hasFlag("hefeng_used"))
+                    {
+                        room->setPlayerFlag(p, "-hefeng_used");
+                    }
+                }
+            }
+        }
+    }
+
+    virtual TriggerList triggerable(TriggerEvent, Room, ServerPlayer, QVariant &) const
+    {
+        return TriggerList();
     }
 };
 

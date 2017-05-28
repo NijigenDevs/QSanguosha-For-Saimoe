@@ -2789,7 +2789,7 @@ public:
                 {
                     if (p->hasFlag("tianjian_used"))
                     {
-                        p->setFlags("-tianjian_used");
+                        room->setPlayerFlag(p, "-tianjian_used");
                     }
                 }
             }
