@@ -2510,9 +2510,8 @@ public:
             const Card *card = room->getTag("NullifyingCard").value<const Card *>();
             QMap<int, ServerPlayer *> yetians = room->getTag("yetians").value<QMap<int, ServerPlayer *>>();
             if (use.from != NULL && use.card->isKindOf("Nullification") && card != NULL && card->isNDTrick()
-                && Sanguosha->getEngineCard(use.card->getEffectiveId()
-                    && !yetians.contains(card->getEffectiveId()) && !use.card->isVirtualCard() && use.card->subcardsLength() == 1
-                    && Sanguosha->getEngineCard(use.card->getEffectiveId())->isNDTrick()))
+                && Sanguosha->getEngineCard(use.card->getEffectiveId()) && Sanguosha->getEngineCard(use.card->getEffectiveId())->isNDTrick()
+                && !yetians.contains(card->getEffectiveId()) && !use.card->isVirtualCard() && use.card->subcardsLength() == 1)
             {
                 yetians.insert(card->getEffectiveId(), use.from);
                 room->setTag("yetians", QVariant::fromValue(yetians));
