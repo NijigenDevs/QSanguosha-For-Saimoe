@@ -749,15 +749,6 @@
     <ClCompile Include="Release\moc_GraphicsBox.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\scenario\jiange-defense-scenario.cpp">
-      <Filter>scenario</Filter>
-    </ClCompile>
-    <ClCompile Include="Debug\moc_jiange-defense-scenario.cpp">
-      <Filter>Generated Files\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="Release\moc_jiange-defense-scenario.cpp">
-      <Filter>Generated Files\Release</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\ui\Title.cpp">
       <Filter>ui</Filter>
     </ClCompile>
@@ -1239,9 +1230,6 @@
     </CustomBuild>
     <CustomBuild Include="..\..\src\ui\GuanxingBox.h">
       <Filter>ui</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\..\src\scenario\jiange-defense-scenario.h">
-      <Filter>scenario</Filter>
     </CustomBuild>
     <CustomBuild Include="..\..\src\ui\Title.h">
       <Filter>ui</Filter>
