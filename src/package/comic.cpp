@@ -1209,7 +1209,7 @@ public:
         {
             if (p->getHandcardNum() > 0)
             {
-                auto card = room->askForExchange(p, objectName(), 1, 0, "@xipin_give", "", ".");
+                auto card = room->askForExchange(p, objectName(), 1, 0, "@xipin_give", "", ".|.|.|hand");
                 if (!card.isEmpty())
                 {
                     CardsMoveStruct move;
