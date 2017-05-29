@@ -1174,7 +1174,7 @@ void ZhuanyuCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &)
         return;
     }
     room->throwCard(Sanguosha->getCard(id), source, source, objectName());
-    source->drawCards(source->getLostHp());
+    source->drawCards(2, "zhuanyu");
 }
 
 class Zhuanyu : public ZeroCardViewAsSkill
