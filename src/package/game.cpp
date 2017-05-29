@@ -3377,7 +3377,7 @@ public:
         }
         else if (event == EventPhaseStart)
         {
-            if (ask_who->hasShownSkill(this) || ask_who->askForSkillInvoke(this, qVariantFromValue(player)))
+            if (ask_who->askForSkillInvoke(this, qVariantFromValue(player)))
             {
                 room->broadcastSkillInvoke(objectName());
                 return true;
