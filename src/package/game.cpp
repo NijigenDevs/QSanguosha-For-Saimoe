@@ -35,8 +35,24 @@ void Key::takeEffect(ServerPlayer *target) const
 #endif
 }
 
-void Key::onEffect(const CardEffectStruct &) const
+void Key::onEffect(const CardEffectStruct &effect) const
 {
+    ServerPlayer *player = effect.to;
+    if (player == NULL || !player->isAlive() || !player->isWounded())
+        return;
+
+    Room *room = player->getRoom();
+
+    LogMessage log;
+    log.from = player;
+    log.arg = effect.card->objectName();
+    log.type = "$KeyRecover";
+    room->sendLog(log);
+
+    RecoverStruct recover;
+    recover.recover = 1;
+    recover.card = effect.card;
+    room->recover(player, recover, true);
 }
 
 //for managing anything needed to be done with key
@@ -61,28 +77,30 @@ public:
                     continue;
                 if (move.from != NULL && move.from_places[i] != NULL && move.from_places[i] == Player::PlaceDelayedTrick)
                 {
-                    ServerPlayer *player = NULL;
-                    foreach (ServerPlayer *p, room->getAlivePlayers())
+                    if (move.from != NULL && move.from->isAlive())
                     {
-                        if (p->objectName() == move.from->objectName())
+                        ServerPlayer *player = NULL;
+                        foreach(auto p, room->getAlivePlayers())
                         {
-                            player = p;
-                            break;
+                            if (p->objectName() == move.from->objectName())
+                            {
+                                player = p;
+                                break;
+                            }
                         }
-                    }
-                    if (player != NULL && player->isAlive() && player->isWounded())
-                    {
-                        LogMessage log;
-                        log.from = player;
-                        log.arg = Sanguosha->getEngineCard(move.card_ids[i])->objectName();
-                        log.type = "$KeyRecover";
-                        room->sendLog(log);
 
-                        RecoverStruct recover;
-                        recover.recover = 1;
-                        recover.who = player;
-                        recover.card = Sanguosha->getEngineCard(move.card_ids[i]);
-                        room->recover(player, recover, true);
+                        if (player != NULL && player->isAlive())
+                        {
+                            const Card *card = Sanguosha->getCard(move.card_ids[i]);
+                            Key* key = new Key(card->getSuit(), card->getNumber());
+                            key->addSubcard(card);
+                            Card *trick = Sanguosha->cloneCard(key);
+                            Q_ASSERT(trick != NULL);
+                            WrappedCard *wrapped = Sanguosha->getWrappedCard(move.card_ids[i]);
+                            wrapped->takeOver(trick);
+                            room->broadcastUpdateCard(room->getPlayers(), wrapped->getId(), wrapped);
+                            room->cardEffect(wrapped, player, player);
+                        }
                     }
                     if (move.to_place != Player::PlaceDelayedTrick)
                     {
@@ -793,7 +811,7 @@ public:
             {
                 Key *key = new Key(Card::NoSuit, 0);
                 const QList<const Player *> empty;
-                if (key->targetFilter(empty, dying.who, rin) && !rin->hasFlag("jiuzhu_used"))
+                if (key->targetFilter(empty, dying.who, rin) && !dying.who->containsTrick("keyCard") && !rin->hasFlag("jiuzhu_used"))
                 {
                     delete key;
                     skill_list.insert(rin, QStringList(objectName()));
