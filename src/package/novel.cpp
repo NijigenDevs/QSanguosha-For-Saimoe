@@ -2472,6 +2472,11 @@ public:
         frequency = Compulsory;
     }
 
+    virtual bool canPreshow() const
+    {
+        return false;
+    }
+
     virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *, QVariant &, ServerPlayer * &) const
     {
         return QStringList();
