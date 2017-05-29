@@ -2155,14 +2155,10 @@ public:
                 else
                 {
                     use.card->setFlags("fengwang_nullified");
-                    CardMoveReason reason(CardMoveReason::S_REASON_THROW, player->objectName());
-                    room->moveCardTo(Sanguosha->getEngineCard(id), player, NULL, Player::PlaceTable, reason, true);
-                    QList<int> table_cardids = room->getCardIdsOnTable(Sanguosha->getEngineCard(id));
-                    if (!table_cardids.isEmpty())
-                    {
-                        DummyCard dummy(table_cardids);
-                        room->moveCardTo(&dummy, player, NULL, Player::DiscardPile, reason, true);
-                    }
+
+                    ask_who->getPile("jian").removeOne(id);
+                    CardMoveReason reason(CardMoveReason::S_REASON_REMOVE_FROM_PILE, QString(), objectName(), QString());
+                    room->throwCard(jian, reason, NULL, player, objectName());
                 }
             }
         }
@@ -2213,14 +2209,9 @@ public:
                 if (effect.slash != NULL)
                     effect.slash->setFlags("fengwang_nullified");
 
-                CardMoveReason reason(CardMoveReason::S_REASON_THROW, player->objectName());
-                room->moveCardTo(Sanguosha->getEngineCard(id), player, NULL, Player::PlaceTable, reason, true);
-                QList<int> table_cardids = room->getCardIdsOnTable(Sanguosha->getEngineCard(id));
-                if (!table_cardids.isEmpty())
-                {
-                    DummyCard dummy(table_cardids);
-                    room->moveCardTo(&dummy, player, NULL, Player::DiscardPile, reason, true);
-                }
+                player->getPile("jian").removeOne(id);
+                CardMoveReason reason(CardMoveReason::S_REASON_REMOVE_FROM_PILE, QString(), objectName(), QString());
+                room->throwCard(Sanguosha->getEngineCard(id), reason, NULL, player, objectName());
             }
         }
 
