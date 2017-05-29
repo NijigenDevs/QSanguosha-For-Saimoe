@@ -70,7 +70,7 @@ public:
                             break;
                         }
                     }
-                    if (player != NULL && player->isAlive() && !player->isDead())
+                    if (player != NULL && player->isAlive() && player->isWounded())
                     {
                         LogMessage log;
                         log.from = player;
@@ -84,12 +84,12 @@ public:
                         recover.card = Sanguosha->getEngineCard(move.card_ids[i]);
                         room->recover(player, recover, true);
                     }
-                }
-                if (move.to_place == Player::DiscardPile)
-                {
-                    QList<QVariant> ql = room->getTag("keyList").toList();
-                    ql.removeOne(QVariant::fromValue(move.card_ids[i]));
-                    room->setTag("keyList", ql);
+                    if (move.to_place != Player::PlaceDelayedTrick)
+                    {
+                        QList<QVariant> ql = room->getTag("keyList").toList();
+                        ql.removeOne(QVariant::fromValue(move.card_ids[i]));
+                        room->setTag("keyList", ql);
+                    }
                 }
             }
         }
@@ -863,7 +863,7 @@ public:
         }
         else if (event == CardsMoveOneTime)
         {
-            if (room->askForSkillInvoke(ask_who, objectName()))
+            if (ask_who->hasShownSkill(this) || room->askForSkillInvoke(ask_who, objectName()))
             {
                 room->broadcastSkillInvoke(objectName(), ask_who);
                 return true;
@@ -1845,8 +1845,8 @@ public:
             return false;
         }
         ayu->tag["mengxian_id"] = id;
-        CardMoveReason reason(CardMoveReason::S_REASON_PUT, ayu->objectName(), ayu->objectName(), objectName(), QString());
-        room->moveCardTo(Sanguosha->getEngineCard(id), ayu, NULL, Player::DiscardPile, reason, true);
+        CardMoveReason reason(CardMoveReason::S_REASON_PUT, ayu->objectName());
+        room->throwCard(Sanguosha->getEngineCard(id), reason, NULL, ayu);
         room->broadcastSkillInvoke(objectName(), ayu);
         //room->doSuperLightbox("mengxian", objectName());
         return true;
@@ -1865,7 +1865,7 @@ public:
 
         ServerPlayer *y1 = room->askForPlayerChosen(ayu, room->getOtherPlayers(ayu), objectName());
 
-        if (!y1)
+        if (y1 == NULL)
         {
             return false;
         }
@@ -3341,7 +3341,7 @@ public:
                 }
             }
         }
-        else
+        else if (event == EventPhaseStart)
         {
             if (player->getPhase() == Player::Judge && !player->isWounded())
             {
