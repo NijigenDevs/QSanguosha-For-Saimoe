@@ -1506,16 +1506,9 @@ public:
         frequency = Frequent;
     }
 
-    virtual QStringList triggerable(TriggerEvent event, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const
+    virtual void record(TriggerEvent event, Room *, ServerPlayer *player, QVariant &) const
     {
-        if (event == TargetChosen)
-        {
-            CardUseStruct use = data.value<CardUseStruct>();
-            if (!TriggerSkill::triggerable(use.from)) return QStringList();
-            if (use.to.length() > 0 && use.from == player && use.card->isKindOf("Slash"))
-                return QStringList(objectName());
-        }
-        else if (event == Damage)
+        if (event == Damage)
         {
             if (player->hasFlag("forecastWillDamage"))
             {
@@ -2148,40 +2141,48 @@ public:
         frequency = Frequent;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const
+    virtual void record(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const
     {
-        if (!TriggerSkill::triggerable(player)) return QStringList();
+        if (player == NULL || player->isDead() || !player->ownSkill(this))
+            return;
+
         CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
         if (move.to == player)
         {
-            if (move.to_place == Player::PlaceHand && player->getHandcardNum() > 0)
-                room->setPlayerMark(player, "moyunHand", 1);
-            else if (move.to_place == Player::PlaceEquip && player->getEquips().length() > 0)
+            if (move.to_place == Player::PlaceEquip && player->getEquips().length() > 0)
                 room->setPlayerMark(player, "moyunEquip", 1);
             else if (move.to_place == Player::PlaceDelayedTrick && player->getJudgingArea().length() > 0)
                 room->setPlayerMark(player, "moyunDelayedTrick", 1);
-            return QStringList();
         }
+    }
 
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const
+    {
+        if (!TriggerSkill::triggerable(player))
+            return QStringList();
+
+        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
         QStringList triggers;
 
-        if (player->getHandcardNum() == 0 && player->getMark("moyunHand") == 1)
+        auto current = room->getCurrent();
+        if (move.is_last_handcard && current == NULL ? true : current != player)
         {
-            if (move.from == player && room->getCurrent() ? room->getCurrent() != player : true)
-                triggers << objectName();
-            room->setPlayerMark(player, "moyunHand", 0);
+            triggers << objectName();
         }
 
-        if (player->getEquips().length() == 0 && player->getMark("moyunEquip") == 1)
+        if (player->getEquips().length() == 0)
         {
-            if (move.from == player)
+            if (move.from == player && player->getMark("moyunEquip") >= 1)
                 triggers << objectName();
             room->setPlayerMark(player, "moyunEquip", 0);
         }
 
-        if (player->getJudgingArea().length() == 0 && player->getMark("moyunDelayedTrick") == 1)
+        if (player->getJudgingArea().length() == 0)
         {
-            triggers << objectName();
+            if (player->getMark("moyunDelayedTrick") >= 1)
+            {
+                triggers << objectName();
+            }
             room->setPlayerMark(player, "moyunDelayedTrick", 0);
         }
 
