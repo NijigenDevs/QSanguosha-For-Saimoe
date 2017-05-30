@@ -2826,24 +2826,7 @@ class Fengyin : public TriggerSkill
 public:
     Fengyin() : TriggerSkill("fengyin")
     {
-        events << TargetConfirmed << DamageCaused;
-    }
-
-    virtual void record(TriggerEvent event, Room *, ServerPlayer *player, QVariant &data) const
-    {
-        if (!TriggerSkill::triggerable(player) || event != TargetConfirmed)
-            return;
-
-        auto use = data.value<CardUseStruct>();
-        if (use.from != NULL && use.from == player && use.card != NULL && use.card->isKindOf("Slash") && use.to.length() == 1)
-        {
-            auto target = use.to.first();
-            if (target != NULL && target->isAlive() && target->hasShownOneGeneral() && !target->getActualGeneral2Name().contains("sujiang")
-                && !(player->isFriendWith(target) || player->willBeFriendWith(target)))
-            {
-                use.card->setFlags("fengyin_slash");
-            }
-        }
+        events << DamageCaused;
     }
 
     virtual QStringList triggerable(TriggerEvent event, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const
@@ -2851,20 +2834,20 @@ public:
         if (!TriggerSkill::triggerable(player) || event != DamageCaused)
             return QStringList();
         DamageStruct damage = data.value<DamageStruct>();
-        if (!damage.to || !damage.to->hasShownOneGeneral()) return QStringList();
-        if (!damage.card || !damage.card->hasFlag("fengyin_slash")) return QStringList();
-        if (player->getPhase() != Player::Play) return QStringList();
-        if (player->isFriendWith(damage.to)) return QStringList();
-        if (!player->hasShownOneGeneral() && player->willBeFriendWith(damage.to)) return QStringList();
-        if (damage.transfer || damage.chain) return QStringList();
-        if (damage.to->getActualGeneral2Name().contains("sujiang")) return QStringList();
-        return QStringList(objectName());
+        if (damage.to != NULL && damage.to->hasShownOneGeneral() && damage.card != NULL && damage.card->isKindOf("Slash") && player->getPhase() == Player::Play
+            && !player->isFriendWith(damage.to) && !player->willBeFriendWith(damage.to) && !damage.transfer && !damage.chain 
+            && !damage.to->getActualGeneral2Name().contains("sujiang") && !player->hasFlag("fengyin_used"))
+        {
+            return QStringList(objectName());
+        }
+        return QStringList();
     }
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
     {
         if (player->askForSkillInvoke(this, data))
         {
+            room->setPlayerFlag(player, "fengyin_used");
             room->doAnimate(QSanProtocol::S_ANIMATE_INDICATE, player->objectName(), data.value<DamageStruct>().to->objectName());
             room->broadcastSkillInvoke(objectName());
             return true;
