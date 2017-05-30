@@ -1527,13 +1527,29 @@ public:
                 player->setFlags("-forecastWontDamage");
             }
         }
+    }
+
+    virtual QStringList triggerable(TriggerEvent event, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const
+    {
+        if (event == TargetChosen)
+        {
+            CardUseStruct use = data.value<CardUseStruct>();
+            if (!TriggerSkill::triggerable(use.from)) return QStringList();
+            if (use.to.length() > 0 && use.from == player && use.card != NULL && use.card->isKindOf("Slash"))
+            {
+                if (player->hasFlag("hadChoosedforecastWillDamage") && player->hasFlag("hadChoosedforecastWontDamage"))
+                    return QStringList();
+
+                return QStringList(objectName());
+            }
+        }
         else if (event == CardFinished)
         {
-            if (player->hasFlag("forecastTrue") || player->hasFlag("forecastWontDamage"))
+            if (TriggerSkill::triggerable(player) && (player->hasFlag("forecastTrue") || player->hasFlag("forecastWontDamage")))
             {
                 player->setFlags("-forecastTrue");
                 player->setFlags("-forecastWontDamage");
-                player->drawCards(1);
+                return QStringList(objectName());
             }
         }
         return QStringList();
@@ -1549,21 +1565,52 @@ public:
                 return true;
             }
         }
+        else if (event == CardFinished)
+        {
+            if (player->hasShownSkill(this) || player->askForSkillInvoke(this))
+            {
+                room->broadcastSkillInvoke(objectName(), 1);
+                return true;
+            }
+        }
         return false;
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    virtual bool effect(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
-        QString choice = room->askForChoice(player, objectName(), "forecastWillDamage+forecastWontDamage");
-        if (choice != ".")
-            player->setFlags(choice);
+        if (event == TargetChosen)
+        {
+            QStringList choices;
+            if (!player->hasFlag("hadChoosedforecastWillDamage"))
+            {
+                choices << "forecastWillDamage";
+            }
+            if (!player->hasFlag("hadChoosedforecastWontDamage"))
+            {
+                choices << "forecastWontDamage";
+            }
 
-        LogMessage log;
-        log.type = "$YujianAnnounce";
-        log.from = player;
-        log.arg = choice;
-        room->sendLog(log);
+            if (choices.isEmpty())
+                return false;
 
+            QString choice = room->askForChoice(player, objectName(), choices.join("+"));
+            if (choice != ".")
+            {
+                player->setFlags("hadChoosed" + choice);
+                player->setFlags(choice);
+            }
+
+            LogMessage log;
+            log.type = "$YujianAnnounce";
+            log.from = player;
+            log.arg = choice;
+            room->sendLog(log);
+
+        }
+        else if (event == CardFinished)
+        {
+            player->drawCards(1);
+        }
         return false;
     }
 };
