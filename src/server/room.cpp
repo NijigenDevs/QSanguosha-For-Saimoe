@@ -2832,7 +2832,7 @@ void Room::transformDeputyGeneral(ServerPlayer *player)
     handleUsedGeneral("-" + player->getActualGeneral2Name());
     handleUsedGeneral(general_name);
 
-    player->removeGeneral(false, false);
+    player->removeGeneral(false, true);
     QVariant void_data;
     QList<const TriggerSkill *> game_start;
 

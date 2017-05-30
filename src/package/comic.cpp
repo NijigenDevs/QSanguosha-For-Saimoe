@@ -786,7 +786,7 @@ public:
             return r;
         if ((triggerEvent == GeneralShown || triggerEvent == GeneralHidden) && (!player->ownSkill(this) || player->inHeadSkills(this) != data.toBool()))
             return r;
-        if (triggerEvent == GeneralRemoved && data.toString() != "kyouko")
+        if (triggerEvent == GeneralRemoved && data.toString() != "t_kyouko")
             return r;
         if (triggerEvent == EventPhaseStart && !(player->getPhase() == Player::RoundStart || player->getPhase() == Player::NotActive))
             return r;
