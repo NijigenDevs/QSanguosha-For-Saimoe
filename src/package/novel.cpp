@@ -2699,7 +2699,8 @@ void XuwuCard::onUse(Room *room, const CardUseStruct &card_use) const
 
     // then
 
-    card_use.from->drawCards(1);
+    if (card_use.from->getEquips().length() == 0)
+        card_use.from->drawCards(1);
 }
 
 class XuwuVS : public OneCardViewAsSkill
