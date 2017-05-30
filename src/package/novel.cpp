@@ -1827,7 +1827,7 @@ public:
 
         if (event == EventPhaseEnd)
         {
-            if (!player->hasFlag("DianjiUsedSlash") && player->getPhase() == Player::Play)
+            if (!player->hasFlag("DianjiUsedSlash") && player->getPhase() == Player::Discard)
             {
                 return QStringList(objectName());
             }
