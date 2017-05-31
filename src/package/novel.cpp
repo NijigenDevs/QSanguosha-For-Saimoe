@@ -2351,7 +2351,6 @@ public:
         {
             if (room->askForUseCard(player, "@@tiaoting", "@tiaoting-targetchoose") != NULL)
             {
-                room->broadcastSkillInvoke(objectName());
                 return true;
             }
         }
