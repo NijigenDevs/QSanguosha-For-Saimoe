@@ -2381,23 +2381,23 @@ public:
             return false;
         if (Sanguosha->getCard(cid)->isKindOf("Weapon"))
         {
-            room->throwCard(miho->getWeapon(), CardMoveReason(CardMoveReason::S_REASON_CHANGE_EQUIP, miho->objectName()), miho);
+            room->throwCard(miho->getWeapon(), CardMoveReason(CardMoveReason::S_REASON_RESPONSE, miho->objectName()), miho);
         }
         else if (Sanguosha->getCard(cid)->isKindOf("Armor"))
         {
-            room->throwCard(miho->getArmor(), CardMoveReason(CardMoveReason::S_REASON_CHANGE_EQUIP, miho->objectName()), miho);
+            room->throwCard(miho->getArmor(), CardMoveReason(CardMoveReason::S_REASON_RESPONSE, miho->objectName()), miho);
         }
         else if (Sanguosha->getCard(cid)->isKindOf("DefensiveHorse"))
         {
-            room->throwCard(miho->getDefensiveHorse(), CardMoveReason(CardMoveReason::S_REASON_CHANGE_EQUIP, miho->objectName()), miho);
+            room->throwCard(miho->getDefensiveHorse(), CardMoveReason(CardMoveReason::S_REASON_RESPONSE, miho->objectName()), miho);
         }
         else if (Sanguosha->getCard(cid)->isKindOf("OffensiveHorse"))
         {
-            room->throwCard(miho->getOffensiveHorse(), CardMoveReason(CardMoveReason::S_REASON_CHANGE_EQUIP, miho->objectName()), miho);
+            room->throwCard(miho->getOffensiveHorse(), CardMoveReason(CardMoveReason::S_REASON_RESPONSE, miho->objectName()), miho);
         }
         else if (Sanguosha->getCard(cid)->isKindOf("Treasure"))
         {
-            room->throwCard(miho->getTreasure(), CardMoveReason(CardMoveReason::S_REASON_CHANGE_EQUIP, miho->objectName()), miho);
+            room->throwCard(miho->getTreasure(), CardMoveReason(CardMoveReason::S_REASON_RESPONSE, miho->objectName()), miho);
         }
 
         room->moveCardTo(Sanguosha->getCard(cid), miho, Player::PlaceEquip, CardMoveReason(CardMoveReason::S_REASON_CHANGE_EQUIP, miho->objectName()));
