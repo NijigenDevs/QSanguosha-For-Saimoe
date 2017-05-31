@@ -4,7 +4,7 @@ return {
 	["&sakura"] = "木之本樱", 
 	["#sakura"] = "库洛魔法使", 
 	["#&sakura"] = "魔卡少女樱", 
-	["~sakura"] = "", 
+	["~sakura"] = "我不要。。。我绝不要那种悲哀的世界", 
 	["designer:sakura"] = "阿米拉嗪",
 	["cv:sakura"] = "丹下桜",
 	["illustrator:sakura"] = "47194043",

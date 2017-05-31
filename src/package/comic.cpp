@@ -2965,6 +2965,8 @@ public:
             player->showGeneral(false, true, true, false);
 
         room->transformDeputyGeneral(player);
+        room->getThread()->delay(1500);
+
         room->drawCards(player, player->getMark("jiechu_num"), objectName());
         return false;
     }
