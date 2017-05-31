@@ -2149,7 +2149,9 @@ public:
         CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
         if (move.to == player)
         {
-            if (move.to_place == Player::PlaceEquip && player->getEquips().length() > 0)
+            if (move.to_place == Player::PlaceHand && player->getHandcardNum() > 0)
+                room->setPlayerMark(player, "moyunHand", 1);
+            else if (move.to_place == Player::PlaceEquip && player->getEquips().length() > 0)
                 room->setPlayerMark(player, "moyunEquip", 1);
             else if (move.to_place == Player::PlaceDelayedTrick && player->getJudgingArea().length() > 0)
                 room->setPlayerMark(player, "moyunDelayedTrick", 1);
@@ -2158,28 +2160,29 @@ public:
 
     virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const
     {
-        if (!TriggerSkill::triggerable(player))
-            return QStringList();
-
         CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
         QStringList triggers;
 
-        auto current = room->getCurrent();
-        if (move.is_last_handcard && current == NULL ? true : current != player)
+        if (player->getHandcardNum() == 0)
         {
-            triggers << objectName();
+            auto current = room->getCurrent();
+            if (TriggerSkill::triggerable(player) && move.from != NULL && move.from == player && current == NULL ? true : current != player && player->getMark("moyunHand") >= 1)
+            {
+                triggers << objectName();
+            }
+            room->setPlayerMark(player, "moyunHand", 0);
         }
 
         if (player->getEquips().length() == 0)
         {
-            if (move.from == player && player->getMark("moyunEquip") >= 1)
+            if (TriggerSkill::triggerable(player) && move.from != NULL && move.from == player && player->getMark("moyunEquip") >= 1)
                 triggers << objectName();
             room->setPlayerMark(player, "moyunEquip", 0);
         }
 
         if (player->getJudgingArea().length() == 0)
         {
-            if (player->getMark("moyunDelayedTrick") >= 1)
+            if (TriggerSkill::triggerable(player) && player->getMark("moyunDelayedTrick") >= 1)
             {
                 triggers << objectName();
             }
