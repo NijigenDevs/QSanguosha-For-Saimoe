@@ -2764,10 +2764,10 @@ LingjieCard::LingjieCard()
 
 bool LingjieCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
 {
-    if (!targets.isEmpty() || to_select == Self || Self->isChained() || !to_select->hasShownOneGeneral() || to_select->isChained())
+    if (!targets.isEmpty() || to_select == Self || !to_select->hasShownOneGeneral() || to_select->isChained())
         return false;
 
-    return !Self->isFriendWith(to_select) || !Self->willBeFriendWith(to_select);
+    return to_select->canBeChainedBy(Self) && !Self->isFriendWith(to_select) && !Self->willBeFriendWith(to_select);
 }
 
 void LingjieCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const

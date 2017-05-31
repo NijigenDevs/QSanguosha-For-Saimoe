@@ -910,11 +910,11 @@ public:
             move.reason = CardMoveReason(CardMoveReason::S_REASON_TURNOVER, player->objectName(), objectName(), QString());
             move.to_place = Player::PlaceTable;
             room->moveCardsAtomic(move, true);
-            room->getThread()->delay();
+            room->getThread()->delay(500);
 
             if (Sanguosha->getEngineCard(id)->isKindOf("Slash"))
             {
-                if (room->askForUseCard(player, "@@baozou", "@baozou", -1, Card::MethodUse, false))
+                if (room->askForUseCard(player, "@@baozou", "@baozou", -1, Card::MethodUse))
                 {
                     QVariantList target_list;
 
@@ -930,7 +930,7 @@ public:
                         targets << x.value<ServerPlayer *>();
                     }
 
-                    room->useCard(CardUseStruct(slash, player, targets));
+                    room->useCard(CardUseStruct(slash, player, targets), false);
                 }
                 else
                 {
