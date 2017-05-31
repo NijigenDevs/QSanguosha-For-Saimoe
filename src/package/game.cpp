@@ -89,7 +89,7 @@ public:
                             }
                         }
 
-                        if (player != NULL && player->isAlive())
+                        if (player != NULL && player->isAlive() && player->isWounded())
                         {
                             const Card *card = Sanguosha->getCard(move.card_ids[i]);
                             Key* key = new Key(card->getSuit(), card->getNumber());
