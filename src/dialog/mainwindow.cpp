@@ -34,7 +34,9 @@
 #include <lua.hpp>
 #include <QGraphicsView>
 #include <QMessageBox>
+#ifndef QT_NO_PROCESS
 #include <QProcess>
+#endif
 #include <QFileDialog>
 #include <QDesktopServices>
 #include <QSystemTrayIcon>
