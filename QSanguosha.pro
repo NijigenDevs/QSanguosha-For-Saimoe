@@ -55,7 +55,6 @@ SOURCES += \
     src/dialog/banlistdialog.cpp \
     src/package/exppattern.cpp \
     src/package/formation.cpp \
-    src/package/jiange-defense.cpp \
     src/package/momentum.cpp \
     src/package/standard.cpp \
     src/package/standard-basics.cpp \
@@ -71,7 +70,6 @@ SOURCES += \
     src/scenario/miniscenarios.cpp \
     src/scenario/scenario.cpp \
     src/scenario/scenerule.cpp \
-    src/scenario/jiange-defense-scenario.cpp \
     src/server/ai.cpp \
     src/server/gamerule.cpp \
     src/server/generalselector.cpp \
@@ -175,7 +173,6 @@ HEADERS += \
     src/dialog/banlistdialog.h \
     src/package/exppattern.h \
     src/package/formation.h \
-    src/package/jiange-defense.h \
     src/package/momentum.h \
     src/package/package.h \
     src/package/standard.h \
@@ -191,7 +188,6 @@ HEADERS += \
     src/scenario/miniscenarios.h \
     src/scenario/scenario.h \
     src/scenario/scenerule.h \
-    src/scenario/jiange-defense-scenario.h \
     src/server/ai.h \
     src/server/gamerule.h \
     src/server/generalselector.h \
