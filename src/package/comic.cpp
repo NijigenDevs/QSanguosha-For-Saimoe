@@ -139,9 +139,24 @@ public:
         if (event == EventPhaseChanging)
         {
             auto change = data.value<PhaseChangeStruct>();
-            if (player != NULL && change.to == Player::NotActive && player->getMark("@tianzi_draw") > 0)
+            if (player != NULL && change.to == Player::NotActive)
             {
-                room->setPlayerMark(player, "@tianzi_draw", 0);
+                if (player->getMark("@tianzi_draw") > 0)
+                    room->setPlayerMark(player, "@tianzi_draw", 0);
+
+                if (player->getMark("tianzidiscards") > 0)
+                    room->setPlayerMark(player, "tianzidiscards", 0);
+            }
+        }
+        else if (event == CardsMoveOneTime)
+        {
+            CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+            if (move.from != NULL && player == move.from && player->getMark("@tianzi_draw") > 0 && player->getPhase() == Player::Discard
+                && (move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_DISCARD && move.to_place == Player::PlaceTable)
+            {
+                foreach(int id, move.card_ids)
+                    if (Sanguosha->getEngineCard(id)->isKindOf("TrickCard"))
+                        room->setPlayerMark(player, "tianzidiscards", player->getMark("tianzidiscards") + 1);
             }
         }
     }
@@ -154,18 +169,6 @@ public:
         if (event == DrawNCards)
         {
             return QStringList(objectName());
-        }
-        else if (event == CardsMoveOneTime)
-        {
-            CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-            if (player == move.from && player->getMark("@tianzi_draw") > 0 && player->getPhase() == Player::Discard
-                && (move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_DISCARD
-                && move.to_place == Player::PlaceTable)
-            {
-                foreach (int id, move.card_ids)
-                    if (Sanguosha->getEngineCard(id)->isKindOf("TrickCard"))
-                        room->setPlayerMark(player, "tianzidiscards", player->getMark("tianzidiscards") + 1);
-            }
         }
         else if (event == EventPhaseEnd && player->getMark("tianzidiscards") > 0 && player->getPhase() == Player::Discard)
         {
@@ -205,9 +208,9 @@ public:
             if (length > 0)
             {
                 room->drawCards(player, length, objectName());
+                room->setPlayerMark(player, "tianzidiscards", 0);
             }
         }
-        room->setPlayerMark(player, "tianzidiscards", 0);
         return false;
     }
 };
@@ -247,22 +250,40 @@ public:
         frequency = NotFrequent;
     }
 
-    virtual QStringList triggerable(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const
+    virtual void record(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data) const
     {
-        if (!TriggerSkill::triggerable(player)) return QStringList();
         if (event == CardsMoveOneTime)
         {
             CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-            if (move.from == NULL || move.from != player || player->getPhase() == Player::NotActive || move.to_place != Player::PlaceTable 
-                || (move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) != CardMoveReason::S_REASON_DISCARD)
-                return QStringList();
-            player->setMark("@yuzhai_cards", player->getMark("@yuzhai_cards") + move.card_ids.length());
-        }
-        else if (event == EventPhaseStart)
-        {
-            if (player->getPhase() == Player::Finish && player->getMark("@yuzhai_cards") >= player->getHp())
+            if (move.from != NULL && move.from == player && player->isAlive() && player->ownSkill(this) && player->getPhase() != Player::NotActive
+                && move.to_place == Player::PlaceTable && (move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_DISCARD)
             {
-                player->setMark("@yuzhai_cards", 0);
+                room->setPlayerMark(player, "yuzhai_cards", player->getMark("yuzhai_cards") + move.card_ids.length());
+                if (player->hasShownSkill(this))
+                {
+                    room->setPlayerMark(player, "@yuzhai_cards", player->getMark("yuzhai_cards"));
+                }
+            }
+        }
+        else if (event == EventPhaseChanging)
+        {
+            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+            if (change.to == Player::NotActive)
+            {
+                room->setPlayerMark(player, "yuzhai_cards", 0);
+                room->setPlayerMark(player, "@yuzhai_cards", 0);
+            }
+        }
+    }
+
+    virtual QStringList triggerable(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const
+    {
+        if (!TriggerSkill::triggerable(player))
+            return QStringList();
+        if (event == EventPhaseStart)
+        {
+            if (player->getPhase() == Player::Finish && player->getMark("yuzhai_cards") > player->getHp())
+            {
                 QList<ServerPlayer *> others = room->getOtherPlayers(player);
                 bool invoke = false;
                 foreach (ServerPlayer * other, others)
@@ -277,17 +298,13 @@ public:
                     return QStringList(objectName());
             }
         }
-        else
-        {
-            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
-            if (change.to == Player::NotActive)
-                player->setMark("@yuzhai_cards", 0);
-        }
         return QStringList();
     }
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
+        room->setPlayerMark(player, "yuzhai_cards", 0);
+        room->setPlayerMark(player, "@yuzhai_cards", 0);
         QList<ServerPlayer *> others = room->getOtherPlayers(player);
         QList<ServerPlayer *> targets;
         foreach (ServerPlayer *p, others)
@@ -302,7 +319,8 @@ public:
             room->broadcastSkillInvoke(objectName(), player);
             return true;
         }
-        else player->tag.remove("yuzhai_target");
+        else
+            player->tag.remove("yuzhai_target");
         return false;
     }
 
@@ -313,7 +331,8 @@ public:
         if (to && player->canDiscard(to, "he"))
         {
             int card_id = room->askForCardChosen(player, to, "h", objectName(), false, Card::MethodDiscard);
-            room->throwCard(card_id, to, player);
+            if (card_id != -1)
+                room->throwCard(card_id, to, player, objectName());
         }
         return false;
     }
