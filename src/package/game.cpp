@@ -235,6 +235,7 @@ public:
         }
 
         QVariant data = QVariant::fromValue(fuuko);
+        room->setPlayerMark(fuuko, "haixing", 0);
         foreach (ServerPlayer *p, room->getAlivePlayers())
         {
             if (p->hasFlag("haixing_used"))
