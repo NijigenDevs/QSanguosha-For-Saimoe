@@ -457,7 +457,7 @@ public:
         DeathStruct death = data.value<DeathStruct>();
         foreach (auto izumi, room->findPlayersBySkillName(objectName()))
         {
-            if (TriggerSkill::triggerable(izumi) && death.who != NULL && (izumi->isFriendWith(death.who) || izumi->willBeFriendWith(death.who)))
+            if (TriggerSkill::triggerable(izumi) && death.who != NULL && izumi != death.who && (izumi->isFriendWith(death.who) || izumi->willBeFriendWith(death.who)))
             {
                 list.insert(izumi, QStringList(objectName()));
             }
