@@ -11,6 +11,7 @@ MyPixmapItem::MyPixmapItem(const QPixmap &pixmap, QGraphicsItem *parentItem)
     setAcceptedMouseButtons(Qt::LeftButton);
     initFaceBoardPos();
     initEasyTextPos();
+    initMahjongFaceBoardPos();
     easytext = Sanguosha->getChattingEasyTexts();
 }
 
@@ -28,6 +29,8 @@ void MyPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
         msg = "<#" + QString::number(result + 1) + "#>";
     else if (this->itemName == "easytextboard")
         msg = easytext.at(result);
+    else if (this->itemName == "mahjongfaceboard")
+        msg = "<$" + QString::number(result + 1) + "$>";
     emit my_pixmap_item_msg(msg);
 }
 
@@ -52,6 +55,8 @@ int MyPixmapItem::mouseCanClick(int x, int y)
         result = mouseOnIcon(x, y);
     else if (this->itemName == "easytextboard")
         result = mouseOnText(x, y);
+    else if (this->itemName == "mahjongfaceboard")
+        result = mouseOnMahjong(x, y);
     return result;
 }
 
@@ -60,6 +65,20 @@ int MyPixmapItem::mouseOnIcon(int x, int y)
     int result = -1;
     for (int i = 0; i < faceboardPos.size(); i++) {
         QRect rect = faceboardPos.at(i);
+        if (rect.contains(x, y)) {
+            result = i;
+            break;
+        }
+    }
+
+    return result;
+}
+
+int MyPixmapItem::mouseOnMahjong(int x, int y)
+{
+    int result = -1;
+    for (int i = 0; i < mahjongfaceboardPos.size(); i++) {
+        QRect rect = mahjongfaceboardPos.at(i);
         if (rect.contains(x, y)) {
             result = i;
             break;
@@ -109,6 +128,23 @@ void MyPixmapItem::initFaceBoardPos()
     }
 }
 
+void MyPixmapItem::initMahjongFaceBoardPos()
+{
+    const int start_x = 10, start_y = 10;
+    int x, y;
+    int icon_w = 20, icon_h = 20;
+    int x_offset = 0, y_offset = 0;
+
+    // total 8 x 8 icons in QList <QRect> MahjongFace;
+    for (int j = 0; j < 8; j++) {
+        y = j * (icon_h + y_offset) + start_y;
+        for (int i = 0; i < 8; i++) {
+            x = i * (icon_w + x_offset) + start_x;
+            mahjongfaceboardPos << QRect(x, y, icon_w, icon_h);
+        }
+    }
+}
+
 void MyPixmapItem::initEasyTextPos()
 {
     const int start_x = 5, start_y = 5;
@@ -139,10 +175,17 @@ ChatWidget::ChatWidget()
 
     chat_face_board = new MyPixmapItem(QPixmap("image/system/chatface/faceboard.png"), this);
     chat_face_board->setSize(160, 180);
-    chat_face_board->setPos(-160 + 74, -180 - 1); // 24 + 24 + 24 + 2 = 74
+    chat_face_board->setPos(-86, -181); // 24 + 24 + 24 + 2 = 74
     chat_face_board->setZValue(10000);
     chat_face_board->setVisible(false);
     chat_face_board->itemName = "faceboard";
+
+    mahjong_face_board = new MyPixmapItem(QPixmap("image/system/chatface/mahjongfaceboard.png"), this);
+    mahjong_face_board->setSize(180, 180);
+    mahjong_face_board->setPos(-106, -181);
+    mahjong_face_board->setZValue(10000);
+    mahjong_face_board->setVisible(false);
+    mahjong_face_board->itemName = "mahjongfaceboard";
 
     easy_text_board = new MyPixmapItem(QPixmap("image/system/chatface/easytextboard.png"), this);
     easy_text_board->setSize(180, 222);
@@ -153,6 +196,7 @@ ChatWidget::ChatWidget()
 
     connect(chat_face_board, &MyPixmapItem::my_pixmap_item_msg, this, &ChatWidget::chat_widget_msg);
     connect(easy_text_board, &MyPixmapItem::my_pixmap_item_msg, this, &ChatWidget::chat_widget_msg);
+    connect(mahjong_face_board, &MyPixmapItem::my_pixmap_item_msg, this, &ChatWidget::chat_widget_msg);
     connect(chatfaceButton, &QPushButton::clicked, this, &ChatWidget::showFaceBoard);
     connect(easytextButton, &QPushButton::clicked, this, &ChatWidget::showEasyTextBoard);
     connect(returnButton, &QPushButton::clicked, this, &ChatWidget::sendText);
@@ -165,20 +209,37 @@ ChatWidget::~ChatWidget()
 void ChatWidget::showEasyTextBoard()
 {
     easy_text_board->setVisible(!easy_text_board->isVisible());
+    mahjong_face_board->setVisible(false);
     chat_face_board->setVisible(false);
 }
 
 
 void ChatWidget::showFaceBoard()
 {
-    chat_face_board->setVisible(!chat_face_board->isVisible());
+    if (chat_face_board->isVisible() || mahjong_face_board->isVisible())
+    {
+        showMahjongFaceBoard();
+    }
+    else
+    {
+        chat_face_board->setVisible(!chat_face_board->isVisible());
+        mahjong_face_board->setVisible(false);
+        easy_text_board->setVisible(false);
+    }
+}
+
+void ChatWidget::showMahjongFaceBoard()
+{
+    mahjong_face_board->setVisible(!mahjong_face_board->isVisible());
     easy_text_board->setVisible(false);
+    chat_face_board->setVisible(false);
 }
 
 void ChatWidget::sendText()
 {
     chat_face_board->setVisible(false);
     easy_text_board->setVisible(false);
+    mahjong_face_board->setVisible(false);
     emit(return_button_click());
 }
 

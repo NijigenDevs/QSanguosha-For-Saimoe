@@ -2300,9 +2300,13 @@ void Client::speak(const QVariant &speak)
     QString who = args[0].toString();
     QString text = args[1].toString();
 
-    static const QString prefix("<img width=14 height=14 src='image/system/chatface/");
+    static const QString prefix("<img width=16 height=16 src='image/system/chatface/");
     static const QString suffix(".png'></img>");
     text = text.replace("<#", prefix).replace("#>", suffix);
+
+    static const QString prefixs1("<img width=20 height=20 src='image/system/chatface/s1/");
+    static const QString suffixs1(".png'></img>");
+    text = text.replace("<$", prefixs1).replace("$>", suffixs1);
 
     if (who == ".") {
         QString line = tr("<font color='red'>System: %1</font>").arg(text);

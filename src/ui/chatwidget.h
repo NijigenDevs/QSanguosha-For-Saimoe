@@ -27,14 +27,17 @@ private:
     virtual void mousePressEvent(QGraphicsSceneMouseEvent *event);
     virtual void hoverMoveEvent(QGraphicsSceneHoverEvent *event);
     void initFaceBoardPos();
+    void initMahjongFaceBoardPos();
     void initEasyTextPos();
     int mouseCanClick(int x, int y);
     int mouseOnIcon(int x, int y);
     int mouseOnText(int x, int y);
+    int mouseOnMahjong(int x, int y);
 
     int sizex;
     int sizey;
     QList <QRect> faceboardPos;
+    QList <QRect> mahjongfaceboardPos;
     QList <QRect> easytextPos;
     QList <QString> easytext;
 
@@ -59,7 +62,7 @@ private:
     QPushButton *returnButton;
     QPushButton *chatfaceButton;
     QPushButton *easytextButton;
-    MyPixmapItem *chat_face_board, *easy_text_board;
+    MyPixmapItem *chat_face_board, *mahjong_face_board, *easy_text_board;
     QGraphicsRectItem *base;
 
     QGraphicsProxyWidget *addWidget(QWidget *widget, int x);
@@ -69,6 +72,7 @@ private:
 private slots:
     void showEasyTextBoard();
     void showFaceBoard();
+    void showMahjongFaceBoard();
     void sendText();
 
 signals:
