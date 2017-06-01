@@ -2260,6 +2260,9 @@ void TiaotingCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &
     armistice[source] = belligerent;
     room->setTag("tiaoting", QVariant::fromValue(armistice));
 
+    room->setPlayerMark(axis, "@tiaoting_target", 1);
+    room->setPlayerMark(allies, "@tiaoting_target", 1);
+
     LogMessage log;
     log.type = "#TiaotingArmistice";
     log.from = source;
@@ -2289,8 +2292,43 @@ class Tiaoting : public TriggerSkill
 public:
     Tiaoting() : TriggerSkill("tiaoting")
     {
-        events << EventPhaseStart << TurnStart << DamageCaused;
+        events << EventPhaseStart << DamageCaused << EventPhaseChanging;
         view_as_skill = new TiaotingVS;
+    }
+
+    virtual bool canPreshow() const
+    {
+        return true;
+    }
+
+    virtual void record(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data) const
+    {
+        if (event == EventPhaseStart && player != NULL && player->getPhase() == Player::RoundStart)
+        {
+            auto armistice = room->getTag("tiaoting").value<QMap<ServerPlayer *, QMap<ServerPlayer *, bool>>>();
+            if (armistice.contains(player))
+            {
+                auto axis = armistice[player].firstKey();
+                auto allies = armistice[player].lastKey();
+                armistice[player].clear();
+                room->setTag("tiaoting", QVariant::fromValue(armistice));
+
+                if (axis != NULL)
+                    room->setPlayerMark(axis, "@tiaoting_target", 0);
+                if (allies != NULL)
+                    room->setPlayerMark(allies, "@tiaoting_target", 0);
+            }
+        }
+        else if (event == EventPhaseChanging && data.value<PhaseChangeStruct>().to == Player::NotActive)
+        {
+            foreach(auto p, room->getAlivePlayers())
+            {
+                if (p->hasFlag("tiaoting_used"))
+                {
+                    p->setFlags("-tiaoting_used");
+                }
+            }
+        }
     }
 
     virtual QStringList triggerable(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &ask_who) const
@@ -2317,16 +2355,7 @@ public:
                 }
             }
         }
-        else if (event == TurnStart)
-        {
-            if (TriggerSkill::triggerable(player))
-            {
-                auto armistice = room->getTag("tiaoting").value<QMap<ServerPlayer *, QMap<ServerPlayer *, bool>>>();
-                armistice[player].clear();
-                room->setTag("tiaoting", QVariant::fromValue(armistice));
-            }
-        }
-        else
+        else if (event == DamageCaused)
         {
             auto damage = data.value<DamageStruct>();
             if (damage.from != NULL && damage.to != NULL && damage.damage > 0)
@@ -2350,7 +2379,7 @@ public:
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const
+    virtual bool cost(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const
     {
         if (event == EventPhaseStart)
         {
@@ -2361,7 +2390,11 @@ public:
         }
         else if (event == DamageCaused)
         {
-            room->broadcastSkillInvoke(objectName(), ask_who);
+            if (ask_who->hasShownSkill(this) || ask_who->askForSkillInvoke(this))
+            {
+                auto damage = data.value<DamageStruct>();
+                room->broadcastSkillInvoke(objectName(), ask_who);
+            }
             return true;
         }
 
@@ -2402,6 +2435,8 @@ public:
             log.arg = objectName();
             room->sendLog(log);
 
+            room->getThread()->delay(500);
+
             return true;
         }
 
@@ -2430,7 +2465,7 @@ public:
             auto armistice = room->getTag("tiaoting").value<QMap<ServerPlayer *, QMap<ServerPlayer *, bool>>>();
             foreach (ServerPlayer *p, room->getOtherPlayers(player))
             {
-                if (!armistice.value(p).isEmpty())
+                if (armistice.contains(p))
                 {
                     auto belligerent = armistice.value(p);
                     if (belligerent.contains(player) && !belligerent.value(player))
