@@ -32,15 +32,6 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const;
 };
 
-class rosesuigintouCard : public SkillCard
-{
-    Q_OBJECT
-
-public:
-    Q_INVOKABLE rosesuigintouCard();
-    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const;
-};
-
 class HeliCard : public SkillCard
 {
     Q_OBJECT
