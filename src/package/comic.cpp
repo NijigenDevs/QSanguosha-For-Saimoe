@@ -490,41 +490,30 @@ public:
 MizouCard::MizouCard()
 {
     will_throw = true;
-    target_fixed = false;
-}
-
-bool MizouCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
-{
-    bool invoke = true;
-    foreach(auto alive, Self->getAliveSiblings())
-    {
-        if (Self->isFriendWith(to_select) || Self->willBeFriendWith(to_select))
-        {
-            invoke = false;
-            break;
-        }
-    }
-    return invoke || (targets.isEmpty() && to_select != Self && (Self->isFriendWith(to_select) || Self->willBeFriendWith(to_select)));
+    target_fixed = true;
 }
 
 void MizouCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const
 {
-    bool invoke = true;
+    QList<ServerPlayer *> candidates;
     foreach (auto p, room->getAlivePlayers())
     {
         if (source->isFriendWith(p) || source->willBeFriendWith(p))
         {
-            invoke = false;
-            break;
+            candidates << p;
         }
     }
-    source->drawCards(1 + invoke, "mizou");
-    if (targets.length() > 0)
+
+    ServerPlayer *target = NULL;
+
+    if (candidates.length() > 0)
     {
-        auto target = targets.first();
-        if (target != NULL && target->isAlive())
-            target->drawCards(1, "mizou");
+        target = room->askForPlayerChosen(source, candidates, "mizou", "@mizou-targetchoose");
     }
+
+    source->drawCards(1 + candidates.length() > 0 ? 0 : 1, "mizou");
+    if (target != NULL && target->isAlive())
+        target->drawCards(1, "mizou");
 }
 
 class Mizou : public ViewAsSkill
