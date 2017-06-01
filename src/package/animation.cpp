@@ -915,7 +915,7 @@ public:
         bool invoke = mio->hasShownSkill(this) ? true : room->askForSkillInvoke(mio, objectName());
         if (invoke)
         {
-            room->broadcastSkillInvoke("yinzhuang", 2);
+            room->broadcastSkillInvoke("yinzhuang", 2, mio);
             if (mio->hasShownSkill(this))
             {
                 room->notifySkillInvoked(mio, "yinzhuang");
@@ -936,7 +936,7 @@ public:
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *mio, QVariant &, ServerPlayer *) const
     {
-        room->drawCards(mio, 1);
+        room->drawCards(mio, 1, "yinzhuang");
         return false;
     }
 };
@@ -955,7 +955,7 @@ public:
         bool invoke = mio->hasShownSkill(this) ? true : room->askForSkillInvoke(mio, objectName());
         if (invoke)
         {
-            room->broadcastSkillInvoke("yinzhuang", 1);
+            room->broadcastSkillInvoke("yinzhuang", 1, mio);
             if (mio->hasShownSkill(this))
             {
                 room->notifySkillInvoked(mio, "yinzhuang");
@@ -992,7 +992,6 @@ public:
             return false;
         }
         ServerPlayer *slasher = room->askForPlayerChosen(mio, can_slashers, objectName(), "@yinzhuang-slash");
-        room->broadcastSkillInvoke(objectName());
         room->useCard(CardUseStruct(slash, mio, slasher));
         return false;
     }
@@ -1012,7 +1011,7 @@ public:
         bool invoke = mio->hasShownSkill(this) ? true : room->askForSkillInvoke(mio, objectName());
         if (invoke)
         {
-            room->broadcastSkillInvoke("yinzhuang", 3);
+            room->broadcastSkillInvoke("yinzhuang", 3, mio);
             if (mio->hasShownSkill(this))
             {
                 room->notifySkillInvoked(mio, "yinzhuang");
