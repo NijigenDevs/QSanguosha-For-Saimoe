@@ -512,7 +512,7 @@ void MizouCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) c
         target = room->askForPlayerChosen(source, candidates, "mizou", "@mizou-targetchoose");
     }
 
-    source->drawCards(1 + candidates.length() > 0 ? 0 : 1, "mizou");
+    source->drawCards(1 + (candidates.length() > 0 ? 0 : 1), "mizou");
     if (target != NULL && target->isAlive())
         target->drawCards(1, "mizou");
 }
