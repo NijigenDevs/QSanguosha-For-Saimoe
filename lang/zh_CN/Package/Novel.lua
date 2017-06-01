@@ -17,6 +17,8 @@ return {
 	["@yexi-discard"] = "你需弃置已损失体力值张数的牌，以发动“夜袭②”",
 	["maxhptohp"] = "将体力上限调整至你当前体力值",
 	["hptomaxhp"] = "将体力值调整至体力上限",
+	["#Yeximaxhptohp"] = "%from 发动了 “<font color=\"yellow\"><b>夜袭</b></font>”，将体力上限从 %arg 调整到了 %arg2",
+	["#Yexihptomaxhp"] = "%from 发动了 “<font color=\"yellow\"><b>夜袭</b></font>”，将体力从 %arg2 调整到了 %arg",
 
 	----N002
 	["shana"] = "夏娜", 

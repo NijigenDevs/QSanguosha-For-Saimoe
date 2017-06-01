@@ -928,6 +928,11 @@ public:
 
         if (max != now) // use max != now here instead of x > 0, because there may be hp > maxhp situation (which is in AnimeMod)
         {
+            LogMessage log;
+            log.from = taiga;
+            log.arg = QString::number(max);
+            log.arg2 = QString::number(now);
+
             QStringList choices;
             choices << "maxhptohp";
             if (taiga->canDiscard(taiga, "h") && taiga->getHandcardNum() >= x && taiga->inDeputySkills(this))
@@ -938,17 +943,20 @@ public:
             choices << "cancel";
 
             auto choice = room->askForChoice(taiga, objectName(), choices.join("+"));
+            log.type = "#Yexi" + choice;
 
             if (choice == "maxhptohp")
             {
                 room->setPlayerProperty(taiga, "maxhp", now);
                 room->drawCards(taiga, x, objectName());
+                room->sendLog(log);
             }
             else if (choice == "hptomaxhp")
             {
                 if (room->askForDiscard(taiga, objectName(), x, x, false, false, "@yexi-discard"))
                 {
                     room->setPlayerProperty(taiga, "hp", max);
+                    room->sendLog(log);
                 }
             }
         }
