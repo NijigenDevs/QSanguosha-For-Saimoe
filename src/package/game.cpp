@@ -171,9 +171,6 @@ void HaixingCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &t
     CardMoveReason reason(CardMoveReason::S_REASON_GIVE, source->objectName(), target->objectName(), "haixing", QString());
     room->obtainCard(target, this, reason, false);
 
-    int old_value = source->getMark("haixing");
-    int new_value = old_value + subcards.length();
-    room->setPlayerMark(source, "haixing", new_value);
     if (!target->hasFlag("haixing_used"))
         target->setFlags("haixing_used");
 }
@@ -223,9 +220,8 @@ public:
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
-        if (player->askForSkillInvoke(objectName()))
+        if (room->askForUseCard(player, "@@haixing", "@haixing-card"))
         {
-            room->broadcastSkillInvoke(objectName());
             return true;
         }
         return false;
@@ -233,10 +229,11 @@ public:
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *fuuko, QVariant &, ServerPlayer *) const
     {
-        do
+        while (!fuuko->isKongcheng())
         {
-            room->askForUseCard(fuuko, "@@haixing", "@haixing-card");
-        } while (!fuuko->isKongcheng() && fuuko->askForSkillInvoke(objectName()));
+            Haixing::cost(EventPhaseStart, room, fuuko, QVariant(), NULL);
+        }
+
         QVariant data = QVariant::fromValue(fuuko);
         foreach (ServerPlayer *p, room->getAlivePlayers())
         {
@@ -244,18 +241,31 @@ public:
             {
                 auto card = room->askForCard(p, ".", "@haixing-back", data, Card::MethodNone, fuuko, false, "haixing");
                 if (card != NULL)
+                {
                     room->obtainCard(fuuko, card, CardMoveReason::S_REASON_GIVE);
+                    room->setPlayerMark(fuuko, "haixing", fuuko->getMark("haixing") + 1);
+                }
                 p->setFlags("-haixing_used");
             }
         }
         if (fuuko->getMark("haixing") > 1)
         {
-            ServerPlayer *t = room->askForPlayerChosen(fuuko, room->getAlivePlayers(), "haixing_recover");
+            room->setPlayerMark(fuuko, "haixing", 0);
+            QList<ServerPlayer *> candidates;
+            foreach (auto p, room->getAlivePlayers())
+            {
+                if (p->isWounded())
+                    candidates << p;
+            }
+
+            if (candidates.isEmpty())
+                return false;
+
+            ServerPlayer *t = room->askForPlayerChosen(fuuko, candidates, "haixing_recover");
             RecoverStruct recover;
             recover.who = t;
             room->recover(t, recover);
         }
-        fuuko->setMark("haixing", 0);
         return false;
     }
 };
