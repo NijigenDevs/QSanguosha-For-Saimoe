@@ -1463,7 +1463,7 @@ bool QSanRoomSkin::_loadLayoutConfig(const QVariant &layout)
         case QSanInvokeSkillButton::S_SKILL_COMPULSORY: key = "compulsoryFontColor"; break;
         case QSanInvokeSkillButton::S_SKILL_ONEOFF_SPELL: key = "oneoffFontColor"; break;
         case QSanInvokeSkillButton::S_SKILL_ARRAY:
-        case QSanInvokeSkillButton::S_SKILL_AWAKEN
+        case QSanInvokeSkillButton::S_SKILL_AWAKEN:
         case QSanInvokeSkillButton::S_SKILL_ATTACHEDLORD:
         default:
             key = "arrayFontColor";
