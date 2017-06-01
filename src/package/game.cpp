@@ -2817,7 +2817,7 @@ public:
             nulli->setShowSkill(objectName());
             return nulli;
         }
-        else if (userstring != NULL)
+        else if (!userstring.isNull() && !userstring.isEmpty())
         {
             TianjianCard *tcard = new TianjianCard;
             tcard->setUserString(userstring);

@@ -769,7 +769,15 @@ bool GameRule::effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *playe
                 room->setEmotion(killer, QString("multi_kill%1").arg(QString::number(kill_count)), false, 4000);
             else if (kill_count > 7)
                 room->setEmotion(killer, "zylove", false, 4000);
-            rewardAndPunish(killer, player);
+
+            if (!killer->hasFlag("Duhun_flag"))
+            {
+                rewardAndPunish(killer, player);
+            }
+            else
+            {
+                killer->setFlags("-Duhun_flag");
+            }
 
             player->setRole(originalRole);
         }
