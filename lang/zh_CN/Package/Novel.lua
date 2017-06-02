@@ -210,7 +210,7 @@ return {
 	["&mikoto"] = "御坂美琴", 
 	["#mikoto"] = "超电磁炮", 
 	["#&mikoto"] = "某科学的超电磁炮", 
-	["~mikoto"] = "", 
+	["~mikoto"] = "救救我。。。", 
 	["designer:mikoto"] = "钉子",
 	["cv:mikoto"] = "佐藤利奈",
 	["illustrator:mikoto"] = "36171150",
