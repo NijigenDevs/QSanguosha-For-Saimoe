@@ -1457,9 +1457,9 @@ public:
             return QStringList();
 
         QList<ServerPlayer *> rikkas = room->findPlayersBySkillName(objectName());
-        foreach(ServerPlayer *rikka, rikkas)
+        foreach (ServerPlayer *rikka, rikkas)
         {
-            foreach(ServerPlayer *p, room->getAlivePlayers())
+            foreach (ServerPlayer *p, room->getAlivePlayers())
             {
                 if (rikka->hasShownSkill(this) && rikka->inFormationRalation(p))
                 {

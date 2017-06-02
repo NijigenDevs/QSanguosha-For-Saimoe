@@ -722,7 +722,22 @@ void MingmingCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &
 
     ArcheryAttack *aa = new ArcheryAttack(Card::NoSuit, 0);
     aa->setSkillName("mingming");
-    room->useCard(CardUseStruct(aa, source, room->getOtherPlayers(source), true));
+
+    QList<ServerPlayer *> targets;
+    QList<const Player *> selected;
+    foreach (auto target, room->getOtherPlayers(source))
+    {
+        if (!source->isProhibited(target, aa, selected))
+        {
+            targets << target;
+            selected << target;
+        }
+    }
+
+    if (targets.length() > 0)
+    {
+        room->useCard(CardUseStruct(aa, source, targets, true));
+    }
 }
 
 class Mingming : public	ViewAsSkill
