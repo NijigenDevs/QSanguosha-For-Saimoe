@@ -324,7 +324,7 @@ return {
 	["illustrator:koromo"] = "8759553",
 	
 	["kongyun"] = "控运",
-	[":kongyun"] = "一名角色的红色判定牌生效前，你可以打出一张手牌替换之。一名黑色判定牌生效前，你可以亮出牌堆底的一张牌替换之。",
+	[":kongyun"] = "一名角色的红色判定牌生效前，你可以打出一张手牌替换之。一名角色的黑色判定牌生效前，你可以亮出牌堆底的一张牌替换之。",
 	["@kongyun-card"] = CommonTranslationTable["@askforretrial"],
 	["~kongyun"] = "选择一张手牌→点击确定",
 

@@ -352,7 +352,7 @@ void JisuiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &tar
     targets << source;
     QList<int> card_ids = room->getNCards(targets.length());
     room->fillAG(card_ids);
-    room->getThread()->delay(2000);
+    room->getThread()->delay(3000);
     room->clearAG();
     room->setTag("Jisui_Card", IntList2VariantList(card_ids));
     room->sortByActionOrder(targets);
@@ -367,7 +367,7 @@ void JisuiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &tar
     QList<int> guanxing_ids;
 
     room->fillAG(card2_ids);
-    room->getThread()->delay(2000);
+    room->getThread()->delay(3000);
     room->clearAG();
 
     do
@@ -408,7 +408,7 @@ void JisuiCard::onEffect(const CardEffectStruct &effect) const
     {
         QList<CardsMoveStruct> exchangeMove;
 
-        auto excard = room->askForExchange(effect.to, "jisui", 1, 0, "@jisui-exchange", "", ".");
+        auto excard = room->askForExchange(effect.to, "jisui", 1, 0, "@jisui-exchange", "", ".|.|.|hand");
 
         if (excard.length() > 0)
         {
@@ -441,7 +441,7 @@ void JisuiCard::onEffect(const CardEffectStruct &effect) const
             room->setTag("Jisui_Card", ag_list);
 
             room->fillAG(VariantList2IntList(ag_list));
-            room->getThread()->delay(2000);
+            room->getThread()->delay(3000);
             room->clearAG();
         }
     }
@@ -2314,17 +2314,21 @@ public:
         if (event == EventPhaseStart && player != NULL && player->getPhase() == Player::RoundStart)
         {
             auto armistice = room->getTag("tiaoting").value<QMap<ServerPlayer *, QMap<ServerPlayer *, bool>>>();
-            if (armistice.contains(player))
+            if (!armistice.isEmpty() && armistice.contains(player) && !armistice.value(player).isEmpty())
             {
-                auto axis = armistice[player].firstKey();
-                auto allies = armistice[player].lastKey();
-                armistice[player].clear();
-                room->setTag("tiaoting", QVariant::fromValue(armistice));
+                auto belligerent = armistice.value(player);
+                if (!belligerent.isEmpty())
+                {
+                    foreach (auto p, belligerent.keys())
+                    {
+                        if (p != NULL)
+                            room->setPlayerMark(p, "@tiaoting_target", 0);
+                    }
 
-                if (axis != NULL)
-                    room->setPlayerMark(axis, "@tiaoting_target", 0);
-                if (allies != NULL)
-                    room->setPlayerMark(allies, "@tiaoting_target", 0);
+                    belligerent.clear();
+                    armistice[player] = belligerent;
+                    room->setTag("tiaoting", QVariant::fromValue(armistice));
+                }
             }
         }
         else if (event == EventPhaseChanging && data.value<PhaseChangeStruct>().to == Player::NotActive)
@@ -3098,7 +3102,22 @@ class Kongli : public TriggerSkill
 public:
     Kongli() : TriggerSkill("kongli")
     {
-        events << TurnedOver << ChainStateChanged;
+        events << TurnedOver << ChainStateChanged << EventPhaseChanging;
+    }
+
+    virtual void record(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data) const
+    {
+        if (event == EventPhaseChanging)
+        {
+            auto change = data.value<PhaseChangeStruct>();
+            if (change.to == Player::NotActive)
+            {
+                foreach(auto p, room->getAlivePlayers())
+                {
+                    p->removeFlagsWithPattern("kongli_*");
+                }
+            }
+        }
     }
 
     virtual TriggerList triggerable(TriggerEvent event, Room *room, ServerPlayer *target, QVariant &) const
@@ -3108,7 +3127,7 @@ public:
         if (target == NULL || !target->isAlive())
             return skill_list;
 
-        if ((event == TurnedOver && target->faceUp()) || (event == ChainStateChanged && !target->isChained()))
+        if (event == EventPhaseChanging  || (event == TurnedOver && target->faceUp()) || (event == ChainStateChanged && !target->isChained()))
             return skill_list;
 
         auto ruikos = room->findPlayersBySkillName(objectName());

@@ -231,7 +231,9 @@ public:
     {
         while (!fuuko->isKongcheng())
         {
-            Haixing::cost(EventPhaseStart, room, fuuko, QVariant(), NULL);
+            ServerPlayer *nil = NULL;
+            QVariant data = QVariant::fromValue(NULL);
+            cost(EventPhaseStart, room, fuuko, data, nil);
         }
 
         QVariant data = QVariant::fromValue(fuuko);
@@ -1513,10 +1515,23 @@ public:
             if (judge->reason == objectName())
             {
                 judge->pattern = QString::number(int(judge->card->getSuit()));
-                if (room->getCardPlace(judge->card->getEffectiveId()) == Player::PlaceJudge
-                    && judge->who->getPile("gem").length() < 10 && TriggerSkill::triggerable(player))
+                if (room->getCardPlace(judge->card->getEffectiveId()) == Player::PlaceJudge && TriggerSkill::triggerable(player))
                 {
-                    skill_list.insert(player, QStringList(objectName()));
+                    QList<Card::Suit> suits;
+                    foreach (auto id, player->getPile("gem"))
+                    {
+                        if (id != -1)
+                        {
+                            if (Sanguosha->getEngineCard(id) != NULL)
+                            {
+                                suits << Sanguosha->getEngineCard(id)->getSuit();
+                            }
+                        }
+                    }
+                    if (!suits.contains(judge->card->getSuit()))
+                    {
+                        skill_list.insert(player, QStringList(objectName()));
+                    }
                 }
             }
         }
@@ -2317,7 +2332,7 @@ public:
         {
             room->setPlayerFlag(player, "excalibur");
         }
-        else
+        else if (event == DamageCaused)
         {
             DamageStruct damage = data.value<DamageStruct>();
             LogMessage log;
