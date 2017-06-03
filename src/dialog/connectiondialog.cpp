@@ -52,9 +52,9 @@ ConnectionDialog::ConnectionDialog(QWidget *parent)
     setMinimumSize(desktop->width(), desktop->height());
     setStyleSheet("background-color: #F0FFF0; color: black;");
     ui->groupBox->setMinimumSize(desktop->width() / 2, desktop->height() / 5 * 4);
-    ui->layoutWidget1->setGeometry(QRect(10, 17, desktop->width() / 2, 310));
-    ui->nameLineEdit->setMinimumSize(desktop->width() / 3, 100);
-    ui->hostComboBox->setMinimumSize(desktop->width() / 3, 150);
+    ui->layoutWidget1->setGeometry(QRect(10, 17, desktop->width() / 5 * 4, 310));
+    ui->nameLineEdit->setMinimumSize(desktop->width() / 2, 100);
+    ui->hostComboBox->setMinimumSize(desktop->width() / 2, 200);
     ui->nameLabel->setMinimumSize(100, 20);
     ui->hostLabel->setMinimumSize(100, 20);
 

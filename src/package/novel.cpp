@@ -1828,7 +1828,22 @@ public:
         events << EventPhaseEnd << PreCardUsed;
     }
 
-    virtual QStringList triggerable(TriggerEvent event, Room *, ServerPlayer *player, QVariant &data, ServerPlayer * &) const
+    virtual void record(TriggerEvent event, Room *, ServerPlayer *player, QVariant &data) const
+    {
+        if (event == PreCardUsed)
+        {
+            if (player->getPhase() == Player::Play)
+            {
+                const Card *card = data.value<CardUseStruct>().card;
+                if (card != NULL && card->isKindOf("Slash") && !player->hasFlag("DianjiUsedSlash"))
+                {
+                    player->setFlags("DianjiUsedSlash");
+                }
+            }
+        }
+    }
+
+    virtual QStringList triggerable(TriggerEvent event, Room *, ServerPlayer *player, QVariant &, ServerPlayer * &) const
     {
         if (!TriggerSkill::triggerable(player))
             return QStringList();
@@ -1838,16 +1853,6 @@ public:
             if (!player->hasFlag("DianjiUsedSlash") && player->getPhase() == Player::Discard)
             {
                 return QStringList(objectName());
-            }
-            player->setFlags("-DianjiUsedSlash");
-        }
-        else if (event == PreCardUsed)
-        {
-            if (player->getPhase() == Player::Play)
-            {
-                const Card *card = data.value<CardUseStruct>().card;
-                if (card != NULL && card->isKindOf("Slash") && !player->hasFlag("DianjiUsedSlash"))
-                    player->setFlags("DianjiUsedSlash");
             }
         }
 
@@ -3105,7 +3110,7 @@ public:
         events << TurnedOver << ChainStateChanged << EventPhaseChanging;
     }
 
-    virtual void record(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data) const
+    virtual void record(TriggerEvent event, Room *room, ServerPlayer *, QVariant &data) const
     {
         if (event == EventPhaseChanging)
         {
