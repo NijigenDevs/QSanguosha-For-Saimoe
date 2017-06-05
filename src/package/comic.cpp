@@ -3083,10 +3083,20 @@ public:
         return false;
     }
 
-    virtual bool effect(TriggerEvent, Room *, ServerPlayer *, QVariant &data, ServerPlayer *) const
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *) const
     {
         DamageStruct damage = data.value<DamageStruct>();
-        damage.to->removeGeneral(false);
+        QStringList choices;
+        if (damage.to->hasEquip())
+            choices << "discard";
+        choices << "remove";
+        QString choice = room->askForChoice(damage.to, objectName(), choices.join("+"));
+        if (choice == "discard") {
+            damage.to->throwAllEquips();
+            room->loseHp(damage.to);
+        } else {
+            damage.to->removeGeneral(false);
+        }
         return true;
     }
 };
