@@ -2389,7 +2389,7 @@ YonglanPindianCard::YonglanPindianCard()
 
 bool YonglanPindianCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
 {
-    return targets.length() < 2 && !to_select->isKongcheng();
+    return targets.length() < 2 && to_select != Self && !to_select->isKongcheng();
 }
 
 bool YonglanPindianCard::targetsFeasible(const QList<const Player *> &targets, const Player *) const

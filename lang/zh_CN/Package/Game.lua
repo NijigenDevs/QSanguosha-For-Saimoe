@@ -180,6 +180,10 @@ return {
 
 	["zhiyanmiki"] = "直言",
 	[":zhiyanmiki"] = "锁定技，结束阶段开始时，若你于此回合内跳过了至少一个阶段，你选择一项：摸一张牌，或弃置一名角色区域里的一张牌。",
+	["zhiyanmiki:draw"] = "摸一张牌",
+	["zhiyanmiki:discard"] = "弃置一名角色区域里的一张牌",
+	["#ZhiyanMikiDraw"] = "%from 发动了 “%arg”，摸了一张牌。",
+	["#ZhiyanMikiDiscard"] = "%from 发动了 “%arg”，弃置了 %to 区域里的一张牌。",
 
 	----G010
 	["setsuna"] = "小木曾雪菜", 
