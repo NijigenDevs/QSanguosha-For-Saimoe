@@ -632,8 +632,7 @@ public:
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
-        bool invoke = player->hasShownSkill(this) ? true : room->askForSkillInvoke(player, objectName());
-        if (invoke)
+        if (player->hasShownSkill(this) || room->askForSkillInvoke(player, objectName()))
         {
             room->broadcastSkillInvoke(objectName());
             return true;
@@ -3405,7 +3404,7 @@ public:
         }
         else if (event == EventPhaseStart)
         {
-            if (player->getPhase() == Player::Judge && !player->isWounded())
+            if (player->getPhase() == Player::Judge)
             {
                 QList<const Card *> judges = player->getJudgingArea();
                 bool thereis = false;
@@ -3441,7 +3440,24 @@ public:
         {
             if (ask_who->askForSkillInvoke(this, qVariantFromValue(player)))
             {
-                room->broadcastSkillInvoke(objectName());
+                QList<int> keys;
+                foreach(const Card *card, player->getJudgingArea())
+                {
+                    if (card->isKindOf("Key"))
+                    {
+                        keys.append(card->getEffectiveId());
+                    }
+                }
+                room->fillAG(keys, ask_who);
+                int id = room->askForAG(ask_who, keys, false, objectName());
+                room->clearAG(ask_who);
+                if (id == -1)
+                {
+                    return false;
+                }
+                CardMoveReason reason(CardMoveReason::S_REASON_PUT, ask_who->objectName());
+                room->throwCard(Sanguosha->getEngineCard(id), reason, NULL, ask_who);
+                room->broadcastSkillInvoke(objectName(), ask_who);
                 return true;
             }
         }
@@ -3471,7 +3487,7 @@ public:
                 }
             }
         }
-        else
+        else if (event == EventPhaseStart)
         {
             DummyCard dummy(player->getJudgingAreaID());
             room->obtainCard(player, &dummy);
