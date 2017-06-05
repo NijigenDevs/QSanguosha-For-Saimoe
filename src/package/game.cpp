@@ -1239,7 +1239,7 @@ ShenxingCard::ShenxingCard()
 
 bool ShenxingCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
 {
-    return targets.isEmpty() && !to_select->containsTrick(objectName()) && to_select != Self;
+    return targets.isEmpty() && !to_select->containsTrick("lingdanCard") && to_select != Self;
 }
 
 void ShenxingCard::onEffect(const CardEffectStruct &effect) const
@@ -1261,7 +1261,7 @@ public:
 
     virtual bool isEnabledAtPlay(const Player *player) const
     {
-        return !player->isKongcheng() && !player->hasUsed("ShenxingCard");
+        return !player->isKongcheng();
     }
 
     virtual const Card *viewAs(const Card *originalCard) const
