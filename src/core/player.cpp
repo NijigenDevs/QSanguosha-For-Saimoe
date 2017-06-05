@@ -988,7 +988,7 @@ bool Player::canGetCard(const Player *to, int card_id) const
 
 bool Player::canTransform() const
 {
-    return getGeneral2() && !getGeneral2Name().contains("sujiang") && !isDuanchang(false) && hasShownGeneral2();
+    return getGeneral2() && hasShownGeneral2();
 }
 
 void Player::addDelayedTrick(const Card *trick)
