@@ -3103,9 +3103,13 @@ public:
     {
         if (event == GeneralShown || event == GeneralHidden || event == GeneralRemoved)
         {
-            foreach (auto p, room->getAlivePlayers())
+            QStringList info = data.value<QStringList>();
+            if (info.last() != "transform")
             {
-                room->setPlayerMark(p, "jiechu_num", p->getMark("jiechu_num") + 1);
+                foreach(auto p, room->getAlivePlayers())
+                {
+                    room->setPlayerMark(p, "jiechu_num", p->getMark("jiechu_num") + 1);
+                }
             }
         }
         else if (event == EventPhaseChanging && data.value<PhaseChangeStruct>().to == Player::NotActive)
@@ -3119,7 +3123,7 @@ public:
 
     virtual QStringList triggerable(TriggerEvent event, Room *, ServerPlayer *player, QVariant &, ServerPlayer* &) const
     {
-        if (event == EventPhaseStart && TriggerSkill::triggerable(player) && player->getMark("jiechu_num") > 0 && player->getPhase() == Player::Finish)
+        if (event == EventPhaseStart && TriggerSkill::triggerable(player) && player->getMark("jiechu_num") > 0 && player->getPhase() == Player::Finish && player->canShowGeneral("d"))
         {
             return QStringList(objectName());
         }
@@ -3138,9 +3142,6 @@ public:
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
-        if (!player->hasShownGeneral2())
-            player->showGeneral(false, true, true, false);
-
         room->transformDeputyGeneral(player);
         room->getThread()->delay(1500);
 

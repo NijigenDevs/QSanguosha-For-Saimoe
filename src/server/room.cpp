@@ -2819,7 +2819,11 @@ void Room::doDragonPhoenix(ServerPlayer *player, const QString &general1_name, c
 
 void Room::transformDeputyGeneral(ServerPlayer *player)
 {
-    if (!player->canTransform()) return;
+    if (!player->hasShownGeneral2() && player->canShowGeneral("d"))
+        player->showGeneral(false, true, true, false, "transform");
+
+    if (!player->canTransform())
+        return;
 
     QStringList names;
     names << player->getActualGeneral1Name() << player->getActualGeneral2Name();
@@ -2835,7 +2839,7 @@ void Room::transformDeputyGeneral(ServerPlayer *player)
     handleUsedGeneral("-" + player->getActualGeneral2Name());
     handleUsedGeneral(general_name);
 
-    player->removeGeneral(false, true);
+    player->removeGeneral(false, true, "transform");
     QVariant void_data;
     QList<const TriggerSkill *> game_start;
 
@@ -2878,7 +2882,7 @@ void Room::transformDeputyGeneral(ServerPlayer *player)
 
     if (Sanguosha->getGeneral(names[0])->isCompanionWith(general_name))
         setPlayerMark(player, "CompanionEffect", 1);
-    player->showGeneral(false, false, true);
+    player->showGeneral(false, true, true, true, "transform");
 }
 
 void Room::handleUsedGeneral(const QString &general)

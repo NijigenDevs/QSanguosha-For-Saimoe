@@ -194,9 +194,9 @@ public:
     static bool CompareByActionOrder(ServerPlayer *a, ServerPlayer *b);
 
     bool showSkill(const QString &skill_name, const QString &skill_position = QString());
-    void showGeneral(bool head_general = true, bool trigger_event = true, bool sendLog = true, bool ignore_rule = true);
-    void hideGeneral(bool head_general = true);
-    void removeGeneral(bool head_general = true, bool triggerEvent = true);
+    void showGeneral(bool head_general = true, bool trigger_event = true, bool sendLog = true, bool ignore_rule = true, const QString &reason = "");
+    void hideGeneral(bool head_general = true, const QString &reason = "");
+    void removeGeneral(bool head_general = true, bool triggerEvent = true, const QString &reason = "");
     void sendSkillsToOthers(bool head_skill = true);
     void disconnectSkillsFromOthers(bool head_skill = true);
     bool askForGeneralShow(bool one = true, bool refusable = false);

@@ -1489,7 +1489,7 @@ bool ServerPlayer::showSkill(const QString &skill_name, const QString &skill_pos
     return result;
 }
 
-void ServerPlayer::showGeneral(bool head_general, bool trigger_event, bool sendLog, bool ignore_rule)
+void ServerPlayer::showGeneral(bool head_general, bool trigger_event, bool sendLog, bool ignore_rule, const QString &reason)
 {
     QStringList names = room->getTag(objectName()).toStringList();
     if (names.isEmpty()) return;
@@ -1640,14 +1640,16 @@ void ServerPlayer::showGeneral(bool head_general, bool trigger_event, bool sendL
 
     if (trigger_event) {
         Q_ASSERT(room->getThread() != NULL);
-        QVariant _head = head_general;
-        room->getThread()->trigger(GeneralShown, room, this, _head);
+        QStringList data;
+        data << (head_general ? "head" : "deputy");
+        data << reason;
+        room->getThread()->trigger(GeneralShown, room, this, QVariant::fromValue(data));
     }
 
     room->filterCards(this, getCards("he"), true);
 }
 
-void ServerPlayer::hideGeneral(bool head_general)
+void ServerPlayer::hideGeneral(bool head_general, const QString &reason)
 {
     room->tryPause();
 
@@ -1733,15 +1735,17 @@ void ServerPlayer::hideGeneral(bool head_general)
     room->sendLog(log);
 
     Q_ASSERT(room->getThread() != NULL);
-    QVariant _head = head_general;
-    room->getThread()->trigger(GeneralHidden, room, this, _head);
+    QStringList data;
+    data << (head_general ? "head" : "deputy");
+    data << reason;
+    room->getThread()->trigger(GeneralHidden, room, this, QVariant::fromValue(data));
 
     room->filterCards(this, getCards("he"), true);
     setSkillsPreshowed(head_general ? "h" : "d");
     notifyPreshow();
 }
 
-void ServerPlayer::removeGeneral(bool head_general, bool triggerEvent)
+void ServerPlayer::removeGeneral(bool head_general, bool triggerEvent, const QString &reason)
 {
     QString general_name, from_general;
 
@@ -1815,9 +1819,11 @@ void ServerPlayer::removeGeneral(bool head_general, bool triggerEvent)
     room->sendLog(log);
 
     Q_ASSERT(room->getThread() != NULL);
-    QVariant _from = from_general;
+    QStringList data;
+    data << from_general;
+    data << reason;
     if (triggerEvent)
-        room->getThread()->trigger(GeneralRemoved, room, this, _from);
+        room->getThread()->trigger(GeneralRemoved, room, this, QVariant::fromValue(data));
 
     room->filterCards(this, getCards("he"), true);
 }
