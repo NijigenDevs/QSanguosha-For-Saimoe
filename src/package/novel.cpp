@@ -2305,7 +2305,7 @@ class Tiaoting : public TriggerSkill
 public:
     Tiaoting() : TriggerSkill("tiaoting")
     {
-        events << EventPhaseStart << DamageCaused << EventPhaseChanging;
+        events << EventPhaseStart << DamageCaused << EventPhaseChanging << Death;
         view_as_skill = new TiaotingVS;
     }
 
@@ -2343,6 +2343,26 @@ public:
                 if (p->hasFlag("tiaoting_used"))
                 {
                     p->setFlags("-tiaoting_used");
+                }
+            }
+        }
+        else if (event == Death && data.value<DeathStruct>().who == player)
+        {
+            auto armistice = room->getTag("tiaoting").value<QMap<ServerPlayer *, QMap<ServerPlayer *, bool>>>();
+            if (!armistice.isEmpty() && armistice.contains(player) && !armistice.value(player).isEmpty())
+            {
+                auto belligerent = armistice.value(player);
+                if (!belligerent.isEmpty())
+                {
+                    foreach(auto p, belligerent.keys())
+                    {
+                        if (p != NULL)
+                            room->setPlayerMark(p, "@tiaoting_target", 0);
+                    }
+
+                    belligerent.clear();
+                    armistice[player] = belligerent;
+                    room->setTag("tiaoting", QVariant::fromValue(armistice));
                 }
             }
         }
