@@ -3348,7 +3348,7 @@ bool ShenaiCard::targetFilter(const QList<const Player *> &, const Player *to_se
 void ShenaiCard::use(Room *, ServerPlayer *source, QList<ServerPlayer *> &targets) const
 {
     ServerPlayer *target = targets.first();
-    target->drawCards(target->distanceTo(source), "shenai");
+    target->drawCards(qMin(5, target->distanceTo(source)), "shenai");
 }
 
 class Shenai : public ViewAsSkill
