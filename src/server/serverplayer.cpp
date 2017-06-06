@@ -2056,7 +2056,18 @@ QStringList ServerPlayer::getBigKingdoms(const QString &reason, MaxCardsType::Ma
             break;
         }
     }
-    MaxCardsType::MaxCardsCount type = jade_seal_owner ? MaxCardsType::Max : _type;
+
+    const Player *haruhi = NULL;
+    foreach(auto *p, room->getAlivePlayers())
+    {
+        if (p->hasShownSkill("zhizun"))
+        {
+            haruhi = p;
+            break;
+        }
+    }
+
+    MaxCardsType::MaxCardsCount type = (jade_seal_owner != NULL || haruhi != NULL) ? MaxCardsType::Max : _type;
     // if there is someone has JadeSeal, needn't trigger event because of the fucking effect of JadeSeal
     QMap<QString, int> kingdom_map;
     QStringList kingdoms = Sanguosha->getKingdoms();
@@ -2087,16 +2098,6 @@ QStringList ServerPlayer::getBigKingdoms(const QString &reason, MaxCardsType::Ma
             QString kingdom = jade_seal_owner->getKingdom();
             big_kingdoms.clear();
             big_kingdoms << kingdom;
-        }
-    }
-
-    const Player *haruhi = NULL;
-    foreach(auto *p, room->getAlivePlayers())
-    {
-        if (p->hasShownSkill("zhizun"))
-        {
-            haruhi = p;
-            break;
         }
     }
 
