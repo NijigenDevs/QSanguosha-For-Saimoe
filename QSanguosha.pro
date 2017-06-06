@@ -5,7 +5,6 @@ TARGET = QSanguosha
 QT += network widgets
 QT += qml
 TEMPLATE = app
-CONFIG += audio
 
 CONFIG += c++11
 

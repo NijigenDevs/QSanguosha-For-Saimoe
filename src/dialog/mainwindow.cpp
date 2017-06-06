@@ -63,7 +63,7 @@ public:
     FitView(QGraphicsScene *scene) : QGraphicsView(scene)
     {
         setSceneRect(Config.Rect);
-#if QT_VERSION >= QT_VERSION_CHECK(5, 7, 0) && !defined(Q_OS_ANDROID)
+#if QT_VERSION >= QT_VERSION_CHECK(5, 7, 0)
         setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
 #else
         setViewportUpdateMode(QGraphicsView::MinimalViewportUpdate);

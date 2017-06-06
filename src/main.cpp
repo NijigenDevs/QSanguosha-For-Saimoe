@@ -177,8 +177,8 @@ int main(int argc, char *argv[])
     showSplashMessage(QSplashScreen::tr("Initializing audio module..."));
     Audio::init();
 #else
-    if (!noGui)
-        QMessageBox::warning(NULL, QMessageBox::tr("Warning"), QMessageBox::tr("Audio support is disabled when compiled"));
+//    if (!noGui)
+//        QMessageBox::warning(NULL, QMessageBox::tr("Warning"), QMessageBox::tr("Audio support is disabled when compiled"));
 #endif
 
     showSplashMessage(QSplashScreen::tr("Loading main window..."));
