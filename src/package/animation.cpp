@@ -99,7 +99,7 @@ public:
     Molu() : TriggerSkill("molu")
     {
         events << AskForPeaches;
-        relate_to_place = "deputy";
+        relate_to_place = "head";
     }
 
     virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer * &) const
@@ -107,7 +107,7 @@ public:
         DyingStruct dying = data.value<DyingStruct>();
         if (!TriggerSkill::triggerable(player))
             return QStringList();
-        if (player != dying.who || player->getActualGeneral1Name().contains("sujiang"))
+        if (player != dying.who || player->getActualGeneral2Name().contains("sujiang"))
             return QStringList();
         if (player->getHp() > 0)
             return QStringList();
@@ -131,7 +131,7 @@ public:
         recover.recover = player->getMaxHp() - player->getHp();
         recover.who = player;
         room->recover(player, recover);
-        player->removeGeneral(true);
+        player->removeGeneral(false);
         return false;
     }
 };
