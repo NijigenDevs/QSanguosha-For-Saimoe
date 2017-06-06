@@ -236,7 +236,7 @@ HEADERS += \
     src/util/recorder.h \
     src/util/socket.h \
     src/ui/guhuobox.h \
-	src/ui/cardchoosebox.h \
+    src/ui/cardchoosebox.h \
     src/package/transformation.h \
     src/ui/lightboxanimation.h \
     src/ui/pindianbox.h \
@@ -251,13 +251,6 @@ FORMS += \
     src/dialog/configdialog.ui \
     src/dialog/connectiondialog.ui \
     src/dialog/generaloverview.ui
-    
-
-
-CONFIG(buildbot) {
-    DEFINES += USE_BUILDBOT
-    SOURCES += src/bot_version.cpp
-}
 
 win32 {
     FORMS += src/dialog/mainwindow.ui
