@@ -2194,7 +2194,7 @@ public:
 
             foreach (ServerPlayer *nodoka, nodokas)
             {
-                if (nodoka->getHandcardNum() > 0 && nodoka != player)
+                if (nodoka->getHandcardNum() > 0 && nodoka != player && nodoka->isWounded())
                     skill_list.insert(nodoka, QStringList(objectName()));
             }
         }
@@ -2224,7 +2224,7 @@ public:
                 return true;
             }
         }
-        else
+        else if (event == EventPhaseEnd)
         {
             QList<int> suanlv = nodoka->getPile("suan");
             if (suanlv.length() > 0 && (nodoka->hasShownSkill(this) || nodoka->askForSkillInvoke(this)))
@@ -3232,6 +3232,7 @@ void MoesenPackage::addComicGenerals()
     General *saki = new General(this, "saki", "shu", 4, false); // C015
     saki->addSkill(new Lingshang);
     saki->addSkill(new Kaihua);
+    saki->addCompanion("nodoka");
 
     General *nodoka = new General(this, "nodoka", "shu", 3, false); // C016
     nodoka->addSkill(new Suanlv);

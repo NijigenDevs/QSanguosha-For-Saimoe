@@ -3883,6 +3883,7 @@ void MoesenPackage::addGameGenerals()
     General *n_rin = new General(this, "n_rin", "wu", 3, false); // G017
     n_rin->addSkill(new Pasheng);
     n_rin->addSkill(new Jiuzhu);
+    n_rin->addCompanion("komari");
 
     General *komari = new General(this, "komari", "wu", 3, false); // G018
     komari->addSkill(new Luoxuan);
