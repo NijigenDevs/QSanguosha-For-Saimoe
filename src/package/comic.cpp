@@ -2144,6 +2144,11 @@ public:
         view_as_skill = new SuanlvVS;
     }
 
+    virtual bool canPreshow() const
+    {
+        return true;
+    }
+
     virtual void record(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data) const
     {
         if (event != CardsMoveOneTime)
@@ -2189,7 +2194,7 @@ public:
 
             foreach (ServerPlayer *nodoka, nodokas)
             {
-                if (nodoka->getHandcardNum() > 0 && nodoka->getLostHp() > 0 && nodoka != player)
+                if (nodoka->getHandcardNum() > 0 && nodoka != player)
                     skill_list.insert(nodoka, QStringList(objectName()));
             }
         }
