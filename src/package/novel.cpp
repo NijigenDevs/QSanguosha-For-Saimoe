@@ -2701,7 +2701,7 @@ void TongheCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &ta
 
     foreach (auto p, room->getAlivePlayers())
     {
-        if (targets[0] != p && p->isFriendWith(targets[0]) && p->canDiscard(p, "he"))
+        if (targets[0] != p && targets[0]->isFriendWith(p) && p->canDiscard(p, "he"))
         {
             targets << p;
         }

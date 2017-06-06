@@ -213,8 +213,12 @@ public:
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer * &) const
     {
         if (triggerEvent == EventPhaseStart && player->getPhase() == Player::Start)
+        {
             if (TriggerSkill::triggerable(player) && (player->getHandcardNum() > 0))
+            {
                 return QStringList(objectName());
+            }
+        }
         return QStringList();
     }
 
@@ -229,11 +233,11 @@ public:
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *fuuko, QVariant &, ServerPlayer *) const
     {
-        while (!fuuko->isKongcheng())
+        ServerPlayer *nil = NULL;
+        QVariant null_data = QVariant::fromValue(NULL);
+        while (!fuuko->isKongcheng() && cost(EventPhaseStart, room, fuuko, null_data, nil))
         {
-            ServerPlayer *nil = NULL;
-            QVariant data = QVariant::fromValue(NULL);
-            cost(EventPhaseStart, room, fuuko, data, nil);
+            continue;
         }
 
         QVariant data = QVariant::fromValue(fuuko);
@@ -2386,7 +2390,7 @@ YonglanPindianCard::YonglanPindianCard()
 {
 }
 
-bool YonglanPindianCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
+bool YonglanPindianCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *) const
 {
     return targets.length() < 2 && !to_select->isKongcheng();
 }
