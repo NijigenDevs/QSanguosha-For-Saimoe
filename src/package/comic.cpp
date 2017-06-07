@@ -2027,8 +2027,7 @@ KaihuaCard::KaihuaCard()
 
 void KaihuaCard::onUse(Room *room, const CardUseStruct &card_use) const
 {
-    room->removePlayerMark(card_use.from, "@gang", (card_use.from->getMark("@kaihuaTimes") > 0) ? card_use.from->getMark("@kaihuaTimes") : 1);
-    room->setPlayerMark(card_use.from, "@kaihuaTimes", card_use.from->getMark("@kaihuaTimes") + 1);
+    room->removePlayerMark(card_use.from, "@gang", 1);
 
     CardUseStruct new_use = card_use;
 
@@ -2076,7 +2075,7 @@ public:
 
     virtual bool isEnabledAtPlay(const Player *player) const
     {
-        return player->getMark("@gang") >= ((player->getMark("@kaihuaTimes") > 0) ? player->getMark("@kaihuaTimes") : 1) && !player->hasUsed("KaihuaCard");
+        return player->getMark("@gang") >= 1 && !player->hasUsed("KaihuaCard");
     }
 
     virtual const Card *viewAs() const
