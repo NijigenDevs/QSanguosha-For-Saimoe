@@ -2039,7 +2039,28 @@ class Yuanxin : public TriggerSkill
 public:
     Yuanxin() : TriggerSkill("yuanxin")
     {
-        events << EventPhaseStart << HpRecover;
+        events << EventPhaseStart << HpRecover << EventPhaseChanging;
+    }
+
+    virtual void record(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data) const
+    {
+        if (event == EventPhaseChanging && data.value<PhaseChangeStruct>().to == Player::NotActive)
+        {
+            foreach(auto p, room->getAlivePlayers())
+            {
+                if (p->hasFlag("yuanxin_turnrecover"))
+                {
+                    room->setPlayerFlag(p, "-yuanxin_turnrecover");
+                }
+            }
+        }
+        else if (event == HpRecover)
+        {
+            if (player->ownSkill(this) && player->isAlive() && !player->hasFlag("yuanxin_turnrecover") && room->getCurrent() != NULL)
+            {
+                room->setPlayerFlag(player, "-yuanxin_turnrecover");
+            }
+        }
     }
 
     virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &) const
@@ -2049,14 +2070,7 @@ public:
         if (player == NULL || !player->isAlive())
             return skill_list;
 
-        if (event == HpRecover)
-        {
-            if (!player->hasSkill(objectName()))
-                return skill_list;
-
-            player->setFlags("yuanxin_turnrecover");
-        }
-        else
+        if (event == EventPhaseStart)
         {
             if (player->getPhase() == Player::Finish)
             {
@@ -2093,8 +2107,8 @@ public:
             recover.recover = 1;
             recover.who = ask_who;
             room->recover(luckyDog, recover);
-            ask_who->drawCards(2, objectName());
         }
+        ask_who->drawCards(2, objectName());
 
         return false;
     }
