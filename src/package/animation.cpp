@@ -1380,15 +1380,17 @@ void XiehangCard::use(Room *room, ServerPlayer *asuka, QList<ServerPlayer *> &ta
 
     foreach (int id, cardids)
     {
-        auto tryCard = Sanguosha->getCard(id);
-        if (tryCard != NULL)
+        auto tryCard = Sanguosha->getEngineCard(id);
+        auto toTry = Sanguosha->cloneCard(tryCard);
+        if (toTry != NULL)
         {
-            tryCard->setSkillName("xiehang");
-            if (!tryCard->isAvailable(user) || tryCard->isKindOf("FightTogether"))
+            toTry->setCanRecast(false);
+            toTry->setSkillName("xiehang");
+            if (!toTry->isAvailable(user))
             {
                 disabled_ids << id;
             }
-            tryCard->setSkillName("");
+            delete toTry;
         }
     }
 
@@ -1444,6 +1446,7 @@ const Card * XiehangUseCard::validate(CardUseStruct &cardUse) const
         return NULL;
 
     card->setSkillName("xiehang");
+    card->setCanRecast(false);
 
     bool ok = true;
     auto source = cardUse.from;
@@ -1452,7 +1455,7 @@ const Card * XiehangUseCard::validate(CardUseStruct &cardUse) const
 
     if (card->isKindOf("AwaitExhausted"))
     {
-        foreach(ServerPlayer *p, room->getAlivePlayers())
+        foreach(ServerPlayer *p, room->getOtherPlayers(source))
             if (!source->isProhibited(p, card) && source->isFriendWith(p))
                 targets << p;
     }
@@ -1464,42 +1467,59 @@ const Card * XiehangUseCard::validate(CardUseStruct &cardUse) const
     }
     else if (card->isKindOf("FightTogether"))
     {
-        QStringList big_kingdoms = source->getBigKingdoms("tianjian", MaxCardsType::Normal);
-        QList<ServerPlayer *> bigs, smalls;
-        foreach(ServerPlayer *p, room->getAllPlayers())
-        {
-            if (source->isProhibited(p, card)) continue;
-            QString kingdom = p->objectName();
-            if (big_kingdoms.length() == 1 && big_kingdoms.first().startsWith("sgs"))
-            { // for JadeSeal
-                if (big_kingdoms.contains(kingdom))
-                    bigs << p;
-                else
-                    smalls << p;
-            }
-            else
-            {
-                if (!p->hasShownOneGeneral())
-                {
-                    smalls << p;
-                    continue;
+        QStringList big_kingdoms = source->getBigKingdoms("xiehang", MaxCardsType::Normal);
+        bool can_use = !big_kingdoms.isEmpty() && !source->isCardLimited(this, Card::MethodUse);
+        QStringList choices;
+        QList<ServerPlayer *> bigs, smalls, bigs_void, smalls_void;
+        if (can_use) {
+            foreach(ServerPlayer *p, room->getAllPlayers()) {
+                QString kingdom = p->objectName();
+                if (big_kingdoms.length() == 1 && big_kingdoms.first().startsWith("sgs")) { // for JadeSeal
+                    if (big_kingdoms.contains(kingdom)) {
+                        if (room->isProhibited(source, p, this))
+                            bigs_void << p;
+                        else
+                            bigs << p;
+                    }
+                    else {
+                        if (room->isProhibited(source, p, this))
+                            smalls_void << p;
+                        else
+                            smalls << p;
+                    }
                 }
-                if (p->getRole() == "careerist")
-                    kingdom = "careerist";
-                else
-                    kingdom = p->getKingdom();
-                if (big_kingdoms.contains(kingdom))
-                    bigs << p;
-                else
-                    smalls << p;
+                else {
+                    if (!p->hasShownOneGeneral()) {
+                        if (room->isProhibited(source, p, this))
+                            smalls_void << p;
+                        else
+                            smalls << p;
+                        continue;
+                    }
+                    if (p->getRole() == "careerist")
+                        kingdom = "careerist";
+                    else
+                        kingdom = p->getKingdom();
+                    if (big_kingdoms.contains(kingdom)) {
+                        if (room->isProhibited(source, p, this))
+                            bigs_void << p;
+                        else
+                            bigs << p;
+                    }
+                    else {
+                        if (room->isProhibited(source, p, this))
+                            smalls_void << p;
+                        else
+                            smalls << p;
+                    }
+                }
+            }
+            if (!bigs.isEmpty() || !smalls.isEmpty())
+            {
+                ok = true;
+                targets.clear();
             }
         }
-        if ((smalls.length() > 0 && smalls.length() < bigs.length() && bigs.length() > 0) || (smalls.length() > 0 && bigs.length() == 0))
-            targets = smalls;
-        else if ((smalls.length() > 0 && smalls.length() > bigs.length() && bigs.length() > 0) || (smalls.length() == 0 && bigs.length() > 0))
-            targets = bigs;
-        else if (smalls.length() == bigs.length())
-            targets = smalls;
     }
     else if (card->getSubtype() == "aoe" && !card->isKindOf("BurningCamps"))
     {
@@ -1575,6 +1595,7 @@ public:
             return new XiehangUseCard;
         }
         XiehangCard *card = new XiehangCard;
+        card->setCanRecast(false);
         card->setShowSkill(objectName());
         return card;
     }

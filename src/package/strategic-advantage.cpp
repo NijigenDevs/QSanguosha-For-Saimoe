@@ -922,7 +922,7 @@ void FightTogether::onUse(Room *room, const CardUseStruct &card_use) const
         if (!smalls.isEmpty())
             choices << "small";
     }
-    if (!source->isCardLimited(this, Card::MethodRecast) && can_recast)
+    if (!source->isCardLimited(this, Card::MethodRecast) && can_recast && this->getSkillName(true) != "xiehang")
         choices << "recast";
 
     if (choices.isEmpty()) {
