@@ -2805,19 +2805,6 @@
     </message>
 </context>
 <context>
-    <name>QMessageBox</name>
-    <message>
-        <location filename="../src/main.cpp" line="181"/>
-        <source>Warning</source>
-        <translation>警告</translation>
-    </message>
-    <message>
-        <location filename="../src/main.cpp" line="181"/>
-        <source>Audio support is disabled when compiled</source>
-        <translation>声音支持已在编译时禁用</translation>
-    </message>
-</context>
-<context>
     <name>QObject</name>
     <message>
         <location filename="../src/core/util.cpp" line="78"/>
