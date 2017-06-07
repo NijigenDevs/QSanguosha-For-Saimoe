@@ -545,7 +545,7 @@ public:
             if (!(use.to.length() == 1 && player == use.to.first())) return skill_list;
             QList<ServerPlayer *> homuras = room->findPlayersBySkillName(objectName());
             foreach (ServerPlayer *homura, homuras)
-                if (use.card && use.card->isKindOf("Slash") && homura->canDiscard(homura, "h") &&
+                if (use.card && use.card->isKindOf("Slash") && homura->canDiscard(homura, "h") && homura->getHandcardNum() > 1 &&
                     (homura->isFriendWith(use.to.first()) || homura->willBeFriendWith(use.to.first())))
                     skill_list.insert(homura, QStringList(objectName()));
         }

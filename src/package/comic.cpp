@@ -2120,7 +2120,7 @@ public:
 
     virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const
     {
-        return selected.length() < Self->getLostHp() && !to_select->isEquipped();
+        return selected.length() == 0 && !to_select->isEquipped();
     }
 
     virtual const Card *viewAs(const QList<const Card *> &cards) const
@@ -2194,7 +2194,7 @@ public:
 
             foreach (ServerPlayer *nodoka, nodokas)
             {
-                if (nodoka->getHandcardNum() > 0 && nodoka != player && nodoka->isWounded())
+                if (nodoka->getHandcardNum() > 0 && nodoka != player)
                     skill_list.insert(nodoka, QStringList(objectName()));
             }
         }
@@ -2255,7 +2255,7 @@ public:
             {
                 foreach (int suan, suanlv)
                 {
-                    if (!to_get.contains(id) && room->getCardPlace(id) == Player::DiscardPile && Sanguosha->getEngineCard(suan)->getSuit() == Sanguosha->getEngineCard(id)->getSuit())
+                    if (!to_get.contains(id) && room->getCardPlace(id) == Player::DiscardPile && Sanguosha->getEngineCard(suan)->getColor() == Sanguosha->getEngineCard(id)->getColor())
                         to_get << id;
                 }
             }
