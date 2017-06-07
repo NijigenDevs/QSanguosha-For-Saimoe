@@ -532,7 +532,7 @@ public:
         {
             DeathStruct death = data.value<DeathStruct>();
             if (death.who != NULL && death.who->hasShownSkill(this))
-                death.who->tag["shiting_slash"] = QVariant();
+                death.who->tag["shiting_list"] = QVariant();
         }
     }
 
@@ -558,10 +558,10 @@ public:
                 if (homura == use.from && use.card && homura->hasFlag("shiting_use") && use.to.length() > 0 && (!use.card->isKindOf("SkillCard")) && (!use.card->isKindOf("TransferCard")) && (!use.to.contains(homura)))
                 {
                     QVariantList shiting_list = homura->tag["shiting_list"].toList();
-                    shiting_list << data;
-                    homura->tag["shiting_list"] = shiting_list;
-                    use.card->setFlags("cardNotTriggerCardFinished");
-                    skill_list.insert(homura, QStringList(objectName()));
+                    if (!shiting_list.contains(data))
+                    {
+                        skill_list.insert(homura, QStringList(objectName()));
+                    }
                 }
             }
 
@@ -580,7 +580,7 @@ public:
         return skill_list;
     }
 
-    virtual bool cost(TriggerEvent event, Room *room, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const
+    virtual bool cost(TriggerEvent event, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *ask_who) const
     {
         if (event == TargetConfirmed)
         {
@@ -595,7 +595,16 @@ public:
                 return true;
             }
         }
-        else
+        else if (event == CardUsed)
+        {
+            CardUseStruct use = data.value<CardUseStruct>();
+            QVariantList shiting_list = ask_who->tag["shiting_list"].toList();
+            shiting_list << data;
+            ask_who->tag["shiting_list"] = shiting_list;
+            use.card->setFlags("cardNotTriggerCardFinished");
+            return true;
+        }
+        else if (event == CardFinished)
         {
             return true;
         }
@@ -640,14 +649,13 @@ public:
         }
         else if (event == CardFinished)
         {
-            QList<const CardUseStruct> use_list;
             QVariantList shiting_list = ask_who->tag["shiting_list"].toList();
 
             ask_who->setFlags("-shiting_use");
             foreach (QVariant v_use, shiting_list)
             {
                 CardUseStruct use = v_use.value<CardUseStruct>();
-                if (use.card && use.from && use.from->isAlive() && !use.to.isEmpty())
+                if (use.card != NULL && use.from != NULL && use.from->isAlive() && !use.to.isEmpty())
                 {
                     QList<ServerPlayer *> newTargets;
                     foreach (auto to, use.to)
