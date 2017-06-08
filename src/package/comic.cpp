@@ -961,9 +961,9 @@ public:
 
         if ((triggerEvent == GeneralShown || triggerEvent == EventPhaseStart || triggerEvent == EventAcquireSkill) && !player->hasShownSkill(this))
             return r;
-        if ((triggerEvent == GeneralShown || triggerEvent == GeneralHidden) && (!player->ownSkill(this) || player->inHeadSkills(this) != data.toBool()))
+        if ((triggerEvent == GeneralShown || triggerEvent == GeneralHidden) && (!player->ownSkill(this) || player->inHeadSkills(this) != (data.value<QStringList>().first() == "head")))
             return r;
-        if (triggerEvent == GeneralRemoved && data.toString() != "t_kyouko")
+        if (triggerEvent == GeneralRemoved && data.value<QStringList>().first() != "t_kyouko")
             return r;
         if (triggerEvent == EventPhaseStart && !(player->getPhase() == Player::RoundStart || player->getPhase() == Player::NotActive))
             return r;
