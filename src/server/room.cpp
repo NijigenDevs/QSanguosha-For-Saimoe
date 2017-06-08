@@ -3091,32 +3091,92 @@ void Room::processRequestCheat(ServerPlayer *player, const QVariant &arg)
 
 bool Room::makeSurrender(ServerPlayer *initiator)
 {
+    QStringList kingdoms;
+    bool can_surrender = true;
     // broadcast polling request
     QList<ServerPlayer *> playersAlive;
     foreach (ServerPlayer *player, m_players) {
-        if (player != initiator && player->isAlive() && player->isOnline()) {
+        if (!player->hasShownOneGeneral())
+        {
+            can_surrender = false;
+        }
+        if (player != initiator && player->isAlive() && player->isOnline())
+        {
+            if (player->getRole() == "careerist")
+            {
+                if (!kingdoms.contains(player->objectName()))
+                    kingdoms << player->objectName();
+            }
+            else
+            {
+                kingdoms << player->getKingdom();
+            }
             player->m_commandArgs = initiator->getGeneral()->objectName();
             playersAlive << player;
         }
     }
-    doBroadcastRequest(playersAlive, S_COMMAND_SURRENDER);
 
-    int give_up = 1;
+    if (can_surrender)
+    {
+        doBroadcastRequest(playersAlive, S_COMMAND_SURRENDER);
 
-    // collect polls
-    foreach (ServerPlayer *player, playersAlive) {
-        bool result = false;
-        if (!player->m_isClientResponseReady || !JsonUtils::isBool(player->getClientReply()))
-            result = !player->isOnline();
-        else
-            result = player->getClientReply().toBool();
+        // collect polls
+        foreach(ServerPlayer *player, playersAlive)
+        {
+            bool result = false;
+            if (!player->m_isClientResponseReady || !JsonUtils::isBool(player->getClientReply()))
+                result = !player->isOnline();
+            else
+                result = player->getClientReply().toBool();
 
-        if (result) give_up++;
+            if (result)
+            {
+                if (player->getRole() == "careerist")
+                {
+                    if (kingdoms.contains(player->objectName()))
+                        kingdoms.removeOne(player->objectName());
+                }
+                else
+                {
+                    if (kingdoms.contains(player->getKingdom()))
+                        kingdoms.removeOne(player->getKingdom());
+                }
+            }
+        }
+
+        if (kingdoms.isEmpty())
+            gameOver(".");
+
+        kingdoms.removeDuplicates();
+
+        QStringList winners;
+
+        if (kingdoms.length() == 1)
+        {
+            foreach(ServerPlayer *p, getAllPlayers(true))
+            {
+                if (p->getRole() != "careerist" && p->getKingdom() == kingdoms.first())
+                {
+                    winners << p->objectName();
+                }
+            }
+            if (winners.length() > 0)
+            {
+                foreach(ServerPlayer *player, getAlivePlayers())
+                {
+                    player->showGeneral(true, false, false, true, "gameover");
+                    player->showGeneral(false, false, false, true, "gameover");
+                }
+                gameOver(winners.join("+"));
+            }
+        }
+
+        m_surrenderRequestReceived = false;
+
+        initiator->setFlags("Global_ForbidSurrender");
+        doNotify(initiator, S_COMMAND_ENABLE_SURRENDER, QVariant(false));
+        return true;
     }
-
-    if (give_up > (playersAlive.length() + 1) / 2)
-        gameOver(".");
-
     m_surrenderRequestReceived = false;
 
     initiator->setFlags("Global_ForbidSurrender");
