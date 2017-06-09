@@ -655,16 +655,20 @@ public:
             foreach (QVariant v_use, shiting_list)
             {
                 CardUseStruct use = v_use.value<CardUseStruct>();
-                if (use.card != NULL && use.from != NULL && use.from->isAlive() && !use.to.isEmpty())
+                if (use.card != NULL && use.from != NULL && use.from->isAlive() && !use.to.isEmpty() && use.card->isAvailable(use.from))
                 {
                     QList<ServerPlayer *> newTargets;
+                    QList<const Player *> validityCheckTargets;
                     foreach (auto to, use.to)
                     {
-                        if (to != NULL && to->isAlive())
+                        if (to != NULL && to->isAlive() && use.card->targetFilter(validityCheckTargets, to, use.from) && !use.from->isProhibited(to, use.card, validityCheckTargets))
+                        {
                             newTargets << to;
+                            validityCheckTargets << to;
+                        }
                     }
 
-                    if (!newTargets.isEmpty())
+                    if (!newTargets.isEmpty() && use.card->targetsFeasible(validityCheckTargets, use.from))
                     {
                         use.to = newTargets;
                         room->useCard(use);

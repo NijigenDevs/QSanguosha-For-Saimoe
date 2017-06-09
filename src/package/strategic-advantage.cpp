@@ -810,11 +810,13 @@ public:
                 return QStringList();
         }
 
-        foreach(ServerPlayer *p, room->getOtherPlayers(player))
+        foreach (ServerPlayer *p, room->getOtherPlayers(player))
+        {
             if (p->isRemoved()) {
                 room->setPlayerProperty(p, "removed", false);
                 room->removePlayerCardLimitation(p, "use", ".$0");
             }
+        }
 
         return QStringList();
     }
