@@ -2715,7 +2715,7 @@ void TongheCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &ta
 
     foreach (auto p, room->getAlivePlayers())
     {
-        if (targets[0] != p && targets[0]->isFriendWith(p) && p->canDiscard(p, "he"))
+        if (targets[0] != p && targets[0]->hasShownOneGeneral() && p->hasShownOneGeneral() && targets[0]->isFriendWith(p) && p->canDiscard(p, "he"))
         {
             targets << p;
         }
@@ -2725,13 +2725,16 @@ void TongheCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &ta
     {
         room->askForDiscard(p, "tonghe", 1, 1, false, true, "@tonghe_discard", true);
     }
-
-    auto big_kingdoms = source->getBigKingdoms("tonghe", MaxCardsType::Normal);
-
-    if ((targets[0]->getRole() == "careerist" && big_kingdoms.contains(targets[0]->objectName()))
-        || big_kingdoms.contains(targets[0]->getKingdom()))
+    
+    if (targets[0]->hasShownOneGeneral())
     {
-        room->drawCards(targets, 1, "tonghe");
+        auto big_kingdoms = source->getBigKingdoms("tonghe", MaxCardsType::Normal);
+
+        if ((targets[0]->getRole() == "careerist" && big_kingdoms.contains(targets[0]->objectName()))
+            || big_kingdoms.contains(targets[0]->getKingdom()))
+        {
+            room->drawCards(targets, 1, "tonghe");
+        }
     }
 }
 
