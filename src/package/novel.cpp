@@ -2721,7 +2721,7 @@ void TongheCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &ta
         }
     }
 
-    foreach(auto *p, targets)
+    foreach (auto *p, targets)
     {
         room->askForDiscard(p, "tonghe", 1, 1, false, true, "@tonghe_discard", true);
     }
