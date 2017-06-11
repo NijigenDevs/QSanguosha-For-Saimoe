@@ -65,7 +65,7 @@ return {
 	["&altria"] = "阿尔托莉雅", 
 	["#altria"] = "骑士王", 
 	["#&altria"] = "Fate/stay night", 
-	["~altria"] = "", 
+	["~altria"] = "能成为王的人.....并不应该.....是我", 
 	["designer:altria"] = "萝莉姬",
 	["cv:altria"] = "川澄綾子",
 	["illustrator:altria"] = "60405595",
@@ -78,7 +78,6 @@ return {
 	["duangang"] = "断钢",
 	[":duangang"] = "限定技，出牌阶段开始时，你可以令于此阶段内每次造成的伤害+X（X为你出牌阶段已造成的伤害总和），直到一名角色死亡。",
 	["#DuangangBuff"] = "%from 的“<font color=\"yellow\"><b>断钢</b></font>”效果被触发，伤害从 %arg 点增加至 %arg2 点",
-
 	["@excalibur"] = "断钢",
 
 	----G005

@@ -2125,7 +2125,7 @@ public:
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent event, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const
+    virtual bool cost(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const
     {
         if (event == TargetChosen)
         {
@@ -2133,22 +2133,26 @@ public:
             if (!ask_who->getPile("jian").isEmpty() && player->askForSkillInvoke(this, data))
                 player->setFlags("fengwang_doubt");
 
+            room->broadcastSkillInvoke(objectName(), (qrand() % 2) + 1);
+
             return true;
         }
         else if (event == SlashEffected)
         {
+            room->broadcastSkillInvoke(objectName(), (qrand() % 2) + 2);
             return true;
         }
         else if (event == FinishRetrial)
         {
-            return player->askForSkillInvoke(this, data);
+            return player->hasShownSkill(this) || player->askForSkillInvoke(this, data);
         }
         else if (event == EventPhaseStart)
         {
-            return (player->hasShownSkill(this) || player->askForSkillInvoke(this));
+            return player->hasShownSkill(this) || player->askForSkillInvoke(this);
         }
         else if (event == SlashMissed)
         {
+            room->broadcastSkillInvoke(objectName(), 4);
             return true;
         }
         return false;
@@ -2315,7 +2319,7 @@ public:
         {
             if (player->askForSkillInvoke(this, data))
             {
-                room->broadcastSkillInvoke(objectName(), 1);
+                room->broadcastSkillInvoke(objectName(), (qrand() % 3) + 1);
                 room->removePlayerMark(player, "@excalibur");
                 room->doSuperLightbox("altria", objectName());
                 return true;
@@ -2323,7 +2327,7 @@ public:
         }
         else if (event == DamageCaused)
         {
-            room->broadcastSkillInvoke(objectName(), 2);
+            room->broadcastSkillInvoke(objectName(), (qrand() % 2) + 4);
             return true;
         }
         return false;
