@@ -58,7 +58,7 @@ return {
 	["&izumi"] = "鹭之宫伊澄", 
 	["#izumi"] = "迷途巫女", 
 	["#&izumi"] = "旋风管家", 
-	["~izumi"] = "", 
+	["~izumi"] = "究竟。。。如何是好。。。", 
 	["designer:izumi"] = "钉子",
 	["cv:izumi"] = "松来未祐",
 	["illustrator:izumi"] = "4435820",
