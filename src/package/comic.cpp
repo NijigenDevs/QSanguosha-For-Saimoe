@@ -524,16 +524,17 @@ void MizouCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) c
         }
     }
 
-    ServerPlayer *target = NULL;
-
     if (candidates.length() > 0)
     {
-        target = room->askForPlayerChosen(source, candidates, "mizou", "@mizou-targetchoose");
+        if (candidates.length() == 1)
+        {
+            room->drawCards(source, 2, "mizou");
+        }
+        else
+        {
+            room->drawCards(candidates, 1, "mizou");
+        }
     }
-
-    source->drawCards(1 + (candidates.length() > 0 ? 0 : 1), "mizou");
-    if (target != NULL && target->isAlive())
-        target->drawCards(1, "mizou");
 }
 
 class Mizou : public ViewAsSkill
