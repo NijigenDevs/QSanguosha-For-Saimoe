@@ -85,7 +85,7 @@ return {
 	["&t_rin"] = "远坂凛", 
 	["#t_rin"] = "名门之秀", 
 	["#&t_rin"] = "Fate/stay night", 
-	["~t_rin"] = "...比想象的长一倍= =", 
+	["~t_rin"] = "为什么。。。为什么。。。你", 
 	["designer:t_rin"] = "hmqgg",
 	["cv:t_rin"] = "植田佳奈",
 	["illustrator:t_rin"] = "53948782",
