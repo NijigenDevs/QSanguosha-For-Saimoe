@@ -19,6 +19,7 @@ public:
     void shift(const QPointF &pos);
     void keepWhenDisappear();
     void setTitle(const QString &title);
+    void setPath(const QString &path);
 
     virtual QRectF boundingRect() const;
 

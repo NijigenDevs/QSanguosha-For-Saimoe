@@ -1,7 +1,7 @@
 #include "window.h"
 #include "settings.h"
 #include "button.h"
-
+#include <QFile>
 #include <QPainter>
 #include <QGraphicsRotation>
 #include <QParallelAnimationGroup>
@@ -175,4 +175,49 @@ void Window::setTitle(const QString &title)
 
     titleItem->setHtml(content);
     titleItem->setPos(size.width() / 2 - titleItem->boundingRect().width() / 2, 10);
+}
+
+void Window::setPath(const QString &path)
+{
+    QPixmap *bgPix;
+    QString imagePath;
+    if (!QFile::exists(path))
+    {
+        imagePath = "image/system/tip.png";
+    }
+    else
+    {
+        imagePath = path;
+    }
+
+    bgPix = new QPixmap(imagePath);
+    QImage bgimg = bgPix->toImage();
+
+    qreal pad = 10;
+
+    int w = bgimg.width(), h = bgimg.height();
+    int tw = outimg->width(), th = outimg->height();
+
+    qreal xc = (w - 2 * pad) / (tw - 2 * pad), yc = (h - 2 * pad) / (th - 2 * pad);
+
+    for (int i = 0; i < tw; i++) {
+        for (int j = 0; j < th; j++) {
+            int x = i, y = j;
+
+            if (x >= pad && x <= (tw - pad))
+                x = pad + (x - pad) * xc;
+            else if (x >= (tw - pad))
+                x = w - (tw - x);
+
+            if (y >= pad && y <= (th - pad))
+                y = pad + (y - pad) * yc;
+            else if (y >= (th - pad))
+                y = h - (th - y);
+
+            QRgb rgb = bgimg.pixel(x, y);
+            outimg->setPixel(i, j, rgb);
+        }
+    }
+
+    this->setOpacity(0.0);
 }

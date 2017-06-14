@@ -4116,6 +4116,25 @@ void RoomScene::onGameStart()
     dashboard->showSeat();
     foreach(Photo *photo, photos)
         photo->showSeat();
+
+    QString path = "image/system/prompt/" + Self->getActualGeneral1Name() + "+" + Self->getActualGeneral2Name() + ".png";
+    if (!QFile::exists(path))
+    {
+        path = "image/system/prompt/" + Self->getActualGeneral2Name() + "+" + Self->getActualGeneral1Name() + ".png";
+        if (!QFile::exists(path))
+        {
+            path = "image/system/prompt/" + Self->getActualGeneral1Name() + ".png";
+            if (!QFile::exists(path))
+            {
+                path = "image/system/prompt/" + Self->getActualGeneral2Name() + ".png";
+                if (!QFile::exists(path))
+                {
+                    path = "image/system/tip.png";
+                }
+            }
+        }
+    }
+    prompt_box->setPath(path);
 }
 
 void RoomScene::freeze()
