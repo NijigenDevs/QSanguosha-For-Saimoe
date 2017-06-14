@@ -3204,7 +3204,7 @@
         <location filename="../src/ui/roomscene.cpp" line="3627"/>
         <location filename="../src/ui/roomscene.cpp" line="3638"/>
         <location filename="../src/ui/roomscene.cpp" line="3653"/>
-        <location filename="../src/ui/roomscene.cpp" line="4508"/>
+        <location filename="../src/ui/roomscene.cpp" line="4527"/>
         <source>Warning</source>
         <translation>警告</translation>
     </message>
@@ -3479,27 +3479,27 @@
         <translation>&lt;font color=&apos;%1&apos;&gt;---------- 游戏开始 ----------&lt;/font&gt;</translation>
     </message>
     <message>
-        <location filename="../src/ui/roomscene.cpp" line="4494"/>
+        <location filename="../src/ui/roomscene.cpp" line="4513"/>
         <source>Server information</source>
         <translation>服务器信息</translation>
     </message>
     <message>
-        <location filename="../src/ui/roomscene.cpp" line="4508"/>
+        <location filename="../src/ui/roomscene.cpp" line="4527"/>
         <source>You can only initiate a surrender poll at your play phase!</source>
         <translation>只有在你的出牌阶段才能请求投降!</translation>
     </message>
     <message>
-        <location filename="../src/ui/roomscene.cpp" line="4513"/>
+        <location filename="../src/ui/roomscene.cpp" line="4532"/>
         <source>Surrender</source>
         <translation>投降</translation>
     </message>
     <message>
-        <location filename="../src/ui/roomscene.cpp" line="4513"/>
+        <location filename="../src/ui/roomscene.cpp" line="4532"/>
         <source>Are you sure to surrender ?</source>
         <translation>您真的要投降吗 ?</translation>
     </message>
     <message>
-        <location filename="../src/ui/roomscene.cpp" line="4616"/>
+        <location filename="../src/ui/roomscene.cpp" line="4635"/>
         <source>Complete</source>
         <translation>完成</translation>
     </message>
@@ -3952,21 +3952,23 @@ P = 你自己, R = 你所在的房间</translation>
     <name>Settings</name>
     <message>
         <location filename="../src/core/settings.cpp" line="51"/>
+        <location filename="../src/core/settings.cpp" line="62"/>
         <source>Warning</source>
         <translation>警告</translation>
     </message>
     <message>
         <location filename="../src/core/settings.cpp" line="51"/>
+        <location filename="../src/core/settings.cpp" line="62"/>
         <source>Font file %1 could not be loaded!</source>
         <translation>不能载入字体文件 %1 !</translation>
     </message>
     <message>
-        <location filename="../src/core/settings.cpp" line="99"/>
+        <location filename="../src/core/settings.cpp" line="110"/>
         <source>Sanguosha-fans</source>
         <translation>三国杀fans</translation>
     </message>
     <message>
-        <location filename="../src/core/settings.cpp" line="100"/>
+        <location filename="../src/core/settings.cpp" line="111"/>
         <source>%1&apos;s server</source>
         <translation>%1的服务器</translation>
     </message>
