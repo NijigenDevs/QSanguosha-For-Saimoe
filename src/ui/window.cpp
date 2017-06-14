@@ -168,7 +168,7 @@ void Window::setTitle(const QString &title)
     QString style;
     style.append("font-size:18pt; ");
     style.append("color:#77c379; ");
-    style.append(QString("font-family: %1").arg(Config.SmallFont.family()));
+    style.append(QString("font-family: '%1'").arg(Config.SmallFont.family()));
 
     QString content;
     content.append(QString("<h style=\"%1\">%2</h>").arg(style).arg(title));
