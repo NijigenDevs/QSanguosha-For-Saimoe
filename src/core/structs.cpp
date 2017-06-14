@@ -326,3 +326,8 @@ AskForMoveCardsStruct::AskForMoveCardsStruct()
     top.clear();
     bottom.clear();
 }
+
+GeneralHandleStruct::GeneralHandleStruct()
+    :who(NULL), isHead(true), generalName(""), reason("rule")
+{
+}

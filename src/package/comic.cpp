@@ -962,10 +962,22 @@ public:
 
         if ((triggerEvent == GeneralShown || triggerEvent == EventPhaseStart || triggerEvent == EventAcquireSkill) && !player->hasShownSkill(this))
             return r;
-        if ((triggerEvent == GeneralShown || triggerEvent == GeneralHidden) && (!player->ownSkill(this) || player->inHeadSkills(this) != (data.value<QStringList>().first() == "head")))
-            return r;
-        if (triggerEvent == GeneralRemoved && data.value<QStringList>().first() != "t_kyouko")
-            return r;
+        if ((triggerEvent == GeneralShown || triggerEvent == GeneralHidden))
+        {
+            auto handle = data.value<GeneralHandleStruct>();
+            if (!player->ownSkill(this) || player->inHeadSkills(this) != handle.isHead)
+            {
+                return r;
+            }
+        }
+        if (triggerEvent == GeneralRemoved)
+        {
+            auto handle = data.value<GeneralHandleStruct>();
+            if (handle.generalName != "t_kyouko")
+            {
+                return r;
+            }
+        }
         if (triggerEvent == EventPhaseStart && !(player->getPhase() == Player::RoundStart || player->getPhase() == Player::NotActive))
             return r;
         if (triggerEvent == Death && (data.value<DeathStruct>().who != player || !player->hasShownSkill(this)))
@@ -3118,8 +3130,8 @@ public:
     {
         if (event == GeneralShown || event == GeneralHidden || event == GeneralRemoved)
         {
-            QStringList info = data.value<QStringList>();
-            if (info.last() != "transform")
+            auto handle = data.value<GeneralHandleStruct>();
+            if (handle.reason != "transform")
             {
                 foreach(auto p, room->getAlivePlayers())
                 {

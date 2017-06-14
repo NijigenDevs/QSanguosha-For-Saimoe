@@ -1449,9 +1449,9 @@ public:
 
         if (triggerEvent == EventLoseSkill && data.toString().split(":").first() == "xieyu")
             return QStringList();
-        if (triggerEvent == GeneralHidden && player->ownSkill(this) && player->inHeadSkills(objectName()) == data.toBool())
+        if (triggerEvent == GeneralHidden && player->ownSkill(this) && player->inHeadSkills(objectName()) == data.value<GeneralHandleStruct>().isHead)
             return QStringList();
-        if (triggerEvent == GeneralRemoved && data.toString() == "rikka")
+        if (triggerEvent == GeneralRemoved && data.value<GeneralHandleStruct>().generalName == "rikka")
             return QStringList();
         if (player->aliveCount() < 4)
             return QStringList();

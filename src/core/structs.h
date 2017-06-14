@@ -620,6 +620,16 @@ struct AskForMoveCardsStruct
     bool is_success;
 };
 
+struct GeneralHandleStruct
+{
+    GeneralHandleStruct();
+
+    ServerPlayer *who;
+    bool isHead;
+    QString generalName;
+    QString reason;
+};
+
 Q_DECLARE_METATYPE(DamageStruct)
 Q_DECLARE_METATYPE(CardEffectStruct)
 Q_DECLARE_METATYPE(SlashEffectStruct)
@@ -637,5 +647,6 @@ Q_DECLARE_METATYPE(ServerPlayer *)
 Q_DECLARE_METATYPE(JudgeStruct *)
 Q_DECLARE_METATYPE(PindianStruct *)
 Q_DECLARE_METATYPE(AskForMoveCardsStruct)
+Q_DECLARE_METATYPE(GeneralHandleStruct)
 #endif
 

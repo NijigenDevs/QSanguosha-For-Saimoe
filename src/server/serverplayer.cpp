@@ -1640,11 +1640,11 @@ void ServerPlayer::showGeneral(bool head_general, bool trigger_event, bool sendL
 
     if (trigger_event) {
         Q_ASSERT(room->getThread() != NULL);
-        QStringList data;
-        data << (head_general ? "head" : "deputy");
-        data << reason;
-        QVariant to_pass = qVariantFromValue(data);
-        room->getThread()->trigger(GeneralShown, room, this, to_pass);
+        GeneralHandleStruct data;
+        data.isHead = head_general;
+        data.reason = reason;
+        data.generalName = head_general ? getGeneralName() : getGeneral2Name();
+        room->getThread()->trigger(GeneralShown, room, this, qVariantFromValue(data));
     }
 
     room->filterCards(this, getCards("he"), true);
@@ -1736,11 +1736,11 @@ void ServerPlayer::hideGeneral(bool head_general, const QString &reason)
     room->sendLog(log);
 
     Q_ASSERT(room->getThread() != NULL);
-    QStringList data;
-    data << (head_general ? "head" : "deputy");
-    data << reason;
-    QVariant to_pass = qVariantFromValue(data);
-    room->getThread()->trigger(GeneralHidden, room, this, to_pass);
+    GeneralHandleStruct data;
+    data.isHead = head_general;
+    data.reason = reason;
+    data.generalName = head_general ? getGeneralName() : getGeneral2Name();
+    room->getThread()->trigger(GeneralHidden, room, this, qVariantFromValue(data));
 
     room->filterCards(this, getCards("he"), true);
     setSkillsPreshowed(head_general ? "h" : "d");
@@ -1826,8 +1826,11 @@ void ServerPlayer::removeGeneral(bool head_general, bool triggerEvent, const QSt
     data << reason;
     if (triggerEvent)
     {
-        QVariant to_pass = qVariantFromValue(data);
-        room->getThread()->trigger(GeneralRemoved, room, this, to_pass);
+        GeneralHandleStruct data;
+        data.isHead = head_general;
+        data.reason = reason;
+        data.generalName = from_general;
+        room->getThread()->trigger(GeneralRemoved, room, this, qVariantFromValue(data));
     }
 
     room->filterCards(this, getCards("he"), true);
