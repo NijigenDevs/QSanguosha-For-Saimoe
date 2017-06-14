@@ -51,18 +51,29 @@ void Settings::init()
             QMessageBox::warning(NULL, tr("Warning"), tr("Font file %1 could not be loaded!").arg(font_path));
         }
 
+        font_path = "font/SourceHanSerifHeavy.ttc";
+        font_id = QFontDatabase::addApplicationFont(font_path);
+        QFont AppliFont;
+        if (font_id != -1) {
+            QString font_family = QFontDatabase::applicationFontFamilies(font_id).first();
+            AppliFont.setFamily(font_family);
+        }
+        else {
+            QMessageBox::warning(NULL, tr("Warning"), tr("Font file %1 could not be loaded!").arg(font_path));
+        }
+
         BigFont.setPixelSize(56);
         SmallFont.setPixelSize(27);
         TinyFont.setPixelSize(18);
 
         SmallFont.setWeight(QFont::Bold);
 
-        AppFont = value("AppFont", QApplication::font("QMainWindow")).value<QFont>();
+        AppFont = value("AppFont", AppliFont).value<QFont>();
         //SE add font for Roomscene::log_box of iphone(ios)
-        iosLogFont = value("AppFont", QApplication::font("QMainWindow")).value<QFont>();
+        iosLogFont = value("AppFont", AppliFont).value<QFont>();
         iosLogFont.setPixelSize(13);
 
-        UIFont = value("UIFont", QApplication::font("QTextEdit")).value<QFont>();
+        UIFont = value("UIFont", AppliFont).value<QFont>();
         TextEditColor = QColor(value("TextEditColor", "white").toString());
         SkillDescriptionInToolTipColor = value("SkillDescriptionInToolTipColor", "#FFFF33").toString();
         SkillDescriptionInOverviewColor = value("SkillDescriptionInOverviewColor", "#FF0080").toString();

@@ -55,7 +55,7 @@ void Button::init()
 {
     setAcceptHoverEvents(true);
 
-    font_name = "wqy-microhei";
+    font_name = "SourceHanSansBold";
     font_size = Config.TinyFont.pixelSize();
 
     setAcceptedMouseButtons(Qt::LeftButton);
@@ -161,7 +161,7 @@ QRectF Button::boundingRect() const
 
 QFont Button::defaultFont()
 {
-    QFont font = StyleHelper::getFontByFileName("wqy-microhei.ttc");
+    QFont font = StyleHelper::getFontByFileName("SourceHanSansBold.ttc");
     font.setPixelSize(Config.TinyFont.pixelSize());
     return font;
 }

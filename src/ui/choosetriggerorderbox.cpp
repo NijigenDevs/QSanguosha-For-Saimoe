@@ -92,7 +92,7 @@ QString TriggerOptionButton::getGeneralNameBySkill() const
 
 QFont TriggerOptionButton::defaultFont()
 {
-    QFont font = StyleHelper::getFontByFileName("wqy-microhei.ttc");
+    QFont font = StyleHelper::getFontByFileName("SourceHanSansBold.ttc");
     font.setPixelSize(Config.TinyFont.pixelSize());
     return font;
 }
