@@ -19,7 +19,7 @@ Mogara
 *********************************************************************/
 //this file is copied from touhoukill.
 #include "lightboxanimation.h"
-
+#include <stylehelper.h>
 #include <QGraphicsTextItem>
 
 #include <QPropertyAnimation>
@@ -99,7 +99,7 @@ LightboxAnimation::LightboxAnimation(const QString &general_name, const QString 
 
 	skillName = new QGraphicsTextItem(Sanguosha->translate(skill_name), this);
 	skillName->setScale(10);
-	QFont font("LiSu");
+	QFont font(StyleHelper::getFontByFileName("ShogunsClan.ttf"));
 	font.setPixelSize(90);
 	skillName->setFont(font);
 	skillName->setDefaultTextColor(Qt::white);
@@ -135,8 +135,7 @@ LightboxAnimation::LightboxAnimation(const QString &general_name, const QString 
 	connect(step4, &QPauseAnimation::finished, flick, &RectObject::hide);
 
 	QPropertyAnimation *step5 = new QPropertyAnimation(generalPixmap, "scale");
-	QEasingCurve ec = QEasingCurve::OutBack;
-	ec.setOvershoot(6.252);
+	QEasingCurve ec = QEasingCurve::OutInBack;
 	step5->setEasingCurve(ec);
 	step5->setEndValue(1);
 	step5->setDuration(800);

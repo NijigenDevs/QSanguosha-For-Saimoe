@@ -79,6 +79,7 @@ return {
 	[":duangang"] = "限定技，出牌阶段开始时，你可以令于此阶段内每次造成的伤害+X（X为你出牌阶段已造成的伤害总和），直到一名角色死亡。",
 	["#DuangangBuff"] = "%from 的“<font color=\"yellow\"><b>断钢</b></font>”效果被触发，伤害从 %arg 点增加至 %arg2 点",
 	["@excalibur"] = "断钢",
+	["Excalibur"] = "Excalibur",
 
 	----G005
 	["t_rin"] = "远坂凛", 

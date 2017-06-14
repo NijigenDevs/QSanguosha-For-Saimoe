@@ -2321,7 +2321,7 @@ public:
             {
                 room->broadcastSkillInvoke(objectName(), (qrand() % 3) + 1);
                 room->removePlayerMark(player, "@excalibur");
-                room->doSuperLightbox("altria", objectName());
+                room->doSuperLightbox("altria", "Excalibur");
                 return true;
             }
         }
