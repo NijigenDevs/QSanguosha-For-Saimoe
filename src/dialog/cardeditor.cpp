@@ -560,7 +560,7 @@ AvatarRectItem::AvatarRectItem(qreal width, qreal height, const QRectF &box_rect
 #ifdef Q_OS_LINUX
     QFont font("DroidSansFallback");
 #else
-    QFont font("Source Han Sans Bold");
+    QFont font("SimHei");
 #endif
     font.setPixelSize(font_size);
     name = new BlackEdgeTextItem;

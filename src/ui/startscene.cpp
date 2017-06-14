@@ -130,7 +130,7 @@ void StartScene::switchToServer(Server *server)
     serverLog->move(-400, -180);
     serverLog->setFrameShape(QFrame::NoFrame);
 
-    QFont font = StyleHelper::getFontByFileName("SourceHanSansBold.ttc");
+    QFont font = StyleHelper::getFontByFileName("wqy-microhei.ttc");
     font.setPointSize(12);
     serverLog->setFont(font);
 

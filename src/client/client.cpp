@@ -162,7 +162,7 @@ Client::Client(QObject *parent, const QString &filename)
 #ifdef Q_OS_LINUX
     prompt_doc->setDefaultFont(QFont("DroidSansFallback"));
 #else
-    prompt_doc->setDefaultFont(QFont("Source Han Sans Bold"));
+    prompt_doc->setDefaultFont(QFont("SimHei"));
 #endif
 }
 

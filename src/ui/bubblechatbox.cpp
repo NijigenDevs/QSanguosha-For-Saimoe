@@ -21,7 +21,7 @@ BubbleChatBox::BubbleChatBox(const QRect &area, QGraphicsItem *parent)
     rect(backgroundPixmap.rect()), area(area), chatLabel(new BubbleChatLabel(this)),
     appearAndDisappear(new QPropertyAnimation(this, "opacity", this))
 {
-    chatLabel->setFont(StyleHelper::getFontByFileName("SourceHanSansBold.ttc"));
+    chatLabel->setFont(StyleHelper::getFontByFileName("wqy-microhei.ttc"));
     chatLabel->setWrapMode(QTextOption::WrapAnywhere);
 
     setFlag(ItemClipsChildrenToShape);
