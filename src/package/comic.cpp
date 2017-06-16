@@ -2808,7 +2808,7 @@ const Card *LaoyueCard::validate(CardUseStruct &cardUse) const
             room->swapPile();
         ids << room->getDrawPile().takeLast();
     }
-    QStringList names = user_string.split("+");
+    QStringList names = toString().split(":").last().split("+");
     if (names.contains("slash")) names << "fire_slash" << "thunder_slash";
     QList<int> enabled, disabled;
     foreach (int id, ids)
