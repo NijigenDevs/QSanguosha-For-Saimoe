@@ -2784,10 +2784,10 @@ public:
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const
     {
-        if ((triggerEvent == DamageInflicted) && player->isAlive() && player->getMark("@wuxin") > 0)
+        if ((triggerEvent == DamageInflicted) && TriggerSkill::triggerable(player) && player->getMark("@wuxin") > 0)
         {
             DamageStruct damage = data.value<DamageStruct>();
-            if (damage.damage > 1)
+            if (damage.damage >= player->getHp())
                 return QStringList(objectName());
         }
         return QStringList();
