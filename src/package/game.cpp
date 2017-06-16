@@ -2196,7 +2196,18 @@ public:
                 if (jian != NULL && jian->isKindOf("Weapon")
                     && qobject_cast<const Weapon *>(jian->getRealCard())->getRange() >= ask_who->distanceTo(player))
                 {
+                    LogMessage failLog;
+                    failLog.type = "#FengwangDoubtFailed";
+                    failLog.from = ask_who;
+                    failLog.to << player;
+                    failLog.arg = objectName();
+                    room->sendLog(failLog);
+
                     player->setFlags("fengwang_doubt_failed");
+                    if (player->canDiscard(player, "he"))
+                    {
+                        room->askForDiscard(player, objectName(), 1, 1, false, true, "@fengwang-doubt-discard", true);
+                    }
                     int x = use.to.indexOf(player);
                     QVariantList jink_list = ask_who->tag["Jink_" + use.card->toString()].toList();
                     if (jink_list.at(x).toInt() == 1)
@@ -2205,6 +2216,12 @@ public:
                 }
                 else
                 {
+                    LogMessage successLog;
+                    successLog.type = "#FengwangDoubtSucceed";
+                    successLog.from = ask_who;
+                    successLog.to << player;
+                    successLog.arg = objectName();
+                    room->sendLog(successLog);
                     use.card->setFlags("fengwang_nullified");
 
                     ask_who->getPile("jian").removeOne(id);
