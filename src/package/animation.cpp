@@ -2798,7 +2798,7 @@ public:
         if (ask_who->askForSkillInvoke(objectName(), data))
         {
             ask_who->loseAllMarks("@wuxin");
-            //Lightbox here!
+            room->doSuperLightbox("rei", "Evangelion");
             room->broadcastSkillInvoke(objectName());
             return true;
         }
