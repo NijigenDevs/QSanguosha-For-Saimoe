@@ -20,7 +20,7 @@
      <x>0</x>
      <y>0</y>
      <width>600</width>
-     <height>23</height>
+     <height>32</height>
     </rect>
    </property>
    <property name="autoFillBackground">
@@ -116,7 +116,6 @@
      <addaction name="actionAbout_Qt"/>
      <addaction name="actionAbout_GPLv3"/>
      <addaction name="actionAbout_Lua"/>
-     <addaction name="actionAbout_fmod"/>
      <addaction name="separator"/>
      <addaction name="actionAcknowledgement_2"/>
      <addaction name="separator"/>
@@ -269,9 +268,6 @@
    <property name="text">
     <string>Minimize to system tray</string>
    </property>
-   <property name="shortcut">
-    <string>Alt+S</string>
-   </property>
   </action>
   <action name="actionRule_Summary">
    <property name="text">
@@ -366,11 +362,6 @@
     <string>View ban list</string>
    </property>
   </action>
-  <action name="actionAbout_fmod">
-   <property name="text">
-    <string>About fmod</string>
-   </property>
-  </action>
   <action name="actionAbout_Lua">
    <property name="text">
     <string>About Lua</string>
@@ -416,7 +407,7 @@
   </action>
   <action name="actionCheckUpdate">
    <property name="enabled">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
    <property name="text">
     <string>CheckUpdate</string>
