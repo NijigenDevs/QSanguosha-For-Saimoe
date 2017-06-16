@@ -2604,54 +2604,46 @@ public:
         frequency = NotFrequent;
     }
 
-    virtual QStringList triggerable(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const
+    virtual void record(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data) const
     {
-        if (!TriggerSkill::triggerable(player))
-            return QStringList();
         if (event == CardUsed)
         {
             CardUseStruct use = data.value<CardUseStruct>();
             const Card *card = room->getTag("NullifyingCard").value<const Card *>();
-            QMap<int, ServerPlayer *> yetians = room->getTag("yetians").value<QMap<int, ServerPlayer *>>();
-            if (use.from != NULL && use.card->isKindOf("Nullification") && card != NULL && card->isNDTrick()
-                && Sanguosha->getEngineCard(use.card->getEffectiveId()) && Sanguosha->getEngineCard(use.card->getEffectiveId())->isNDTrick()
-                && !yetians.contains(card->getEffectiveId()) && !use.card->isVirtualCard() && use.card->subcardsLength() == 1)
+            auto yetian = room->getTag("yetian").value<QPair<const Card *, ServerPlayer *>>();
+            if (use.from != NULL && use.card->isKindOf("Nullification") && card != NULL && card->isNDTrick() && yetian.first != card && card->subcardsLength() == 1)
             {
-                yetians.insert(card->getEffectiveId(), use.from);
-                room->setTag("yetians", QVariant::fromValue(yetians));
+                yetian = qMakePair(card, use.from);
+                room->setTag("yetian", QVariant::fromValue(yetian));
             }
         }
-        else if (event == CardsMoveOneTime)
+    }
+
+    virtual QStringList triggerable(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const
+    {
+        if (!TriggerSkill::triggerable(player))
+            return QStringList();
+
+        if (event == CardsMoveOneTime)
         {
             CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
             if (move.from != NULL && move.to_place == Player::DiscardPile && move.card_ids.length() > 0
                 && ((move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_USE)
                 && move.from_places.contains(Player::PlaceTable))
             {
-                QMap<int, ServerPlayer *> yetians = room->getTag("yetians").value<QMap<int, ServerPlayer *>>();
-                QList<int> ids;
-                foreach (int id, move.card_ids)
+                auto yetian = room->getTag("yetian").value<QPair<const Card *, ServerPlayer *>>();
+                if (yetian.second != player)
+                    return QStringList();
+                auto yetians = yetian.first->getSubcards();
+                if (move.card_ids.contains(yetians.first()))
                 {
-                    if (yetians.contains(id) && yetians.value(id) == player)
-                    {
-                        if (id != -1)
-                            ids << id;
-                        yetians.remove(id);
-                    }
+                    room->removeTag("yetian");
+                    player->tag["yetian_ids"] = QVariant::fromValue(yetians);
+                    return QStringList(objectName());
                 }
-                room->setTag("yetians", QVariant::fromValue(yetians));
-                if (ids.length() > 0)
-                {
-                    player->tag["yetian_ids"] = QVariant::fromValue(ids);
-                    QStringList list;
-                    for (int i = 1; i <= ids.length(); i++)
-                        list << objectName();
-                    return list;
-                }
-                player->tag["yetian_ids"] = NULL;
             }
         }
-        else
+        else if (event == EventPhaseStart)
         {
             if (player->getPhase() == Player::Start && player->getHandcardNum() == 0)
                 return QStringList(objectName());
@@ -2672,8 +2664,7 @@ public:
                 room->broadcastSkillInvoke(objectName());
                 return true;
             }
-            ids.removeFirst();
-            player->tag["yetian_ids"] = QVariant::fromValue(ids);
+            player->tag["yetian_ids"].clear();
         }
         else if (player->hasShownSkill(this) || player->askForSkillInvoke(this))
         {
