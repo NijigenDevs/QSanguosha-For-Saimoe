@@ -862,11 +862,12 @@ public:
             {
                 if (!VariantList2IntList(room->getTag("keyList").toList()).contains(move.card_ids[i]))
                     continue;
-                if (move.to_place == Player::DiscardPile)
+                if (move.from_places[i] == Player::PlaceDelayedTrick && move.to_place == Player::DiscardPile)
                 {
-                    foreach (auto rin, room->findPlayersBySkillName(objectName()))
+                    foreach(auto rin, room->findPlayersBySkillName(objectName()))
                     {
-                        skill_list.insert(rin, QStringList(objectName()));
+                        if (rin == player)
+                            skill_list.insert(rin, QStringList(objectName()));
                     }
                 }
             }
