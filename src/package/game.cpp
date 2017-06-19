@@ -61,11 +61,11 @@ class keyCardGlobalManagement : public TriggerSkill
 public:
     keyCardGlobalManagement() : TriggerSkill("keyCard-global")
     {
-        events << CardsMoveOneTime << NonTrigger;
+        events << CardsMoveOneTime << Damaged << NonTrigger;
         global = true;
     }
 
-    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent event, Room *room, ServerPlayer *, QVariant &data) const
+    virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data) const
     {
         QMap<ServerPlayer *, QStringList> skill_list;
         if (event == CardsMoveOneTime)
@@ -108,6 +108,41 @@ public:
                         ql.removeOne(QVariant::fromValue(move.card_ids[i]));
                         room->setTag("keyList", ql);
                     }
+                }
+            }
+        }
+        else if (event == Damaged)
+        {
+            auto damage = data.value<DamageStruct>();
+            if (damage.damage > 0 && damage.to != NULL && damage.to->isAlive() && damage.to->containsTrick("keyCard") && damage.to == player)
+            {
+                const Card *key;
+                foreach(const Card *card, damage.to->getJudgingArea())
+                {
+                    if (card->isKindOf("Key"))
+                    {
+                        key = card;
+                    }
+                }
+
+                LogMessage log;
+                log.from = damage.to;
+                log.type = "#DelayedTrick";
+                log.arg = key->objectName();
+                room->sendLog(log);
+
+                JudgeStruct judge;
+                judge.pattern = ".|diamond|.";
+                judge.good = true;
+                judge.reason = "key";
+                judge.who = damage.to;
+
+                room->judge(judge);
+
+                if (judge.isGood())
+                {
+                    CardMoveReason reason(CardMoveReason::S_REASON_NATURAL_ENTER, QString());
+                    room->throwCard(key, reason, NULL);
                 }
             }
         }
