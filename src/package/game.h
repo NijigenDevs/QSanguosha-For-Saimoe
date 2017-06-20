@@ -82,15 +82,6 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
-class YumengDraw : public DrawCardsSkill
-{
-public:
-    YumengDraw();
-
-    virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who = NULL) const;
-    virtual int getDrawNum(ServerPlayer *player, int n) const;
-};
-
 class Key : public DelayedTrick
 {
     Q_OBJECT

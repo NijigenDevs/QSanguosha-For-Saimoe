@@ -1918,6 +1918,7 @@ public:
     Liufei() : TriggerSkill("liufei")
     {
         events << TargetConfirming;
+        frequency = Compulsory;
     }
 
     virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const

@@ -3031,7 +3031,8 @@ void RoomScene::onSkillActivated()
             cancel_button->setEnabled(true);
 
         const Card *card = dashboard->getPendingCard();
-        if (card && card->targetFixed() && card->isAvailable(Self)) {
+        //@TODO: decoupling tianjian here (tianjian can use 0 or all hand cards, when use targetFixed trick, it will return 0 subcard directly)
+        if (card && card->targetFixed() && card->isAvailable(Self) && !card->isKindOf("TianjianCard")) {
             useSelectedCard();
         } else if (skill->inherits("OneCardViewAsSkill") && !skill->getDialog() && skill->getGuhuoBox() == "" && Config.EnableIntellectualSelection)
             dashboard->selectOnlyCard(ClientInstance->getStatus() == Client::Playing);

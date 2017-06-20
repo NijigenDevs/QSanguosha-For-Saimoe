@@ -929,6 +929,7 @@ public:
     Ziwo() : TriggerSkill("ziwo")
     {
         events << GeneralShown << GeneralHidden << GeneralRemoved << EventPhaseStart << Death << EventAcquireSkill << EventLoseSkill;
+        frequency = Compulsory;
     }
 
     void doZiwo(Room *room, ServerPlayer *kyouko, bool set) const
