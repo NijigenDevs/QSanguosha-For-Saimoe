@@ -2774,7 +2774,8 @@ const Card *TianjianCard::validate(CardUseStruct &card_use) const
     if (subcardsLength() == 0)
         use_card->setSkillName("tianjianturn");
     else
-        use_card->setShowSkill("tianjian");
+        use_card->setSkillName("tianjian");
+    use_card->setShowSkill("tianjian");
     use_card->setCanRecast(false);
     bool available = true;
 
