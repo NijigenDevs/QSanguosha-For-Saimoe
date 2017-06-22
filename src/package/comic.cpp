@@ -1083,7 +1083,7 @@ public:
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer*) const
     {
-        if (player->askForSkillInvoke(this))
+        if (room->askForDiscard(player, objectName(), 1, 1, true, true, "@baozou_discard"))
         {
             room->broadcastSkillInvoke(objectName(), player);
             return true;
@@ -1138,18 +1138,9 @@ public:
                 CardsMoveStruct new_move;
                 new_move.card_ids << id;
                 new_move.from_place = Player::PlaceTable;
-
-                if (player->canDiscard(player, "h") && room->askForDiscard(player, objectName(), 1, 1, true, false, "@baozou_discard", true))
-                {
-                    new_move.to = player;
-                    new_move.to_place = Player::PlaceHand;
-                    new_move.reason = CardMoveReason(CardMoveReason::S_REASON_GOTCARD, player->objectName(), objectName(), QString());
-                }
-                else
-                {
-                    new_move.to_place = Player::DiscardPile;
-                    new_move.reason = CardMoveReason(CardMoveReason::S_REASON_NATURAL_ENTER, player->objectName(), objectName(), QString());
-                }
+                new_move.to = player;
+                new_move.to_place = Player::PlaceHand;
+                new_move.reason = CardMoveReason(CardMoveReason::S_REASON_GOTCARD, player->objectName(), objectName(), QString());
                 room->moveCardsAtomic(new_move, true);
             }
         }
