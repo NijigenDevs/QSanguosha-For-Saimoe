@@ -840,9 +840,9 @@ public:
         response_or_use = true;
     }
 
-    virtual bool viewFilter(const QList<const Card *> &, const Card *) const
+    virtual bool viewFilter(const QList<const Card *> &, const Card *to_select) const
     {
-        return true;
+        return !to_select->isEquipped();
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const
