@@ -705,14 +705,17 @@ public:
             log.arg = giveNum;
             log.arg2 = shouldGiveNum;
             room->loseHp(misuzu, 1);
-            Key *key = new Key(Card::NoSuit, 0);
-            key->deleteLater();
-            const QList<const Player *> empty;
-            if (key->targetFilter(empty, misuzu, misuzu))
+            if (misuzu->isAlive())
             {
-                int id = room->drawCard();
-                room->showCard(misuzu, id);
-                putKeyFromId(room, id, misuzu, misuzu, objectName());
+                Key *key = new Key(Card::NoSuit, 0);
+                key->deleteLater();
+                const QList<const Player *> empty;
+                if (key->targetFilter(empty, misuzu, misuzu))
+                {
+                    int id = room->drawCard();
+                    room->showCard(misuzu, id);
+                    putKeyFromId(room, id, misuzu, misuzu, objectName());
+                }
             }
         }
         return false;

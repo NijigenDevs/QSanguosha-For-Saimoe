@@ -18,14 +18,14 @@ public:
     virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const
     {
         QMap<ServerPlayer *, QStringList> skill_list;
-        if (player != NULL && player->getPhase() == Player::Start)
+        if (player != NULL && player->isAlive() && player->getPhase() == Player::Start)
         {
             QList<ServerPlayer *> akaris = room->findPlayersBySkillName(objectName());
             foreach (ServerPlayer *akari, akaris)
             {
                 LureTiger *luretiger = new LureTiger(Card::SuitToBeDecided, 0);
                 QList<const Player *> targets;
-                if ((!akari->willBeFriendWith(player)) && (!akari->isFriendWith(player)) && player->hasShownOneGeneral() && akari->getHandcardNum() <= akari->getHp() && room->alivePlayerCount() > 2 && luretiger->targetFilter(targets, akari, player) && !player->isProhibited(akari, luretiger, targets))
+                if (!akari->willBeFriendWith(player) && !akari->isFriendWith(player) && player->hasShownOneGeneral() && akari->getHandcardNum() <= akari->getHp() && room->alivePlayerCount() > 2 && luretiger->targetFilter(targets, akari, player) && !player->isProhibited(akari, luretiger, targets))
                 {
                     luretiger->deleteLater();
                     skill_list.insert(akari, QStringList(objectName()));
