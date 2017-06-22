@@ -2693,6 +2693,8 @@ public:
             moves.append(move2);
             moves.append(move1);
             room->moveCardsAtomic(moves, false);
+            for (int i = ids.length() - 1; i >= 0; i--)
+                drawPile.prepend(ids.at(i));
         }
         else if (choice == "cancel")
         {
