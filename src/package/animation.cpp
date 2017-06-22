@@ -542,11 +542,11 @@ public:
         if (event == TargetConfirmed)
         {
             CardUseStruct use = data.value<CardUseStruct>();
-            if (!(use.to.length() == 1 && player == use.to.first())) return skill_list;
+            if (use.card == NULL || !use.card->isKindOf("Slash") || use.to.length() != 1 || player != use.to.first())
+                return skill_list;
             QList<ServerPlayer *> homuras = room->findPlayersBySkillName(objectName());
             foreach (ServerPlayer *homura, homuras)
-                if (use.card && use.card->isKindOf("Slash") && homura->canDiscard(homura, "h") && homura->getHandcardNum() > 1 &&
-                    (homura->isFriendWith(use.to.first()) || homura->willBeFriendWith(use.to.first())))
+                if (homura->canDiscard(homura, "h") && homura->getHandcardNum() > 1 && (homura->isFriendWith(player) || homura->willBeFriendWith(player)))
                     skill_list.insert(homura, QStringList(objectName()));
         }
         else if (event == CardUsed)
@@ -555,7 +555,7 @@ public:
             QList<ServerPlayer *> homuras = room->findPlayersBySkillName(objectName());
             foreach (ServerPlayer *homura, homuras)
             {
-                if (homura == use.from && use.card && homura->hasFlag("shiting_use") && use.to.length() > 0 && (!use.card->isKindOf("SkillCard")) && (!use.card->isKindOf("TransferCard")) && (!use.to.contains(homura)))
+                if (homura == use.from && use.card && homura->hasFlag("shiting_use") && use.to.length() > 0 && !use.card->isKindOf("SkillCard") && !use.card->isKindOf("TransferCard") && !use.to.contains(homura))
                 {
                     QVariantList shiting_list = homura->tag["shiting_list"].toList();
                     if (!shiting_list.contains(data))
