@@ -37,6 +37,14 @@ Settings::Settings()
     connect(qApp, &QApplication::aboutToQuit, this, &Settings::deleteLater);
 }
 
+void Settings::scale()
+{
+    if (!qApp->arguments().contains("-server"))
+    {
+        ScaleFactor = value("ScaleFactor", 0).toDouble();
+    }
+}
+
 void Settings::init()
 {
     if (!qApp->arguments().contains("-server")) {

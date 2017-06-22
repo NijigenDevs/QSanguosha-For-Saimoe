@@ -109,16 +109,24 @@ void checkUpdate()
 int main(int argc, char *argv[])
 {
     bool noGui = argc > 1 && strcmp(argv[1], "-server") == 0;
-
+    new Settings;
     if (noGui)
     {
         new QCoreApplication(argc, argv);
     }
     else
     {
+        Config.scale();
+        if (Config.ScaleFactor <= 0)
+        {
 #if QT_VERSION >= QT_VERSION_CHECK(5, 6, 0)
-        QGuiApplication::setAttribute(Qt::AA_EnableHighDpiScaling, true);
+            QGuiApplication::setAttribute(Qt::AA_EnableHighDpiScaling, true);
 #endif
+        }
+        else
+        {
+            qputenv("QT_SCALE_FACTOR", QByteArray::number(Config.ScaleFactor));
+        }
         new QApplication(argc, argv);
     }
 
@@ -199,7 +207,7 @@ int main(int argc, char *argv[])
 #endif
 
     // initialize random seed for later use
-    qsrand(QTime(0, 0, 0).secsTo(QTime::currentTime()));
+    qsrand((quint32)time(0));
 
     // load the main translation file first for we need to translate messages of splash.
     QTranslator translator;
@@ -212,11 +220,11 @@ int main(int argc, char *argv[])
     qApp->installTranslator(&qt_translator);
 
     showSplashMessage(QSplashScreen::tr("Initializing game engine..."));
-    new Settings;
     Sanguosha = new Engine;
 
     showSplashMessage(QSplashScreen::tr("Loading user's configurations..."));
     Config.init();
+
     if (!noGui) {
         QFont f = Config.AppFont;
 #ifdef Q_OS_ANDROID

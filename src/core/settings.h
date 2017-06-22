@@ -28,6 +28,7 @@ public:
     // March 17 2014
     //************************************
     void init();
+    void scale();
 
     const QRectF Rect;
     QFont BigFont;
@@ -41,6 +42,7 @@ public:
     QColor SkillDescriptionInToolTipColor;
     QColor SkillDescriptionInOverviewColor;
     QColor ToolTipBackgroundColor;
+    double ScaleFactor;
 
     // server side
     QString ServerName;
