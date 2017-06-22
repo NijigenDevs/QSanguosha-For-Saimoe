@@ -63,7 +63,7 @@ public:
     {
         setSceneRect(Config.Rect);
 #if QT_VERSION >= QT_VERSION_CHECK(5, 7, 0)
-        setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
+        setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
 #else
         setViewportUpdateMode(QGraphicsView::MinimalViewportUpdate);
 #endif
@@ -141,7 +141,6 @@ MainWindow::MainWindow(QWidget *parent)
 #if defined(Q_OS_WIN) || (defined(Q_OS_LINUX) && !defined(Q_OS_ANDROID))
     setWindowFlags(Qt::FramelessWindowHint | Qt::WindowSystemMenuHint | Qt::WindowMinMaxButtonsHint);
 #endif
-//    setAttribute(Qt::WA_TranslucentBackground);
 
     setMouseTracking(true);
     setMinimumWidth(800);
