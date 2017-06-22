@@ -780,7 +780,6 @@ void QuanmianCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &
 {
     ServerPlayer *yui = targets.first();
     int cardid = room->askForCardChosen(source, yui, "e", "quanmian");
-    room->broadcastSkillInvoke("quanmian");
     yui->obtainCard(Sanguosha->getCard(cardid));
     if (yui != source)
         source->drawCards(1);
@@ -967,7 +966,6 @@ public:
         bool invoke = mio->hasShownSkill(this) ? true : room->askForSkillInvoke(mio, objectName());
         if (invoke)
         {
-            room->broadcastSkillInvoke("yinzhuang", 1, mio);
             if (mio->hasShownSkill(this))
             {
                 room->notifySkillInvoked(mio, "yinzhuang");
@@ -1345,7 +1343,6 @@ public:
 
 XiehangCard::XiehangCard()
 {
-
 }
 
 bool XiehangCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
