@@ -25,7 +25,7 @@ return {
 	["&shana"] = "夏娜", 
 	["#shana"] = "炎发灼眼的讨伐者", 
 	["#&shana"] = "灼眼的夏娜", 
-	["~shana"] = "", 
+	["~shana"] = "为什么，为什么，为什么你现在要说这些...", 
 	["designer:shana"] = "钉子",
 	["cv:shana"] = " 釘宮理恵",
 	["illustrator:shana"] = "40322063",
