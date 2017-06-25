@@ -3076,7 +3076,7 @@ public:
             {
                 QList<ServerPlayer *> rikas = room->findPlayersBySkillName(objectName());
                 foreach (ServerPlayer *rika, rikas)
-                    if (player != rika && !player->isChained() && !rika->isChained() && player->canBeChainedBy(rika))
+                    if (player != rika && !player->isChained() && !rika->isChained() && player->canBeChainedBy(rika) && rika->canBeChainedBy(rika))
                         skill_list.insert(rika, QStringList(objectName()));
             }
         }
@@ -3216,7 +3216,7 @@ public:
             {
                 foreach (ServerPlayer *rika, room->findPlayersBySkillName(objectName()))
                 {
-                    if (rika->canBeChainedBy(rika) && rika->canDiscard(rika, "he"))
+                    if (rika->canBeChainedBy(rika) && rika->isChained())
                         skill_list.insert(rika, QStringList(objectName()));
                 }
             }
@@ -3224,9 +3224,9 @@ public:
         return skill_list;
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const
     {
-        if (room->askForCard(ask_who, ".|.|.|.", "@zuimie-discard", QVariant(), Card::MethodDiscard))
+        if (room->askForSkillInvoke(ask_who, objectName(), qVariantFromValue(player)))
         {
             room->setPlayerProperty(ask_who, "chained", false);
             room->broadcastSkillInvoke(objectName());
