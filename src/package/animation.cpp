@@ -2689,6 +2689,7 @@ public:
                 }
             }
         }
+        return list;
     }
 
     virtual bool cost(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const
