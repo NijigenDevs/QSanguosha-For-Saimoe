@@ -1179,96 +1179,63 @@ class Yinren : public TriggerSkill
 public:
     Yinren() : TriggerSkill("yinren")
     {
-        events << EventPhaseStart << Damage;
+        events << EventPhaseStart;
     }
 
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer * &ask_who) const
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer * &ask_who) const
     {
-        if (triggerEvent == EventPhaseStart)
+        if (TriggerSkill::triggerable(player) && (player->getPhase() == Player::Start || player->getPhase() == Player::Finish) && player->canDiscard(player, "h"))
         {
-            if (TriggerSkill::triggerable(player) && (player->getPhase() == Player::Start || player->getPhase() == Player::Finish) && !player->isKongcheng())
-            {
-                return QStringList(objectName());
-            }
-        }
-        else if (triggerEvent == Damage)
-        {
-            DamageStruct damage = data.value<DamageStruct>();
-            if (damage.card && damage.card->getSkillName() == "yinren" && damage.from && damage.from->isAlive() && damage.to->isAlive() && damage.to->canDiscard(damage.from, "h"))
-            {
-                ask_who = damage.to;
-                return QStringList(objectName());
-            }
+            return QStringList(objectName());
         }
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
-        if (triggerEvent == EventPhaseStart)
-        {
-            //broadcastskillinvoke
-            return player->askForSkillInvoke(objectName());
-        }
-        else
-        {
-            if (ask_who)
-            {
-                return ask_who->askForSkillInvoke(objectName(), "gainacard");
-            }
-        }
-        return false;
+        return room->askForDiscard(player, objectName(), 1, 1, true, false, "@yinren-invoke");
     }
 
-    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
     {
-        if (triggerEvent == EventPhaseStart)
+        if (player->getHandcardNum() == 0)
+            return false;
+
+        room->showAllCards(player);
+        QList<Card::Suit> suit_list;
+        bool duplicate = false;
+        foreach (const Card *c, player->getHandcards())
         {
-            room->showAllCards(player);
-            QList<Card::Suit> suit_list;
-            bool duplicate = false;
-            foreach (const Card *c, player->getHandcards())
+            Card::Suit s = c->getSuit();
+            if (!suit_list.contains(s))
+                suit_list << s;
+            else
             {
-                Card::Suit s = c->getSuit();
-                if (!suit_list.contains(s))
-                    suit_list << s;
-                else
-                {
-                    duplicate = true;
-                    break;
-                }
-            }
-            if (!duplicate)
-            {
-                Slash *slash = new Slash(Card::NoSuit, 0);
-                slash->setSkillName("_yinren");
-                QList<ServerPlayer *> can_slashers;
-                foreach (ServerPlayer *p, room->getOtherPlayers(player))
-                {
-                    if (player->canSlash(p, slash, false))
-                    {
-                        can_slashers << p;
-                    }
-                }
-                if (can_slashers.isEmpty())
-                {
-                    delete slash;
-                    //log
-                    return false;
-                }
-                ServerPlayer *slasher = room->askForPlayerChosen(player, can_slashers, objectName(), "@yinren-slash");
-                room->broadcastSkillInvoke(objectName());
-                room->useCard(CardUseStruct(slash, player, slasher));
+                duplicate = true;
+                break;
             }
         }
-        else
+        if (!duplicate)
         {
-            if (ask_who)
+            Slash *slash = new Slash(Card::NoSuit, 0);
+            slash->setSkillName("_yinren");
+            QList<ServerPlayer *> can_slashers;
+            foreach (ServerPlayer *p, room->getOtherPlayers(player))
             {
-                DamageStruct damage = data.value<DamageStruct>();
-                int id = room->askForCardChosen(ask_who, damage.from, "h", objectName(), false, Card::MethodDiscard);
-                room->throwCard(id, damage.from, ask_who);
+                if (player->canSlash(p, slash, false))
+                {
+                    can_slashers << p;
+                }
             }
+            if (can_slashers.isEmpty())
+            {
+                delete slash;
+                //log
+                return false;
+            }
+            ServerPlayer *slasher = room->askForPlayerChosen(player, can_slashers, objectName(), "@yinren-slash");
+            room->broadcastSkillInvoke(objectName());
+            room->useCard(CardUseStruct(slash, player, slasher));
         }
         return false;
     }
@@ -2767,7 +2734,7 @@ public:
                 return skill_list;
 
             bool has_hide = false;
-            foreach(auto p, room->getOtherPlayers(player))
+            foreach (auto p, room->getOtherPlayers(player))
             {
                 if (!p->hasShownAllGenerals() && p->canShowGeneral())
                 {
