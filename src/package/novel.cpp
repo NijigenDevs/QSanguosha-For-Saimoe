@@ -350,7 +350,13 @@ bool JisuiCard::targetFilter(const QList<const Player *> &targets, const Player 
 void JisuiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const
 {
     targets << source;
-    QList<int> card_ids = room->getNCards(targets.length());
+    QList<int> card_ids = room->getNCards(room->alivePlayerCount());
+    CardsMoveStruct showmove(card_ids, NULL, NULL, Player::DrawPile, Player::PlaceTable, CardMoveReason(CardMoveReason::S_REASON_SHOW,
+        source->objectName(),
+        "jisui",
+        QString()));
+    room->moveCardsAtomic(showmove, false);
+
     room->fillAG(card_ids);
     room->getThread()->delay(3000);
     room->clearAG();
@@ -358,41 +364,56 @@ void JisuiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &tar
     room->sortByActionOrder(targets);
     Card::use(room, source, targets);
     QVariantList ag_list = room->getTag("Jisui_Card").toList();
-    if (ag_list.isEmpty()) return;
+    if (ag_list.isEmpty())
+        return;
 
-    QList<int> card2_ids;
+    QList<int> ids;
     foreach (QVariant card_id, ag_list)
-        card2_ids << card_id.toInt();
+        ids << card_id.toInt();
 
-    QList<int> guanxing_ids;
-
-    room->fillAG(card2_ids);
+    room->fillAG(ids);
     room->getThread()->delay(3000);
     room->clearAG();
 
-    do
+    QStringList choices;
+    choices << "discardput";
+
+    auto ag = Sanguosha->cloneCard("amazing_grace", Card::SuitToBeDecided, 0);
+    ag->setSkillName("jisui");
+    QList<ServerPlayer *> ag_targets;
+    QList<const Player *> selected;
+    foreach(auto target, room->getAlivePlayers())
     {
-        room->fillAG(card2_ids, source);
-        int card_id = room->askForAG(source, card2_ids, true, "jisui");
-        room->clearAG(source);
-        if (card_id == -1)
+        if (!source->isProhibited(target, ag, selected))
         {
-            break;
+            ag_targets << target;
+            selected << target;
         }
+    }
 
-        card2_ids.removeOne(card_id);
-        ag_list.removeOne(card_id);
-        guanxing_ids << card_id;
-        
-    } while (!card2_ids.isEmpty());
-
-    if (guanxing_ids.length() > 0)
-        room->askForGuanxing(source, guanxing_ids, Room::GuanxingUpOnly);
-
-    if (card2_ids.length() > 0)
+    if (ag->targetFixed() && ag_targets.length() > 0 && !source->isCardLimited(ag, Card::MethodUse, false))
     {
-        DummyCard dummy(VariantList2IntList(ag_list));
-        CardMoveReason reason(CardMoveReason::S_REASON_NATURAL_ENTER, QString(), "jisui", QString());
+        choices << "useag";
+    }
+
+    QString choice = room->askForChoice(source, "jisui", choices.join("+"));
+    if (choice == "useag")
+    {
+        CardsMoveStruct agmove(ids, NULL, NULL, Player::PlaceTable, Player::DrawPile, CardMoveReason(CardMoveReason::S_REASON_PUT,
+            source->objectName(),
+            "jisui",
+            QString()));
+        room->moveCardsAtomic(agmove, true);
+        QList<int> &drawPile = room->getDrawPile();
+        for (int i = ids.length() - 1; i >= 0; i--)
+            drawPile.prepend(ids.at(i));
+
+        room->useCard(CardUseStruct(ag, source, ag_targets, false));
+    }
+    else if (choice == "discardput")
+    {
+        DummyCard dummy(ids);
+        CardMoveReason reason(CardMoveReason::S_REASON_PUT, source->objectName(), "jisui", QString());
         room->throwCard(&dummy, reason, NULL);
     }
 }
@@ -404,17 +425,17 @@ void JisuiCard::onEffect(const CardEffectStruct &effect) const
     QList<int> card_ids;
     foreach (QVariant card_id, ag_list)
         card_ids << card_id.toInt();
+
     if (effect.to->getHandcardNum() > 0)
     {
-        QList<CardsMoveStruct> exchangeMove;
+        room->fillAG(card_ids, effect.to);
 
+        QList<CardsMoveStruct> exchangeMove;
         auto excard = room->askForExchange(effect.to, "jisui", 1, 0, "@jisui-exchange", "", ".|.|.|hand");
 
         if (excard.length() > 0)
         {
-            room->fillAG(card_ids, effect.to);
             int card_id = room->askForAG(effect.to, card_ids, false, objectName());
-            room->clearAG(effect.to);
             card_ids.removeOne(card_id);
 
             CardsMoveStruct move1(excard.first(), NULL, Player::PlaceTable,
@@ -444,6 +465,8 @@ void JisuiCard::onEffect(const CardEffectStruct &effect) const
             room->getThread()->delay(3000);
             room->clearAG();
         }
+
+        room->clearAG(effect.to);
     }
 }
 
