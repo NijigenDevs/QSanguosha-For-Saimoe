@@ -10,7 +10,7 @@
 #include "json.h"
 #include "structs.h"
 
-#include <QTime>
+#include <random>
 
 #ifdef QSAN_UI_LIBRARY_AVAILABLE
 #pragma message WARN("UI elements detected in server side!!!")
@@ -143,7 +143,9 @@ void RoomThread::_handleTurnBrokenNormal(GameRule *game_rule)
 
 void RoomThread::run()
 {
-    qsrand(QTime(0, 0, 0).secsTo(QTime::currentTime()));
+    std::mt19937 engine(QTime(0, 0, 0).secsTo(QTime::currentTime()));
+    std::uniform_int_distribution<> dis(1, UINT_MAX);
+    qsrand(dis(engine));
     Sanguosha->registerRoom(room);
 
     addTriggerSkill(game_rule);

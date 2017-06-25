@@ -5,6 +5,7 @@
 #include <QDateTime>
 #include <QSplashScreen>
 #include <QMessageBox>
+#include <random>
 
 #include "server.h"
 #include "settings.h"
@@ -207,7 +208,9 @@ int main(int argc, char *argv[])
 #endif
 
     // initialize random seed for later use
-    qsrand((quint32)time(0));
+    std::mt19937 engine(QTime(0, 0, 0).secsTo(QTime::currentTime()));
+    std::uniform_int_distribution<> dis(1, UINT_MAX);
+    qsrand(dis(engine));
 
     // load the main translation file first for we need to translate messages of splash.
     QTranslator translator;

@@ -14,6 +14,7 @@
 #include "clientstruct.h"
 #include "roomthread.h"
 
+#include <random>
 #include <lua.hpp>
 #include <QStringList>
 #include <QMessageBox>
@@ -3493,7 +3494,9 @@ void Room::chooseGenerals(QList<ServerPlayer *> &to_assign, bool has_assign, boo
 void Room::run()
 {
     // initialize random seed for later use
-    qsrand(QTime(0, 0, 0).secsTo(QTime::currentTime()));
+    std::mt19937 engine(QTime(0, 0, 0).secsTo(QTime::currentTime()));
+    std::uniform_int_distribution<> dis(1, UINT_MAX);
+    qsrand(dis(engine));
     Config.AIDelay = Config.OriginAIDelay;
 
     foreach (ServerPlayer *player, m_players) {
