@@ -21,13 +21,15 @@ public:
         if (player != NULL && player->isAlive() && player->getPhase() == Player::Start)
         {
             QList<ServerPlayer *> akaris = room->findPlayersBySkillName(objectName());
+            LureTiger *luretiger = new LureTiger(Card::SuitToBeDecided, 0);
+            luretiger->setSkillName(objectName());
+            QList<const Player *> targets;
+            luretiger->deleteLater();
             foreach (ServerPlayer *akari, akaris)
             {
-                LureTiger *luretiger = new LureTiger(Card::SuitToBeDecided, 0);
-                QList<const Player *> targets;
-                if (!akari->willBeFriendWith(player) && !akari->isFriendWith(player) && player->hasShownOneGeneral() && akari->getHandcardNum() <= akari->getHp() && room->alivePlayerCount() > 2 && luretiger->targetFilter(targets, akari, player) && !player->isProhibited(akari, luretiger, targets))
+                if (akari != player && ((akari->hasShownAllGenerals() && akari->hasShownSkill(this)) 
+                    || (!akari->hasShownSkill(this) && luretiger->targetFilter(targets, akari, player) && !player->isProhibited(akari, luretiger, targets))))
                 {
-                    luretiger->deleteLater();
                     skill_list.insert(akari, QStringList(objectName()));
                 }
             }
@@ -35,24 +37,59 @@ public:
         return skill_list;
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *ask_who) const
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const
     {
-        if (ask_who->askForSkillInvoke(objectName(), data))
+        if (ask_who->hasShownSkill(this))
         {
-            room->drawCards(ask_who, 1, objectName());
-            room->broadcastSkillInvoke(objectName());
-            return true;
+            if (ask_who->askForSkillInvoke(objectName()))
+            {
+                room->setPlayerFlag(ask_who, "wucun_tohide");
+                room->broadcastSkillInvoke(objectName(), 1);
+                return true;
+            }
         }
+        else
+        {
+            if (ask_who->askForSkillInvoke(objectName(), qVariantFromValue(player)))
+            {
+                room->setPlayerFlag(ask_who, "wucun_toshow");
+                room->broadcastSkillInvoke(objectName(), 2);
+                return true;
+            }
+        }
+        room->setPlayerFlag(ask_who, "-wucun_tohide");
+        room->setPlayerFlag(ask_who, "-wucun_toshow");
         return false;
     }
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const
     {
-        LureTiger *luretiger = new LureTiger(Card::SuitToBeDecided, 0);
-        luretiger->setSkillName(objectName());
-        QList<const Player *> targets;
-        if (luretiger->targetFilter(targets, ask_who, player) && !player->isProhibited(ask_who, luretiger, targets))
-            room->useCard(CardUseStruct(luretiger, player, ask_who));
+        if (ask_who->hasFlag("wucun_tohide"))
+        {
+            ask_who->hideGeneral(ask_who->inHeadSkills(this), objectName());
+        }
+        else if (ask_who->hasFlag("wucun_toshow"))
+        {
+            LureTiger *luretiger = new LureTiger(Card::SuitToBeDecided, 0);
+            luretiger->setSkillName(objectName());
+            QList<const Player *> targets;
+            if (luretiger->targetFilter(targets, ask_who, player) && !player->isProhibited(ask_who, luretiger, targets))
+                room->useCard(CardUseStruct(luretiger, player, ask_who));
+        }
+
+        int max = 0;
+        foreach (auto p, room->getOtherPlayers(ask_who))
+        {
+            max = qMax(max, p->getHandcardNum());
+        }
+
+        if (ask_who->getHandcardNum() <= max)
+        {
+            ask_who->drawCards(1, objectName());
+        }
+
+        room->setPlayerFlag(ask_who, "-wucun_tohide");
+        room->setPlayerFlag(ask_who, "-wucun_toshow");
         return false;
     }
 };
@@ -68,10 +105,11 @@ public:
 
     virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer* &) const
     {
-        if (!TriggerSkill::triggerable(player)) return QStringList();
-        if (player->getEquips().length() > 0) return QStringList();
+        if (!TriggerSkill::triggerable(player))
+            return QStringList();
         SlashEffectStruct effect = data.value<SlashEffectStruct>();
-        if (effect.slash->isBlack()) return QStringList(objectName());
+        if ((effect.slash->isBlack() && player->getEquips().length() == 0) || (effect.slash->isRed() && player->getEquips().length() > 0))
+            return QStringList(objectName());
 
         return QStringList();
     }
