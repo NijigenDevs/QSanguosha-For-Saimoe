@@ -1786,9 +1786,9 @@ public:
             return 0;
     }
 
-    virtual int getExtraTargetNum(const Player *from, const Card *card) const
+    virtual int getExtraTargetNum(const Player *, const Card *card) const
     {
-        if (from->hasShownSkill("duanzui") && card->getSkillName() == "duanzui")
+        if (card->isKindOf("Slash") && card->getSkillName() == "duanzui")
             return 1;
         else
             return 0;
