@@ -68,7 +68,7 @@ public:
         {
             ask_who->hideGeneral(ask_who->inHeadSkills(this), objectName());
         }
-        else if (ask_who->hasFlag("wucun_toshow"))
+        else if (player->isAlive() && ask_who->hasFlag("wucun_toshow"))
         {
             LureTiger *luretiger = new LureTiger(Card::SuitToBeDecided, 0);
             luretiger->setSkillName(objectName());

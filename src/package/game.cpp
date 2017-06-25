@@ -2679,7 +2679,7 @@ public:
         }
         else if (event == EventPhaseStart)
         {
-            if (player->getPhase() == Player::Start && player->getHandcardNum() == 0)
+            if (player->getPhase() == Player::Start && (player->getHandcardNum() == 0 || player->getPile("book").length() > 0))
                 return QStringList(objectName());
         }
         return QStringList();
@@ -2715,11 +2715,24 @@ public:
             bool canConvert = false;
             int id = player->tag["yetian_current_id"].toInt(&canConvert);
             if (canConvert && id != -1)
-                player->obtainCard(Sanguosha->getCard(id));
+            {
+                player->addToPile("book", id, true);
+            }
+
             player->tag["yetian_current_id"] = NULL;
         }
         else
-            room->loseHp(player, 1);
+        {
+            if (player->getHandcardNum() == 0)
+                room->loseHp(player, 1);
+
+            auto books = player->getPile("book");
+            if (books.length() > 0)
+            {
+                DummyCard dummy(books);
+                player->obtainCard(&dummy, true);
+            }
+        }
         return false;
     }
 };
