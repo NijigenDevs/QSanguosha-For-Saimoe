@@ -1822,7 +1822,7 @@ public:
         }
         else if (event == CardFinished)
         {
-            player->drawCards(1);
+            player->drawCards(2, objectName());
         }
         return false;
     }
@@ -2451,7 +2451,7 @@ public:
 
     virtual bool effect(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
-        player->drawCards(1);
+        player->drawCards(1, objectName());
         return false;
     }
 };
