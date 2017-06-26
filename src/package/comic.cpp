@@ -2367,7 +2367,7 @@ public:
 
     virtual void record(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const
     {
-        if (player == NULL || player->isDead() || !player->ownSkill(this))
+        if (player == NULL || player->isDead())
             return;
 
         CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
@@ -2382,33 +2382,56 @@ public:
         }
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer* &) const
+    virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const
     {
         CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-        QStringList triggers;
+        TriggerList triggers;
 
         if (player->getHandcardNum() == 0)
         {
             auto current = room->getCurrent();
-            if (TriggerSkill::triggerable(player) && move.from != NULL && move.from == player && current == NULL ? true : current != player && player->getMark("moyunHand") >= 1)
+            if (move.from != NULL && move.from == player && current == NULL ? true : current != player && player->getMark("moyunHand") >= 1)
             {
-                triggers << objectName();
+                auto shizunos = room->findPlayersBySkillName(objectName());
+                foreach (auto shizuno, shizunos)
+                {
+                    if (TriggerSkill::triggerable(shizuno) && (shizuno->isFriendWith(player) || shizuno->willBeFriendWith(player)))
+                    {
+                        triggers.insert(shizuno, QStringList(objectName()));
+                    }
+                }
             }
             room->setPlayerMark(player, "moyunHand", 0);
         }
 
         if (player->getEquips().length() == 0)
         {
-            if (TriggerSkill::triggerable(player) && move.from != NULL && move.from == player && player->getMark("moyunEquip") >= 1)
-                triggers << objectName();
+            if (move.from != NULL && move.from == player && player->getMark("moyunEquip") >= 1)
+            {
+                auto shizunos = room->findPlayersBySkillName(objectName());
+                foreach(auto shizuno, shizunos)
+                {
+                    if (TriggerSkill::triggerable(shizuno) && (shizuno->isFriendWith(player) || shizuno->willBeFriendWith(player)))
+                    {
+                         triggers.insert(shizuno, QStringList(objectName()));
+                    }
+                }
+            }
             room->setPlayerMark(player, "moyunEquip", 0);
         }
 
         if (player->getJudgingArea().length() == 0)
         {
-            if (TriggerSkill::triggerable(player) && player->getMark("moyunDelayedTrick") >= 1)
+            if (player->getMark("moyunDelayedTrick") >= 1)
             {
-                triggers << objectName();
+                auto shizunos = room->findPlayersBySkillName(objectName());
+                foreach(auto shizuno, shizunos)
+                {
+                    if (TriggerSkill::triggerable(shizuno) && (shizuno->isFriendWith(player) || shizuno->willBeFriendWith(player)))
+                    {
+                         triggers.insert(shizuno, QStringList(objectName()));
+                    }
+                }
             }
             room->setPlayerMark(player, "moyunDelayedTrick", 0);
         }
@@ -2416,11 +2439,11 @@ public:
         return triggers;
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const
     {
-        if (room->askForSkillInvoke(player, objectName()))
+        if (room->askForSkillInvoke(ask_who, objectName(), qVariantFromValue(player)))
         {
-            room->broadcastSkillInvoke(objectName());
+            room->broadcastSkillInvoke(objectName(), ask_who);
             return true;
         }
         return false;
