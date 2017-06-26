@@ -2807,6 +2807,8 @@ public:
             damage.prevented = true;
             return true;
         }
+
+        data = QVariant::fromValue(damage);
         return false;
     }
 };
