@@ -2910,7 +2910,7 @@ void LingjieCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &t
         }
     }
 
-    if (friends.isEmpty() || enemies.isEmpty())
+    if (friends.isEmpty() && enemies.isEmpty())
         return;
 
     int diffNum = qAbs(friends.length() - enemies.length());
