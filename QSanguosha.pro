@@ -8,6 +8,8 @@ TEMPLATE = app
 
 CONFIG += c++11
 
+CONFIG += audio
+
 CONFIG += lua
 #CONFIG += lua53
 
@@ -44,7 +46,6 @@ SOURCES += \
     src/dialog/generaloverview.cpp \
     src/dialog/mainwindow.cpp \
     src/dialog/rule-summary.cpp \
-    src/dialog/updatechecker.cpp \
     src/dialog/udpdetectordialog.cpp \
     src/dialog/avatarmodel.cpp \
     src/dialog/generalmodel.cpp \
@@ -163,7 +164,6 @@ HEADERS += \
     src/dialog/generaloverview.h \
     src/dialog/mainwindow.h \
     src/dialog/rule-summary.h \
-    src/dialog/updatechecker.h \
     src/dialog/udpdetectordialog.h \
     src/dialog/avatarmodel.h \
     src/dialog/generalmodel.h \
@@ -291,7 +291,9 @@ macx{
 
 LIBS += -L.
 win32-msvc*{
+    DEFINES += _WINDOWS
     DEFINES += _CRT_SECURE_NO_WARNINGS
+    LIBS += -luser32
     !contains(QMAKE_HOST.arch, x86_64) {
         DEFINES += WIN32
         LIBS += -L"$$_PRO_FILE_PWD_/lib/win/x86"
@@ -354,6 +356,7 @@ ios{
 }
 linux{
     android{
+        CONFIG -= audio
         DEFINES += ANDROID
         ANDROID_LIBPATH = $$_PRO_FILE_PWD_/lib/android/$$ANDROID_ARCHITECTURE/lib
         LIBS += -L"$$ANDROID_LIBPATH"
