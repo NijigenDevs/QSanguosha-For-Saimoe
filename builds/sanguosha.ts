@@ -2792,13 +2792,12 @@
 <context>
     <name>QMessageBox</name>
     <message>
-        <location filename="../src/main.cpp" line="68"/>
-        <location filename="../src/dialog/mainwindow.cpp" line="1376"/>
+        <location filename="../src/util/UpdateChecker.cpp" line="36"/>
         <source>Warning</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location filename="../src/dialog/mainwindow.cpp" line="1400"/>
+        <location filename="../src/util/UpdateChecker.cpp" line="60"/>
         <source>Congratulation</source>
         <translation>恭喜</translation>
     </message>
@@ -2811,35 +2810,32 @@
         <translation>Lua 脚本错误</translation>
     </message>
     <message>
-        <location filename="../src/main.cpp" line="67"/>
-        <location filename="../src/dialog/mainwindow.cpp" line="1375"/>
+        <location filename="../src/util/UpdateChecker.cpp" line="35"/>
         <source>wyUpdate Doesn&apos;t Exist</source>
         <translation>自动更新程序不在游戏目录下，请检查之</translation>
     </message>
     <message>
-        <location filename="../src/main.cpp" line="198"/>
+        <location filename="../src/main.cpp" line="121"/>
         <source>Game data not found, please download QSanguosha-For-Hegemony PC version, and put the files and folders into /sdcard/Android/data/org.nijigendevs.saimoe</source>
         <translation>未找到游戏数据，请下载太阳神三国杀·萌战PC版，并将其中的文件及文件夹复制入/sdcard/Android/data/org.nijigendevs.saimoe</translation>
     </message>
     <message>
-        <location filename="../src/main.cpp" line="200"/>
+        <location filename="../src/main.cpp" line="123"/>
         <source>Error</source>
         <translation>错误</translation>
     </message>
     <message>
-        <location filename="../src/main.cpp" line="93"/>
-        <location filename="../src/dialog/mainwindow.cpp" line="1412"/>
+        <location filename="../src/util/UpdateChecker.cpp" line="74"/>
         <source>Update Available</source>
         <translation>更新可用</translation>
     </message>
     <message>
-        <location filename="../src/main.cpp" line="92"/>
-        <location filename="../src/dialog/mainwindow.cpp" line="1411"/>
+        <location filename="../src/util/UpdateChecker.cpp" line="73"/>
         <source>Do you want to update now?</source>
         <translation>请问要现在更新吗？</translation>
     </message>
     <message>
-        <location filename="../src/dialog/mainwindow.cpp" line="1399"/>
+        <location filename="../src/util/UpdateChecker.cpp" line="59"/>
         <source>Your Version is Newest</source>
         <translation>您当前的版本是最新版</translation>
     </message>
@@ -2860,48 +2856,48 @@
 <context>
     <name>QSplashScreen</name>
     <message>
-        <location filename="../src/main.cpp" line="158"/>
+        <location filename="../src/main.cpp" line="81"/>
         <source>Loading BreakPad...</source>
         <translation>正在加载BreakPad...</translation>
     </message>
     <message>
-        <location filename="../src/main.cpp" line="163"/>
-        <location filename="../src/main.cpp" line="173"/>
+        <location filename="../src/main.cpp" line="86"/>
+        <location filename="../src/main.cpp" line="96"/>
         <source>Setting game path...</source>
         <translation>正在配置游戏路径...</translation>
     </message>
     <message>
-        <location filename="../src/main.cpp" line="168"/>
+        <location filename="../src/main.cpp" line="91"/>
         <source>Checking game path...</source>
         <translation>正在检查游戏路径...</translation>
     </message>
     <message>
-        <location filename="../src/main.cpp" line="220"/>
+        <location filename="../src/main.cpp" line="143"/>
         <source>Loading translation...</source>
         <translation>正在加载翻译...</translation>
     </message>
     <message>
-        <location filename="../src/main.cpp" line="225"/>
+        <location filename="../src/main.cpp" line="148"/>
         <source>Initializing game engine...</source>
         <translation>正在初始化游戏引擎...</translation>
     </message>
     <message>
-        <location filename="../src/main.cpp" line="228"/>
+        <location filename="../src/main.cpp" line="151"/>
         <source>Loading user&apos;s configurations...</source>
         <translation>正在加载用户配置...</translation>
     </message>
     <message>
-        <location filename="../src/main.cpp" line="251"/>
+        <location filename="../src/main.cpp" line="174"/>
         <source>Loading style sheet...</source>
         <translation>正在加载样式表...</translation>
     </message>
     <message>
-        <location filename="../src/main.cpp" line="270"/>
+        <location filename="../src/main.cpp" line="193"/>
         <source>Initializing audio module...</source>
         <translation>正在初始化音频模块...</translation>
     </message>
     <message>
-        <location filename="../src/main.cpp" line="277"/>
+        <location filename="../src/main.cpp" line="200"/>
         <source>Loading main window...</source>
         <translation>正在加载主界面...</translation>
     </message>

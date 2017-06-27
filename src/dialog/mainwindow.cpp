@@ -1334,102 +1334,14 @@ void MainWindow::onChangeLogGotten()
 }
 
 #ifdef Q_OS_WIN
-#ifndef _UNICODE
-#define _UNICODE
-#endif
-#include "Shlwapi.h"
-#include "tchar.h"
-#include "string.h"
-#include <iostream>
+#include "UpdateChecker.h"
 #include <thread>
-#pragma comment (lib, "Shlwapi.lib")
-
-void GetModuleDirectoryMW(LPTSTR szPath)
-{
-    GetModuleFileName(NULL, szPath, MAX_PATH);
-
-    LPTSTR pSlash = _tcsrchr(szPath, '\\');
-
-    if (pSlash == 0)
-        szPath[2] = 0;
-    else
-        *pSlash = 0;
-}
-
-bool UpdateAvailableMW()
-{
-    // Get the real path to wyUpdate.exe
-    // (assumes it's in the same directory as this app)
-    TCHAR szPath[MAX_PATH];
-    szPath[0] = '\"';
-    GetModuleDirectoryMW(&szPath[1]);
-    PathAppend(szPath, _T("wyUpdate.exe\" /quickcheck /justcheck"));
-
-
-    STARTUPINFO si = { 0 }; si.cb = sizeof(si);
-    PROCESS_INFORMATION pi = { 0 };
-
-    // start wyUpdate
-    if (!CreateProcess(NULL, szPath, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi))
-    {
-        auto msg = QObject::tr("wyUpdate Doesn't Exist").utf16();
-        auto title = QMessageBox::tr("Warning").utf16();
-        MessageBox(0, reinterpret_cast<LPCWSTR>(msg), reinterpret_cast<LPCWSTR>(title), MB_OK);
-        return false;
-    }
-
-    // Wait until child process exits.
-    WaitForSingleObject(pi.hProcess, INFINITE);
-
-    // Get the exit code
-    DWORD exitcode = 0;
-    GetExitCodeProcess(pi.hProcess, &exitcode);
-
-    // Close process and thread handles.
-    CloseHandle(pi.hProcess);
-    CloseHandle(pi.hThread);
-
-    // exitcode of 2 means update available
-    if (exitcode == 2)
-    {
-        return true;
-    }
-    else if (exitcode == 0)
-    {
-        auto msg = QObject::tr("Your Version is Newest").utf16();
-        auto title = QMessageBox::tr("Congratulation").utf16();
-        MessageBox(0, reinterpret_cast<LPCWSTR>(msg), reinterpret_cast<LPCWSTR>(title), MB_OK);
-        return false;
-    }
-    return false;
-}
-
-void checkUpdateMW()
-{
-    if (UpdateAvailableMW())
-    {
-        auto msg = QObject::tr("Do you want to update now?").utf16();
-        auto title = QObject::tr("Update Available").utf16();
-        if (MessageBox(0, reinterpret_cast<LPCWSTR>(msg), reinterpret_cast<LPCWSTR>(title), MB_OKCANCEL | MB_ICONINFORMATION | MB_TOPMOST) == IDOK)
-        {
-            TCHAR szPath[MAX_PATH];
-
-            GetModuleDirectoryMW(szPath);
-            PathAppend(szPath, _T("wyUpdate.exe"));
-
-            // Start the wyUpdate and Quit
-            ShellExecute(NULL, NULL, szPath, NULL, NULL, SW_SHOWNORMAL);
-
-            exit(1);
-        }
-    }
-}
 #endif
 
 void MainWindow::on_actionCheckUpdate_triggered()
 {
 #ifdef Q_OS_WIN
-    std::thread t(checkUpdateMW);
+    std::thread t(UpdateChecker::CheckUpdate, true);
     t.detach();
 #endif
 }

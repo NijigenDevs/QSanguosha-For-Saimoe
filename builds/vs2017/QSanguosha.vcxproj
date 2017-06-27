@@ -1204,8 +1204,10 @@
     <ClCompile Include="..\..\src\package\standard.cpp" />
     <ClCompile Include="..\..\src\ui\startscene.cpp" />
     <ClCompile Include="..\..\src\ui\window.cpp" />
+    <ClCompile Include="..\..\src\util\UpdateChecker.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\src\util\UpdateChecker.h" />
     <CustomBuild Include="..\..\src\ui\TimedProgressBar.h">
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>

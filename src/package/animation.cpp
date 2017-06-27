@@ -1182,7 +1182,7 @@ public:
         events << EventPhaseStart;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer * &ask_who) const
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer * &) const
     {
         if (TriggerSkill::triggerable(player) && (player->getPhase() == Player::Start || player->getPhase() == Player::Finish) && player->canDiscard(player, "h"))
         {
@@ -1196,7 +1196,7 @@ public:
         return room->askForDiscard(player, objectName(), 1, 1, true, false, "@yinren-invoke");
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
         if (player->getHandcardNum() == 0)
             return false;
@@ -2696,7 +2696,7 @@ public:
         return list;
     }
 
-    virtual bool cost(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const
     {
         if (room->askForSkillInvoke(ask_who, objectName(), qVariantFromValue(player)))
         {
@@ -2812,7 +2812,7 @@ public:
         return false;
     }
 
-    virtual bool effect(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
     {
         DamageStruct damage = data.value<DamageStruct>();
 

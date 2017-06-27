@@ -980,6 +980,9 @@
     <ClCompile Include="Release\moc_udpdetectordialog.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\util\UpdateChecker.cpp">
+      <Filter>util</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\..\src\server\ai.h">
@@ -1361,6 +1364,9 @@
     </ClInclude>
     <ClInclude Include="..\..\src\core\json.h">
       <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\util\UpdateChecker.h">
+      <Filter>util</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

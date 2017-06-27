@@ -53,8 +53,6 @@ SOURCES += \
     src/dialog/banipdialog.cpp \
     src/dialog/banlistdialog.cpp \
     src/package/exppattern.cpp \
-    src/package/formation.cpp \
-    src/package/momentum.cpp \
     src/package/standard.cpp \
     src/package/standard-basics.cpp \
     src/package/standard-equips.cpp \
@@ -65,6 +63,9 @@ SOURCES += \
     src/package/standard-wei-generals.cpp \
     src/package/standard-package.cpp \
     src/package/strategic-advantage.cpp \
+    src/package/formation.cpp \
+    src/package/momentum.cpp \
+    src/package/transformation.cpp \
     src/package/package.cpp \
     src/scenario/miniscenarios.cpp \
     src/scenario/scenario.cpp \
@@ -115,17 +116,17 @@ SOURCES += \
     src/util/detector.cpp \
     src/util/nativesocket.cpp \
     src/util/recorder.cpp \
-    swig/sanguosha_wrap.cxx \
+    src/util/UpdateChecker.cpp \
     src/ui/guhuobox.cpp \
     src/ui/cardchoosebox.cpp \
-    src/package/transformation.cpp \
     src/ui/lightboxanimation.cpp \
     src/ui/pindianbox.cpp \
+    src/package/moesen-package.cpp \
     src/package/animation.cpp \
     src/package/comic.cpp \
     src/package/game.cpp \
-    src/package/moesen-package.cpp \
-    src/package/novel.cpp
+    src/package/novel.cpp \
+    swig/sanguosha_wrap.cxx
 
 HEADERS += \
     src/client/aux-skills.h \
@@ -234,6 +235,7 @@ HEADERS += \
     src/util/nativesocket.h \
     src/util/recorder.h \
     src/util/socket.h \
+    src/util/UpdateChecker.h \
     src/ui/guhuobox.h \
     src/ui/cardchoosebox.h \
     src/package/transformation.h \
