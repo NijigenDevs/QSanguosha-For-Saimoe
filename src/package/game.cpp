@@ -981,7 +981,7 @@ void LuoxuanCard::onEffect(const CardEffectStruct &effect) const
     effect.to->getRoom()->recover(effect.to, recover);
     if (effect.to->getEquips().length() > 0)
     {
-        QString choice = effect.to->getRoom()->askForChoice(effect.from, "Luoxuan_choice", "luoxuan_get+luoxuan_give_up");
+        QString choice = effect.to->getRoom()->askForChoice(effect.from, "luoxuan", "luoxuan_get+luoxuan_give_up");
         if (choice == "luoxuan_get")
         {
             int c = effect.to->getRoom()->askForCardChosen(effect.from, effect.to, "e", objectName());
@@ -2020,7 +2020,7 @@ public:
 
     virtual bool isEnabledAtPlay(const Player *player) const
     {
-        return !(player->getPile("jian").isEmpty() && player->getHandcardNum() == 0);
+        return !player->getPile("jian").isEmpty() || player->getHandcardNum() > 0;
     }
 
     virtual const Card *viewAs(const Card *originalCard) const
@@ -2105,7 +2105,7 @@ public:
         }
         else if (event == EventPhaseStart)
         {
-            if (TriggerSkill::triggerable(player) && player->getPhase() == Player::Start && player->getWeapon() != NULL && player->getMark("@excalibur") > 0)
+            if (TriggerSkill::triggerable(player) && player->getPhase() == Player::Start && player->getWeapon() != NULL)
                 return QStringList(objectName());
         }
         else if (event == SlashMissed)

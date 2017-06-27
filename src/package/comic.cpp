@@ -1573,7 +1573,11 @@ public:
         }
         else
         {
-            return player->hasShownSkill(this) ? true : player->askForSkillInvoke(this);
+            if (player->hasShownSkill(this) || player->askForSkillInvoke(this))
+            {
+                room->notifySkillInvoked(player, objectName());
+                return true;
+            }
         }
         return false;
     }

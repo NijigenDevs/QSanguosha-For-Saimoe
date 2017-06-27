@@ -2227,16 +2227,20 @@ bool Tengyue::cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, S
 
 int Tengyue::getDrawNum(ServerPlayer *player, int n) const
 {
-    QString choices = "tengyue1";
-    for (int i = 1; i < n; i++)
+    QStringList choices;
+    for (int i = 1; i <= n; i++)
     {
-        choices += "+tengyue" + QString::number(i + 1);
+        choices << QString::number(i);
     }
-    QString choice = player->getRoom()->askForChoice(player, "tengyue", choices);
-    int num = choice.section('e', -1).toInt();
-
-    player->getRoom()->setPlayerMark(player, "@TengyueExtraSlashes", num);
-    return n - num;
+    bool ok = false;
+    QString choice = player->getRoom()->askForChoice(player, "tengyuechoosedrawnum", choices.join("+"));
+    int num = choice.toInt(&ok);
+    if (ok)
+    {
+        player->getRoom()->setPlayerMark(player, "@TengyueExtraSlashes", num);
+        return qMax(n - num, 0);
+    }
+    return n;
 }
 
 class TengyueTargetMod : public TargetModSkill
@@ -2776,12 +2780,32 @@ public:
     {
         foreach (auto p, room->getOtherPlayers(player))
         {
-            if (!p->hasShownAllGenerals() && p->canShowGeneral() && p->askForGeneralShow(true, true))
+            if (!p->hasShownAllGenerals())
             {
-                room->broadcastSkillInvoke(objectName());
-                p->drawCards(1, objectName());
-                player->tag["huaming_source"] = qVariantFromValue(p);
-                return true;
+                QStringList choices;
+
+                if (!p->hasShownGeneral1() && p->canShowGeneral("h"))
+                    choices << "show_head_general";
+                if (!p->hasShownGeneral2() && p->canShowGeneral("d"))
+                    choices << "show_deputy_general";
+                if (choices.isEmpty())
+                    continue;
+
+                choices.append("cancel");
+                QString choice = room->askForChoice(p, "HuamingGeneralShowRequest", choices.join("+"));
+
+                if (choice == "show_head_general")
+                    p->showGeneral(true);
+                if (choice == "show_deputy_general")
+                    p->showGeneral(false);
+
+                if (choice.startsWith("s"))
+                {
+                    room->broadcastSkillInvoke(objectName());
+                    p->drawCards(1, objectName());
+                    player->tag["huaming_source"] = qVariantFromValue(p);
+                    return true;
+                }
             }
         }
 
