@@ -305,11 +305,24 @@ void QSanSkillButton::setSkill(const Skill *skill)
         _m_emitActivateSignal = false;
         _m_emitDeactivateSignal = false;
     } else if (freq == Skill::Compulsory) {
-        setState(QSanButton::S_STATE_DISABLED);
-        setStyle(QSanButton::S_STYLE_PUSH);
-        _setSkillType(QSanInvokeSkillButton::S_SKILL_COMPULSORY);
-        _m_emitActivateSignal = false;
-        _m_emitDeactivateSignal = false;
+        if (_m_viewAsSkill == NULL)
+        {
+            setState(QSanButton::S_STATE_DISABLED);
+            setStyle(QSanButton::S_STYLE_PUSH);
+            _setSkillType(QSanInvokeSkillButton::S_SKILL_COMPULSORY);
+            _m_emitActivateSignal = false;
+            _m_emitDeactivateSignal = false;
+        }
+        else
+        {
+            if (skill->isAttachedLordSkill())
+                _setSkillType(QSanInvokeSkillButton::S_SKILL_ATTACHEDLORD);
+            else
+                _setSkillType(QSanInvokeSkillButton::S_SKILL_PROACTIVE);
+            setStyle(QSanButton::S_STYLE_TOGGLE);
+            _m_emitDeactivateSignal = true;
+            _m_emitActivateSignal = true;
+        }
     } else return;
     QString desc = skill->getDescription(true, true);
     desc = desc.simplified();
@@ -325,7 +338,7 @@ void QSanSkillButton::setSkill(const Skill *skill)
 void QSanSkillButton::setState(ButtonState state)
 {
     //refine state here for certain conditions
-    if (_m_skillType == S_SKILL_COMPULSORY && Self->hasShownSkill(_m_skill))
+    if (_m_skillType == S_SKILL_COMPULSORY && _m_viewAsSkill == NULL && Self->hasShownSkill(_m_skill))
         state = S_STATE_DISABLED;
     //if (_m_skillType == S_SKILL_COMPULSORY && !(state == S_STATE_CANPRESHOW || state == S_STATE_UP))
     //    state = S_STATE_DISABLED;
