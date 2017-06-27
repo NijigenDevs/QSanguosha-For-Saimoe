@@ -3435,11 +3435,15 @@ public:
 
     virtual const Card *viewAs(const QList<const Card *> &cards) const
     {
-        ShenaiCard *card = new ShenaiCard;
-        card->setShowSkill(objectName());
-        card->setSkillName(objectName());
-        card->addSubcards(cards);
-        return card;
+        if (cards.length() > 0)
+        {
+            ShenaiCard *card = new ShenaiCard;
+            card->setShowSkill(objectName());
+            card->setSkillName(objectName());
+            card->addSubcards(cards);
+            return card;
+        }
+        return NULL;
     }
 };
 
