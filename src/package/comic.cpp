@@ -801,7 +801,7 @@ public:
 
     virtual bool isEnabledAtPlay(const Player *player) const
     {
-        return player->getHandcardNum() >= 1 && !player->hasUsed("MingmingCard");
+        return player->getHandcardNum() >= 1;
     }
 
     virtual const Card *viewAs(const QList<const Card *> &cards) const
