@@ -209,7 +209,7 @@ public:
 
     virtual const Card *viewAs(const QList<const Card *> &cards) const
     {
-        if (cards.length() != Self->getHandcardNum() / 2 && cards.length() == 0)
+        if (cards.length() != Self->getHandcardNum() / 2 || cards.length() == 0)
             return NULL;
 
         HaoqiCard *card = new HaoqiCard;
