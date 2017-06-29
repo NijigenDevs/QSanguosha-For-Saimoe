@@ -63,7 +63,7 @@ return {
 	["&aria"] = "亚里亚", 
 	["#aria"] = "双枪双剑", 
 	["#&aria"] = "绯弹的亚里亚", 
-	["~aria"] = "", 
+	["~aria"] = "不要啊，不要啊，金次", 
 	["designer:aria"] = "hm",
 	["cv:aria"] = "釘宮理恵",
 	["illustrator:aria"] = "19981312",
