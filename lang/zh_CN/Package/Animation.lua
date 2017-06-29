@@ -73,6 +73,7 @@ return {
 	["&homura"] = "晓美焰", 
 	["#homura"] = "轮回之绊", 
 	["#&homura"] = "魔法少女小圆",
+	["~homura"] = "不要，那样，那样的话我.....是为了什么.",
 	["designer:homura"] = "御坂2623、AK",
 	["cv:homura"] = "斋藤千和",
 	["illustrator:homura"] = "45754521",
