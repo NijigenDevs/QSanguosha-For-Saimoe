@@ -41,7 +41,7 @@ return {
 	["&louise"] = "露易丝", 
 	["#louise"] = "零之露易丝", 
 	["#&louise"] = "零之使魔", 
-	["~louise"] = "", 
+	["~louise"] = "才人，才人，救我", 
 	["designer:louise"] = "hm",
 	["cv:louise"] = "釘宮理恵",
 	["illustrator:louise"] = "55470621",
