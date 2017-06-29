@@ -4,7 +4,7 @@ return {
 	["&taiga"] = "逢坂大河", 
 	["#taiga"] = "掌中萌虎", 
 	["#&taiga"] = "龙与虎", 
-	["~taiga"] = "", 
+	["~taiga"] = "让....人火大啊", 
 	["designer:taiga"] = "hm",
 	["cv:taiga"] = "釘宮理恵",
 	["illustrator:taiga"] = "30637291",
