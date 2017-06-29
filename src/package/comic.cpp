@@ -1762,7 +1762,7 @@ public:
         }
         else if (event == CardFinished)
         {
-            if (TriggerSkill::triggerable(player) && (player->hasFlag("forecastTrue") || player->hasFlag("forecastWontDamage")))
+            if (TriggerSkill::triggerable(player) && data.value<CardUseStruct>().card->hasFlag("yujian_slash") && (player->hasFlag("forecastTrue") || player->hasFlag("forecastWontDamage")))
             {
                 player->setFlags("-forecastTrue");
                 player->setFlags("-forecastWontDamage");
@@ -1793,7 +1793,7 @@ public:
         return false;
     }
 
-    virtual bool effect(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    virtual bool effect(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
     {
         if (event == TargetChosen)
         {
@@ -1815,13 +1815,14 @@ public:
             {
                 player->setFlags("hadChoosed" + choice);
                 player->setFlags(choice);
-            }
+                data.value<CardUseStruct>().card->setFlags("yujian_slash");
 
-            LogMessage log;
-            log.type = "$YujianAnnounce";
-            log.from = player;
-            log.arg = choice;
-            room->sendLog(log);
+                LogMessage log;
+                log.type = "$YujianAnnounce";
+                log.from = player;
+                log.arg = choice;
+                room->sendLog(log);
+            }
 
         }
         else if (event == CardFinished)
@@ -2604,7 +2605,7 @@ public:
 
     virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const
     {
-        if (player->getPhase() != Player::NotActive || player->hasFlag("Global_LaoyueFailed")) return false;
+        if (player->getPhase() != Player::NotActive || player->hasFlag("Global_LaoyueFailed") || player->isRemoved()) return false;
         if (pattern == "slash")
             return Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE;
         else if (pattern == "peach")
@@ -2721,7 +2722,7 @@ public:
         }
         else if (choice == "put")
         {
-            QList<int> ex = room->askForExchange(player, "laoyue", 2, 2, "@laoyue-put", "", ".");
+            QList<int> ex = room->askForExchange(player, "laoyue", 2, 2, "@laoyue-put", "", ".|.|.|hand");
             if (ex.length() == 2)
             {
                 CardsMoveStruct move1(QList<int>(), player, NULL, Player::PlaceHand, Player::DrawPileBottom,
