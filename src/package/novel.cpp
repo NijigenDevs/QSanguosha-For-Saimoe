@@ -2079,9 +2079,9 @@ public:
         }
         else if (event == HpRecover)
         {
-            if (player->ownSkill(this) && player->isAlive() && !player->hasFlag("yuanxin_turnrecover") && room->getCurrent() != NULL)
+            if (player->isAlive() && !player->hasFlag("yuanxin_turnrecover") && room->getCurrent() != NULL)
             {
-                room->setPlayerFlag(player, "-yuanxin_turnrecover");
+                room->setPlayerFlag(player, "yuanxin_turnrecover");
             }
         }
     }
