@@ -61,7 +61,7 @@ class keyCardGlobalManagement : public TriggerSkill
 public:
     keyCardGlobalManagement() : TriggerSkill("keyCard-global")
     {
-        events << CardsMoveOneTime << Damaged << NonTrigger;
+        events << CardsMoveOneTime << Damaged;
         global = true;
     }
 
@@ -75,34 +75,23 @@ public:
             {
                 if (!VariantList2IntList(room->getTag("keyList").toList()).contains(move.card_ids[i]))
                     continue;
-                if (move.from != NULL && move.from_places[i] != NULL && move.from_places[i] == Player::PlaceDelayedTrick)
+                if (move.from != NULL && move.from->isAlive() && move.from_places[i] != NULL && move.from_places[i] == Player::PlaceDelayedTrick)
                 {
-                    if (move.from != NULL && move.from->isAlive())
+                    ServerPlayer *from = NULL;
+                    foreach(auto p, room->getAlivePlayers())
                     {
-                        ServerPlayer *player = NULL;
-                        foreach(auto p, room->getAlivePlayers())
+                        if (p->objectName() == move.from->objectName())
                         {
-                            if (p->objectName() == move.from->objectName())
-                            {
-                                player = p;
-                                break;
-                            }
-                        }
-
-                        if (player != NULL && player->isAlive() && player->isWounded())
-                        {
-                            const Card *card = Sanguosha->getCard(move.card_ids[i]);
-                            Key* key = new Key(card->getSuit(), card->getNumber());
-                            key->addSubcard(card);
-                            Card *trick = Sanguosha->cloneCard(key);
-                            Q_ASSERT(trick != NULL);
-                            WrappedCard *wrapped = Sanguosha->getWrappedCard(move.card_ids[i]);
-                            wrapped->takeOver(trick);
-                            room->broadcastUpdateCard(room->getPlayers(), wrapped->getId(), wrapped);
-                            room->cardEffect(wrapped, player, player);
+                            from = p;
+                            break;
                         }
                     }
-                    if (move.to_place != Player::PlaceDelayedTrick)
+
+                    if (from != NULL && from->isAlive() && from->isWounded())
+                    {
+                        skill_list.insert(from, QStringList(objectName()));
+                    }
+                    else if (move.to_place != Player::PlaceDelayedTrick)
                     {
                         QList<QVariant> ql = room->getTag("keyList").toList();
                         ql.removeOne(QVariant::fromValue(move.card_ids[i]));
@@ -116,37 +105,95 @@ public:
             auto damage = data.value<DamageStruct>();
             if (damage.damage > 0 && damage.to != NULL && damage.to->isAlive() && damage.to->containsTrick("keyCard") && damage.to == player)
             {
-                const Card *key;
-                foreach(const Card *card, damage.to->getJudgingArea())
-                {
-                    if (card->isKindOf("Key"))
-                    {
-                        key = card;
-                    }
-                }
-
-                LogMessage log;
-                log.from = damage.to;
-                log.type = "#DelayedTrick";
-                log.arg = key->objectName();
-                room->sendLog(log);
-
-                JudgeStruct judge;
-                judge.pattern = ".|diamond|.";
-                judge.good = true;
-                judge.reason = "keyCard";
-                judge.who = damage.to;
-
-                room->judge(judge);
-
-                if (judge.isGood())
-                {
-                    CardMoveReason reason(CardMoveReason::S_REASON_NATURAL_ENTER, QString());
-                    room->throwCard(key, reason, NULL);
-                }
+                skill_list.insert(damage.to, QStringList(objectName()));
             }
         }
         return skill_list;
+    }
+
+    virtual bool cost(TriggerEvent event, Room *room, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const
+    {
+        if (event == CardsMoveOneTime)
+        {
+            return true;
+        }
+        else if (event == Damaged)
+        {
+            const Card *key;
+            foreach (const Card *card, ask_who->getJudgingArea())
+            {
+                if (card->isKindOf("Key"))
+                {
+                    key = card;
+                }
+            }
+
+            LogMessage log;
+            log.from = ask_who;
+            log.type = "#DelayedTrick";
+            log.arg = key->objectName();
+            room->sendLog(log);
+
+            JudgeStruct judge;
+            judge.pattern = ".|diamond|.";
+            judge.good = true;
+            judge.reason = "keyCard";
+            judge.who = ask_who;
+
+            room->judge(judge);
+
+            if (judge.isGood())
+            {
+                return true;
+            }
+
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent event, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *ask_who) const
+    {
+        if (event == Damaged)
+        {
+            const Card *key;
+            foreach (const Card *card, ask_who->getJudgingArea())
+            {
+                if (card->isKindOf("Key"))
+                {
+                    key = card;
+                }
+            }
+
+            CardMoveReason reason(CardMoveReason::S_REASON_PUT, ask_who->objectName());
+            room->moveCardTo(key, ask_who, NULL, Player::DiscardPile, reason, true);
+        }
+        else if (event == CardsMoveOneTime)
+        {
+            CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+            for (int i = 0; i < move.card_ids.length(); i++)
+            {
+                if (!VariantList2IntList(room->getTag("keyList").toList()).contains(move.card_ids[i]))
+                    continue;
+
+                const Card *card = Sanguosha->getCard(move.card_ids[i]);
+                Key* key = new Key(card->getSuit(), card->getNumber());
+                key->addSubcard(card);
+                Card *trick = Sanguosha->cloneCard(key);
+                Q_ASSERT(trick != NULL);
+                WrappedCard *wrapped = Sanguosha->getWrappedCard(move.card_ids[i]);
+                wrapped->takeOver(trick);
+                room->broadcastUpdateCard(room->getPlayers(), wrapped->getId(), wrapped);
+                room->cardEffect(wrapped, ask_who, ask_who);
+
+                if (move.to_place != Player::PlaceDelayedTrick)
+                {
+                    QList<QVariant> ql = room->getTag("keyList").toList();
+                    ql.removeOne(QVariant::fromValue(move.card_ids[i]));
+                    room->setTag("keyList", ql);
+                }
+            }
+        }
+        return false;
     }
 
     virtual int getPriority() const
@@ -170,7 +217,7 @@ void putKeyFromId(Room *room, int id, ServerPlayer *from, ServerPlayer *to, QStr
     room->broadcastUpdateCard(room->getPlayers(), wrapped->getId(), wrapped);
     wrapped->setShowSkill(card->showSkill());
 
-    CardMoveReason reason(CardMoveReason::S_REASON_PUT, from->objectName(), to->objectName(), skill_name, QString());
+    CardMoveReason reason(CardMoveReason::S_REASON_PUT, from->objectName(), to->objectName(), skill_name, "putkey");
     room->moveCardTo(wrapped, from, to, Player::PlaceDelayedTrick, reason, true);
 
     //addkey
@@ -829,7 +876,7 @@ class Jiuzhu : public TriggerSkill
 public:
     Jiuzhu() : TriggerSkill("jiuzhu")
     {
-        events << Dying << PreHpLost << CardsMoveOneTime << AskForPeachesDone;
+        events << Dying << PreHpLost << CardsMoveOneTime;
     }
 
     virtual QMap<ServerPlayer *, QStringList> triggerable(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data) const
@@ -845,7 +892,7 @@ public:
             {
                 Key *key = new Key(Card::NoSuit, 0);
                 const QList<const Player *> empty;
-                if (key->targetFilter(empty, dying.who, rin) && !dying.who->containsTrick("keyCard") && !rin->hasFlag("jiuzhu_used"))
+                if (key->targetFilter(empty, dying.who, rin) && !dying.who->containsTrick("keyCard"))
                 {
                     delete key;
                     skill_list.insert(rin, QStringList(objectName()));
@@ -853,24 +900,13 @@ public:
             }
         }
         else if (event == PreHpLost)
-        {//need to add lost reason? not sure
+        {
             if (!player->containsTrick("keyCard")) return skill_list;
             QList<ServerPlayer *> rins = room->findPlayersBySkillName(objectName());
             foreach (ServerPlayer *rin, rins)
             {
                 if (rin != NULL)
                     skill_list.insert(rin, QStringList(objectName()));
-            }
-        }
-        else if (event == AskForPeachesDone)
-        {
-            QList<ServerPlayer *> rins = room->findPlayersBySkillName(objectName());
-            foreach (ServerPlayer *rin, rins)
-            {
-                if (rin->hasFlag("jiuzhu_used"))
-                {
-                    rin->setFlags("-jiuzhu_used");
-                }
             }
         }
         else if (event == CardsMoveOneTime)
@@ -880,12 +916,25 @@ public:
             {
                 if (!VariantList2IntList(room->getTag("keyList").toList()).contains(move.card_ids[i]))
                     continue;
-                if (move.from_places[i] == Player::PlaceDelayedTrick && move.to_place == Player::DiscardPile)
+
+                if (move.from != NULL && move.from_places[i] != NULL && move.origin_from_places[i] == Player::PlaceDelayedTrick && move.to_place == Player::DiscardPile)
                 {
-                    foreach(auto rin, room->findPlayersBySkillName(objectName()))
+                    ServerPlayer *from = NULL;
+                    foreach(auto p, room->getAlivePlayers())
                     {
-                        if (rin == player)
+                        if (p->objectName() == move.from->objectName())
+                        {
+                            from = p;
+                            break;
+                        }
+                    }
+
+                    if (from != NULL && from == player)
+                    {
+                        foreach(auto rin, room->findPlayersBySkillName(objectName()))
+                        {
                             skill_list.insert(rin, QStringList(objectName()));
+                        }
                     }
                 }
             }
@@ -897,7 +946,6 @@ public:
     {
         if (event == Dying)
         {
-            ask_who->setFlags("jiuzhu_used");
             if (room->askForSkillInvoke(ask_who, objectName(), qVariantFromValue(player)))
             {
                 room->doAnimate(QSanProtocol::S_ANIMATE_INDICATE, ask_who->objectName(), player->objectName());
@@ -909,7 +957,7 @@ public:
         {
             bool invoke = room->askForSkillInvoke(ask_who, objectName(), qVariantFromValue(player));
             if (invoke)
-            {//need some other imformation passed to player? not sure
+            {
                 room->broadcastSkillInvoke(objectName(), ask_who);
                 return true;
             }
@@ -943,7 +991,6 @@ public:
                 if (card->isKindOf("Key"))
                 {
                     CardMoveReason reason(CardMoveReason::S_REASON_PUT, ask_who->objectName(), player->objectName(), objectName(), QString());
-                    room->setTag("key_in_move", QVariant::fromValue(card->getEffectiveId()));
                     room->moveCardTo(card, player, NULL, Player::DiscardPile, reason, true);
                     break;
                 }
