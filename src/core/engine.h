@@ -17,6 +17,7 @@
 #include <QThread>
 #include <QList>
 #include <QMutex>
+#include <sol.hpp>
 
 class AI;
 class Scenario;
@@ -26,9 +27,8 @@ class LuaWeapon;
 class LuaArmor;
 class LuaTreasure;
 
-struct lua_State;
 
-typedef int LuaFunction;
+//typedef int LuaFunction;
 
 class Engine : public QObject
 {
@@ -41,7 +41,7 @@ public:
     void addTranslationEntry(const char *key, const char *value);
     QString translate(const QString &toTranslate) const;
     QString translate(const QString &toTranslate, const QString &defaultValue) const;
-    lua_State *getLuaState() const;
+    sol::state &getLuaState();
 
     int getMiniSceneCounts();
 
@@ -232,7 +232,7 @@ private:
     QHash<QString, Scenario *> m_miniScenes;
     Scenario *m_customScene;
 
-    lua_State *lua;
+    sol::state lua;
 
     QHash<QString, QString> luaBasicCard_className2objectName;
     QHash<QString, const LuaBasicCard *> luaBasicCards;
@@ -250,7 +250,7 @@ private:
     TransferSkill *transfer;
 };
 
-static inline QVariant GetConfigFromLuaState(lua_State *L, const char *key)
+static inline QVariant GetConfigFromLuaState(sol::state &L, const char *key)
 {
     return GetValueFromLuaState(L, "config", key);
 }

@@ -22,9 +22,9 @@
 
 package.path = package.path .. ";./lua/lib/?.lua"
 
-local old_type = type
+--local old_type = type
 
-type = function(object)
+--[[ type = function(object)
 	local t = old_type(object)
 	if t == "userdata" then
 		local meta = getmetatable(object)
@@ -36,7 +36,7 @@ type = function(object)
 	else
 		return t
 	end
-end
+end ]]
 
 dofile "lua/utilities.lua"
 dofile "lua/sgs_ex.lua"

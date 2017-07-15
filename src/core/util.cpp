@@ -1,5 +1,5 @@
 #include "util.h"
-#include "lua.hpp"
+#include "sol.hpp"
 
 #include <QVariant>
 #include <QStringList>
@@ -9,75 +9,82 @@ extern "C" {
     int luaopen_sgs(lua_State *);
 }
 
-QVariant GetValueFromLuaState(lua_State *L, const char *table_name, const char *key)
+QVariant GetValueFromLuaState(sol::state &L, const char *table_name, const char *key)
 {
-    lua_getglobal(L, table_name);
-    lua_getfield(L, -1, key);
 
-    QVariant data;
-    switch (lua_type(L, -1)) {
-    case LUA_TSTRING: {
-        data = QString::fromUtf8(lua_tostring(L, -1));
-        lua_pop(L, 1);
-        break;
-    }
-    case LUA_TNUMBER: {
-        data = lua_tonumber(L, -1);
-        lua_pop(L, 1);
-        break;
-    }
-    case LUA_TTABLE: {
-        lua_rawgeti(L, -1, 1);
-        bool isArray = !lua_isnil(L, -1);
-        lua_pop(L, 1);
+	auto c = L[table_name][key];
+	if (!c.valid()) {
+		QMessageBox::warning(NULL, "Lua warning", "invalided object at:" + QString(table_name) +"[" + key + "]");
+		return QVariant();
+	} else {
+		QVariant data;
+		switch (c.get_type()) {
+		case sol::type::string: {
+			std::string temp = c.get_or<std::string>("");
+			data = QString::fromUtf8(temp.data());
+			break;
+		}
+		case sol::type::number: {
+			data = c.get_or<double>(0);
+			break;
+		}
+		case sol::type::table: {
 
-        if (isArray) {
-            QStringList list;
+			sol::table t = c;
 
-            size_t size = lua_rawlen(L, -1);
-            for (size_t i = 0; i < size; i++) {
-                lua_rawgeti(L, -1, i + 1);
-                QString element = QString::fromUtf8(lua_tostring(L, -1));
-                lua_pop(L, 1);
-                list << element;
-            }
-            data = list;
-        } else {
-            QVariantMap map;
-            int t = lua_gettop(L);
-            for (lua_pushnil(L); lua_next(L, t); lua_pop(L, 1)) {
-                const char *key = lua_tostring(L, -2);
-                const char *value = lua_tostring(L, -1);
-                map[key] = value;
-            }
-            data = map;
-        }
-    }
-    default:
-        break;
-    }
+			QStringList sl;
+			QVariantMap vm;
+			bool array = true;
 
-    lua_pop(L, 1);
-    return data;
+			t.for_each([&sl,&array,&vm](sol::object &index, sol::object &value) {
+				if (!index.is<int>())
+					array = false;
+				if (array) { 
+					sl.append(QString::fromUtf8(value.as<std::string>().data()));
+				} else {
+					if (index.is<std::string>()) {
+						vm[QString::fromUtf8(index.as<std::string>().data())] = QString::fromUtf8(value.as<std::string>().data());
+					}
+				}
+
+			});
+			if (array) data = sl; else data = vm;
+			break;
+		}
+		case sol::type::nil: {
+			QMessageBox::warning(NULL, "Lua warning", "object at:" + QString(table_name) + "[" + key + "]" + " is nil!");
+			break;
+		}
+		default:
+			break;
+		}
+
+		return data;
+	}
 }
 
-lua_State *CreateLuaState()
+// lua_State *CreateLuaState()
+// {
+//     lua_State *L = luaL_newstate();
+//     luaL_openlibs(L);
+//     luaopen_sgs(L);
+// 
+//     return L;
+// }
+// 
+void DoLuaScript(sol::state &L, const char *script)
 {
-    lua_State *L = luaL_newstate();
-    luaL_openlibs(L);
-    luaopen_sgs(L);
-
-    return L;
-}
-
-void DoLuaScript(lua_State *L, const char *script)
-{
-    int error = luaL_dofile(L, script);
-    if (error) {
-        QString error_msg = lua_tostring(L, -1);
-        QMessageBox::critical(NULL, QObject::tr("Lua script error"), error_msg);
-        exit(1);
-    }
+    auto result = L.do_file(script);
+	if (!result.valid()) {
+		sol::error e = result;
+		QMessageBox::critical(NULL, QObject::tr("Lua script error"), e.what());
+		exit(1);
+	}
+//     if (error) {
+//         QString error_msg = lua_tostring(L, -1);
+//         QMessageBox::critical(NULL, QObject::tr("Lua script error"), error_msg);
+//         exit(1);
+//     }
 }
 
 QStringList IntList2StringList(const QList<int> &intlist)

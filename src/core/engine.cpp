@@ -11,7 +11,7 @@
 #include "banpair.h"
 #include "miniscenarios.h"
 
-#include <lua.hpp>
+#include <sol.hpp>
 #include <QFile>
 #include <QTextStream>
 #include <QStringList>
@@ -61,7 +61,7 @@ Engine::Engine()
 {
     Sanguosha = this;
 
-    lua = CreateLuaState();
+	lua.open_libraries();
     DoLuaScript(lua, "lua/config.lua");
 
     QStringList stringlist_sp_convert = GetConfigFromLuaState(lua, "convert_pairs").toStringList();
@@ -106,8 +106,7 @@ Engine::Engine()
         mutable_skill->initMediaSource();
     }
 }
-
-lua_State *Engine::getLuaState() const
+sol::state &Engine::getLuaState()
 {
     return lua;
 }
@@ -119,7 +118,7 @@ void Engine::addTranslationEntry(const char *key, const char *value)
 
 Engine::~Engine()
 {
-    lua_close(lua);
+/*    lua_close(lua);*/
     delete m_customScene;
     delete transfer;
 #ifdef AUDIO_SUPPORT

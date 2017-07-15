@@ -7,22 +7,21 @@ class Scenario;
 class TrickCard;
 class GeneralSelector;
 class RoomThread;
+class TriggerSkillItem;
 
-struct lua_State;
 struct LogMessage;
 
 #include "serverplayer.h"
 #include "protocol.h"
 #include "roomstate.h"
 
+#include <sol.hpp>
 #include <QMutex>
 #include <QStack>
 #include <QWaitCondition>
 #include <QThread>
 
 typedef QMap<const ServerPlayer *, QStringList> SPlayerDataMap;
-
-typedef int LuaFunction;
 
 class Room : public QThread
 {
@@ -296,7 +295,7 @@ public:
                          const QString &kingdom = QString(), bool sendLog = true, const QString &show_flags = QString(), bool resetHp = false);
     void transformDeputyGeneral(ServerPlayer *player);
     void swapSeat(ServerPlayer *a, ServerPlayer *b);
-    lua_State *getLuaState() const;
+    sol::state &getLuaState();
     void setFixedDistance(Player *from, const Player *to, int distance);
     ServerPlayer *getFront(ServerPlayer *a, ServerPlayer *b) const;
     void signup(ServerPlayer *player, const QString &screen_name, const QString &avatar, bool is_robot);
@@ -569,7 +568,7 @@ private:
     bool game_paused;
     QWaitCondition m_waitCond;
     mutable QMutex m_mutex;
-    lua_State *L;
+    sol::state L;
     QList<AI *> ais;
 
     RoomThread *thread;

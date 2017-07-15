@@ -15,7 +15,6 @@
 #include "roomthread.h"
 
 #include <random>
-#include <lua.hpp>
 #include <QStringList>
 #include <QMessageBox>
 #include <QHostAddress>
@@ -57,18 +56,23 @@ Room::Room(QObject *parent, const QString &mode)
 
     initCallbacks();
 
-    L = CreateLuaState();
+//     L = CreateLuaState();
+// 
+//     DoLuaScript(L, "lua/sanguosha.lua");
+//     DoLuaScript(L, QFile::exists("lua/ai/private-smart-ai.lua") ?
+//         "lua/ai/private-smart-ai.lua" : "lua/ai/smart-ai.lua");
+	L.open_libraries();
+	DoLuaScript(L, "lua/sanguosha.lua");
+	DoLuaScript(L, QFile::exists("lua/ai/private-smart-ai.lua") ?
+		"lua/ai/private-smart-ai.lua" : "lua/ai/smart-ai.lua");
 
-    DoLuaScript(L, "lua/sanguosha.lua");
-    DoLuaScript(L, QFile::exists("lua/ai/private-smart-ai.lua") ?
-        "lua/ai/private-smart-ai.lua" : "lua/ai/smart-ai.lua");
 
     m_generalSelector = GeneralSelector::getInstance();
 }
 
 Room::~Room()
 {
-    lua_close(L);
+    //lua_close(L);
     if (thread != NULL)
     {
         thread->terminate();
@@ -2904,7 +2908,7 @@ void Room::handleUsedGeneral(const QString &general)
     }
 }
 
-lua_State *Room::getLuaState() const
+sol::state &Room::getLuaState()
 {
     return L;
 }
