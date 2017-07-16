@@ -992,17 +992,32 @@
     <ClCompile Include="Release\moc_sgs_ex.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
-    <ClCompile Include="triggerskill.cpp">
+    <ClCompile Include="lua_triggerskill.cpp">
       <Filter>lua_wrapper\usertypes</Filter>
     </ClCompile>
-    <ClCompile Include="Debug\moc_triggerskill.cpp">
+    <ClCompile Include="Debug\moc_lua_triggerskill.cpp">
       <Filter>Generated Files\Debug</Filter>
     </ClCompile>
-    <ClCompile Include="battlearray.cpp">
+    <ClCompile Include="Release\moc_lua_triggerskill.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="lua_battlearray.cpp">
       <Filter>lua_wrapper\usertypes</Filter>
     </ClCompile>
-    <ClCompile Include="Debug\moc_battlearray.cpp">
+    <ClCompile Include="Debug\moc_lua_battlearray.cpp">
       <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="Release\moc_lua_battlearray.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="lua_simpleskills.cpp">
+      <Filter>lua_wrapper\usertypes</Filter>
+    </ClCompile>
+    <ClCompile Include="Debug\moc_lua_simpleskills.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="Release\moc_lua_simpleskills.cpp">
+      <Filter>Generated Files\Release</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1324,10 +1339,13 @@
     <CustomBuild Include="..\..\src\lua_wrapper\sgs_ex.h">
       <Filter>lua_wrapper\usertypes</Filter>
     </CustomBuild>
-    <CustomBuild Include="triggerskill.h">
+    <CustomBuild Include="lua_triggerskill.h">
       <Filter>lua_wrapper\usertypes</Filter>
     </CustomBuild>
-    <CustomBuild Include="battlearray.h">
+    <CustomBuild Include="lua_battlearray.h">
+      <Filter>lua_wrapper\usertypes</Filter>
+    </CustomBuild>
+    <CustomBuild Include="lua_simpleskills.h">
       <Filter>lua_wrapper\usertypes</Filter>
     </CustomBuild>
   </ItemGroup>
