@@ -1,5 +1,6 @@
 #include "util.h"
 #include "sol.hpp"
+#include "engine.h"
 
 #include <QVariant>
 #include <QStringList>
@@ -130,4 +131,15 @@ QList<int> VariantList2IntList(const QVariantList &variantlist)
 bool isNormalGameMode(const QString &mode)
 {
     return mode.endsWith("p") || mode.endsWith("pd") || mode.endsWith("pz");
+}
+
+void outputError(const char *error)
+{
+	if (Sanguosha->currentRoom()) {
+		Room *r = Sanguosha->currentRoom();
+		r->output(error);
+	}
+	else {
+		QMessageBox::warning(nullptr, "Lua Warning", error);
+	}
 }

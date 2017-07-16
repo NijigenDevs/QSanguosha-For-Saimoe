@@ -1,6 +1,5 @@
-#include "sgs_ex.h"
 #include "util.h"
-#include "battlearray.h"
+#include "lua_battlearray.h"
 
 LuaBattleArraySkill::LuaBattleArraySkill(const char *name, Frequency frequency, const char *limit_mark, HegemonyMode::ArrayType array_type)
 	: BattleArraySkill(name, array_type)
@@ -49,7 +48,7 @@ TriggerList LuaBattleArraySkill::triggerable(TriggerEvent triggerEvent, Room *ro
 			}
 			else {
 				sol::error e = result;
-				room->output(e.what());
+				outputError(e.what());
 				return TriggerSkill::triggerable(triggerEvent, room, player, data);
 			}
 		}
@@ -80,7 +79,7 @@ bool LuaBattleArraySkill::cost(TriggerEvent triggerEvent, Room *room, ServerPlay
 			}
 			else {
 				sol::error e = result;
-				room->output(e.what());
+				outputError(e.what());
 				return true;
 			}
 		}
@@ -107,7 +106,7 @@ bool LuaBattleArraySkill::effect(TriggerEvent triggerEvent, Room *room, ServerPl
 			}
 			else {
 				sol::error e = result;
-				room->output(e.what());
+				outputError(e.what());
 				return BattleArraySkill::effect(triggerEvent, room, player, data, ask_who);
 			}
 		}
@@ -130,7 +129,7 @@ void LuaBattleArraySkill::onTurnBroken(const char *function_name, TriggerEvent t
 		auto result = this->on_turn_broken(this, function_name, triggerEvent, room, player, data, ask_who);
 		if (!result.valid()) {
 			sol::error e = result;
-			room->output(e.what());
+			outputError(e.what());
 		}
 	}
 }
@@ -142,7 +141,7 @@ void LuaBattleArraySkill::record(TriggerEvent triggerEvent, Room *room, ServerPl
 			auto result = this->on_record(this, triggerEvent, room, player, data);
 			if (!result.valid()) {
 				sol::error e = result;
-				room->output(e.what());
+				outputError(e.what());
 			}
 		}
 		catch (TriggerEvent e)

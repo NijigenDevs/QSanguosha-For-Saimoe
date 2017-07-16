@@ -1,6 +1,5 @@
-#include "sgs_ex.h"
 #include "util.h"
-#include "triggerskill.h"
+#include "lua_triggerskill.h"
 
 LuaTriggerSkill::LuaTriggerSkill(const char *name, Frequency frequency, const char *limit_mark)
 	: TriggerSkill(name), priority(3)
@@ -70,7 +69,7 @@ TriggerList LuaTriggerSkill::triggerable(TriggerEvent triggerEvent, Room *room, 
 			}
 			else {
 				sol::error e = result;
-				room->output(e.what());
+				outputError(e.what());
 				return TriggerSkill::triggerable(triggerEvent, room, player, data);
 			}
 		}
@@ -97,7 +96,7 @@ bool LuaTriggerSkill::cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *
 			}
 			else {
 				sol::error e = result;
-				room->output(e.what());
+				outputError(e.what());
 				return TriggerSkill::cost(triggerEvent, room, player, data, ask_who);
 			}
 		}
@@ -124,7 +123,7 @@ bool LuaTriggerSkill::effect(TriggerEvent triggerEvent, Room *room, ServerPlayer
 			}
 			else {
 				sol::error e = result;
-				room->output(e.what());
+				outputError(e.what());
 				return TriggerSkill::effect(triggerEvent, room, player, data, ask_who);
 			}
 		}
@@ -146,7 +145,7 @@ void LuaTriggerSkill::onTurnBroken(const char *function_name, TriggerEvent trigg
 		auto result = this->on_turn_broken(this, function_name, triggerEvent, room, player, data, ask_who);
 		if (!result.valid()) {
 			sol::error e = result;
-			room->output(e.what());
+			outputError(e.what());
 		}
 	}
 }
@@ -158,7 +157,7 @@ void LuaTriggerSkill::record(TriggerEvent triggerEvent, Room *room, ServerPlayer
 			auto result = this->on_record(this, triggerEvent, room, player, data);
 			if (!result.valid()) {
 				sol::error e = result;
-				room->output(e.what());
+				outputError(e.what());
 			}
 		}
 		catch (TriggerEvent e)

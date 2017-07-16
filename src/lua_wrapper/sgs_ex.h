@@ -4,30 +4,6 @@
 #include "standard.h"
 #include <sol.hpp>
 
-class LuaProhibitSkill : public ProhibitSkill
-{
-	Q_OBJECT
-
-public:
-	LuaProhibitSkill(const char *name);
-
-	virtual bool isProhibited(const Player *from, const Player *to, const Card *card, const QList<const Player *> &others = QList<const Player *>()) const;
-
-	sol::protected_function is_prohibited;
-};
-
-class LuaFixCardSkill : public FixCardSkill
-{
-	Q_OBJECT
-
-public:
-	LuaFixCardSkill(const char *name);
-
-	virtual bool isCardFixed(const Player *from, const Player *to, const QString &flags, Card::HandlingMethod method) const;
-
-	sol::protected_function is_cardfixed;
-};
-
 class LuaViewAsSkill : public ViewAsSkill
 {
 	Q_OBJECT
