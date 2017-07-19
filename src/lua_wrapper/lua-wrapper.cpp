@@ -1,54 +1,6 @@
 #include "lua-wrapper.h"
 #include "util.h"
 
-LuaTriggerSkill::LuaTriggerSkill(const char *name, Frequency frequency, const char *limit_mark)
-    : TriggerSkill(name), can_trigger(0), on_cost(0),
-    on_effect(0), priority(3),
-    on_turn_broken(0), on_record(0)
-
-{
-    this->frequency = frequency;
-    this->limit_mark = limit_mark;
-    this->guhuo_type = "";
-}
-
-int LuaTriggerSkill::getPriority() const
-{
-    return priority;
-}
-
-bool LuaTriggerSkill::canPreshow() const
-{
-    return can_preshow;
-}
-
-QString LuaTriggerSkill::getGuhuoBox() const
-{
-    return guhuo_type;
-}
-
-LuaBattleArraySkill::LuaBattleArraySkill(const char *name, Frequency frequency, const char *limit_mark, HegemonyMode::ArrayType array_type)
-    : BattleArraySkill(name, array_type)
-{
-    this->frequency = frequency;
-    this->limit_mark = limit_mark;
-}
-
-int LuaBattleArraySkill::getPriority() const
-{
-    return priority;
-}
-
-LuaProhibitSkill::LuaProhibitSkill(const char *name)
-    : ProhibitSkill(name), is_prohibited(0)
-{
-}
-
-LuaFixCardSkill::LuaFixCardSkill(const char *name)
-    : FixCardSkill(name), is_cardfixed(0)
-{
-}
-
 LuaViewAsSkill::LuaViewAsSkill(const char *name, const char *response_pattern, bool response_or_use, const char *expand_pile, const char *limit_mark)
     : ViewAsSkill(name), view_filter(0), view_as(0),
     enabled_at_play(0), enabled_at_response(0), enabled_at_nullification(0), in_pile(0)

@@ -62,11 +62,17 @@
     <Filter Include="dialog">
       <UniqueIdentifier>{be9e2452-57ca-46f7-b067-be44fd16c604}</UniqueIdentifier>
     </Filter>
+    <Filter Include="lua_wrapper">
+      <UniqueIdentifier>{b11a9bdb-6948-4e4c-9a81-14831c36a963}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lua_wrapper\sol">
+      <UniqueIdentifier>{090d353a-16db-407c-9bf3-b8c862df17a7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lua_wrapper\usertypes">
+      <UniqueIdentifier>{74a853ee-3f2c-4d44-a9cb-2cee8e347ebb}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\swig\sanguosha_wrap.cxx">
-      <Filter>Generated Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\client\aux-skills.cpp">
       <Filter>client</Filter>
     </ClCompile>
@@ -89,9 +95,6 @@
       <Filter>core</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\core\general.cpp">
-      <Filter>core</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\core\lua-wrapper.cpp">
       <Filter>core</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\core\player.cpp">
@@ -445,9 +448,6 @@
     <ClCompile Include="Release\moc_indicatoritem.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
-    <ClCompile Include="Release\moc_lua-wrapper.cpp">
-      <Filter>Generated Files\Release</Filter>
-    </ClCompile>
     <ClCompile Include="Release\moc_mainwindow.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
@@ -590,9 +590,6 @@
       <Filter>Generated Files\Debug</Filter>
     </ClCompile>
     <ClCompile Include="Debug\moc_indicatoritem.cpp">
-      <Filter>Generated Files\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="Debug\moc_lua-wrapper.cpp">
       <Filter>Generated Files\Debug</Filter>
     </ClCompile>
     <ClCompile Include="Debug\moc_mainwindow.cpp">
@@ -983,6 +980,45 @@
     <ClCompile Include="..\..\src\util\UpdateChecker.cpp">
       <Filter>util</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\lua_wrapper\lua-wrapper.cpp">
+      <Filter>lua_wrapper</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\lua_wrapper\sgs_ex.cpp">
+      <Filter>lua_wrapper\usertypes</Filter>
+    </ClCompile>
+    <ClCompile Include="Debug\moc_sgs_ex.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="Release\moc_sgs_ex.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="lua_triggerskill.cpp">
+      <Filter>lua_wrapper\usertypes</Filter>
+    </ClCompile>
+    <ClCompile Include="Debug\moc_lua_triggerskill.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="Release\moc_lua_triggerskill.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="lua_battlearray.cpp">
+      <Filter>lua_wrapper\usertypes</Filter>
+    </ClCompile>
+    <ClCompile Include="Debug\moc_lua_battlearray.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="Release\moc_lua_battlearray.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="lua_simpleskills.cpp">
+      <Filter>lua_wrapper\usertypes</Filter>
+    </ClCompile>
+    <ClCompile Include="Debug\moc_lua_simpleskills.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="Release\moc_lua_simpleskills.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\..\src\server\ai.h">
@@ -1022,9 +1058,6 @@
       <Filter>core</Filter>
     </CustomBuild>
     <CustomBuild Include="..\..\src\core\general.h">
-      <Filter>core</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\..\src\core\lua-wrapper.h">
       <Filter>core</Filter>
     </CustomBuild>
     <CustomBuild Include="..\..\src\core\player.h">
@@ -1300,6 +1333,21 @@
     <CustomBuild Include="..\..\src\dialog\udpdetectordialog.h">
       <Filter>dialog</Filter>
     </CustomBuild>
+    <CustomBuild Include="..\..\src\lua_wrapper\lua-wrapper.h">
+      <Filter>lua_wrapper</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\src\lua_wrapper\sgs_ex.h">
+      <Filter>lua_wrapper\usertypes</Filter>
+    </CustomBuild>
+    <CustomBuild Include="lua_triggerskill.h">
+      <Filter>lua_wrapper\usertypes</Filter>
+    </CustomBuild>
+    <CustomBuild Include="lua_battlearray.h">
+      <Filter>lua_wrapper\usertypes</Filter>
+    </CustomBuild>
+    <CustomBuild Include="lua_simpleskills.h">
+      <Filter>lua_wrapper\usertypes</Filter>
+    </CustomBuild>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\..\resource\icon.rc" />
@@ -1367,6 +1415,225 @@
     </ClInclude>
     <ClInclude Include="..\..\src\util\UpdateChecker.h">
       <Filter>util</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\lua_wrapper\sol.hpp">
+      <Filter>lua_wrapper</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\lua_wrapper\sol\as_args.hpp">
+      <Filter>lua_wrapper\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\lua_wrapper\sol\as_returns.hpp">
+      <Filter>lua_wrapper\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\lua_wrapper\sol\bind_traits.hpp">
+      <Filter>lua_wrapper\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\lua_wrapper\sol\call.hpp">
+      <Filter>lua_wrapper\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\lua_wrapper\sol\compatibility.hpp">
+      <Filter>lua_wrapper\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\lua_wrapper\sol\container_traits.hpp">
+      <Filter>lua_wrapper\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\lua_wrapper\sol\container_usertype_metatable.hpp">
+      <Filter>lua_wrapper\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\lua_wrapper\sol\coroutine.hpp">
+      <Filter>lua_wrapper\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\lua_wrapper\sol\debug.hpp">
+      <Filter>lua_wrapper\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\lua_wrapper\sol\demangle.hpp">
+      <Filter>lua_wrapper\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\lua_wrapper\sol\deprecate.hpp">
+      <Filter>lua_wrapper\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\lua_wrapper\sol\environment.hpp">
+      <Filter>lua_wrapper\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\lua_wrapper\sol\error.hpp">
+      <Filter>lua_wrapper\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\lua_wrapper\sol\feature_test.hpp">
+      <Filter>lua_wrapper\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\lua_wrapper\sol\forward.hpp">
+      <Filter>lua_wrapper\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\lua_wrapper\sol\function.hpp">
+      <Filter>lua_wrapper\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\lua_wrapper\sol\function_result.hpp">
+      <Filter>lua_wrapper\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\lua_wrapper\sol\function_types.hpp">
+      <Filter>lua_wrapper\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\lua_wrapper\sol\function_types_core.hpp">
+      <Filter>lua_wrapper\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\lua_wrapper\sol\function_types_overloaded.hpp">
+      <Filter>lua_wrapper\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\lua_wrapper\sol\function_types_stateful.hpp">
+      <Filter>lua_wrapper\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\lua_wrapper\sol\function_types_stateless.hpp">
+      <Filter>lua_wrapper\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\lua_wrapper\sol\function_types_templated.hpp">
+      <Filter>lua_wrapper\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\lua_wrapper\sol\in_place.hpp">
+      <Filter>lua_wrapper\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\lua_wrapper\sol\inheritance.hpp">
+      <Filter>lua_wrapper\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\lua_wrapper\sol\load_result.hpp">
+      <Filter>lua_wrapper\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\lua_wrapper\sol\object.hpp">
+      <Filter>lua_wrapper\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\lua_wrapper\sol\object_base.hpp">
+      <Filter>lua_wrapper\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\lua_wrapper\sol\optional.hpp">
+      <Filter>lua_wrapper\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\lua_wrapper\sol\optional_implementation.hpp">
+      <Filter>lua_wrapper\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\lua_wrapper\sol\overload.hpp">
+      <Filter>lua_wrapper\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\lua_wrapper\sol\property.hpp">
+      <Filter>lua_wrapper\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\lua_wrapper\sol\protect.hpp">
+      <Filter>lua_wrapper\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\lua_wrapper\sol\protected_function.hpp">
+      <Filter>lua_wrapper\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\lua_wrapper\sol\protected_function_result.hpp">
+      <Filter>lua_wrapper\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\lua_wrapper\sol\proxy.hpp">
+      <Filter>lua_wrapper\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\lua_wrapper\sol\proxy_base.hpp">
+      <Filter>lua_wrapper\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\lua_wrapper\sol\raii.hpp">
+      <Filter>lua_wrapper\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\lua_wrapper\sol\reference.hpp">
+      <Filter>lua_wrapper\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\lua_wrapper\sol\resolve.hpp">
+      <Filter>lua_wrapper\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\lua_wrapper\sol\simple_usertype_metatable.hpp">
+      <Filter>lua_wrapper\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\lua_wrapper\sol\stack.hpp">
+      <Filter>lua_wrapper\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\lua_wrapper\sol\stack_check.hpp">
+      <Filter>lua_wrapper\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\lua_wrapper\sol\stack_check_get.hpp">
+      <Filter>lua_wrapper\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\lua_wrapper\sol\stack_core.hpp">
+      <Filter>lua_wrapper\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\lua_wrapper\sol\stack_field.hpp">
+      <Filter>lua_wrapper\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\lua_wrapper\sol\stack_get.hpp">
+      <Filter>lua_wrapper\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\lua_wrapper\sol\stack_guard.hpp">
+      <Filter>lua_wrapper\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\lua_wrapper\sol\stack_pop.hpp">
+      <Filter>lua_wrapper\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\lua_wrapper\sol\stack_probe.hpp">
+      <Filter>lua_wrapper\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\lua_wrapper\sol\stack_proxy.hpp">
+      <Filter>lua_wrapper\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\lua_wrapper\sol\stack_push.hpp">
+      <Filter>lua_wrapper\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\lua_wrapper\sol\stack_reference.hpp">
+      <Filter>lua_wrapper\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\lua_wrapper\sol\state.hpp">
+      <Filter>lua_wrapper\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\lua_wrapper\sol\state_view.hpp">
+      <Filter>lua_wrapper\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\lua_wrapper\sol\string_shim.hpp">
+      <Filter>lua_wrapper\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\lua_wrapper\sol\table.hpp">
+      <Filter>lua_wrapper\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\lua_wrapper\sol\table_core.hpp">
+      <Filter>lua_wrapper\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\lua_wrapper\sol\table_iterator.hpp">
+      <Filter>lua_wrapper\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\lua_wrapper\sol\thread.hpp">
+      <Filter>lua_wrapper\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\lua_wrapper\sol\tie.hpp">
+      <Filter>lua_wrapper\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\lua_wrapper\sol\traits.hpp">
+      <Filter>lua_wrapper\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\lua_wrapper\sol\tuple.hpp">
+      <Filter>lua_wrapper\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\lua_wrapper\sol\types.hpp">
+      <Filter>lua_wrapper\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\lua_wrapper\sol\unsafe_function.hpp">
+      <Filter>lua_wrapper\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\lua_wrapper\sol\userdata.hpp">
+      <Filter>lua_wrapper\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\lua_wrapper\sol\usertype.hpp">
+      <Filter>lua_wrapper\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\lua_wrapper\sol\usertype_metatable.hpp">
+      <Filter>lua_wrapper\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\lua_wrapper\sol\usertype_traits.hpp">
+      <Filter>lua_wrapper\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\lua_wrapper\sol\variadic_args.hpp">
+      <Filter>lua_wrapper\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\lua_wrapper\sol\variadic_results.hpp">
+      <Filter>lua_wrapper\sol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\lua_wrapper\sol\wrapper.hpp">
+      <Filter>lua_wrapper\sol</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

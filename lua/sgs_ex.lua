@@ -71,8 +71,14 @@ function sgs.CreateTriggerSkill(spec)
 	if spec.on_effect then
 		skill.on_effect = spec.on_effect
 	end
-	if spec.can_trigger then
-		skill.can_trigger = spec.can_trigger
+	if spec.can_trigger and type(spec.can_trigger) == "function" then
+		function skill:can_trigger(...)
+			local r1,r2 = spec(self,...)
+			if type(r2) ~= "string" then
+				r2 = r2:objectName()
+			end
+			return r1,r2
+		end
 	end
 	if spec.on_cost then
 		skill.on_cost = spec.on_cost

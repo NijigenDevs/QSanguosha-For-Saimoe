@@ -22,9 +22,9 @@
 
 package.path = package.path .. ";./lua/lib/?.lua"
 
-local old_type = type
+--local old_type = type
 
-type = function(object)
+--[[ type = function(object)
 	local t = old_type(object)
 	if t == "userdata" then
 		local meta = getmetatable(object)
@@ -36,7 +36,7 @@ type = function(object)
 	else
 		return t
 	end
-end
+end ]]
 
 dofile "lua/utilities.lua"
 dofile "lua/sgs_ex.lua"
@@ -111,8 +111,9 @@ function load_extensions()
 	sgs.SetConfig("LuaPackages", lua_packages)
 end
 
-if not sgs.GetConfig("DisableLua", false) then
+if not sgs.GetConfig("DisableLua", false) and not sgs.Sanguosha:property("DoneLoadingLuaPackage"):toBool() then
 	load_extensions()
+	sgs.Sanguosha:setProperty("DoneLoadingLuaPackage", sgs.QVariant(true)) --  to avoid loading skills code in server side lua_state. Lua_state in server side shoud only run the SmartAI code. 
 end
 
 local done_loading = sgs.Sanguosha:property("DoneLoading"):toBool()

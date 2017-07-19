@@ -31,6 +31,8 @@ QList<int> VariantList2IntList(const QVariantList &variantlist);
 
 bool isNormalGameMode(const QString &mode);
 
+void outputError(const char *error);
+
 static const int S_EQUIP_AREA_LENGTH = 5;
 
 #endif
