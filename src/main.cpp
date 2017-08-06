@@ -159,7 +159,8 @@ int main(int argc, char *argv[])
         qApp->setFont(f);
     }
 
-    if (qApp->arguments().contains("-server")) {
+    if (qApp->arguments().contains("-server"))
+	{
 		if (argc >= 4)
 		{
 			int port = atoi(argv[2]);
