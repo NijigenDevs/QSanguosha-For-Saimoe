@@ -12,14 +12,15 @@
 
 using namespace QSanProtocol;
 
-Server::Server(QObject *parent)
+Server::Server(QObject *parent, const QString &params)
     : QObject(parent)
 {
     server = new NativeServerSocket;
     server->setParent(this);
 
-    //synchronize ServerInfo on the server side to avoid ambiguous usage of Config and ServerInfo
-    ServerInfo.parse(Sanguosha->getSetupString());
+	//synchronize ServerInfo on the server side to avoid ambiguous usage of Config and ServerInfo
+	if (!ServerInfo.parse(Sanguosha->getSetupString(params)))
+		exit(3);
 
     current = NULL;
 
@@ -40,9 +41,9 @@ void Server::broadcastSystemMessage(const QString &msg)
         room->broadcast(&packet);
 }
 
-bool Server::listen()
+bool Server::listen(int port)
 {
-    return server->listen();
+    return server->listen(port);
 }
 
 void Server::daemonize()
@@ -143,8 +144,15 @@ void Server::processClientRequest(ClientSocket *socket, const Packet &signup)
         }
     }
 
-    if (current == NULL || current->isFull() || current->isFinished())
+    if (current == NULL || current->isFinished()) // delete current->isFull() here
         createNewRoom();
+
+	if (current->isFull())
+	{
+		socket->disconnectFromHost();
+		emit server_message(tr("This room is full now"));
+		return;
+	}
 
     ServerPlayer *player = current->addSocket(socket);
     current->signup(player, screen_name, avatar, false);

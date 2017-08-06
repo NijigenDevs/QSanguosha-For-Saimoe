@@ -160,13 +160,30 @@ int main(int argc, char *argv[])
     }
 
     if (qApp->arguments().contains("-server")) {
-        Server *server = new Server(qApp);
-        printf("Server is starting on port %u\n", Config.ServerPort);
+		if (argc >= 4)
+		{
+			int port = atoi(argv[2]);
+			if (port <= 0 || port > 65535)
+				exit(2);
 
-        if (server->listen())
-            printf("Starting successfully\n");
-        else
-            printf("Starting failed!\n");
+			Server *server = new Server(qApp, argv[3]);
+			printf("Server is starting on port %u\n", port);
+
+			if (server->listen(port))
+				printf("Starting successfully\n");
+			else
+				printf("Starting failed!\n");
+		}
+		else
+		{
+			Server *server = new Server(qApp);
+			printf("Server is starting on port %u\n", Config.ServerPort);
+
+			if (server->listen())
+				printf("Starting successfully\n");
+			else
+				printf("Starting failed!\n");
+		}
 
         return qApp->exec();
     }

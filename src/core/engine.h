@@ -30,6 +30,8 @@ struct lua_State;
 
 typedef int LuaFunction;
 
+static QString parameters = NULL;
+
 class Engine : public QObject
 {
     Q_OBJECT
@@ -77,7 +79,7 @@ public:
     QMap<QString, QColor> getSkillColorMap() const;
     QColor getSkillColor(const QString &skill_type) const;
     QStringList getChattingEasyTexts() const;
-    QString getSetupString() const;
+    QString getSetupString(const QString &params = NULL) const;
 
     QMap<QString, QString> getAvailableModes() const;
     QString getModeName(const QString &mode) const;

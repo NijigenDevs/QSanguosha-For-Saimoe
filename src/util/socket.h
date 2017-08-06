@@ -12,7 +12,7 @@ class ServerSocket : public QObject
     Q_OBJECT
 
 public:
-    virtual bool listen() = 0;
+    virtual bool listen(int port = -1) = 0;
     virtual void daemonize() = 0;
 
 signals:

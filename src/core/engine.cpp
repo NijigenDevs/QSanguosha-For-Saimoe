@@ -739,8 +739,18 @@ QStringList Engine::getChattingEasyTexts() const
     return easy_texts;
 }
 
-QString Engine::getSetupString() const
+QString Engine::getSetupString(const QString &params) const
 {
+	if (!params.isNull() && !params.isEmpty())
+	{
+		parameters = params;
+	}
+
+	if (!parameters.isNull() && !parameters.isEmpty())
+	{
+		return parameters;
+	}
+
     int timeout = Config.OperationNoLimit ? 0 : Config.OperationTimeout;
     QString flags;
     if (Config.RandomSeat)

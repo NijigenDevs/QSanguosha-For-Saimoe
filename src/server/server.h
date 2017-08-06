@@ -19,11 +19,11 @@ class Server : public QObject
 public:
     friend class BanIpDialog;
 
-    explicit Server(QObject *parent);
+    explicit Server(QObject *parent, const QString &params = NULL);
 
     void broadcastSystemMessage(const QString &msg);
 
-    bool listen();
+    bool listen(int port = -1);
     void daemonize();
 
 

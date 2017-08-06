@@ -12,7 +12,7 @@ class NativeServerSocket : public ServerSocket
 public:
     NativeServerSocket();
 
-    virtual bool listen();
+    virtual bool listen(int port = -1);
     virtual void daemonize();
 
 private slots:

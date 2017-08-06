@@ -14,9 +14,9 @@ NativeServerSocket::NativeServerSocket()
     connect(server, &QTcpServer::newConnection, this, &NativeServerSocket::processNewConnection);
 }
 
-bool NativeServerSocket::listen()
+bool NativeServerSocket::listen(int port)
 {
-    return server->listen(QHostAddress::Any, Config.ServerPort);
+    return server->listen(QHostAddress::Any, (port > 0 && port <= 65535) ? port : Config.ServerPort);
 }
 
 void NativeServerSocket::daemonize()
