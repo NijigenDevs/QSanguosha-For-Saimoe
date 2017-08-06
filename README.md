@@ -123,3 +123,12 @@ VS2017 (Windows)
 You can install VC redist or copy the 3 dlls from VC Redist Directory to ~.
 
 6. Double-click the QSanguosha.exe and have fun!
+
+## HOW TO START SERVER
+
+`.\QSanguosha.exe -server [port number] [config string]
+`
+
+If port number and config string set, the server will start on those parameters. Otherwise, it will start server on config.ini ( or default settings ).
+
+In order to build a config string, you may check engine.cpp .
