@@ -284,7 +284,7 @@ return {
 	["&nodoka"] = "原村和", 
 	["#nodoka"] = "清澄副将", 
 	["#&nodoka"] = "天才麻将少女", 
-	["~nodoka"] = "", 
+	["~nodoka"] = "怎么会...", 
 	["designer:nodoka"] = "hmqgg",
 	["cv:nodoka"] = "小清水亜美",
 	["illustrator:nodoka"] = "60884015",
