@@ -1762,11 +1762,21 @@ public:
         }
         else if (event == CardFinished)
         {
-            if (TriggerSkill::triggerable(player) && data.value<CardUseStruct>().card->hasFlag("yujian_slash") && (player->hasFlag("forecastTrue") || player->hasFlag("forecastWontDamage")))
+            if (TriggerSkill::triggerable(player))
             {
-                player->setFlags("-forecastTrue");
-                player->setFlags("-forecastWontDamage");
-                return QStringList(objectName());
+                if (data.value<CardUseStruct>().card->hasFlag("yujian_slash"))
+                {
+                    if (player->hasFlag("forecastTrue") || player->hasFlag("forecastWontDamage"))
+                    {
+                        player->setFlags("-forecastTrue");
+                        player->setFlags("-forecastWontDamage");
+                        return QStringList(objectName());
+                    }
+                    else if (player->hasShownSkill(this))
+                    {
+                        room->broadcastSkillInvoke(objectName(), 3);
+                    }
+                }
             }
         }
         return QStringList();
@@ -1778,7 +1788,7 @@ public:
         {
             if (room->askForSkillInvoke(player, objectName()))
             {
-                room->broadcastSkillInvoke(objectName());
+                room->broadcastSkillInvoke(objectName(), 1);
                 return true;
             }
         }
@@ -1786,7 +1796,7 @@ public:
         {
             if (player->hasShownSkill(this) || player->askForSkillInvoke(this))
             {
-                room->broadcastSkillInvoke(objectName(), 1);
+                room->broadcastSkillInvoke(objectName(), 2);
                 return true;
             }
         }
