@@ -304,7 +304,7 @@ return {
 	["&shizuno"] = "高鸭稳乃", 
 	["#shizuno"] = "深山支配者", 
 	["#&shizuno"] = "天才麻将少女", 
-	["~shizuno"] = "", 
+	["~shizuno"] = "赢不了...", 
 	["designer:shizuno"] = "hmqgg",
 	["cv:shizuno"] = "悠木碧",
 	["illustrator:shizuno"] = "26833880",
